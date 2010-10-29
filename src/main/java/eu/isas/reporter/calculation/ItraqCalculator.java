@@ -57,7 +57,8 @@ public class ItraqCalculator {
     private CompomicsKeysFactory compomicsKeyFactory = CompomicsKeysFactory.getInstance();
     private ReporterIonQuantification quantification;
 
-    public ItraqCalculator(Reporter parent, MsExperiment experiment, ArrayList<File> idFiles, ArrayList<File> mgfFiles, IdFilter idFilter, double fdrLimit, ReporterIonQuantification quantification, double ionTolerance) {
+    public ItraqCalculator(Reporter parent, MsExperiment experiment, ArrayList<File> idFiles, ArrayList<File> mgfFiles,
+            IdFilter idFilter, double fdrLimit, ReporterIonQuantification quantification, double ionTolerance) {
         this.idFiles = idFiles;
         this.mgfFiles = mgfFiles;
         this.experiment = experiment;
@@ -76,7 +77,7 @@ public class ItraqCalculator {
         mgfProcessor.execute();
         waitingPanel.appendReport("Importing spectra.");
         ratiosCompilator.execute();
-
+        waitingPanel.setLocationRelativeTo(null);
         waitingPanel.setVisible(true);
     }
 

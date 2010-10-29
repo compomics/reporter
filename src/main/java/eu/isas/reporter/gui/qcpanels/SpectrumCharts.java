@@ -243,7 +243,6 @@ public class SpectrumCharts {
             currentPlot.setDataset(1, ratioDataset);
             currentPlot.setRenderer(1, ratioRenderer);
             currentPlot.mapDatasetToRangeAxis(1, 0);
-
         }
 
         public void setSpectrum(SpectrumQuantification spectrumQuantification, int ion) {

@@ -7,12 +7,12 @@
     <packaging>jar</packaging>
     <version>${version.number}</version>
     <name>Reporter</name>
-    <url>soon</url>
+    <url>http://reporter.googlecode.com</url>
 
 
     <!-- Set the version number for the whole project -->
     <properties>
-        <version.number>1.0</version.number>
+        <version.number>1.0.1</version.number>
     </properties>
 
 
@@ -32,6 +32,15 @@
             <id>Marc</id>
             <email>marc.vaudel AT isas.de</email>
             <organization>ISAS</organization>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <name>Harald Barsnes</name>
+            <id>harald</id>
+            <email>harald.barsnes AT biomed.uib.no</email>
+            <organization>University of Bergen</organization>
             <roles>
                 <role>Java Developer</role>
             </roles>

@@ -56,9 +56,9 @@ public class ReporterExporter {
             }
         }
 
-            int s = 0;
-            int pe = 0;
-            int pr = 0;
+        int s = 0;
+        int pe = 0;
+        int pr = 0;
 
         try {
             Writer spectraOutput = new BufferedWriter(new FileWriter(spectraFile));

@@ -18,6 +18,4 @@ public class IdFactory {
         }
         return instance;
     }
-
-
 }

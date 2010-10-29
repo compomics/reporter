@@ -75,5 +75,4 @@ public class Deisotoper {
         }
         return result;
     }
-
 }
