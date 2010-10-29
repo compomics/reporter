@@ -155,8 +155,14 @@ public class ItraqCalculator {
 
         @Override
         protected Object doInBackground() throws Exception {
+            queue();
             try {
                 waitingPanel.appendReport("Spectrum ratio computation.");
+                if (proteins.isEmpty()) {
+                    waitingPanel.appendReport("No proteins imported.");
+                    waitingPanel.setRunCancelled();
+                    return 1;
+                }
                 for (ProteinMatch proteinMatch : proteins.values()) {
                     ArrayList<PeptideQuantification> peptideQuantifications = new ArrayList<PeptideQuantification>();
                     for (PeptideMatch peptideMatch : proteinMatch.getPeptideMatches().values()) {
@@ -218,8 +224,14 @@ public class ItraqCalculator {
         }
 
         public synchronized void restart() {
-            if (identificationProcessor.isFinished() && mgfProcessor.isfinished()) {
-                notify();
+            try {
+                if (identificationProcessor.isFinished() && mgfProcessor.isfinished()) {
+                    notify();
+                }
+            } catch (Exception e) {
+                waitingPanel.appendReport("An error occured when waiting for file processing.");
+                waitingPanel.appendReport(e.getLocalizedMessage());
+                waitingPanel.setRunCancelled();
             }
         }
     }
