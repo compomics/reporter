@@ -1,7 +1,13 @@
 package eu.isas.reporter;
 
+import com.jgoodies.looks.plastic.PlasticLookAndFeel;
+import com.jgoodies.looks.plastic.PlasticXPLookAndFeel;
+import com.jgoodies.looks.plastic.theme.SkyKrupp;
+import eu.isas.reporter.utils.Properties;
 import java.io.*;
 import javax.swing.JOptionPane;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 
 /**
  * A wrapper class used to start the jar file with parameters. The parameters
@@ -22,13 +28,23 @@ public class Wrapper {
      * The name of the jar file. Must be equal to the name
      * given in the pom file.
      */
-    private String jarFileName = "Reporter-1.0.jar";
+    private String jarFileName = "Reporter-";
 
     /**
      * Starts the launcher by calling the launch method. Use this as the
      * main class in the jar file.
      */
     public Wrapper() {
+
+        // get the version number set in the pom file
+        jarFileName = jarFileName + new Properties().getVersion() + ".jar";
+
+        try {
+            PlasticLookAndFeel.setPlasticTheme(new SkyKrupp());
+            UIManager.setLookAndFeel(new PlasticXPLookAndFeel());
+        } catch (UnsupportedLookAndFeelException e) {
+            // ignore exception
+        }
 
         try {
             launch();

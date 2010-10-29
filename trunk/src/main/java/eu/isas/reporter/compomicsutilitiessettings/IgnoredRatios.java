@@ -38,6 +38,4 @@ public class IgnoredRatios implements UrParameter {
     public int getIndex() {
         return CompomicsKeysFactory.IGNORED_RATIOS;
     }
-
-
 }

@@ -8,16 +8,15 @@ import com.jgoodies.looks.plastic.PlasticXPLookAndFeel;
 import com.jgoodies.looks.plastic.theme.SkyKrupp;
 import eu.isas.reporter.gui.ResultPanel;
 import eu.isas.reporter.gui.StartPanel;
+import eu.isas.reporter.utils.Properties;
 import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -40,6 +39,10 @@ public class Reporter {
      */
     private JFrame mainFrame;
     /**
+     * The last folder opened by the user. Defaults to user.home.
+     */
+    private String lastSelectedFolder = "user.home";
+    /**
      * Main method.
      *
      * @param args String[] with the start-up arguments.
@@ -51,8 +54,8 @@ public class Reporter {
      * main constructor.
      */
     public Reporter() {
-        // check if a newer version of SearchGUI is available
-        checkForNewVersion(getVersion());
+        // check if a newer version of Reporter is available
+        checkForNewVersion(new Properties().getVersion());
 
         // set up the ErrorLog
         setUpLogFile();
@@ -67,7 +70,7 @@ public class Reporter {
      */
     private void createandshowGUI() {
 
-        mainFrame = new JFrame("reporter " + getVersion());
+        mainFrame = new JFrame("Reporter " + new Properties().getVersion());
 
         mainFrame.addWindowListener(new WindowAdapter() {
 
@@ -81,12 +84,10 @@ public class Reporter {
             }
         });
 
-        /*
-         * TODO make icon
         // sets the icon of the frame
         mainFrame.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().
                 getResource("/icons/reporter.gif")));
-*/
+
         // update the look and feel after adding the panels
         setLookAndFeel();
 
@@ -113,7 +114,7 @@ public class Reporter {
 
     public void displayResults(ReporterIonQuantification quantification, MsExperiment experiment) {
         mainFrame.dispose();
-        mainFrame= new JFrame("reporter " + getVersion());
+        mainFrame= new JFrame("Reporter " + new Properties().getVersion());
 
         mainFrame.addWindowListener(new WindowAdapter() {
 
@@ -127,12 +128,10 @@ public class Reporter {
             }
         });
 
-        /*
-         * TODO make icon
         // sets the icon of the frame
         mainFrame.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().
                 getResource("/icons/reporter.gif")));
-*/
+
         // update the look and feel after adding the panels
         setLookAndFeel();
 
@@ -149,25 +148,6 @@ public class Reporter {
     }
 
     /**
-     * Retrieves the version number set in the pom file.
-     *
-     * @return the version number of reporter
-     */
-    public String getVersion() {
-
-        Properties p = new java.util.Properties();
-
-        try {
-            InputStream is = this.getClass().getClassLoader().getResourceAsStream("reporter.properties");
-            p.load(is);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return p.getProperty("reporter.version");
-    }
-
-    /**
      * Check if a newer version of reporter is available.
      *
      * @param currentVersion the version number of the currently running reporter
@@ -176,7 +156,6 @@ public class Reporter {
 /*
         try {
             boolean deprecatedOrDeleted = false;
-// TODO update url
             URL downloadPage = new URL(
                     "http://code.google.com/p/reporter/downloads/detail?name=reporter-" +
                     currentVersion + ".zip");
@@ -216,7 +195,6 @@ public class Reporter {
                         "Upgrade Available",
                         JOptionPane.YES_NO_CANCEL_OPTION);
                 if (option == JOptionPane.YES_OPTION) {
-// TODO update URL
                     BareBonesBrowserLaunch.openURL("http://reporter.googlecode.com/");
                     System.exit(0);
                 } else if (option == JOptionPane.CANCEL_OPTION) {
@@ -311,5 +289,19 @@ public class Reporter {
 
     public JFrame getMainFrame() {
         return mainFrame;
+    }
+
+    /**
+     * @return the lastSelectedFolder
+     */
+    public String getLastSelectedFolder() {
+        return lastSelectedFolder;
+    }
+
+    /**
+     * @param lastSelectedFolder the lastSelectedFolder to set
+     */
+    public void setLastSelectedFolder(String lastSelectedFolder) {
+        this.lastSelectedFolder = lastSelectedFolder;
     }
 }

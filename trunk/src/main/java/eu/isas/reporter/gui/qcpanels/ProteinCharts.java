@@ -222,7 +222,6 @@ public class ProteinCharts {
             currentPlot.setDataset(0, ratioDataset);
             currentPlot.setRenderer(0, ratioRenderer);
             currentPlot.mapDatasetToRangeAxis(0, 1);
-
-            }
+        }
     }
 }

@@ -1,7 +1,6 @@
 package eu.isas.reporter.identifications;
 
 import com.compomics.util.experiment.identification.PeptideAssumption;
-import com.compomics.util.experiment.identification.advocates.SearchEngine;
 import java.util.HashMap;
 
 /**
@@ -29,6 +28,4 @@ public class IdFilter {
                 && sequenceLength > nAAmin
                 && sequenceLength < nAAmax;
     }
-
-
 }

@@ -31,5 +31,4 @@ public class RatioLimits implements UrParameter {
     public int getIndex() {
         return CompomicsKeysFactory.RATIO_LIMITS;
     }
-
 }

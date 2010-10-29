@@ -40,5 +40,4 @@ public class ItraqScore implements UrParameter {
     public int getIndex() {
         return CompomicsKeysFactory.SCORE;
     }
-
 }
