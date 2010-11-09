@@ -90,6 +90,12 @@ public class ReporterExporter {
                     pe++;
                     s = 0;
                     sequence = peptideQuantification.getPeptideMatch().getTheoreticPeptide().getSequence();
+                    variableModifications = "";
+                    for (ModificationMatch modification : peptideQuantification.getPeptideMatch().getTheoreticPeptide().getModificationMatches()) {
+                        if (modification.isVariable()) {
+                            variableModifications += modification.getTheoreticPtm().getName() + " ";
+                        }
+                    }
                     for (SpectrumQuantification spectrumQuantification : peptideQuantification.getSpectrumQuantification()) {
                         s++;
                         spectrumFile = spectrumQuantification.getSpectrum().getFileName();
@@ -102,11 +108,10 @@ public class ReporterExporter {
                         omssaEValue = "";
                         xTandemEValue = "";
                         deltaMass = "";
-                        variableModifications = "";
                         for (int searchEngine : match.getAdvocates()) {
                             assumption = match.getFirstHit(searchEngine);
                             if (assumption.getPeptide().getSequence().equals(sequence)) {
-                            idFile += assumption.getFile() + " ";
+                                idFile += assumption.getFile() + " ";
                                 if (!found) {
                                     deltaMass = assumption.getDeltaMass() + "";
                                     if (searchEngine == SearchEngine.MASCOT) {
@@ -115,11 +120,6 @@ public class ReporterExporter {
                                         omssaEValue += assumption.getEValue();
                                     } else if (searchEngine == SearchEngine.XTANDEM) {
                                         xTandemEValue += assumption.getEValue();
-                                    }
-                                    for (ModificationMatch modification : assumption.getModifications()) {
-                                        if (modification.isVariable()) {
-                                            variableModifications += modification.getTheoreticPtm().getName() + " ";
-                                        }
                                     }
                                     found = true;
                                 }
@@ -187,8 +187,8 @@ public class ReporterExporter {
         String result = "";
         for (ReporterIon ion : ions) {
             try {
-            result += proteinQuantification.getProteinRatios().get(ion.getIndex()).getRatio() + separator;
-            }catch (Exception e) {
+                result += proteinQuantification.getProteinRatios().get(ion.getIndex()).getRatio() + separator;
+            } catch (Exception e) {
                 result += "NA" + separator;
             }
         }
@@ -199,8 +199,8 @@ public class ReporterExporter {
         String result = "";
         for (ReporterIon ion : ions) {
             try {
-            result += peptideQuantification.getRatios().get(ion.getIndex()).getRatio() + separator;
-             }catch (Exception e) {
+                result += peptideQuantification.getRatios().get(ion.getIndex()).getRatio() + separator;
+            } catch (Exception e) {
                 result += "NA" + separator;
             }
         }
@@ -220,7 +220,7 @@ public class ReporterExporter {
         for (ReporterIon ion : ions) {
             Peak peak = spectrumQuantification.getReporterMatches().get(ion.getIndex()).peak;
             if (peak != null) {
-            result += peak.intensity + separator;
+                result += peak.intensity + separator;
             } else {
                 result += 0 + separator;
             }

@@ -22,17 +22,15 @@ public class RatioEstimator {
 
     private double resolution;
     private double k;
-    private double ratioMin;
-    private double ratioMax;
     private CompomicsKeysFactory compomicsKeyFactory = CompomicsKeysFactory.getInstance();
     private ReporterIonQuantification quantification;
+    private Ignorer ignorer;
 
-    public RatioEstimator(ReporterIonQuantification quantification, double resolution, double k, double ratioMin, double ratioMax) {
+    public RatioEstimator(ReporterIonQuantification quantification, double resolution, double k, Ignorer ignorer) {
         this.resolution = resolution;
         this.k = k;
-        this.ratioMin = ratioMin;
-        this.ratioMax = ratioMax;
         this.quantification = quantification;
+        this.ignorer = ignorer;
     }
 
     public void estimateRatios(ProteinQuantification proteinQuantification) {
@@ -124,7 +122,7 @@ public class RatioEstimator {
             for (int ion : spectrumQuantification.getRatios().keySet()) {
                 if (!ignoredRatios.isIgnored(ion)) {
                     ratio = ratiosMap.get(ion).getRatio();
-                    if (ratio < ratioMin || ratio > ratioMax) {
+                    if (ignorer.ignoreRatio(ratio) || ignorer.ignorePeptide(peptideQuantification.getPeptideMatch().getTheoreticPeptide())) {
                         ignoredRatios.ignore(ion);
                     } else {
                         if (!allRatios.containsKey(ion)) {

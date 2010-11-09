@@ -6,6 +6,7 @@ import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuant
 import com.jgoodies.looks.plastic.PlasticLookAndFeel;
 import com.jgoodies.looks.plastic.PlasticXPLookAndFeel;
 import com.jgoodies.looks.plastic.theme.SkyKrupp;
+import eu.isas.reporter.calculation.Ignorer;
 import eu.isas.reporter.gui.ResultPanel;
 import eu.isas.reporter.gui.StartPanel;
 import eu.isas.reporter.utils.Properties;
@@ -42,6 +43,7 @@ public class Reporter {
      * The last folder opened by the user. Defaults to user.home.
      */
     private String lastSelectedFolder = "user.home";
+    private Ignorer ignorer;
     /**
      * Main method.
      *
@@ -103,7 +105,8 @@ public class Reporter {
         mainFrame.setVisible(true);
     }
 
-    public void startProcessing(ItraqCalculator calculator) {
+    public void startProcessing(ItraqCalculator calculator, Ignorer ignorer) {
+        this.ignorer = ignorer;
         calculator.computeRatios();
     }
 
@@ -136,7 +139,7 @@ public class Reporter {
         setLookAndFeel();
 
         // display the start panel
-        mainFrame.add(new ResultPanel(this, quantification, experiment));
+        mainFrame.add(new ResultPanel(this, quantification, experiment, ignorer));
 
         // set size and location
         mainFrame.pack();
