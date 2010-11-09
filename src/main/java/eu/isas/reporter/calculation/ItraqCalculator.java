@@ -40,7 +40,6 @@ import javax.swing.SwingWorker;
  */
 public class ItraqCalculator {
 
-    private String MODIFICATION_FILE = "conf/mods.xml";
     private Reporter parent;
     private WaitingPanel waitingPanel;
     private MsExperiment experiment;
@@ -56,9 +55,10 @@ public class ItraqCalculator {
     private MgfProcessor mgfProcessor = new MgfProcessor();
     private CompomicsKeysFactory compomicsKeyFactory = CompomicsKeysFactory.getInstance();
     private ReporterIonQuantification quantification;
+    private IdentificationQuantificationLinker linker;
 
     public ItraqCalculator(Reporter parent, MsExperiment experiment, ArrayList<File> idFiles, ArrayList<File> mgfFiles,
-            IdFilter idFilter, double fdrLimit, ReporterIonQuantification quantification, double ionTolerance) {
+            IdFilter idFilter, double fdrLimit, ReporterIonQuantification quantification, double ionTolerance, IdentificationQuantificationLinker linker) {
         this.idFiles = idFiles;
         this.mgfFiles = mgfFiles;
         this.experiment = experiment;
@@ -67,6 +67,7 @@ public class ItraqCalculator {
         this.fdrLimit = fdrLimit;
         this.quantification = quantification;
         this.ionTolerance = ionTolerance;
+        this.linker = linker;
     }
 
     public void computeRatios() {
@@ -169,29 +170,43 @@ public class ItraqCalculator {
                     for (PeptideMatch peptideMatch : proteinMatch.getPeptideMatches().values()) {
                         ArrayList<SpectrumQuantification> spectrumQuantifications = new ArrayList<SpectrumQuantification>();
                         for (SpectrumMatch spectrumMatch : peptideMatch.getSpectrumMatches().values()) {
-                            String spectrumId = spectrumMatch.getSpectrum().getFileName() + "_" + spectrumMatch.getSpectrum().getSpectrumTitle();
-                            MSnSpectrum currentSpectrum = spectra.get(spectrumId);
-                            if (currentSpectrum == null) {
-                                String fileName = spectrumMatch.getSpectrum().getFileName();
-                                boolean fileFound = false;
-                                for (File mgfFile : mgfFiles) {
-                                    if (mgfFile.getName().equals(fileName)) {
-                                        fileFound = true;
+                            ArrayList<String> spectrumIds = getSpectrumIds(spectrumMatch);
+                            for (String spectrumId : spectrumIds) {
+                                MSnSpectrum currentSpectrum = spectra.get(spectrumId);
+                                if (currentSpectrum == null) {
+                                    String fileName = spectrumMatch.getSpectrum().getFileName();
+                                    boolean fileFound = false;
+                                    for (File mgfFile : mgfFiles) {
+                                        if (mgfFile.getName().equals(fileName)) {
+                                            fileFound = true;
+                                        }
+                                    }
+                                    if (!fileFound) {
+                                        waitingPanel.appendReport(fileName + " not found.");
+                                    }
+                                    if (fileFound) {
+                                        waitingPanel.appendReport("Spectrum " + spectrumMatch.getSpectrum().getSpectrumTitle() + " not found in " + fileName + ".");
                                     }
                                 }
-                                if (!fileFound) {
-                                    waitingPanel.appendReport(fileName + " not found. Quantification will not be possible.");
+                                SpectrumQuantification spectrumQuantification = new SpectrumQuantification(currentSpectrum);
+                                processSpectrum(spectrumQuantification);
+                                boolean reporterFound = false;
+                                if (spectrumQuantification.getReporterMatches() != null) {
+                                    HashMap<Integer, IonMatch> reporterMatches = spectrumQuantification.getReporterMatches();
+                                    for (int ion : reporterMatches.keySet()) {
+                                        if (reporterMatches.get(ion).peak != null) {
+                                            reporterFound = true;
+                                            break;
+                                        }
+                                    }
                                 }
-                                if (fileFound) {
-                                    waitingPanel.appendReport("Spectrum " + spectrumMatch.getSpectrum().getSpectrumTitle() + " not found in " + fileName + ". Quantification will not be possible.");
+                                if (reporterFound) {
+                                    spectrumQuantifications.add(spectrumQuantification);
                                 }
-                            }
-                            SpectrumQuantification spectrumQuantification = new SpectrumQuantification(currentSpectrum);
-                            processSpectrum(spectrumQuantification);
-                            spectrumQuantifications.add(spectrumQuantification);
-                            if (waitingPanel.isRunCancelled()) {
-                                waitingPanel.setRunCancelled();
-                                return 1;
+                                if (waitingPanel.isRunCancelled()) {
+                                    waitingPanel.setRunCancelled();
+                                    return 1;
+                                }
                             }
                         }
                         PeptideQuantification peptideQuantification = new PeptideQuantification(peptideMatch, spectrumQuantifications);
@@ -210,6 +225,32 @@ public class ItraqCalculator {
                 waitingPanel.setRunCancelled();
             }
             return 0;
+        }
+
+        private ArrayList<String> getSpectrumIds(SpectrumMatch spectrumMatch) {
+            String spectrumKey = spectrumMatch.getSpectrum().getFileName() + "_" + spectrumMatch.getSpectrum().getSpectrumTitle();
+            ArrayList<String> result = new ArrayList<String>();
+            if (linker.getIndex() == IdentificationQuantificationLinker.SPECTRUM_TITLE) {
+                result.add(spectrumKey);
+            } else {
+                MSnSpectrum spectrum;
+                String fileName = spectrumMatch.getSpectrum().getFileName();
+                double rtTol = linker.getRtTolerance();
+                double mzTol = linker.getMzTolerance();
+                double mzRef = spectra.get(spectrumKey).getPrecursor().getMz();
+                double rtRef = spectra.get(spectrumKey).getPrecursor().getRt();
+                double errPpm;
+                for (String spectrumId : spectra.keySet()) {
+                    spectrum = spectra.get(spectrumId);
+                    if (fileName.equals(spectrum.getFileName())) {
+                        errPpm = Math.abs((mzRef - spectrum.getPrecursor().getMz()) / mzRef * 1000000);
+                        if (errPpm < mzTol && Math.abs(spectrum.getPrecursor().getRt() - rtRef) < rtTol) {
+                            result.add(spectrumId);
+                        }
+                    }
+                }
+            }
+            return result;
         }
 
         private synchronized void queue() {
@@ -250,7 +291,6 @@ public class ItraqCalculator {
             int nTotal = 0;
             int nRetained = 0;
             try {
-                ptmFactory.importModifications(new File(MODIFICATION_FILE));
                 HashSet<SpectrumMatch> tempSet;
                 for (File idFile : idFiles) {
                     int searchEngine = readerFactory.getSearchEngine(idFile);
