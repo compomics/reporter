@@ -4,7 +4,6 @@ import com.compomics.util.experiment.biology.ions.ReporterIon;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.PeptideQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.ProteinQuantification;
-import eu.isas.reporter.compomicsutilitiessettings.CompomicsKeysFactory;
 import eu.isas.reporter.compomicsutilitiessettings.IgnoredRatios;
 import eu.isas.reporter.compomicsutilitiessettings.RatioLimits;
 import java.awt.Color;
@@ -25,14 +24,13 @@ import org.jfree.data.xy.DefaultIntervalXYDataset;
  */
 public class ProteinCharts {
 
-    private CompomicsKeysFactory compomicsKeysFactory = CompomicsKeysFactory.getInstance();
     private ReporterIonQuantification quantification;
     private double resolution;
     private HashMap<Integer, RatioChart> ratioCharts = new HashMap<Integer, RatioChart>();
 
     public ProteinCharts(ReporterIonQuantification quantification, double resolution) {
         this.quantification = quantification;
-        ArrayList<ReporterIon> reporterIons = quantification.getMethod().getReporterIons();
+        ArrayList<ReporterIon> reporterIons = quantification.getReporterMethod().getReporterIons();
         this.resolution = resolution;
 
         createRatioCharts();
@@ -44,7 +42,7 @@ public class ProteinCharts {
 
     private void createRatioCharts() {
 
-        ArrayList<ReporterIon> ions = quantification.getMethod().getReporterIons();
+        ArrayList<ReporterIon> ions = quantification.getReporterMethod().getReporterIons();
 
         HashMap<Integer, Double> minima = new HashMap<Integer, Double>();
         HashMap<Integer, Double> maxima = new HashMap<Integer, Double>();
@@ -82,7 +80,7 @@ public class ProteinCharts {
             allCounts.put(ion.getIndex(), new ArrayList<Integer>());
         }
 
-        IgnoredRatios ignoredRatios;
+        IgnoredRatios ignoredRatios= new IgnoredRatios();
         HashMap<Integer, Integer> count = new HashMap<Integer, Integer>();
         double binRatio = minimum;
         while (binRatio <= maximum) {
@@ -90,7 +88,7 @@ public class ProteinCharts {
                 count.put(ion.getIndex(), 0);
             }
             for (ProteinQuantification proteinQuantification : quantification.getProteinQuantification()) {
-                ignoredRatios = (IgnoredRatios) proteinQuantification.getUrParam(compomicsKeysFactory.getKey(CompomicsKeysFactory.IGNORED_RATIOS));
+                ignoredRatios = (IgnoredRatios) proteinQuantification.getUrParam(ignoredRatios);
                 for (int ion : proteinQuantification.getProteinRatios().keySet()) {
                     if (!ignoredRatios.isIgnored(ion)) {
                         ratio = proteinQuantification.getProteinRatios().get(ion).getRatio();
@@ -175,12 +173,12 @@ public class ProteinCharts {
         }
 
         public void setProtein(ProteinQuantification proteinQuantification, int ion) {
-            RatioLimits ratioLimits = (RatioLimits) proteinQuantification.getUrParam(compomicsKeysFactory.getKey(CompomicsKeysFactory.RATIO_LIMITS));
+            RatioLimits ratioLimits = (RatioLimits) proteinQuantification.getUrParam(new RatioLimits());
             int nPeptides;
-            IgnoredRatios ignoredRatios;
+            IgnoredRatios ignoredRatios = new IgnoredRatios();
                 nPeptides = 0;
                 for (PeptideQuantification peptideQuantification : proteinQuantification.getPeptideQuantification()) {
-                    ignoredRatios = (IgnoredRatios) peptideQuantification.getUrParam(compomicsKeysFactory.getKey(CompomicsKeysFactory.IGNORED_RATIOS));
+                    ignoredRatios = (IgnoredRatios) peptideQuantification.getUrParam(ignoredRatios);
                     if (!ignoredRatios.isIgnored(ion)) {
                         if (peptideQuantification.getRatios().get(ion).getRatio() > ratioLimits.getLimits(ion)[0]
                                 && peptideQuantification.getRatios().get(ion).getRatio() < ratioLimits.getLimits(ion)[1]) {

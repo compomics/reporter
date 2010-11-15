@@ -25,10 +25,10 @@ public class RatioLimits implements UrParameter {
     }
 
     public String getFamilyName() {
-        return CompomicsKeysFactory.FAMILY_NAME;
+        return "reporter";
     }
 
     public int getIndex() {
-        return CompomicsKeysFactory.RATIO_LIMITS;
+        return 2;
     }
 }

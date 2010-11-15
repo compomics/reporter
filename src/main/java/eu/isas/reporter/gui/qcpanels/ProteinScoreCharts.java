@@ -3,7 +3,6 @@ package eu.isas.reporter.gui.qcpanels;
 import com.compomics.util.experiment.biology.ions.ReporterIon;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.ProteinQuantification;
-import eu.isas.reporter.compomicsutilitiessettings.CompomicsKeysFactory;
 import eu.isas.reporter.compomicsutilitiessettings.IgnoredRatios;
 import eu.isas.reporter.compomicsutilitiessettings.ItraqScore;
 import java.awt.Color;
@@ -24,13 +23,12 @@ import org.jfree.data.xy.DefaultIntervalXYDataset;
 public class ProteinScoreCharts {
 
     private final double resolution = 0.1;
-    private CompomicsKeysFactory compomicsKeysFactory = CompomicsKeysFactory.getInstance();
     private ReporterIonQuantification quantification;
     private RatioChart ratioCharts;
 
     public ProteinScoreCharts(ReporterIonQuantification quantification) {
         this.quantification = quantification;
-        ArrayList<ReporterIon> reporterIons = quantification.getMethod().getReporterIons();
+        ArrayList<ReporterIon> reporterIons = quantification.getReporterMethod().getReporterIons();
 
         createRatioCharts();
     }
@@ -41,16 +39,16 @@ public class ProteinScoreCharts {
 
     private void createRatioCharts() {
 
-        ArrayList<ReporterIon> ions = quantification.getMethod().getReporterIons();
+        ArrayList<ReporterIon> ions = quantification.getReporterMethod().getReporterIons();
 
         double minimum = -1, maximum = -1;
 
         Double score;
-        ItraqScore itraqScore;
-        IgnoredRatios ignoredRatios;
+        ItraqScore itraqScore = new ItraqScore();
+        IgnoredRatios ignoredRatios = new IgnoredRatios();
         for (ProteinQuantification proteinQuantification : quantification.getProteinQuantification()) {
-            itraqScore = (ItraqScore) proteinQuantification.getUrParam(compomicsKeysFactory.getKey(CompomicsKeysFactory.SCORE));
-            ignoredRatios = (IgnoredRatios) proteinQuantification.getUrParam(compomicsKeysFactory.getKey(CompomicsKeysFactory.IGNORED_RATIOS));
+            itraqScore = (ItraqScore) proteinQuantification.getUrParam(itraqScore);
+            ignoredRatios = (IgnoredRatios) proteinQuantification.getUrParam(ignoredRatios);
             for (int ion : proteinQuantification.getProteinRatios().keySet()) {
                 if (!ignoredRatios.isIgnored(ion)) {
                     score = itraqScore.getScore(ion);
@@ -74,8 +72,8 @@ public class ProteinScoreCharts {
         while (binScore <= maximum) {
             count = 0;
             for (ProteinQuantification proteinQuantification : quantification.getProteinQuantification()) {
-                itraqScore = (ItraqScore) proteinQuantification.getUrParam(compomicsKeysFactory.getKey(CompomicsKeysFactory.SCORE));
-                ignoredRatios = (IgnoredRatios) proteinQuantification.getUrParam(compomicsKeysFactory.getKey(CompomicsKeysFactory.IGNORED_RATIOS));
+                itraqScore = (ItraqScore) proteinQuantification.getUrParam(itraqScore);
+                ignoredRatios = (IgnoredRatios) proteinQuantification.getUrParam(ignoredRatios);
                 for (int ion : proteinQuantification.getProteinRatios().keySet()) {
                     if (!ignoredRatios.isIgnored(ion)) {
                         score = itraqScore.getScore(ion);
@@ -152,8 +150,8 @@ public class ProteinScoreCharts {
 
         public void setProtein(ProteinQuantification proteinQuantification) {
             Double currentScore;
-            IgnoredRatios ignoredRatios = (IgnoredRatios) proteinQuantification.getUrParam(compomicsKeysFactory.getKey(CompomicsKeysFactory.IGNORED_RATIOS));
-            ItraqScore itraqScore = (ItraqScore) proteinQuantification.getUrParam(compomicsKeysFactory.getKey(CompomicsKeysFactory.SCORE));
+            IgnoredRatios ignoredRatios = (IgnoredRatios) proteinQuantification.getUrParam(new IgnoredRatios());
+            ItraqScore itraqScore = (ItraqScore) proteinQuantification.getUrParam(new ItraqScore());
             for (int ion : proteinQuantification.getProteinRatios().keySet()) {
                 if (!ignoredRatios.isIgnored(ion)) {
                     currentScore = itraqScore.getScore(ion);

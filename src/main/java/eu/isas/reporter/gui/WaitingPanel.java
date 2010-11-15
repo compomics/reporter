@@ -8,7 +8,16 @@
 package eu.isas.reporter.gui;
 
 import eu.isas.reporter.calculation.ItraqCalculator;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -18,6 +27,10 @@ public class WaitingPanel extends javax.swing.JFrame {
     
     private boolean runCancelled = false;
     private boolean runFinished = false;
+    /**
+     * Convenience date format
+     */
+    private static final SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy, HH:mm");
 
     private ItraqCalculator parent;
 
@@ -105,6 +118,11 @@ public class WaitingPanel extends javax.swing.JFrame {
         });
 
         saveButton.setText("Save Report");
+        saveButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveButtonActionPerformed(evt);
+            }
+        });
 
         projectId.setEditable(false);
         projectId.setText("projectId");
@@ -177,6 +195,28 @@ public class WaitingPanel extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_okButtonActionPerformed
 
+    private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
+        File outputFile = null;
+        JFileChooser fc = new JFileChooser();
+        int result = fc.showSaveDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            outputFile = fc.getSelectedFile();
+            if (outputFile.exists()) {
+                int choice = JOptionPane.showConfirmDialog(this,
+                        new String[]{"The file " + outputFile.getName() + " already exists!", "Overwrite?"},
+                        "File Already Exists", JOptionPane.YES_NO_OPTION);
+                if (choice == JOptionPane.NO_OPTION) {
+                    return;
+                }
+            } else {
+                return;
+            }
+        }
+        if (outputFile != null) {
+            saveReport(outputFile);
+        }
+    }//GEN-LAST:event_saveButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton abortButton;
     private javax.swing.JPanel jPanel1;
@@ -205,5 +245,57 @@ public class WaitingPanel extends javax.swing.JFrame {
 
     public void setRunCancelled() {
         runCancelled = true;
+    }
+
+     /**
+     * Saves the report in the given file
+     *
+     * @param aFile file to save the report in
+     */
+    private void saveReport(File aFile) {
+        StringBuffer output = new StringBuffer();
+        String host = " @ ";
+
+        try {
+            host += InetAddress.getLocalHost().getHostName();
+
+
+        } catch (UnknownHostException uhe) {
+            // Disregard. It's not so bad if we can not report this.
+        }
+
+        // Write the file header.
+        output.append("# ------------------------------------------------------------------"
+                + "\n# SearchGUI Report File"
+                + "\n#"
+                + "\n# Originally saved by: " + System.getProperty("user.name") + host
+                + "\n#                  on: " + sdf.format(new Date())
+                + "\n#                  as: " + aFile.getName()
+                + "\n# ------------------------------------------------------------------\n");
+
+        output.append(reportArea.getText() + "\n");
+
+        BufferedWriter bw = null;
+
+        try {
+            bw = new BufferedWriter(new FileWriter(aFile));
+            bw.write(output.toString());
+            bw.flush();
+            JOptionPane.showMessageDialog(this, "Settings written to file '" + aFile.getAbsolutePath() + "'.", "Settings Saved", JOptionPane.INFORMATION_MESSAGE);
+
+
+        } catch (IOException ioe) {
+            JOptionPane.showMessageDialog(this, new String[]{"Error writing report to file:", ioe.getMessage()}, "Save Failed", JOptionPane.ERROR_MESSAGE);
+
+        } finally {
+            if (bw != null) {
+                try {
+                    bw.close();
+
+                } catch (IOException ioe) {
+                    JOptionPane.showMessageDialog(this, new String[]{"Error writing report to file:", ioe.getMessage()}, "Save Failed", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        }
     }
 }

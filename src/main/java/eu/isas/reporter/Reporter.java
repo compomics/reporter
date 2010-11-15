@@ -143,7 +143,7 @@ public class Reporter {
 
         // set size and location
         mainFrame.pack();
-        mainFrame.setResizable(false);
+        //mainFrame.setResizable(false);
         mainFrame.setLocationRelativeTo(null);
         // Pack is the minimal size, so add 20 pixels in each dimension.
         mainFrame.setSize(new Dimension(mainFrame.getSize().width + 20, mainFrame.getSize().height));

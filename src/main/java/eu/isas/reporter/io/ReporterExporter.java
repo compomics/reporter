@@ -11,7 +11,6 @@ import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuant
 import com.compomics.util.experiment.quantification.reporterion.quantification.PeptideQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.ProteinQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.SpectrumQuantification;
-import eu.isas.reporter.compomicsutilitiessettings.CompomicsKeysFactory;
 import eu.isas.reporter.compomicsutilitiessettings.IgnoredRatios;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -33,7 +32,6 @@ public class ReporterExporter {
     private MsExperiment experiment;
     private ArrayList<ReporterIon> ions;
     private int reference;
-    private CompomicsKeysFactory compomicsKeysFactory = CompomicsKeysFactory.getInstance();
 
     public ReporterExporter(MsExperiment experiment, String separator) {
         this.separator = separator;
@@ -42,7 +40,7 @@ public class ReporterExporter {
 
     public void exportResults(ReporterIonQuantification quantification, String location) {
 
-        ions = quantification.getMethod().getReporterIons();
+        ions = quantification.getReporterMethod().getReporterIons();
         reference = quantification.getReferenceLabel();
 
         File spectraFile = new File(location, experiment.getReference() + spectraSuffix);
@@ -73,7 +71,7 @@ public class ReporterExporter {
             proteinsOutput.write(content);
 
 
-            IgnoredRatios ignoredRatios;
+            IgnoredRatios ignoredRatios = new IgnoredRatios();
             boolean seConflict, found;
             String accession, sequence, variableModifications, spectrumFile, spectrumTitle, idFile, deltaMass, mascotEValue, omssaEValue, xTandemEValue, comment;
             SpectrumMatch match;
@@ -131,7 +129,7 @@ public class ReporterExporter {
                         if (seConflict) {
                             comment += "Search engine conflict. ";
                         }
-                        ignoredRatios = (IgnoredRatios) spectrumQuantification.getUrParam(compomicsKeysFactory.getKey(CompomicsKeysFactory.IGNORED_RATIOS));
+                        ignoredRatios = (IgnoredRatios) spectrumQuantification.getUrParam(ignoredRatios);
                         for (ReporterIon ion : ions) {
                             if (ignoredRatios.isIgnored(ion.getIndex())) {
                                 comment += ion.getIndex() + " ignored. ";
@@ -141,7 +139,7 @@ public class ReporterExporter {
                         spectraOutput.write(content);
                     }
                     comment = "";
-                    ignoredRatios = (IgnoredRatios) peptideQuantification.getUrParam(compomicsKeysFactory.getKey(CompomicsKeysFactory.IGNORED_RATIOS));
+                    ignoredRatios = (IgnoredRatios) peptideQuantification.getUrParam(ignoredRatios);
                     for (ReporterIon ion : ions) {
                         if (ignoredRatios.isIgnored(ion.getIndex())) {
                             comment += ion.getIndex() + " ignored. ";
@@ -151,7 +149,7 @@ public class ReporterExporter {
                     peptidesOutput.write(content);
                 }
                 comment = "";
-                ignoredRatios = (IgnoredRatios) proteinQuantification.getUrParam(compomicsKeysFactory.getKey(CompomicsKeysFactory.IGNORED_RATIOS));
+                ignoredRatios = (IgnoredRatios) proteinQuantification.getUrParam(ignoredRatios);
                 for (ReporterIon ion : ions) {
                     if (ignoredRatios.isIgnored(ion.getIndex())) {
                         comment += ion.getIndex() + " ignored. ";
