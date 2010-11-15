@@ -3,17 +3,12 @@ package eu.isas.reporter.gui.qcpanels;
 import com.compomics.util.experiment.biology.ions.ReporterIon;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.PeptideQuantification;
-import com.compomics.util.experiment.quantification.reporterion.quantification.ProteinQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.SpectrumQuantification;
-import eu.isas.reporter.compomicsutilitiessettings.CompomicsKeysFactory;
 import eu.isas.reporter.compomicsutilitiessettings.IgnoredRatios;
 import eu.isas.reporter.compomicsutilitiessettings.RatioLimits;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -29,7 +24,6 @@ import org.jfree.data.xy.DefaultIntervalXYDataset;
  */
 public class SpectrumCharts {
 
-    private CompomicsKeysFactory compomicsKeysFactory = CompomicsKeysFactory.getInstance();
     private PeptideQuantification peptideQuantification;
     private int proteinIndex;
     private int peptideIndex;
@@ -41,7 +35,7 @@ public class SpectrumCharts {
         this.proteinIndex = proteinIndex;
         this.peptideIndex = peptideIndex;
         this.quantification = quantification;
-        ArrayList<ReporterIon> reporterIons = quantification.getMethod().getReporterIons();
+        ArrayList<ReporterIon> reporterIons = quantification.getReporterMethod().getReporterIons();
         this.peptideQuantification = quantification.getProteinQuantification().get(proteinIndex).getPeptideQuantification().get(peptideIndex);
         this.resolution = resolution;
 
@@ -54,16 +48,16 @@ public class SpectrumCharts {
 
     private void createReporterPanels(PeptideQuantification peptideQuantification) {
 
-        IgnoredRatios ignoredRatios;
+        IgnoredRatios ignoredRatios = new IgnoredRatios();
 
-        ArrayList<ReporterIon> ions = quantification.getMethod().getReporterIons();
+        ArrayList<ReporterIon> ions = quantification.getReporterMethod().getReporterIons();
 
         HashMap<Integer, Double> minima = new HashMap<Integer, Double>();
         HashMap<Integer, Double> maxima = new HashMap<Integer, Double>();
 
         double ratio;
         for (SpectrumQuantification spectrumQuantification : peptideQuantification.getSpectrumQuantification()) {
-            ignoredRatios = (IgnoredRatios) spectrumQuantification.getUrParam(compomicsKeysFactory.getKey(CompomicsKeysFactory.IGNORED_RATIOS));
+            ignoredRatios = (IgnoredRatios) spectrumQuantification.getUrParam(ignoredRatios);
             for (int ion : spectrumQuantification.getRatios().keySet()) {
                 if (!ignoredRatios.isIgnored(ion)) {
                     ratio = spectrumQuantification.getRatios().get(ion).getRatio();
@@ -104,7 +98,7 @@ public class SpectrumCharts {
                 count.put(ion.getIndex(), 0);
             }
             for (SpectrumQuantification spectrumQuantification : peptideQuantification.getSpectrumQuantification()) {
-                ignoredRatios = (IgnoredRatios) spectrumQuantification.getUrParam(compomicsKeysFactory.getKey(CompomicsKeysFactory.IGNORED_RATIOS));
+                ignoredRatios = (IgnoredRatios) spectrumQuantification.getUrParam(ignoredRatios);
                 for (int ion : spectrumQuantification.getRatios().keySet()) {
                     if (!ignoredRatios.isIgnored(ion)) {
                         ratio = spectrumQuantification.getRatios().get(ion).getRatio();
@@ -196,12 +190,12 @@ public class SpectrumCharts {
         }
 
         public void addPeptideRatio(PeptideQuantification peptideQuantification, int ion) {
-            RatioLimits ratioLimits = (RatioLimits) peptideQuantification.getUrParam(compomicsKeysFactory.getKey(CompomicsKeysFactory.RATIO_LIMITS));
+            RatioLimits ratioLimits = (RatioLimits) peptideQuantification.getUrParam(new RatioLimits());
             int nPeptides;
-            IgnoredRatios ignoredRatios;
+            IgnoredRatios ignoredRatios = new IgnoredRatios();
             nPeptides = 0;
             for (SpectrumQuantification spectrumQuantification : peptideQuantification.getSpectrumQuantification()) {
-                ignoredRatios = (IgnoredRatios) spectrumQuantification.getUrParam(compomicsKeysFactory.getKey(CompomicsKeysFactory.IGNORED_RATIOS));
+                ignoredRatios = (IgnoredRatios) spectrumQuantification.getUrParam(ignoredRatios);
                 if (!ignoredRatios.isIgnored(ion)) {
                     if (spectrumQuantification.getRatios().get(ion).getRatio() > ratioLimits.getLimits(ion)[0]
                             && spectrumQuantification.getRatios().get(ion).getRatio() < ratioLimits.getLimits(ion)[1]) {

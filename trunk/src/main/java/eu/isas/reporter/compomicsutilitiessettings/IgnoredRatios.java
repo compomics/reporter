@@ -32,10 +32,10 @@ public class IgnoredRatios implements UrParameter {
     }
 
     public String getFamilyName() {
-        return CompomicsKeysFactory.FAMILY_NAME;
+        return "Reporter";
     }
 
     public int getIndex() {
-        return CompomicsKeysFactory.IGNORED_RATIOS;
+        return 0;
     }
 }

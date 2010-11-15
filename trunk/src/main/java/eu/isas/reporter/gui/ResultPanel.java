@@ -17,7 +17,6 @@ import com.compomics.util.gui.renderers.AlignedListCellRenderer;
 import eu.isas.reporter.Reporter;
 import eu.isas.reporter.calculation.Ignorer;
 import eu.isas.reporter.calculation.RatioEstimator;
-import eu.isas.reporter.compomicsutilitiessettings.CompomicsKeysFactory;
 import eu.isas.reporter.compomicsutilitiessettings.IgnoredRatios;
 import eu.isas.reporter.compomicsutilitiessettings.ItraqScore;
 import eu.isas.reporter.gui.qcpanels.PeptideCharts;
@@ -69,7 +68,6 @@ public class ResultPanel extends javax.swing.JPanel {
     private MsExperiment experiment;
     private RatioEstimator ratioEstimator;
     private ArrayList<TableKey> tableIndex = new ArrayList<TableKey>();
-    private CompomicsKeysFactory compomicsKeysFactory = CompomicsKeysFactory.getInstance();
     private Ignorer ignorer;
     // QC Panels
     private JPanel horizontalPanel;
@@ -81,14 +79,13 @@ public class ResultPanel extends javax.swing.JPanel {
     private SpectrumScoreCharts spectrumScoreCharts;
     private JPopupMenu tablePopUp;
 
-
     /** Creates new form ResultPanel */
     public ResultPanel(Reporter parent, ReporterIonQuantification quantification, MsExperiment experiment, Ignorer ignorer) {
         this.experiment = experiment;
         this.parent = parent;
         this.quantification = quantification;
         this.ignorer = ignorer;
-        this.reporterIons = quantification.getMethod().getReporterIons();
+        this.reporterIons = quantification.getReporterMethod().getReporterIons();
         createTableIndex();
 
         initComponents();
@@ -617,13 +614,13 @@ public class ResultPanel extends javax.swing.JPanel {
         int row = resultTable.getSelectedRow();
         int column = resultTable.getSelectedColumn();
         TableKey tableKey = tableIndex.get(row);
-        IgnoredRatios ignoredRatios;
+        IgnoredRatios ignoredRatios = new IgnoredRatios();
         if (tableKey.lineType == TableKey.PROTEIN) {
-            ignoredRatios = (IgnoredRatios) quantification.getProteinQuantification().get(tableKey.proteinIndex).getUrParam(compomicsKeysFactory.getKey(CompomicsKeysFactory.IGNORED_RATIOS));
+            ignoredRatios = (IgnoredRatios) quantification.getProteinQuantification().get(tableKey.proteinIndex).getUrParam(ignoredRatios);
         } else if (tableKey.lineType == TableKey.PEPTIDE) {
-            ignoredRatios = (IgnoredRatios) quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getUrParam(compomicsKeysFactory.getKey(CompomicsKeysFactory.IGNORED_RATIOS));
+            ignoredRatios = (IgnoredRatios) quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getUrParam(ignoredRatios);
         } else {
-            ignoredRatios = (IgnoredRatios) quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getSpectrumQuantification().get(tableKey.spectrumIndex).getUrParam(compomicsKeysFactory.getKey(CompomicsKeysFactory.IGNORED_RATIOS));
+            ignoredRatios = (IgnoredRatios) quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getSpectrumQuantification().get(tableKey.spectrumIndex).getUrParam(ignoredRatios);
         }
         if (column > 5 && column < 5 + reporterIons.size()) {
             int pos = column - 5;
@@ -644,13 +641,13 @@ public class ResultPanel extends javax.swing.JPanel {
         int row = resultTable.getSelectedRow();
         int column = resultTable.getSelectedColumn();
         TableKey tableKey = tableIndex.get(row);
-        IgnoredRatios ignoredRatios;
+        IgnoredRatios ignoredRatios = new IgnoredRatios();
         if (tableKey.lineType == TableKey.PROTEIN) {
-            ignoredRatios = (IgnoredRatios) quantification.getProteinQuantification().get(tableKey.proteinIndex).getUrParam(compomicsKeysFactory.getKey(CompomicsKeysFactory.IGNORED_RATIOS));
+            ignoredRatios = (IgnoredRatios) quantification.getProteinQuantification().get(tableKey.proteinIndex).getUrParam(ignoredRatios);
         } else if (tableKey.lineType == TableKey.PEPTIDE) {
-            ignoredRatios = (IgnoredRatios) quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getUrParam(compomicsKeysFactory.getKey(CompomicsKeysFactory.IGNORED_RATIOS));
+            ignoredRatios = (IgnoredRatios) quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getUrParam(ignoredRatios);
         } else {
-            ignoredRatios = (IgnoredRatios) quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getSpectrumQuantification().get(tableKey.spectrumIndex).getUrParam(compomicsKeysFactory.getKey(CompomicsKeysFactory.IGNORED_RATIOS));
+            ignoredRatios = (IgnoredRatios) quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getSpectrumQuantification().get(tableKey.spectrumIndex).getUrParam(ignoredRatios);
         }
         if (column > 5 && column < 5 + reporterIons.size()) {
             int pos = column - 5;
@@ -1076,7 +1073,7 @@ public class ResultPanel extends javax.swing.JPanel {
                 tempIndex.add(tableKey);
             } else {
                 try {
-                    quality = ((ItraqScore) quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getSpectrumQuantification().get(tableKey.spectrumIndex).getUrParam(compomicsKeysFactory.getKey(CompomicsKeysFactory.SCORE))).getMinScore();
+                    quality = ((ItraqScore) quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getSpectrumQuantification().get(tableKey.spectrumIndex).getUrParam(new ItraqScore())).getMinScore();
                 } catch (Exception e) {
                     quality = 0;
                 }
@@ -1101,7 +1098,7 @@ public class ResultPanel extends javax.swing.JPanel {
                 tempIndex.add(tableKey);
             } else {
                 try {
-                    quality = ((ItraqScore) quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getUrParam(compomicsKeysFactory.getKey(CompomicsKeysFactory.SCORE))).getMinScore();
+                    quality = ((ItraqScore) quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getUrParam(new ItraqScore())).getMinScore();
                 } catch (Exception e) {
                     quality = 0;
                 }
@@ -1116,7 +1113,7 @@ public class ResultPanel extends javax.swing.JPanel {
 
         for (TableKey key : tableIndex) {
             try {
-                quality = ((ItraqScore) quantification.getProteinQuantification().get(key.proteinIndex).getUrParam(compomicsKeysFactory.getKey(CompomicsKeysFactory.SCORE))).getMinScore();
+                quality = ((ItraqScore) quantification.getProteinQuantification().get(key.proteinIndex).getUrParam(new ItraqScore())).getMinScore();
             } catch (Exception e) {
                 quality = 0;
             }
@@ -1245,13 +1242,13 @@ public class ResultPanel extends javax.swing.JPanel {
                         for (ModificationMatch mod : quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getPeptideMatch().getTheoreticPeptide().getModificationMatches()) {
                             if (mod == null) {
                                 name = "undefined";
-                                if (varmods.lastIndexOf(name)<0) {
-                                varmods += name + " ";
+                                if (varmods.lastIndexOf(name) < 0) {
+                                    varmods += name + " ";
                                 }
                             } else if (mod.isVariable()) {
                                 name = mod.getTheoreticPtm().getName();
-                                if (varmods.lastIndexOf(name)<0) {
-                                varmods += name + " ";
+                                if (varmods.lastIndexOf(name) < 0) {
+                                    varmods += name + " ";
                                 }
                             }
                         }
@@ -1270,21 +1267,34 @@ public class ResultPanel extends javax.swing.JPanel {
                     }
                 } else if (column > 5 && column < 5 + reporterIons.size()) {
                     int pos = column - 5;
+                    Double ratio;
                     if (tableKey.lineType == TableKey.PROTEIN) {
-                        return quantification.getProteinQuantification().get(tableKey.proteinIndex).getProteinRatios().get(reporterIons.get(pos).getIndex()).getRatio();
+                        ratio = quantification.getProteinQuantification().get(tableKey.proteinIndex).getProteinRatios().get(reporterIons.get(pos).getIndex()).getRatio();
+                        if (ratio == null) {
+                            ratio = Double.NaN;
+                        }
+                        return ratio;
                     } else if (tableKey.lineType == TableKey.PEPTIDE) {
-                        return quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getRatios().get(reporterIons.get(pos).getIndex()).getRatio();
+                        ratio = quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getRatios().get(reporterIons.get(pos).getIndex()).getRatio();
+                        if (ratio == null) {
+                            ratio = Double.NaN;
+                        }
+                        return ratio;
                     } else {
-                        return quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getSpectrumQuantification().get(tableKey.spectrumIndex).getRatios().get(reporterIons.get(pos).getIndex()).getRatio();
+                        ratio = quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getSpectrumQuantification().get(tableKey.spectrumIndex).getRatios().get(reporterIons.get(pos).getIndex()).getRatio();
+                        if (ratio == null) {
+                            ratio = Double.NaN;
+                        }
+                        return ratio;
                     }
                 } else if (column == 5 + reporterIons.size()) {
                     ItraqScore itraqScore;
                     if (tableKey.lineType == TableKey.PROTEIN) {
-                        itraqScore = (ItraqScore) quantification.getProteinQuantification().get(tableKey.proteinIndex).getUrParam(compomicsKeysFactory.getKey(CompomicsKeysFactory.SCORE));
+                        itraqScore = (ItraqScore) quantification.getProteinQuantification().get(tableKey.proteinIndex).getUrParam(new ItraqScore());
                     } else if (tableKey.lineType == TableKey.PEPTIDE) {
-                        itraqScore = (ItraqScore) quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getUrParam(compomicsKeysFactory.getKey(CompomicsKeysFactory.SCORE));
+                        itraqScore = (ItraqScore) quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getUrParam(new ItraqScore());
                     } else {
-                        itraqScore = (ItraqScore) quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getSpectrumQuantification().get(tableKey.spectrumIndex).getUrParam(compomicsKeysFactory.getKey(CompomicsKeysFactory.SCORE));
+                        itraqScore = (ItraqScore) quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getSpectrumQuantification().get(tableKey.spectrumIndex).getUrParam(new ItraqScore());
                     }
                     return itraqScore.getMinScore();
                 } else {
@@ -1301,8 +1311,8 @@ public class ResultPanel extends javax.swing.JPanel {
 
         @Override
         public Class getColumnClass(int columnIndex) {
-            for (int i = 0 ; i < getRowCount() ; i++) {
-                if (getValueAt(i, columnIndex)!=null) {
+            for (int i = 0; i < getRowCount(); i++) {
+                if (getValueAt(i, columnIndex) != null) {
                     return getValueAt(i, columnIndex).getClass();
                 }
             }
@@ -1393,13 +1403,13 @@ public class ResultPanel extends javax.swing.JPanel {
         }
 
         private void setFont(TableKey tableKey, JLabel label, int column) {
-            IgnoredRatios ignoredRatios;
+            IgnoredRatios ignoredRatios = new IgnoredRatios();
             if (tableKey.lineType == TableKey.PROTEIN) {
-                ignoredRatios = (IgnoredRatios) quantification.getProteinQuantification().get(tableKey.proteinIndex).getUrParam(compomicsKeysFactory.getKey(CompomicsKeysFactory.IGNORED_RATIOS));
+                ignoredRatios = (IgnoredRatios) quantification.getProteinQuantification().get(tableKey.proteinIndex).getUrParam(ignoredRatios);
             } else if (tableKey.lineType == TableKey.PEPTIDE) {
-                ignoredRatios = (IgnoredRatios) quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getUrParam(compomicsKeysFactory.getKey(CompomicsKeysFactory.IGNORED_RATIOS));
+                ignoredRatios = (IgnoredRatios) quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getUrParam(ignoredRatios);
             } else {
-                ignoredRatios = (IgnoredRatios) quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getSpectrumQuantification().get(tableKey.spectrumIndex).getUrParam(compomicsKeysFactory.getKey(CompomicsKeysFactory.IGNORED_RATIOS));
+                ignoredRatios = (IgnoredRatios) quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getSpectrumQuantification().get(tableKey.spectrumIndex).getUrParam(ignoredRatios);
             }
             int pos = column - 5;
             if (ignoredRatios.isIgnored(reporterIons.get(pos).getIndex())) {

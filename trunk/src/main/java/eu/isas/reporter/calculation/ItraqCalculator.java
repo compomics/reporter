@@ -21,7 +21,6 @@ import com.compomics.util.experiment.quantification.reporterion.quantification.P
 import com.compomics.util.experiment.quantification.reporterion.quantification.ProteinQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.SpectrumQuantification;
 import eu.isas.reporter.Reporter;
-import eu.isas.reporter.compomicsutilitiessettings.CompomicsKeysFactory;
 import eu.isas.reporter.compomicsutilitiessettings.IgnoredRatios;
 import eu.isas.reporter.gui.WaitingPanel;
 import eu.isas.reporter.identifications.FdrCalculator;
@@ -53,7 +52,6 @@ public class ItraqCalculator {
     private RatiosCompilator ratiosCompilator = new RatiosCompilator();
     private IdentificationProcessor identificationProcessor = new IdentificationProcessor();
     private MgfProcessor mgfProcessor = new MgfProcessor();
-    private CompomicsKeysFactory compomicsKeyFactory = CompomicsKeysFactory.getInstance();
     private ReporterIonQuantification quantification;
     private IdentificationQuantificationLinker linker;
 
@@ -91,7 +89,7 @@ public class ItraqCalculator {
     }
 
     private void processSpectrum(SpectrumQuantification spectrumQuantification) {
-        for (ReporterIon reporterIon : quantification.getMethod().getReporterIons()) {
+        for (ReporterIon reporterIon : quantification.getReporterMethod().getReporterIons()) {
             spectrumQuantification.addIonMatch(reporterIon.getIndex(), matchIon(reporterIon, spectrumQuantification.getSpectrum()));
         }
         estimateRatios(spectrumQuantification);
@@ -99,7 +97,7 @@ public class ItraqCalculator {
 
     private void estimateRatios(SpectrumQuantification spectrumQuantification) {
         IgnoredRatios ignoredRatios = new IgnoredRatios();
-        Deisotoper deisotoper = new Deisotoper(quantification.getMethod());
+        Deisotoper deisotoper = new Deisotoper(quantification.getReporterMethod());
         int referenceLabel = quantification.getReferenceLabel();
         HashMap<Integer, IonMatch> reporterMatches = spectrumQuantification.getReporterMatches();
         for (int ion : reporterMatches.keySet()) {
@@ -128,7 +126,7 @@ public class ItraqCalculator {
                 ignoredRatios.ignore(label);
             }
         }
-        spectrumQuantification.addUrParam(compomicsKeyFactory.getKey(CompomicsKeysFactory.IGNORED_RATIOS), ignoredRatios);
+        spectrumQuantification.addUrParam(ignoredRatios);
     }
 
     private IonMatch matchIon(ReporterIon ion, MSnSpectrum spectrum) {
@@ -210,11 +208,11 @@ public class ItraqCalculator {
                             }
                         }
                         PeptideQuantification peptideQuantification = new PeptideQuantification(peptideMatch, spectrumQuantifications);
-                        peptideQuantification.addUrParam(compomicsKeyFactory.getKey(CompomicsKeysFactory.IGNORED_RATIOS), new IgnoredRatios());
+                        peptideQuantification.addUrParam(new IgnoredRatios());
                         peptideQuantifications.add(peptideQuantification);
                     }
                     ProteinQuantification proteinQuantification = new ProteinQuantification(proteinMatch, peptideQuantifications);
-                    proteinQuantification.addUrParam(compomicsKeyFactory.getKey(CompomicsKeysFactory.IGNORED_RATIOS), new IgnoredRatios());
+                    proteinQuantification.addUrParam(new IgnoredRatios());
                     quantification.addProteinQuantification(proteinQuantification);
                 }
                 waitingPanel.appendReport("Ratio computation completed.");
@@ -337,8 +335,7 @@ public class ItraqCalculator {
                     while (matchIt.hasNext()) {
                         match = matchIt.next();
                         if (match.getFirstHit(searchEngine).getEValue() > eValueMax
-                                || match.getFirstHit(searchEngine).isDecoy()
-                                || match.getFirstHit(searchEngine).getPeptide().getParentProteins().size() > 1) {
+                                || match.getFirstHit(searchEngine).isDecoy()) {
                             matchIt.remove();
                         }
                     }

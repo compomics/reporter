@@ -4,7 +4,6 @@ import com.compomics.util.experiment.biology.ions.ReporterIon;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.PeptideQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.ProteinQuantification;
-import eu.isas.reporter.compomicsutilitiessettings.CompomicsKeysFactory;
 import eu.isas.reporter.compomicsutilitiessettings.IgnoredRatios;
 import eu.isas.reporter.compomicsutilitiessettings.ItraqScore;
 import java.awt.Color;
@@ -25,13 +24,12 @@ import org.jfree.data.xy.DefaultIntervalXYDataset;
 public class PeptideScoreCharts {
 
     private final double resolution = 0.1;
-    private CompomicsKeysFactory compomicsKeysFactory = CompomicsKeysFactory.getInstance();
     private ReporterIonQuantification quantification;
     private RatioChart ratioCharts;
 
     public PeptideScoreCharts(ReporterIonQuantification quantification) {
         this.quantification = quantification;
-        ArrayList<ReporterIon> reporterIons = quantification.getMethod().getReporterIons();
+        ArrayList<ReporterIon> reporterIons = quantification.getReporterMethod().getReporterIons();
 
         createRatioCharts();
     }
@@ -42,17 +40,17 @@ public class PeptideScoreCharts {
 
     private void createRatioCharts() {
 
-        ArrayList<ReporterIon> ions = quantification.getMethod().getReporterIons();
+        ArrayList<ReporterIon> ions = quantification.getReporterMethod().getReporterIons();
 
         double minimum = -1, maximum = -1;
 
         Double score;
-        ItraqScore itraqScore;
-        IgnoredRatios ignoredRatios;
+        ItraqScore itraqScore = new ItraqScore();
+        IgnoredRatios ignoredRatios = new IgnoredRatios();
         for (ProteinQuantification proteinQuantification : quantification.getProteinQuantification()) {
             for (PeptideQuantification peptideQuantification : proteinQuantification.getPeptideQuantification()) {
-                itraqScore = (ItraqScore) peptideQuantification.getUrParam(compomicsKeysFactory.getKey(CompomicsKeysFactory.SCORE));
-                ignoredRatios = (IgnoredRatios) peptideQuantification.getUrParam(compomicsKeysFactory.getKey(CompomicsKeysFactory.IGNORED_RATIOS));
+                itraqScore = (ItraqScore) peptideQuantification.getUrParam(itraqScore);
+                ignoredRatios = (IgnoredRatios) peptideQuantification.getUrParam(ignoredRatios);
                 for (int ion : peptideQuantification.getRatios().keySet()) {
                     if (!ignoredRatios.isIgnored(ion)) {
                         score = itraqScore.getScore(ion);
@@ -78,8 +76,8 @@ public class PeptideScoreCharts {
             count = 0;
             for (ProteinQuantification proteinQuantification : quantification.getProteinQuantification()) {
                 for (PeptideQuantification peptideQuantification : proteinQuantification.getPeptideQuantification()) {
-                    itraqScore = (ItraqScore) peptideQuantification.getUrParam(compomicsKeysFactory.getKey(CompomicsKeysFactory.SCORE));
-                    ignoredRatios = (IgnoredRatios) peptideQuantification.getUrParam(compomicsKeysFactory.getKey(CompomicsKeysFactory.IGNORED_RATIOS));
+                    itraqScore = (ItraqScore) peptideQuantification.getUrParam(itraqScore);
+                    ignoredRatios = (IgnoredRatios) peptideQuantification.getUrParam(ignoredRatios);
                     for (int ion : peptideQuantification.getRatios().keySet()) {
                         if (!ignoredRatios.isIgnored(ion)) {
                             score = itraqScore.getScore(ion);
@@ -157,8 +155,8 @@ public class PeptideScoreCharts {
 
         public void setPeptide(PeptideQuantification peptideQuantification) {
             Double currentScore;
-            IgnoredRatios ignoredRatios = (IgnoredRatios) peptideQuantification.getUrParam(compomicsKeysFactory.getKey(CompomicsKeysFactory.IGNORED_RATIOS));
-            ItraqScore itraqScore = (ItraqScore) peptideQuantification.getUrParam(compomicsKeysFactory.getKey(CompomicsKeysFactory.SCORE));
+            IgnoredRatios ignoredRatios = (IgnoredRatios) peptideQuantification.getUrParam(new IgnoredRatios());
+            ItraqScore itraqScore = (ItraqScore) peptideQuantification.getUrParam(new ItraqScore());
             for (int ion : peptideQuantification.getRatios().keySet()) {
                 if (!ignoredRatios.isIgnored(ion)) {
                     currentScore = itraqScore.getScore(ion);
