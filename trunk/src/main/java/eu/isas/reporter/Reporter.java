@@ -14,10 +14,8 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -220,19 +218,15 @@ public class Reporter {
                 String path = getJarFilePath() + "/conf/reporterLog.txt";
 
                 File file = new File(path);
-                System.setOut(new java.io.PrintStream(new FileOutputStream(file, true)));
-                System.setErr(new java.io.PrintStream(new FileOutputStream(file, true)));
 
                 // creates a new log file if it does not exist
                 if (!file.exists()) {
                     file.createNewFile();
-
-                    FileWriter w = new FileWriter(file);
-                    BufferedWriter bw = new BufferedWriter(w);
-
-                    bw.close();
-                    w.close();
                 }
+
+                System.setOut(new java.io.PrintStream(new FileOutputStream(file, true)));
+                System.setErr(new java.io.PrintStream(new FileOutputStream(file, true)));
+                
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(
                         null, "An error occured when trying to create the SearchGUILog.",
