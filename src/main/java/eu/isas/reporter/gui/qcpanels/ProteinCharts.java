@@ -19,8 +19,9 @@ import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.data.xy.DefaultIntervalXYDataset;
 
 /**
+ * @TODO: JavaDoc missing
  *
- * @author Marc
+ * @author Marc Vaudel
  */
 public class ProteinCharts {
 
@@ -28,6 +29,12 @@ public class ProteinCharts {
     private double resolution;
     private HashMap<Integer, RatioChart> ratioCharts = new HashMap<Integer, RatioChart>();
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param quantification
+     * @param resolution
+     */
     public ProteinCharts(ReporterIonQuantification quantification, double resolution) {
         this.quantification = quantification;
         ArrayList<ReporterIon> reporterIons = quantification.getReporterMethod().getReporterIons();
@@ -36,10 +43,20 @@ public class ProteinCharts {
         createRatioCharts();
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param ion
+     * @return
+     */
     public JPanel getChart(int ion) {
-        return new ChartPanel(new JFreeChart(quantification.getSample(ion).getReference() + "/" + quantification.getSample(quantification.getReferenceLabel()).getReference(), ratioCharts.get(ion).getPlot()));
+        return new ChartPanel(new JFreeChart(quantification.getSample(ion).getReference() + "/"
+                + quantification.getSample(quantification.getReferenceLabel()).getReference(), ratioCharts.get(ion).getPlot()));
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     */
     private void createRatioCharts() {
 
         ArrayList<ReporterIon> ions = quantification.getReporterMethod().getReporterIons();
@@ -80,7 +97,7 @@ public class ProteinCharts {
             allCounts.put(ion.getIndex(), new ArrayList<Integer>());
         }
 
-        IgnoredRatios ignoredRatios= new IgnoredRatios();
+        IgnoredRatios ignoredRatios = new IgnoredRatios();
         HashMap<Integer, Integer> count = new HashMap<Integer, Integer>();
         double binRatio = minimum;
         while (binRatio <= maximum) {
@@ -133,12 +150,20 @@ public class ProteinCharts {
         }
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param proteinQuantification
+     */
     public void setProtein(ProteinQuantification proteinQuantification) {
         for (int ion : ratioCharts.keySet()) {
             ratioCharts.get(ion).setProtein(proteinQuantification, ion);
         }
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     */
     public class RatioChart {
 
         private XYPlot currentPlot = new XYPlot();
@@ -168,42 +193,53 @@ public class ProteinCharts {
             currentPlot.mapDatasetToRangeAxis(2, 0);
         }
 
+        /**
+         * @TODO: JavaDoc missing
+         *
+         * @return
+         */
         public XYPlot getPlot() {
             return currentPlot;
         }
 
+        /**
+         * @TODO: JavaDoc missing
+         * 
+         * @param proteinQuantification
+         * @param ion
+         */
         public void setProtein(ProteinQuantification proteinQuantification, int ion) {
             RatioLimits ratioLimits = (RatioLimits) proteinQuantification.getUrParam(new RatioLimits());
             int nPeptides;
             IgnoredRatios ignoredRatios = new IgnoredRatios();
-                nPeptides = 0;
-                for (PeptideQuantification peptideQuantification : proteinQuantification.getPeptideQuantification()) {
-                    ignoredRatios = (IgnoredRatios) peptideQuantification.getUrParam(ignoredRatios);
-                    if (!ignoredRatios.isIgnored(ion)) {
-                        if (peptideQuantification.getRatios().get(ion).getRatio() > ratioLimits.getLimits(ion)[0]
-                                && peptideQuantification.getRatios().get(ion).getRatio() < ratioLimits.getLimits(ion)[1]) {
-                            nPeptides++;
-                        }
+            nPeptides = 0;
+
+            for (PeptideQuantification peptideQuantification : proteinQuantification.getPeptideQuantification()) {
+                ignoredRatios = (IgnoredRatios) peptideQuantification.getUrParam(ignoredRatios);
+                if (!ignoredRatios.isIgnored(ion)) {
+                    if (peptideQuantification.getRatios().get(ion).getRatio() > ratioLimits.getLimits(ion)[0]
+                            && peptideQuantification.getRatios().get(ion).getRatio() < ratioLimits.getLimits(ion)[1]) {
+                        nPeptides++;
                     }
                 }
+            }
 
-                double[] spreadBegin = {ratioLimits.getLimits(ion)[0]};
-                double[] spreadEnd = {ratioLimits.getLimits(ion)[1]};
-                double[] ratio = {proteinQuantification.getProteinRatios().get(ion).getRatio()};
-                double[] ratioBegin = {ratio[0]-resolution/2};
-                double[] ratioEnd = {ratio[0]+resolution/2};
-                double[] spreadHeight = {(double) nPeptides/10};
-                double[] peptides = {nPeptides};
+            double[] spreadBegin = {ratioLimits.getLimits(ion)[0]};
+            double[] spreadEnd = {ratioLimits.getLimits(ion)[1]};
+            double[] ratio = {proteinQuantification.getProteinRatios().get(ion).getRatio()};
+            double[] ratioBegin = {ratio[0] - resolution / 2};
+            double[] ratioEnd = {ratio[0] + resolution / 2};
+            double[] spreadHeight = {(double) nPeptides / 10};
+            double[] peptides = {nPeptides};
 
-                double[][] spreadData = new double[][] {ratio, spreadBegin, spreadEnd, spreadHeight, spreadHeight, spreadHeight};
-                double[][] ratioData = new double[][] {ratio, ratioBegin, ratioEnd, peptides, peptides, peptides};
-
+            double[][] spreadData = new double[][]{ratio, spreadBegin, spreadEnd, spreadHeight, spreadHeight, spreadHeight};
+            double[][] ratioData = new double[][]{ratio, ratioBegin, ratioEnd, peptides, peptides, peptides};
 
             DefaultIntervalXYDataset spread = new DefaultIntervalXYDataset();
             spread.addSeries("Peptides Spread", spreadData);
             XYBarRenderer spreadRenderer = new XYBarRenderer();
             spreadRenderer.setShadowVisible(false);
-            Color spreadColor = new Color(150,0,0, 75);
+            Color spreadColor = new Color(150, 0, 0, 75);
             spreadRenderer.setSeriesPaint(0, spreadColor);
 
             currentPlot.setDataset(1, spread);
@@ -214,7 +250,7 @@ public class ProteinCharts {
             ratioDataset.addSeries("Protein Ratio", ratioData);
             XYBarRenderer ratioRenderer = new XYBarRenderer();
             ratioRenderer.setShadowVisible(false);
-            Color ratioColor = new Color(255,0,0,255);
+            Color ratioColor = new Color(255, 0, 0, 255);
             ratioRenderer.setSeriesPaint(0, ratioColor);
 
             currentPlot.setDataset(0, ratioDataset);

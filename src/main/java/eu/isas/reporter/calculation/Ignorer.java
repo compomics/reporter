@@ -5,8 +5,9 @@ import com.compomics.util.experiment.identification.matches.ModificationMatch;
 import java.util.ArrayList;
 
 /**
+ * @TODO: JavaDoc missing
  *
- * @author Marc
+ * @author Marc Vaudel
  */
 public class Ignorer {
 

@@ -5,18 +5,29 @@ import java.util.Collections;
 import java.util.HashMap;
 
 /**
+ * @TODO: JavaDoc missing
  *
- * @author Marc
+ * @author Marc Vaudel
  */
 public class FdrCalculator {
 
     private HashMap<Integer, HashMap<Double, Point>> hitMap = new HashMap<Integer, HashMap<Double, Point>>();
     private HashMap<Integer, ArrayList<Double>> eValues = new HashMap<Integer, ArrayList<Double>>();
 
+    /**
+     * @TODO: JavaDoc missing
+     */
     public FdrCalculator() {
 
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     * 
+     * @param searchEngine
+     * @param eValue
+     * @param decoy
+     */
     public void addHit(int searchEngine, double eValue, boolean decoy) {
         if (hitMap.get(searchEngine)==null) {
             hitMap.put(searchEngine, new HashMap<Double, Point>());
@@ -34,6 +45,13 @@ public class FdrCalculator {
         }
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     * 
+     * @param limit
+     * @return
+     * @throws Exception
+     */
     public HashMap<Integer, Double> getEvalueLimits(double limit) throws Exception {
         HashMap<Integer, Double> results = new HashMap<Integer, Double>();
         for (int searchEngine : eValues.keySet()) {
@@ -61,14 +79,26 @@ public class FdrCalculator {
         return results;
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     */
     private class Point {
+
         public int nTarget = 0;
         public int nDecoy = 0;
 
+        /**
+         * @TODO: JavaDoc missing
+         */
         public Point() {
 
         }
 
+        /**
+         * @TODO: JavaDoc missing
+         * 
+         * @param decoy
+         */
         public Point(boolean decoy) {
             if (decoy) {
                 nDecoy++;

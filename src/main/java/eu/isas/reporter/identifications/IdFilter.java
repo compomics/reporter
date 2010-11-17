@@ -4,8 +4,9 @@ import com.compomics.util.experiment.identification.PeptideAssumption;
 import java.util.HashMap;
 
 /**
+ * @TODO: JavaDoc missing
  *
- * @author Marc
+ * @author Marc Vaudel
  */
 public class IdFilter {
 
@@ -14,6 +15,14 @@ public class IdFilter {
     private double deltaMass;
     private HashMap<Integer, Double> eValues;
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param nAAmin
+     * @param nAAmax
+     * @param deltaMass
+     * @param eValues
+     */
     public IdFilter(double nAAmin, double nAAmax, double deltaMass, HashMap<Integer, Double> eValues) {
         this.nAAmin = nAAmin;
         this.nAAmax = nAAmax;
@@ -21,6 +30,12 @@ public class IdFilter {
         this.eValues = eValues;
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param identification
+     * @return
+     */
     public boolean validate(PeptideAssumption identification) {
         int sequenceLength = identification.getPeptide().getSequence().length();
         return identification.getDeltaMass() < deltaMass
