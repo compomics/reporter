@@ -1,9 +1,3 @@
-
-/*
- * ResultPanel.java
- *
- * Created on Oct 1, 2010, 4:57:40 PM
- */
 package eu.isas.reporter.gui;
 
 import com.compomics.util.experiment.MsExperiment;
@@ -49,8 +43,9 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
 /**
+ * @TODO: JavaDoc missing
  *
- * @author vaudel
+ * @author Marc Vaudel
  */
 public class ResultPanel extends javax.swing.JPanel {
 
@@ -79,7 +74,14 @@ public class ResultPanel extends javax.swing.JPanel {
     private SpectrumScoreCharts spectrumScoreCharts;
     private JPopupMenu tablePopUp;
 
-    /** Creates new form ResultPanel */
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param parent
+     * @param quantification
+     * @param experiment
+     * @param ignorer
+     */
     public ResultPanel(Reporter parent, ReporterIonQuantification quantification, MsExperiment experiment, Ignorer ignorer) {
         this.experiment = experiment;
         this.parent = parent;
@@ -168,6 +170,9 @@ public class ResultPanel extends javax.swing.JPanel {
         tablePopUp.add(detailsItem);
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     */
     private void createTableIndex() {
         for (int i = 0; i < quantification.getProteinQuantification().size(); i++) {
             tableIndex.add(new TableKey(TableKey.PROTEIN, i, 0, 0));
@@ -448,10 +453,20 @@ public class ResultPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    /**
+     * Exists the program.
+     *
+     * @param evt
+     */
     private void exitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitButtonActionPerformed
         parent.close(0);
     }//GEN-LAST:event_exitButtonActionPerformed
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param evt
+     */
     private void ratioResolutionTxtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ratioResolutionTxtActionPerformed
         if (validateInput()) {
             ignorer.setRatioMin(getRatioMin());
@@ -461,6 +476,11 @@ public class ResultPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_ratioResolutionTxtActionPerformed
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param evt
+     */
     private void kTxtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_kTxtActionPerformed
         if (validateInput()) {
             ignorer.setRatioMin(getRatioMin());
@@ -470,6 +490,11 @@ public class ResultPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_kTxtActionPerformed
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param evt
+     */
     private void resultTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_resultTableMouseClicked
         if (evt.getButton() == MouseEvent.BUTTON1) {
             tableLeftClicked();
@@ -478,6 +503,11 @@ public class ResultPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_resultTableMouseClicked
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param evt
+     */
     private void ratioMaxTxtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ratioMaxTxtActionPerformed
         if (validateInput()) {
             ignorer.setRatioMin(getRatioMin());
@@ -487,6 +517,11 @@ public class ResultPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_ratioMaxTxtActionPerformed
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param evt
+     */
     private void ratioMinTxtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ratioMinTxtActionPerformed
         if (validateInput()) {
             ignorer.setRatioMin(getRatioMin());
@@ -496,6 +531,11 @@ public class ResultPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_ratioMinTxtActionPerformed
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param evt
+     */
     private void saveAsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAsButtonActionPerformed
 
         JFileChooser fileChooser = new JFileChooser(parent.getLastSelectedFolder());
@@ -535,28 +575,56 @@ public class ResultPanel extends javax.swing.JPanel {
     private javax.swing.JComboBox separatorCmb;
     // End of variables declaration//GEN-END:variables
 
+    /**
+     * @TODO: JavaDoc missing
+     */
     private void estimateAllProteinRatios() {
         for (ProteinQuantification proteinQuantification : quantification.getProteinQuantification()) {
             ratioEstimator.estimateRatios(proteinQuantification);
         }
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @return
+     */
     private double getK() {
         return new Double(kTxt.getText().trim());
     }
 
+    /**
+     * Returns the resolution.
+     *
+     * @return the resolution
+     */
     private double getResolution() {
         return new Double(ratioResolutionTxt.getText().trim());
     }
 
+    /**
+     * Returns the minimum ratio.
+     *
+     * @return the minimum ratio
+     */
     private double getRatioMin() {
         return new Double(ratioMinTxt.getText().trim());
     }
 
+    /**
+     * Returns the maximum ratio.
+     *
+     * @return the maximum ratio
+     */
     private double getRatioMax() {
         return new Double(ratioMaxTxt.getText().trim());
     }
 
+    /**
+     * Validates the input. Returns false if not valid.
+     *
+     * @return false if not valid, true otherwise
+     */
     private boolean validateInput() {
         try {
             new Double(ratioResolutionTxt.getText().trim());
@@ -585,6 +653,11 @@ public class ResultPanel extends javax.swing.JPanel {
         return true;
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @return
+     */
     private int getNLines() {
         int nLines = 0;
         for (ProteinQuantification proteinQuantification : quantification.getProteinQuantification()) {
@@ -597,6 +670,11 @@ public class ResultPanel extends javax.swing.JPanel {
         return nLines;
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @return
+     */
     private String getSeparator() {
         String cmbResult = (String) separatorCmb.getSelectedItem();
         if (cmbResult.equals("Comma")) {
@@ -610,6 +688,9 @@ public class ResultPanel extends javax.swing.JPanel {
         }
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     */
     private void ignore() {
         int row = resultTable.getSelectedRow();
         int column = resultTable.getSelectedColumn();
@@ -620,7 +701,8 @@ public class ResultPanel extends javax.swing.JPanel {
         } else if (tableKey.lineType == TableKey.PEPTIDE) {
             ignoredRatios = (IgnoredRatios) quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getUrParam(ignoredRatios);
         } else {
-            ignoredRatios = (IgnoredRatios) quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getSpectrumQuantification().get(tableKey.spectrumIndex).getUrParam(ignoredRatios);
+            ignoredRatios = (IgnoredRatios) quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(
+                    tableKey.peptideIndex).getSpectrumQuantification().get(tableKey.spectrumIndex).getUrParam(ignoredRatios);
         }
         if (column > 5 && column < 5 + reporterIons.size()) {
             int pos = column - 5;
@@ -637,6 +719,9 @@ public class ResultPanel extends javax.swing.JPanel {
         tableLeftClicked();
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     */
     private void account() {
         int row = resultTable.getSelectedRow();
         int column = resultTable.getSelectedColumn();
@@ -647,7 +732,8 @@ public class ResultPanel extends javax.swing.JPanel {
         } else if (tableKey.lineType == TableKey.PEPTIDE) {
             ignoredRatios = (IgnoredRatios) quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getUrParam(ignoredRatios);
         } else {
-            ignoredRatios = (IgnoredRatios) quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getSpectrumQuantification().get(tableKey.spectrumIndex).getUrParam(ignoredRatios);
+            ignoredRatios = (IgnoredRatios) quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(
+                    tableKey.peptideIndex).getSpectrumQuantification().get(tableKey.spectrumIndex).getUrParam(ignoredRatios);
         }
         if (column > 5 && column < 5 + reporterIons.size()) {
             int pos = column - 5;
@@ -664,6 +750,9 @@ public class ResultPanel extends javax.swing.JPanel {
         tableLeftClicked();
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     */
     private void tableLeftClicked() {
         int row = resultTable.getSelectedRow();
         TableKey tableKey = tableIndex.get(row);
@@ -795,13 +884,19 @@ public class ResultPanel extends javax.swing.JPanel {
                     horizontalPanel.add(Box.createHorizontalStrut(10));
                     horizontalPanel.validate();
                 }
-                spectrumScoreCharts.setSpectrum(quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getSpectrumQuantification().get(tableKey.spectrumIndex));
+                spectrumScoreCharts.setSpectrum(quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(
+                        tableKey.peptideIndex).getSpectrumQuantification().get(tableKey.spectrumIndex));
                 displayed = DISP_SPECTRUM_SCORE;
             }
         }
         this.repaint();
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param row
+     */
     private void expandProtein(int row) {
         TableKey tableKey = tableIndex.get(row);
         int nPeptides = quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().size();
@@ -810,6 +905,11 @@ public class ResultPanel extends javax.swing.JPanel {
         }
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param row
+     */
     private void expandPeptide(int row) {
         TableKey tableKey = tableIndex.get(row);
         int nSpectra = quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getSpectrumQuantification().size();
@@ -818,6 +918,11 @@ public class ResultPanel extends javax.swing.JPanel {
         }
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param row
+     */
     private void concatProtein(int row) {
         while (tableIndex.get(row + 1).lineType != TableKey.PROTEIN) {
             tableIndex.remove(row + 1);
@@ -827,6 +932,11 @@ public class ResultPanel extends javax.swing.JPanel {
         }
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param row
+     */
     private void concatPeptide(int row) {
         while (tableIndex.get(row + 1).lineType != TableKey.PEPTIDE
                 && tableIndex.get(row + 1).lineType != TableKey.PROTEIN) {
@@ -837,6 +947,9 @@ public class ResultPanel extends javax.swing.JPanel {
         }
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     */
     private void sortProteins() {
         HashMap<String, ArrayList<TableKey>> tempMap = new HashMap<String, ArrayList<TableKey>>();
         ArrayList<String> accessions = new ArrayList<String>();
@@ -858,6 +971,9 @@ public class ResultPanel extends javax.swing.JPanel {
         resultTable.repaint();
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     */
     private void sortProteinsNPeptides() {
         HashMap<Integer, ArrayList<TableKey>> tempMap = new HashMap<Integer, ArrayList<TableKey>>();
         ArrayList<Integer> nPeptides = new ArrayList<Integer>();
@@ -879,6 +995,9 @@ public class ResultPanel extends javax.swing.JPanel {
         resultTable.repaint();
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     */
     private void sortPeptides() {
         ArrayList<String> sequences = new ArrayList<String>();
         HashMap<String, ArrayList<TableKey>> tempMap = new HashMap<String, ArrayList<TableKey>>();
@@ -906,6 +1025,9 @@ public class ResultPanel extends javax.swing.JPanel {
         resultTable.repaint();
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     */
     private void sortSpectra() {
         ArrayList<String> titles = new ArrayList<String>();
         HashMap<String, ArrayList<TableKey>> tempMap = new HashMap<String, ArrayList<TableKey>>();
@@ -921,7 +1043,8 @@ public class ResultPanel extends javax.swing.JPanel {
                 tempMap = new HashMap<String, ArrayList<TableKey>>();
                 tempIndex.add(tableKey);
             } else {
-                key = quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getSpectrumQuantification().get(tableKey.spectrumIndex).getSpectrum().getSpectrumTitle();
+                key = quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(
+                        tableKey.peptideIndex).getSpectrumQuantification().get(tableKey.spectrumIndex).getSpectrum().getSpectrumTitle();
                 if (!tempMap.containsKey(key)) {
                     tempMap.put(key, new ArrayList<TableKey>());
                     titles.add(key);
@@ -933,6 +1056,9 @@ public class ResultPanel extends javax.swing.JPanel {
         resultTable.repaint();
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     */
     private void sortProteinsNSpectra() {
         HashMap<Integer, ArrayList<TableKey>> tempMap = new HashMap<Integer, ArrayList<TableKey>>();
         ArrayList<Integer> nSpectra = new ArrayList<Integer>();
@@ -954,6 +1080,9 @@ public class ResultPanel extends javax.swing.JPanel {
         resultTable.repaint();
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     */
     private void sortPeptidesNSpectra() {
         ArrayList<Integer> nSpectra = new ArrayList<Integer>();
         HashMap<Integer, ArrayList<TableKey>> tempMap = new HashMap<Integer, ArrayList<TableKey>>();
@@ -981,6 +1110,11 @@ public class ResultPanel extends javax.swing.JPanel {
         resultTable.repaint();
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param ion
+     */
     private void sortRatio(int ion) {
         HashMap<Double, ArrayList<TableKey>> tempMap = new HashMap<Double, ArrayList<TableKey>>();
         ArrayList<Double> ratios = new ArrayList<Double>();
@@ -997,7 +1131,9 @@ public class ResultPanel extends javax.swing.JPanel {
                 tempIndex.add(tableKey);
             } else {
                 try {
-                    ratio = quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getSpectrumQuantification().get(tableKey.spectrumIndex).getRatios().get(reporterIons.get(ion).getIndex()).getRatio();
+                    ratio = quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(
+                            tableKey.peptideIndex).getSpectrumQuantification().get(tableKey.spectrumIndex).getRatios().get(
+                            reporterIons.get(ion).getIndex()).getRatio();
                 } catch (Exception e) {
                     ratio = Math.pow(9, 9);
                 }
@@ -1022,7 +1158,8 @@ public class ResultPanel extends javax.swing.JPanel {
                 tempIndex.add(tableKey);
             } else {
                 try {
-                    ratio = quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getRatios().get(reporterIons.get(ion).getIndex()).getRatio();
+                    ratio = quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(
+                            tableKey.peptideIndex).getRatios().get(reporterIons.get(ion).getIndex()).getRatio();
                 } catch (Exception e) {
                     ratio = Math.pow(9, 9);
                 }
@@ -1056,6 +1193,9 @@ public class ResultPanel extends javax.swing.JPanel {
         resultTable.repaint();
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     */
     private void sortQuality() {
         ItraqScore score;
         HashMap<Double, ArrayList<TableKey>> tempMap = new HashMap<Double, ArrayList<TableKey>>();
@@ -1073,7 +1213,8 @@ public class ResultPanel extends javax.swing.JPanel {
                 tempIndex.add(tableKey);
             } else {
                 try {
-                    quality = ((ItraqScore) quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getSpectrumQuantification().get(tableKey.spectrumIndex).getUrParam(new ItraqScore())).getMinScore();
+                    quality = ((ItraqScore) quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(
+                            tableKey.peptideIndex).getSpectrumQuantification().get(tableKey.spectrumIndex).getUrParam(new ItraqScore())).getMinScore();
                 } catch (Exception e) {
                     quality = 0;
                 }
@@ -1098,7 +1239,8 @@ public class ResultPanel extends javax.swing.JPanel {
                 tempIndex.add(tableKey);
             } else {
                 try {
-                    quality = ((ItraqScore) quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getUrParam(new ItraqScore())).getMinScore();
+                    quality = ((ItraqScore) quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(
+                            tableKey.peptideIndex).getUrParam(new ItraqScore())).getMinScore();
                 } catch (Exception e) {
                     quality = 0;
                 }
@@ -1132,6 +1274,9 @@ public class ResultPanel extends javax.swing.JPanel {
         resultTable.repaint();
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     */
     private void sort() {
         int column = resultTable.getSelectedColumn();
         if (column == 2) {
@@ -1159,7 +1304,9 @@ public class ResultPanel extends javax.swing.JPanel {
         }
     }
 
-    // Private class
+    /**
+     * @TODO: JavaDoc missing
+     */
     private class ResultTable extends DefaultTableModel {
 
         @Override
@@ -1229,7 +1376,8 @@ public class ResultPanel extends javax.swing.JPanel {
                     if (tableKey.lineType == TableKey.PROTEIN) {
                         return quantification.getProteinQuantification().get(tableKey.proteinIndex).getProteinMatch().getPeptideMatches().size();
                     } else if (tableKey.lineType == TableKey.PEPTIDE) {
-                        return quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getPeptideMatch().getTheoreticPeptide().getSequence();
+                        return quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(
+                                tableKey.peptideIndex).getPeptideMatch().getTheoreticPeptide().getSequence();
                     } else {
                         return " ";
                     }
@@ -1239,7 +1387,8 @@ public class ResultPanel extends javax.swing.JPanel {
                     } else if (tableKey.lineType == TableKey.PEPTIDE) {
                         String varmods = "";
                         String name;
-                        for (ModificationMatch mod : quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getPeptideMatch().getTheoreticPeptide().getModificationMatches()) {
+                        for (ModificationMatch mod : quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(
+                                tableKey.peptideIndex).getPeptideMatch().getTheoreticPeptide().getModificationMatches()) {
                             if (mod == null) {
                                 name = "undefined";
                                 if (varmods.lastIndexOf(name) < 0) {
@@ -1262,7 +1411,8 @@ public class ResultPanel extends javax.swing.JPanel {
                     } else if (tableKey.lineType == TableKey.PEPTIDE) {
                         return quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getSpectrumQuantification().size();
                     } else {
-                        MSnSpectrum spectrum = quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getSpectrumQuantification().get(tableKey.spectrumIndex).getSpectrum();
+                        MSnSpectrum spectrum = quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(
+                                tableKey.peptideIndex).getSpectrumQuantification().get(tableKey.spectrumIndex).getSpectrum();
                         return spectrum.getSpectrumTitle() + " in " + spectrum.getFileName();
                     }
                 } else if (column > 5 && column < 5 + reporterIons.size()) {
@@ -1275,13 +1425,15 @@ public class ResultPanel extends javax.swing.JPanel {
                         }
                         return ratio;
                     } else if (tableKey.lineType == TableKey.PEPTIDE) {
-                        ratio = quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getRatios().get(reporterIons.get(pos).getIndex()).getRatio();
+                        ratio = quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getRatios().get(
+                                reporterIons.get(pos).getIndex()).getRatio();
                         if (ratio == null) {
                             ratio = Double.NaN;
                         }
                         return ratio;
                     } else {
-                        ratio = quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getSpectrumQuantification().get(tableKey.spectrumIndex).getRatios().get(reporterIons.get(pos).getIndex()).getRatio();
+                        ratio = quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(
+                                tableKey.peptideIndex).getSpectrumQuantification().get(tableKey.spectrumIndex).getRatios().get(reporterIons.get(pos).getIndex()).getRatio();
                         if (ratio == null) {
                             ratio = Double.NaN;
                         }
@@ -1292,9 +1444,11 @@ public class ResultPanel extends javax.swing.JPanel {
                     if (tableKey.lineType == TableKey.PROTEIN) {
                         itraqScore = (ItraqScore) quantification.getProteinQuantification().get(tableKey.proteinIndex).getUrParam(new ItraqScore());
                     } else if (tableKey.lineType == TableKey.PEPTIDE) {
-                        itraqScore = (ItraqScore) quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getUrParam(new ItraqScore());
+                        itraqScore = (ItraqScore) quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(
+                                tableKey.peptideIndex).getUrParam(new ItraqScore());
                     } else {
-                        itraqScore = (ItraqScore) quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getSpectrumQuantification().get(tableKey.spectrumIndex).getUrParam(new ItraqScore());
+                        itraqScore = (ItraqScore) quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(
+                                tableKey.peptideIndex).getSpectrumQuantification().get(tableKey.spectrumIndex).getUrParam(new ItraqScore());
                     }
                     return itraqScore.getMinScore();
                 } else {
@@ -1320,6 +1474,9 @@ public class ResultPanel extends javax.swing.JPanel {
         }
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     */
     private class TableKey {
 
         public static final int PROTEIN = 0;
@@ -1338,6 +1495,9 @@ public class ResultPanel extends javax.swing.JPanel {
         }
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     */
     private class ReporterCellRenderer implements TableCellRenderer {
 
         private JLabel label;
@@ -1409,7 +1569,8 @@ public class ResultPanel extends javax.swing.JPanel {
             } else if (tableKey.lineType == TableKey.PEPTIDE) {
                 ignoredRatios = (IgnoredRatios) quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getUrParam(ignoredRatios);
             } else {
-                ignoredRatios = (IgnoredRatios) quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getSpectrumQuantification().get(tableKey.spectrumIndex).getUrParam(ignoredRatios);
+                ignoredRatios = (IgnoredRatios) quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(
+                        tableKey.peptideIndex).getSpectrumQuantification().get(tableKey.spectrumIndex).getUrParam(ignoredRatios);
             }
             int pos = column - 5;
             if (ignoredRatios.isIgnored(reporterIons.get(pos).getIndex())) {

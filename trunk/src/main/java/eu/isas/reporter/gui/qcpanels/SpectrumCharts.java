@@ -19,8 +19,9 @@ import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.data.xy.DefaultIntervalXYDataset;
 
 /**
+ * @TODO: JavaDoc missing
  *
- * @author Marc
+ * @author Marc Vaudel
  */
 public class SpectrumCharts {
 
@@ -31,6 +32,14 @@ public class SpectrumCharts {
     private ReporterIonQuantification quantification;
     private HashMap<Integer, RatioChart> ratioCharts = new HashMap<Integer, RatioChart>();
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param proteinIndex
+     * @param peptideIndex
+     * @param quantification
+     * @param resolution
+     */
     public SpectrumCharts(int proteinIndex, int peptideIndex, ReporterIonQuantification quantification, double resolution) {
         this.proteinIndex = proteinIndex;
         this.peptideIndex = peptideIndex;
@@ -42,10 +51,22 @@ public class SpectrumCharts {
         createReporterPanels(peptideQuantification);
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param ion
+     * @return
+     */
     public JPanel getChart(int ion) {
-        return new ChartPanel(new JFreeChart(quantification.getSample(ion).getReference() + "/" + quantification.getSample(quantification.getReferenceLabel()).getReference(), ratioCharts.get(ion).getPlot()));
+        return new ChartPanel(new JFreeChart(quantification.getSample(ion).getReference() + "/"
+                + quantification.getSample(quantification.getReferenceLabel()).getReference(), ratioCharts.get(ion).getPlot()));
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     * 
+     * @param peptideQuantification
+     */
     private void createReporterPanels(PeptideQuantification peptideQuantification) {
 
         IgnoredRatios ignoredRatios = new IgnoredRatios();
@@ -145,20 +166,38 @@ public class SpectrumCharts {
         }
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param spectrumQuantification
+     */
     public void setSpectrum(SpectrumQuantification spectrumQuantification) {
         for (int ion : ratioCharts.keySet()) {
             ratioCharts.get(ion).setSpectrum(spectrumQuantification, ion);
         }
     }
 
+    /**
+     * Returns the protein index.
+     *
+     * @return the protein index
+     */
     public int getProteinIndex() {
         return proteinIndex;
     }
 
+    /**
+     * Returns the peptide index.
+     *
+     * @return the peptide index
+     */
     public int getPeptideIndex() {
         return peptideIndex;
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     */
     private class RatioChart {
 
         private XYPlot currentPlot = new XYPlot();
@@ -182,13 +221,21 @@ public class SpectrumCharts {
             currentPlot.setDataset(3, backGround);
             currentPlot.setRenderer(3, backgroundRenderer);
             currentPlot.mapDatasetToRangeAxis(3, 0);
-
         }
 
+        /*
+         * @TODO: JavaDoc missing
+         */
         public XYPlot getPlot() {
             return currentPlot;
         }
 
+        /**
+         * @TODO: JavaDoc missing
+         *
+         * @param peptideQuantification
+         * @param ion
+         */
         public void addPeptideRatio(PeptideQuantification peptideQuantification, int ion) {
             RatioLimits ratioLimits = (RatioLimits) peptideQuantification.getUrParam(new RatioLimits());
             int nPeptides;
@@ -215,7 +262,6 @@ public class SpectrumCharts {
             double[][] spreadData = new double[][]{ratio, spreadBegin, spreadEnd, spreadHeight, spreadHeight, spreadHeight};
             double[][] ratioData = new double[][]{ratio, ratioBegin, ratioEnd, peptides, peptides, peptides};
 
-
             DefaultIntervalXYDataset spread = new DefaultIntervalXYDataset();
             spread.addSeries("Spectra Spread", spreadData);
             XYBarRenderer spreadRenderer = new XYBarRenderer();
@@ -239,6 +285,12 @@ public class SpectrumCharts {
             currentPlot.mapDatasetToRangeAxis(1, 0);
         }
 
+        /**
+         * @TODO: JavaDoc missing
+         * 
+         * @param spectrumQuantification
+         * @param ion
+         */
         public void setSpectrum(SpectrumQuantification spectrumQuantification, int ion) {
 
             double[] ratio = {spectrumQuantification.getRatios().get(ion).getRatio()};

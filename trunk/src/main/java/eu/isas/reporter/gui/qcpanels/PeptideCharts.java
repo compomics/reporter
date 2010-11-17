@@ -20,8 +20,9 @@ import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.data.xy.DefaultIntervalXYDataset;
 
 /**
+ * @TODO: JavaDoc missing
  *
- * @author Marc
+ * @author Marc Vaudel
  */
 public class PeptideCharts {
 
@@ -31,6 +32,13 @@ public class PeptideCharts {
     private ReporterIonQuantification quantification;
     private HashMap<Integer, RatioChart> ratioCharts = new HashMap<Integer, RatioChart>();
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param proteinIndex
+     * @param quantification
+     * @param resolution
+     */
     public PeptideCharts(int proteinIndex, ReporterIonQuantification quantification, double resolution) {
         this.proteinIndex = proteinIndex;
         this.quantification = quantification;
@@ -41,10 +49,22 @@ public class PeptideCharts {
         createReporterPanels(proteinQuantification);
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param ion
+     * @return
+     */
     public JPanel getChart(int ion) {
-        return new ChartPanel(new JFreeChart(quantification.getSample(ion).getReference() + "/" + quantification.getSample(quantification.getReferenceLabel()).getReference(), ratioCharts.get(ion).getPlot()));
+        return new ChartPanel(new JFreeChart(quantification.getSample(ion).getReference() + "/"
+                + quantification.getSample(quantification.getReferenceLabel()).getReference(), ratioCharts.get(ion).getPlot()));
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     * 
+     * @param proteinQuantification
+     */
     private void createReporterPanels(ProteinQuantification proteinQuantification) {
 
         ArrayList<ReporterIon> ions = quantification.getReporterMethod().getReporterIons();
@@ -144,6 +164,11 @@ public class PeptideCharts {
         }
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param peptideQuantification
+     */
     public void setPeptide(PeptideQuantification peptideQuantification) {
         IgnoredRatios ignoredRatios = (IgnoredRatios) peptideQuantification.getUrParam(new IgnoredRatios());
         for (int ion : ratioCharts.keySet()) {
@@ -153,14 +178,27 @@ public class PeptideCharts {
         }
     }
 
+    /**
+     * Returns the protein index.
+     *
+     * @return the protein index
+     */
     public int getProteinIndex() {
         return proteinIndex;
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     */
     private class RatioChart {
 
         private XYPlot currentPlot = new XYPlot();
 
+        /**
+         * @TODO: JavaDoc missing
+         *
+         * @param backGroundValues
+         */
         public RatioChart(double[][] backGroundValues) {
 
             NumberAxis xAxis = new NumberAxis("ratio");
@@ -187,10 +225,21 @@ public class PeptideCharts {
 
         }
 
+        /**
+         * @TODO: JavaDoc missing
+         *
+         * @return
+         */
         public XYPlot getPlot() {
             return currentPlot;
         }
 
+        /**
+         * @TODO: JavaDoc missing
+         *
+         * @param proteinQuantification
+         * @param ion
+         */
         public void addProteinRatio(ProteinQuantification proteinQuantification, int ion) {
             RatioLimits ratioLimits = (RatioLimits) proteinQuantification.getUrParam(new RatioLimits());
             int nPeptides;
@@ -239,9 +288,14 @@ public class PeptideCharts {
             currentPlot.setDataset(2, ratioDataset);
             currentPlot.setRenderer(2, ratioRenderer);
             currentPlot.mapDatasetToRangeAxis(2, 1);
-
         }
 
+        /**
+         * @TODO: JavaDoc missing
+         *
+         * @param peptideQuantification
+         * @param ion
+         */
         public void setPeptide(PeptideQuantification peptideQuantification, int ion) {
             RatioLimits ratioLimits = (RatioLimits) peptideQuantification.getUrParam(new RatioLimits());
             IgnoredRatios ignoredRatios = new IgnoredRatios();
@@ -267,7 +321,6 @@ public class PeptideCharts {
             double[][] spreadData = new double[][]{ratio, spreadBegin, spreadEnd, spreadHeight, spreadHeight, spreadHeight};
             double[][] ratioData = new double[][]{ratio, ratioBegin, ratioEnd, spectra, spectra, spectra};
 
-
             DefaultIntervalXYDataset spread = new DefaultIntervalXYDataset();
             spread.addSeries("Spectra Spread", spreadData);
             XYBarRenderer spreadRenderer = new XYBarRenderer();
@@ -289,7 +342,6 @@ public class PeptideCharts {
             currentPlot.setDataset(0, ratioDataset);
             currentPlot.setRenderer(0, ratioRenderer);
             currentPlot.mapDatasetToRangeAxis(0, 1);
-
         }
     }
 }

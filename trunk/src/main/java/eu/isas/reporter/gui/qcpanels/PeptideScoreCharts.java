@@ -18,8 +18,9 @@ import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.data.xy.DefaultIntervalXYDataset;
 
 /**
+ * @TODO: JavaDoc missing
  *
- * @author Marc
+ * @author Marc Vaudel
  */
 public class PeptideScoreCharts {
 
@@ -27,6 +28,11 @@ public class PeptideScoreCharts {
     private ReporterIonQuantification quantification;
     private RatioChart ratioCharts;
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param quantification
+     */
     public PeptideScoreCharts(ReporterIonQuantification quantification) {
         this.quantification = quantification;
         ArrayList<ReporterIon> reporterIons = quantification.getReporterMethod().getReporterIons();
@@ -34,10 +40,18 @@ public class PeptideScoreCharts {
         createRatioCharts();
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @return
+     */
     public JPanel getChart() {
         return new ChartPanel(new JFreeChart("Peptide Quantification Quality", ratioCharts.getPlot()));
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     */
     private void createRatioCharts() {
 
         ArrayList<ReporterIon> ions = quantification.getReporterMethod().getReporterIons();
@@ -116,10 +130,18 @@ public class PeptideScoreCharts {
         ratioCharts = new RatioChart(dataset);
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param peptideQuantification
+     */
     public void setPeptide(PeptideQuantification peptideQuantification) {
         ratioCharts.setPeptide(peptideQuantification);
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     */
     public class RatioChart {
 
         private XYPlot currentPlot = new XYPlot();
@@ -149,10 +171,20 @@ public class PeptideScoreCharts {
             currentPlot.mapDatasetToRangeAxis(1000, 0);
         }
 
+        /**
+         * @TODO: JavaDoc missing
+         *
+         * @return
+         */
         public XYPlot getPlot() {
             return currentPlot;
         }
 
+        /**
+         * @TODO: JavaDoc missing
+         *
+         * @param peptideQuantification
+         */
         public void setPeptide(PeptideQuantification peptideQuantification) {
             Double currentScore;
             IgnoredRatios ignoredRatios = (IgnoredRatios) peptideQuantification.getUrParam(new IgnoredRatios());
@@ -165,7 +197,8 @@ public class PeptideScoreCharts {
                         double[] scoreHeight = {1};
                         double[][] scoreValues = {score, score, score, scoreHeight, scoreHeight, scoreHeight};
                         DefaultIntervalXYDataset scoreDataset = new DefaultIntervalXYDataset();
-                        scoreDataset.addSeries(peptideQuantification.getRatios().get(ion).getMeasureSample() + "/" + peptideQuantification.getRatios().get(ion).getControlSample(), scoreValues);
+                        scoreDataset.addSeries(peptideQuantification.getRatios().get(ion).getMeasureSample() + "/"
+                                + peptideQuantification.getRatios().get(ion).getControlSample(), scoreValues);
                         XYBarRenderer scoreRenderer = new XYBarRenderer();
                         scoreRenderer.setShadowVisible(false);
 

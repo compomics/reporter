@@ -170,7 +170,7 @@ public class Wrapper {
                         "conf/reporter.log\n\n",
                         "Reporter - Startup Failed", JOptionPane.OK_OPTION);
 
-                File logFile = new File("conf",  "reporter.log");
+                File logFile = new File("conf", "reporter.log");
 
                 FileWriter f = new FileWriter(logFile);
                 f.write(temp);

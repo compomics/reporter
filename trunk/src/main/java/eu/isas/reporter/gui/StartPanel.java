@@ -1,9 +1,3 @@
-
-/*
- * StartPanel.java
- *
- * Created on Sep 8, 2010, 3:56:40 PM
- */
 package eu.isas.reporter.gui;
 
 import com.compomics.util.experiment.MsExperiment;
@@ -36,8 +30,9 @@ import javax.swing.table.DefaultTableModel;
 import org.xmlpull.v1.XmlPullParserException;
 
 /**
+ * @TODO: JavaDoc missing
  *
- * @author vaudel
+ * @author Marc Vaudel
  */
 public class StartPanel extends javax.swing.JPanel {
 
@@ -47,10 +42,13 @@ public class StartPanel extends javax.swing.JPanel {
     private ReporterMethodFactory methodsFactory = ReporterMethodFactory.getInstance();
     private PTMFactory ptmFactory = PTMFactory.getInstance();
     private Reporter parent;
-
     private HashMap<String, PTM> ptmMap = new HashMap<String, PTM>();
 
-    /** Creates new form StartPanel */
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param parent
+     */
     public StartPanel(Reporter parent) {
         this.parent = parent;
         loadModifications();
@@ -108,12 +106,14 @@ public class StartPanel extends javax.swing.JPanel {
         jPanel2 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         txtSpectraFileLocation = new javax.swing.JTextField();
-        browseSpectraButton = new javax.swing.JButton();
+        clearSpectraJButton = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();
         txtIdFileLocation = new javax.swing.JTextField();
-        EditIdButton = new javax.swing.JButton();
-        browseIdButton = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
+        editIdFilesJButton = new javax.swing.JButton();
+        addIdFilesButton = new javax.swing.JButton();
+        clearIdFilesJButton = new javax.swing.JButton();
+        addSpectraFilesJButton = new javax.swing.JButton();
+        editSpectraFilesJButton = new javax.swing.JButton();
         exitButton1 = new javax.swing.JButton();
         startButton = new javax.swing.JButton();
         jPanel8 = new javax.swing.JPanel();
@@ -200,17 +200,17 @@ public class StartPanel extends javax.swing.JPanel {
 
         jPanel1.setPreferredSize(new java.awt.Dimension(800, 600));
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Files Selection", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
+        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Files Selection"));
 
         jLabel2.setText("Spectra Files:");
 
         txtSpectraFileLocation.setEditable(false);
         txtSpectraFileLocation.setText("Please select file(s)");
 
-        browseSpectraButton.setText("Browse");
-        browseSpectraButton.addActionListener(new java.awt.event.ActionListener() {
+        clearSpectraJButton.setText("Clear");
+        clearSpectraJButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                browseSpectraButtonActionPerformed(evt);
+                clearSpectraJButtonActionPerformed(evt);
             }
         });
 
@@ -219,24 +219,38 @@ public class StartPanel extends javax.swing.JPanel {
         txtIdFileLocation.setEditable(false);
         txtIdFileLocation.setText("Please select file(s)");
 
-        EditIdButton.setText("Edit");
-        EditIdButton.addActionListener(new java.awt.event.ActionListener() {
+        editIdFilesJButton.setText("Edit");
+        editIdFilesJButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                EditIdButtonActionPerformed(evt);
+                editIdFilesJButtonActionPerformed(evt);
             }
         });
 
-        browseIdButton.setText("Add");
-        browseIdButton.addActionListener(new java.awt.event.ActionListener() {
+        addIdFilesButton.setText("Add");
+        addIdFilesButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                browseIdButtonActionPerformed(evt);
+                addIdFilesButtonActionPerformed(evt);
             }
         });
 
-        jButton1.setText("Clear");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        clearIdFilesJButton.setText("Clear");
+        clearIdFilesJButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                clearIdFilesJButtonActionPerformed(evt);
+            }
+        });
+
+        addSpectraFilesJButton.setText("Add");
+        addSpectraFilesJButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addSpectraFilesJButtonActionPerformed(evt);
+            }
+        });
+
+        editSpectraFilesJButton.setText("Edit");
+        editSpectraFilesJButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editSpectraFilesJButtonActionPerformed(evt);
             }
         });
 
@@ -251,22 +265,26 @@ public class StartPanel extends javax.swing.JPanel {
                     .add(jLabel2))
                 .add(18, 18, 18)
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel2Layout.createSequentialGroup()
-                        .add(txtIdFileLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 483, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, txtSpectraFileLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 581, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, txtIdFileLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 581, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel2Layout.createSequentialGroup()
+                        .add(addIdFilesButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(browseIdButton)
+                        .add(editIdFilesJButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(EditIdButton)
+                        .add(clearIdFilesJButton))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel2Layout.createSequentialGroup()
+                        .add(addSpectraFilesJButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jButton1))
-                    .add(jPanel2Layout.createSequentialGroup()
-                        .add(txtSpectraFileLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 629, Short.MAX_VALUE)
+                        .add(editSpectraFilesJButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 67, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(browseSpectraButton)))
+                        .add(clearSpectraJButton)))
                 .addContainerGap())
         );
 
-        jPanel2Layout.linkSize(new java.awt.Component[] {EditIdButton, browseIdButton, browseSpectraButton, jButton1}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+        jPanel2Layout.linkSize(new java.awt.Component[] {addIdFilesButton, addSpectraFilesJButton, clearIdFilesJButton, clearSpectraJButton, editIdFilesJButton, editSpectraFilesJButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
 
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -275,14 +293,16 @@ public class StartPanel extends javax.swing.JPanel {
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel2)
                     .add(txtSpectraFileLocation, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(browseSpectraButton))
+                    .add(clearSpectraJButton)
+                    .add(editSpectraFilesJButton)
+                    .add(addSpectraFilesJButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel3)
                     .add(txtIdFileLocation, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jButton1)
-                    .add(EditIdButton)
-                    .add(browseIdButton))
+                    .add(clearIdFilesJButton)
+                    .add(editIdFilesJButton)
+                    .add(addIdFilesButton))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -303,7 +323,7 @@ public class StartPanel extends javax.swing.JPanel {
             }
         });
 
-        jPanel8.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Sample Assignement", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
+        jPanel8.setBorder(javax.swing.BorderFactory.createTitledBorder("Sample Assignement"));
 
         sampleAssignmentTable.setModel(new AssignementTableModel());
         jScrollPane3.setViewportView(sampleAssignmentTable);
@@ -319,11 +339,11 @@ public class StartPanel extends javax.swing.JPanel {
             .add(jPanel8Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jPanel8Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 811, Short.MAX_VALUE)
+                    .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 909, Short.MAX_VALUE)
                     .add(jPanel8Layout.createSequentialGroup()
                         .add(jLabel5)
                         .add(26, 26, 26)
-                        .add(comboMethod1, 0, 701, Short.MAX_VALUE)))
+                        .add(comboMethod1, 0, 799, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel8Layout.setVerticalGroup(
@@ -334,11 +354,11 @@ public class StartPanel extends javax.swing.JPanel {
                     .add(jLabel5)
                     .add(comboMethod1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(18, 18, 18)
-                .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 204, Short.MAX_VALUE)
+                .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
-        jPanel13.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Project", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
+        jPanel13.setBorder(javax.swing.BorderFactory.createTitledBorder("Project"));
 
         txtProject.setText("Project name");
         txtProject.addActionListener(new java.awt.event.ActionListener() {
@@ -369,9 +389,9 @@ public class StartPanel extends javax.swing.JPanel {
                     .add(jLabel25))
                 .add(20, 20, 20)
                 .add(jPanel13Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(sampleNameTxt, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 703, Short.MAX_VALUE)
-                    .add(txtProject, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 703, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, replicateNumberTxt, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 703, Short.MAX_VALUE))
+                    .add(sampleNameTxt, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 801, Short.MAX_VALUE)
+                    .add(txtProject, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 801, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, replicateNumberTxt, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 801, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel13Layout.setVerticalGroup(
@@ -396,13 +416,13 @@ public class StartPanel extends javax.swing.JPanel {
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1Layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel13, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(jPanel8, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel8, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel13, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(jPanel1Layout.createSequentialGroup()
                         .add(startButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 57, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(exitButton1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 57, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
@@ -417,16 +437,16 @@ public class StartPanel extends javax.swing.JPanel {
                 .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel8, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(exitButton1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(startButton))
-                .add(23, 23, 23))
+                .addContainerGap())
         );
 
         jTabbedPane1.addTab("Processing", jPanel1);
 
-        jPanel5.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Reporter Ions Configuration", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
+        jPanel5.setBorder(javax.swing.BorderFactory.createTitledBorder("Reporter Ions Configuration"));
 
         reporterIonConfigurationTable.setModel(new StartPanel.IonTableModel());
         reporterIonConfigurationTable.setName(""); // NOI18N
@@ -438,7 +458,7 @@ public class StartPanel extends javax.swing.JPanel {
             jPanel5Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel5Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 811, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 909, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel5Layout.setVerticalGroup(
@@ -449,7 +469,7 @@ public class StartPanel extends javax.swing.JPanel {
                 .addContainerGap())
         );
 
-        jPanel6.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Isotope Correction", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
+        jPanel6.setBorder(javax.swing.BorderFactory.createTitledBorder("Isotope Correction"));
 
         isotopeCorrectionTable.setModel(new CorrectionTableModel());
         jScrollPane2.setViewportView(isotopeCorrectionTable);
@@ -460,18 +480,18 @@ public class StartPanel extends javax.swing.JPanel {
             jPanel6Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel6Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 811, Short.MAX_VALUE)
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 909, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel6Layout.setVerticalGroup(
             jPanel6Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel6Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE)
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 140, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
-        jPanel7.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Configuration File", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
+        jPanel7.setBorder(javax.swing.BorderFactory.createTitledBorder("Configuration File"));
 
         txtConfigurationFileLocation.setEditable(false);
 
@@ -492,7 +512,7 @@ public class StartPanel extends javax.swing.JPanel {
             jPanel7Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel7Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(txtConfigurationFileLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 580, Short.MAX_VALUE)
+                .add(txtConfigurationFileLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 678, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(browseConfigButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -526,7 +546,7 @@ public class StartPanel extends javax.swing.JPanel {
             }
         });
 
-        jPanel14.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Method", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
+        jPanel14.setBorder(javax.swing.BorderFactory.createTitledBorder("Method"));
 
         jLabel4.setText("Method Selected:");
 
@@ -540,7 +560,7 @@ public class StartPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(jLabel4)
                 .add(18, 18, 18)
-                .add(comboMethod2, 0, 709, Short.MAX_VALUE)
+                .add(comboMethod2, 0, 807, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel14Layout.setVerticalGroup(
@@ -585,7 +605,7 @@ public class StartPanel extends javax.swing.JPanel {
 
         jTabbedPane1.addTab("Configuration", jPanel4);
 
-        jPanel10.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Spectrum Analysis", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
+        jPanel10.setBorder(javax.swing.BorderFactory.createTitledBorder("Spectrum Analysis"));
 
         jLabel6.setText("Ion Selection Tolerance [m/z]:");
 
@@ -601,7 +621,7 @@ public class StartPanel extends javax.swing.JPanel {
                 .add(jLabel6)
                 .add(18, 18, 18)
                 .add(ionToleranceTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 102, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(557, Short.MAX_VALUE))
+                .addContainerGap(655, Short.MAX_VALUE))
         );
         jPanel10Layout.setVerticalGroup(
             jPanel10Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -623,7 +643,7 @@ public class StartPanel extends javax.swing.JPanel {
             }
         });
 
-        jPanel11.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Identification Analysis", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
+        jPanel11.setBorder(javax.swing.BorderFactory.createTitledBorder("Identification Analysis"));
 
         jLabel7.setText("FDR Threshold:");
 
@@ -659,16 +679,16 @@ public class StartPanel extends javax.swing.JPanel {
         xTandemEvalueTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         xTandemEvalueTxt.setText("1");
 
-        jLabel11.setText("Link to quantification:");
+        jLabel11.setText("Link to Quantification:");
 
-        sameSpectra.setText("Same spectra");
+        sameSpectra.setText("Same Spectra");
         sameSpectra.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 sameSpectraActionPerformed(evt);
             }
         });
 
-        precursorMatching.setText("Precursor matching:");
+        precursorMatching.setText("Precursor Matching:");
         precursorMatching.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 precursorMatchingActionPerformed(evt);
@@ -784,7 +804,7 @@ public class StartPanel extends javax.swing.JPanel {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jPanel12.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Identification Pre-Processing", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
+        jPanel12.setBorder(javax.swing.BorderFactory.createTitledBorder("Identification Pre-Processing"));
 
         jLabel12.setText("nAA min:");
 
@@ -864,21 +884,20 @@ public class StartPanel extends javax.swing.JPanel {
                             .add(18, 18, 18)
                             .add(deltaMassTxt)))
                     .add(missedCleavageCheck))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jLabel15)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 137, Short.MAX_VALUE)
-                .add(jPanel12Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel12Layout.createSequentialGroup()
-                        .add(jScrollPane4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 169, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jPanel12Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(addPtm)
-                            .add(removePtm)))
-                    .add(jLabel10))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jLabel15)
+                .add(24, 24, 24)
                 .add(jPanel12Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel23)
-                    .add(jScrollPane5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 199, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jLabel10)
+                    .add(jScrollPane4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 287, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(jPanel12Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(addPtm)
+                    .add(removePtm))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(jPanel12Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jScrollPane5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 290, Short.MAX_VALUE)
+                    .add(jLabel23))
                 .addContainerGap())
         );
 
@@ -889,39 +908,40 @@ public class StartPanel extends javax.swing.JPanel {
         jPanel12Layout.setVerticalGroup(
             jPanel12Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel12Layout.createSequentialGroup()
-                .add(jPanel12Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .add(jPanel12Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                     .add(jPanel12Layout.createSequentialGroup()
-                        .add(31, 31, 31)
-                        .add(jPanel12Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(jLabel12)
-                            .add(nAaMinTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jPanel12Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(jLabel13)
-                            .add(nAaMaxTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jPanel12Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(jLabel14)
-                            .add(deltaMassTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(jLabel15))
-                        .add(18, 18, 18)
-                        .add(missedCleavageCheck))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel12Layout.createSequentialGroup()
                         .addContainerGap()
                         .add(jPanel12Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(jPanel12Layout.createSequentialGroup()
+                                .add(20, 20, 20)
                                 .add(jPanel12Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                                    .add(jLabel23)
-                                    .add(jLabel10))
+                                    .add(jLabel12)
+                                    .add(nAaMinTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(jPanel12Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(jScrollPane4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 163, Short.MAX_VALUE)
-                                    .add(jScrollPane5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 163, Short.MAX_VALUE)))
+                                .add(jPanel12Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                                    .add(nAaMaxTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(jLabel13))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(jPanel12Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                                    .add(jLabel14)
+                                    .add(deltaMassTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(jLabel15))
+                                .add(18, 18, 18)
+                                .add(missedCleavageCheck))
                             .add(jPanel12Layout.createSequentialGroup()
-                                .add(53, 53, 53)
-                                .add(addPtm)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(removePtm)))))
+                                .add(jPanel12Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                                    .add(jLabel10)
+                                    .add(jLabel23))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(jScrollPane4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE))))
+                    .add(jPanel12Layout.createSequentialGroup()
+                        .add(76, 76, 76)
+                        .add(addPtm)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(removePtm))
+                    .add(jPanel12Layout.createSequentialGroup()
+                        .add(31, 31, 31)
+                        .add(jScrollPane5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 203, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
 
@@ -932,10 +952,10 @@ public class StartPanel extends javax.swing.JPanel {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel9Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel10, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel11, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 847, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel12, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(exitButton3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel10, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(exitButton3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel11, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 941, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel9Layout.setVerticalGroup(
@@ -944,10 +964,10 @@ public class StartPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(jPanel10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel12, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(jPanel12, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel11, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 42, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(exitButton3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -958,7 +978,7 @@ public class StartPanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jTabbedPane1)
+            .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 966, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -966,6 +986,11 @@ public class StartPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param evt
+     */
     private void browseConfigButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseConfigButtonActionPerformed
         JFileChooser fileChooser = new JFileChooser(parent.getLastSelectedFolder());
         fileChooser.setDialogTitle("Select Configuration file");
@@ -995,69 +1020,69 @@ public class StartPanel extends javax.swing.JPanel {
         }
 }//GEN-LAST:event_browseConfigButtonActionPerformed
 
-    private void EditIdButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_EditIdButtonActionPerformed
-        FileListEdit fileListEdit = new FileListEdit(this, idFiles);
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param evt
+     */
+    private void editIdFilesJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editIdFilesJButtonActionPerformed
+        FilterListDialog fileListEdit = new FilterListDialog(parent.getMainFrame(), true, this, idFiles, true);
         fileListEdit.setLocationRelativeTo(this);
         fileListEdit.setVisible(true);
-}//GEN-LAST:event_EditIdButtonActionPerformed
+}//GEN-LAST:event_editIdFilesJButtonActionPerformed
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param evt
+     */
     private void txtProjectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtProjectActionPerformed
         experiment.setReference(txtProject.getText().trim());
 }//GEN-LAST:event_txtProjectActionPerformed
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param evt
+     */
     private void exitButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitButton1ActionPerformed
         parent.close(0);
     }//GEN-LAST:event_exitButton1ActionPerformed
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param evt
+     */
     private void exitButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitButton2ActionPerformed
         parent.close(0);
     }//GEN-LAST:event_exitButton2ActionPerformed
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param evt
+     */
     private void exitButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitButton3ActionPerformed
         parent.close(0);
     }//GEN-LAST:event_exitButton3ActionPerformed
 
-    private void browseSpectraButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseSpectraButtonActionPerformed
-        JFileChooser fileChooser = new JFileChooser(parent.getLastSelectedFolder());
-        fileChooser.setDialogTitle("Select Spectra File(s)");
-        fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-        fileChooser.setMultiSelectionEnabled(true);
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param evt
+     */
+    private void clearSpectraJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearSpectraJButtonActionPerformed
+        mgfFiles = new ArrayList<File>();
+        txtSpectraFileLocation.setText("Please select file(s)");
+    }//GEN-LAST:event_clearSpectraJButtonActionPerformed
 
-        FileFilter filter = new FileFilter() {
-
-            public boolean accept(File myFile) {
-                return myFile.getName().endsWith("mgf")
-                        || myFile.isDirectory();
-            }
-
-            public String getDescription() {
-                return "Supported formats: .mgf";
-            }
-        };
-
-        fileChooser.setFileFilter(filter);
-        int returnVal = fileChooser.showDialog(this.getParent(), "Add");
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-            mgfFiles = new ArrayList<File>();
-            for (File newFile : fileChooser.getSelectedFiles()) {
-                if (newFile.isDirectory()) {
-                    File[] tempFiles = newFile.listFiles();
-                    for (File file : tempFiles) {
-                        if (file.getName().endsWith("mgf")) {
-                            mgfFiles.add(file);
-                        }
-                    }
-                } else {
-                    mgfFiles.add(newFile);
-                }
-
-                parent.setLastSelectedFolder(newFile.getPath());
-            }
-            txtSpectraFileLocation.setText(mgfFiles.size() + " file(s) selected.");
-        }
-    }//GEN-LAST:event_browseSpectraButtonActionPerformed
-
-    private void browseIdButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseIdButtonActionPerformed
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param evt
+     */
+    private void addIdFilesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addIdFilesButtonActionPerformed
 
         JFileChooser fileChooser = new JFileChooser(parent.getLastSelectedFolder());
         fileChooser.setDialogTitle("Select Identification File(s)");
@@ -1079,35 +1104,58 @@ public class StartPanel extends javax.swing.JPanel {
         };
 
         fileChooser.setFileFilter(filter);
+        
         int returnVal = fileChooser.showDialog(this.getParent(), "Add");
+
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             for (File newFile : fileChooser.getSelectedFiles()) {
                 if (newFile.isDirectory()) {
                     File[] tempFiles = newFile.listFiles();
                     for (File file : tempFiles) {
-                        if (file.getName().endsWith("dat")) {
-                            idFiles.add(file);
+                        if (file.getName().endsWith("dat")
+                                || file.getName().endsWith("omx")
+                                || file.getName().endsWith("xml")) {
+                            if (!idFiles.contains(file)) {
+                                idFiles.add(file);
+                            }
                         }
                     }
                 } else {
-                    idFiles.add(newFile);
+                    if (newFile.getName().endsWith("dat")
+                            || newFile.getName().endsWith("omx")
+                            || newFile.getName().endsWith("xml")) {
+                        if (!idFiles.contains(newFile)) {
+                            idFiles.add(newFile);
+                        }
+                    }
                 }
 
                 parent.setLastSelectedFolder(newFile.getPath());
             }
+            
             txtIdFileLocation.setText(idFiles.size() + " file(s) selected.");
         }
-    }//GEN-LAST:event_browseIdButtonActionPerformed
+    }//GEN-LAST:event_addIdFilesButtonActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param evt
+     */
+    private void clearIdFilesJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearIdFilesJButtonActionPerformed
         idFiles = new ArrayList<File>();
-        txtSpectraFileLocation.setText("Please add identification files.");
-    }//GEN-LAST:event_jButton1ActionPerformed
+        txtIdFileLocation.setText("Please select file(s)");
+    }//GEN-LAST:event_clearIdFilesJButtonActionPerformed
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param evt
+     */
     private void startButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startButtonActionPerformed
         if (validateInput()) {
             ArrayList<String> selectedModifications = new ArrayList<String>();
-            for (int i = 0 ; i < selectedPtm.getModel().getSize() ; i++) {
+            for (int i = 0; i < selectedPtm.getModel().getSize(); i++) {
                 selectedModifications.add((String) selectedPtm.getModel().getElementAt(i));
             }
 
@@ -1146,6 +1194,11 @@ public class StartPanel extends javax.swing.JPanel {
         // TODO add your handling code here:
     }//GEN-LAST:event_deltaMassTxtActionPerformed
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param evt
+     */
     private void addPtmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addPtmActionPerformed
         int nNew = ptmList.getSelectedValues().length;
         int nSelected = selectedPtm.getModel().getSize();
@@ -1163,6 +1216,11 @@ public class StartPanel extends javax.swing.JPanel {
         ptmList.setListData(getModifications());
     }//GEN-LAST:event_addPtmActionPerformed
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param evt
+     */
     private void removePtmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removePtmActionPerformed
         int nNew = selectedPtm.getSelectedValues().length;
         int nSelected = selectedPtm.getModel().getSize();
@@ -1188,30 +1246,106 @@ public class StartPanel extends javax.swing.JPanel {
         ptmList.setListData(getModifications());
     }//GEN-LAST:event_removePtmActionPerformed
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param evt
+     */
     private void sameSpectraActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sameSpectraActionPerformed
         precursorMatching.setSelected(!sameSpectra.isSelected());
     }//GEN-LAST:event_sameSpectraActionPerformed
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param evt
+     */
     private void precursorMatchingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_precursorMatchingActionPerformed
         sameSpectra.setSelected(!precursorMatching.isSelected());
     }//GEN-LAST:event_precursorMatchingActionPerformed
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param evt
+     */
+    private void addSpectraFilesJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addSpectraFilesJButtonActionPerformed
+
+        JFileChooser fileChooser = new JFileChooser(parent.getLastSelectedFolder());
+        fileChooser.setDialogTitle("Select Spectra File(s)");
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        fileChooser.setMultiSelectionEnabled(true);
+
+        FileFilter filter = new FileFilter() {
+
+            public boolean accept(File myFile) {
+                return myFile.getName().endsWith("mgf")
+                        || myFile.isDirectory();
+            }
+
+            public String getDescription() {
+                return "Supported formats: .mgf";
+            }
+        };
+
+        fileChooser.setFileFilter(filter);
+
+        int returnVal = fileChooser.showDialog(this.getParent(), "Add");
+
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            for (File newFile : fileChooser.getSelectedFiles()) {
+                if (newFile.isDirectory()) {
+                    File[] tempFiles = newFile.listFiles();
+                    for (File file : tempFiles) {
+                        if (file.getName().endsWith("mgf")) {
+                            if (!mgfFiles.contains(file)) {
+                                mgfFiles.add(file);
+                            }
+                        }
+                    }
+                } else {
+                    if (newFile.getName().endsWith("mgf")) {
+                        if (!mgfFiles.contains(newFile)) {
+                            mgfFiles.add(newFile);
+                        }
+                    }
+                }
+
+                parent.setLastSelectedFolder(newFile.getPath());
+            }
+
+            txtSpectraFileLocation.setText(mgfFiles.size() + " file(s) selected.");
+        }
+    }//GEN-LAST:event_addSpectraFilesJButtonActionPerformed
+
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param evt
+     */
+    private void editSpectraFilesJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editSpectraFilesJButtonActionPerformed
+        FilterListDialog fileListEdit = new FilterListDialog(parent.getMainFrame(), true, this, mgfFiles, false);
+        fileListEdit.setLocationRelativeTo(this);
+        fileListEdit.setVisible(true);
+    }//GEN-LAST:event_editSpectraFilesJButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton EditIdButton;
+    private javax.swing.JButton addIdFilesButton;
     private javax.swing.JButton addPtm;
+    private javax.swing.JButton addSpectraFilesJButton;
     private javax.swing.JButton browseConfigButton;
-    private javax.swing.JButton browseIdButton;
-    private javax.swing.JButton browseSpectraButton;
+    private javax.swing.JButton clearIdFilesJButton;
+    private javax.swing.JButton clearSpectraJButton;
     private javax.swing.JComboBox comboMethod1;
     private javax.swing.JComboBox comboMethod2;
     private javax.swing.JTextField deltaMassTxt;
+    private javax.swing.JButton editIdFilesJButton;
+    private javax.swing.JButton editSpectraFilesJButton;
     private javax.swing.JButton exitButton1;
     private javax.swing.JButton exitButton2;
     private javax.swing.JButton exitButton3;
     private javax.swing.JTextField fdrThresholdTxt;
     private javax.swing.JTextField ionToleranceTxt;
     private javax.swing.JTable isotopeCorrectionTable;
-    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
@@ -1290,12 +1424,20 @@ public class StartPanel extends javax.swing.JPanel {
     private ArrayList<File> mgfFiles = new ArrayList<File>();
     private ArrayList<File> idFiles = new ArrayList<File>();
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @return
+     */
     public int getReference() {
         return reference;
     }
 
-
-
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @return
+     */
     private ReporterIonQuantification getReporterIonQuantification() {
         ReporterIonQuantification quantification = new ReporterIonQuantification(selectedMethod.getMethodIndex());
         for (int row = 0; row < sampleAssignmentTable.getRowCount(); row++) {
@@ -1306,6 +1448,12 @@ public class StartPanel extends javax.swing.JPanel {
         return quantification;
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param methodName
+     * @return
+     */
     private ReporterMethod getMethod(String methodName) {
         if (methodsFactory.getMethods() == null) {
             importMethods();
@@ -1318,6 +1466,9 @@ public class StartPanel extends javax.swing.JPanel {
         return methodsFactory.getMethods().get(0);
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     */
     private void refresh() {
         reference = 0;
         comboMethod1.setSelectedItem(selectedMethod);
@@ -1327,26 +1478,56 @@ public class StartPanel extends javax.swing.JPanel {
         sampleAssignmentTable.setModel(new AssignementTableModel());
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @return
+     */
     public double getIonTolerance() {
         return new Double(ionToleranceTxt.getText().trim());
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @return
+     */
     public double getFdrThreshold() {
         return new Double(fdrThresholdTxt.getText().trim());
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @return
+     */
     private double getNAaMin() {
         return new Double(nAaMinTxt.getText().trim());
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @return
+     */
     private double getNAaMax() {
         return new Double(nAaMaxTxt.getText().trim());
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @return
+     */
     private double getDeltaMass() {
         return new Double(deltaMassTxt.getText().trim());
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @return
+     */
     public HashMap<Integer, Double> getEValues() {
         HashMap<Integer, Double> result = new HashMap<Integer, Double>();
         result.put(SearchEngine.MASCOT, new Double(mascotEvalueTxt.getText().trim()));
@@ -1355,6 +1536,9 @@ public class StartPanel extends javax.swing.JPanel {
         return result;
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     */
     private void importMethods() {
         try {
             methodsFactory.importMethods(new File(METHODS_FILE));
@@ -1363,6 +1547,9 @@ public class StartPanel extends javax.swing.JPanel {
         }
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     */
     private void loadModifications() {
         try {
             ptmFactory.importModifications(new File(MODIFICATIONS_FILE));
@@ -1381,9 +1568,14 @@ public class StartPanel extends javax.swing.JPanel {
         }
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @return
+     */
     private String[] getModifications() {
         int nSelected = selectedPtm.getModel().getSize();
-        String[] ptmNames = new String[ptmMap.keySet().size()-nSelected];
+        String[] ptmNames = new String[ptmMap.keySet().size() - nSelected];
         int cpt = 0;
         boolean found;
         for (String name : ptmMap.keySet()) {
@@ -1403,6 +1595,9 @@ public class StartPanel extends javax.swing.JPanel {
         return ptmNames;
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     */
     private void importMethodsError() {
         JOptionPane.showMessageDialog(this, "\"" + METHODS_FILE + "\" could not be found, please select a method file.", "No Spectra File Selected", JOptionPane.ERROR_MESSAGE);
         JFileChooser fileChooser = new JFileChooser(parent.getLastSelectedFolder());
@@ -1430,6 +1625,11 @@ public class StartPanel extends javax.swing.JPanel {
         }
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @return
+     */
     private boolean validateInput() {
         if (mgfFiles.isEmpty()) {
             JOptionPane.showMessageDialog(this, "please select a spectrum file.", "No Spectra File Selected", JOptionPane.ERROR_MESSAGE);
@@ -1509,20 +1709,47 @@ public class StartPanel extends javax.swing.JPanel {
         return true;
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param files
+     */
     public void setIdFiles(ArrayList<File> files) {
         idFiles = files;
-        txtIdFileLocation.setText(idFiles.size() + " files selected.");
+        txtIdFileLocation.setText(idFiles.size() + " file(s) selected.");
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param files
+     */
+    public void setSpectraFiles(ArrayList<File> files) {
+        mgfFiles = files;
+        txtSpectraFileLocation.setText(mgfFiles.size() + " file(s) selected.");
+    }
+
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @return
+     */
     public String getLastSelectedFolder() {
         return parent.getLastSelectedFolder();
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param lastSelectedFolder
+     */
     public void setLastSelectedFolder(String lastSelectedFolder) {
         parent.setLastSelectedFolder(lastSelectedFolder);
     }
 
-    // Private class
+    /**
+     * @TODO: JavaDoc missing
+     */
     private class AssignementTableModel extends DefaultTableModel {
 
         @Override
@@ -1588,7 +1815,9 @@ public class StartPanel extends javax.swing.JPanel {
         }
     }
 
-    // Private class
+    /**
+     * @TODO: JavaDoc missing
+     */
     private class IonTableModel extends DefaultTableModel {
 
         @Override
@@ -1635,7 +1864,9 @@ public class StartPanel extends javax.swing.JPanel {
         }
     }
 
-    // Private class
+    /**
+     * @TODO: JavaDoc missing
+     */
     private class CorrectionTableModel extends DefaultTableModel {
 
         @Override

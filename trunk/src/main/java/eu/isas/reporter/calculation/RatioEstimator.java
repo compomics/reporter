@@ -15,8 +15,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 /**
+ * @TODO: JavaDoc missing
  *
- * @author Marc
+ * @author Marc Vaudel
  */
 public class RatioEstimator {
 
@@ -25,6 +26,14 @@ public class RatioEstimator {
     private ReporterIonQuantification quantification;
     private Ignorer ignorer;
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param quantification
+     * @param resolution
+     * @param k
+     * @param ignorer
+     */
     public RatioEstimator(ReporterIonQuantification quantification, double resolution, double k, Ignorer ignorer) {
         this.resolution = resolution;
         this.k = k;
@@ -32,6 +41,11 @@ public class RatioEstimator {
         this.ignorer = ignorer;
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param proteinQuantification
+     */
     public void estimateRatios(ProteinQuantification proteinQuantification) {
         for (PeptideQuantification peptideQuantification : proteinQuantification.getPeptideQuantification()) {
             estimateRatios(peptideQuantification);
@@ -93,6 +107,15 @@ public class RatioEstimator {
         proteinQuantification.addUrParam(limits);
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param ion
+     * @param proteinQuantification
+     * @param ratio
+     * @param window
+     * @return
+     */
     private int getNPeptides(int ion, ProteinQuantification proteinQuantification, double ratio, double window) {
         int nPeptides = 0;
         IgnoredRatios ignoredRatios = new IgnoredRatios();
@@ -108,6 +131,11 @@ public class RatioEstimator {
         return nPeptides;
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param peptideQuantification
+     */
     private void estimateRatios(PeptideQuantification peptideQuantification) {
         IgnoredRatios ignoredRatios = new IgnoredRatios();
         HashMap<Integer, ArrayList<Double>> allRatios = new HashMap<Integer, ArrayList<Double>>();
@@ -176,6 +204,15 @@ public class RatioEstimator {
         peptideQuantification.addUrParam(ratioLimits);
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param ion
+     * @param peptideQuantification
+     * @param ratio
+     * @param window
+     * @return
+     */
     private int getNSpectra(int ion, PeptideQuantification peptideQuantification, double ratio, double window) {
         int nSpectra = 0;
         IgnoredRatios ignoredRatios = new IgnoredRatios();
@@ -191,6 +228,12 @@ public class RatioEstimator {
         return nSpectra;
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param ratios
+     * @return
+     */
     private double estimateRatios(double[] ratios) {
         if (ratios.length < 6) {
             return BasicStats.median(ratios);
@@ -199,6 +242,12 @@ public class RatioEstimator {
         }
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param ratios
+     * @return
+     */
     private double mEstimate(double[] ratios) {
         Arrays.sort(ratios);
         double window = k * BasicStats.mad(ratios);

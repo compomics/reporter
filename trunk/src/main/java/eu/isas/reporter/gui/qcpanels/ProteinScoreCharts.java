@@ -17,8 +17,9 @@ import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.data.xy.DefaultIntervalXYDataset;
 
 /**
+ * @TODO: JavaDoc missing
  *
- * @author Marc
+ * @author Marc Vaudel
  */
 public class ProteinScoreCharts {
 
@@ -26,6 +27,11 @@ public class ProteinScoreCharts {
     private ReporterIonQuantification quantification;
     private RatioChart ratioCharts;
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param quantification
+     */
     public ProteinScoreCharts(ReporterIonQuantification quantification) {
         this.quantification = quantification;
         ArrayList<ReporterIon> reporterIons = quantification.getReporterMethod().getReporterIons();
@@ -33,10 +39,18 @@ public class ProteinScoreCharts {
         createRatioCharts();
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @return
+     */
     public JPanel getChart() {
         return new ChartPanel(new JFreeChart("Protein Quantification Quality", ratioCharts.getPlot()));
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     */
     private void createRatioCharts() {
 
         ArrayList<ReporterIon> ions = quantification.getReporterMethod().getReporterIons();
@@ -111,10 +125,18 @@ public class ProteinScoreCharts {
         ratioCharts = new RatioChart(dataset);
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param proteinQuantification
+     */
     public void setProtein(ProteinQuantification proteinQuantification) {
         ratioCharts.setProtein(proteinQuantification);
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     */
     public class RatioChart {
 
         private XYPlot currentPlot = new XYPlot();
@@ -144,10 +166,20 @@ public class ProteinScoreCharts {
             currentPlot.mapDatasetToRangeAxis(1000, 0);
         }
 
+        /**
+         * @TODO: JavaDoc missing
+         *
+         * @return
+         */
         public XYPlot getPlot() {
             return currentPlot;
         }
 
+        /**
+         * @TODO: JavaDoc missing
+         *
+         * @param proteinQuantification
+         */
         public void setProtein(ProteinQuantification proteinQuantification) {
             Double currentScore;
             IgnoredRatios ignoredRatios = (IgnoredRatios) proteinQuantification.getUrParam(new IgnoredRatios());
@@ -160,7 +192,8 @@ public class ProteinScoreCharts {
                         double[] scoreHeight = {1};
                         double[][] scoreValues = {score, score, score, scoreHeight, scoreHeight, scoreHeight};
                         DefaultIntervalXYDataset scoreDataset = new DefaultIntervalXYDataset();
-                        scoreDataset.addSeries(proteinQuantification.getProteinRatios().get(ion).getMeasureSample() + "/" + proteinQuantification.getProteinRatios().get(ion).getControlSample(), scoreValues);
+                        scoreDataset.addSeries(proteinQuantification.getProteinRatios().get(ion).getMeasureSample() + "/"
+                                + proteinQuantification.getProteinRatios().get(ion).getControlSample(), scoreValues);
                         XYBarRenderer scoreRenderer = new XYBarRenderer();
                         scoreRenderer.setShadowVisible(false);
 

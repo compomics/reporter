@@ -3,11 +3,18 @@ package eu.isas.reporter.calculation;
 import java.util.Arrays;
 
 /**
+ * @TODO: JavaDoc missing
  *
- * @author Marc
+ * @author Marc Vaudel
  */
 public class BasicStats {
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param ratios
+     * @return
+     */
     public static double median(double[] ratios) {
         Arrays.sort(ratios);
         int length = ratios.length;
@@ -21,6 +28,12 @@ public class BasicStats {
         }
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param ratios
+     * @return
+     */
     public static double mad(double[] ratios) {
         double[] deviations = new double[ratios.length];
         double med = median(ratios);

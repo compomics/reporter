@@ -20,8 +20,9 @@ import java.util.ArrayList;
 import javax.swing.JOptionPane;
 
 /**
+ * @TODO: JavaDoc missing
  *
- * @author Marc
+ * @author Marc Vaudel
  */
 public class ReporterExporter {
 
@@ -33,11 +34,23 @@ public class ReporterExporter {
     private ArrayList<ReporterIon> ions;
     private int reference;
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param experiment
+     * @param separator
+     */
     public ReporterExporter(MsExperiment experiment, String separator) {
         this.separator = separator;
         this.experiment = experiment;
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param quantification
+     * @param location
+     */
     public void exportResults(ReporterIonQuantification quantification, String location) {
 
         ions = quantification.getReporterMethod().getReporterIons();
@@ -63,13 +76,14 @@ public class ReporterExporter {
             Writer peptidesOutput = new BufferedWriter(new FileWriter(peptidesFile));
             Writer proteinsOutput = new BufferedWriter(new FileWriter(proteinsFile));
 
-            String content = "Protein" + separator + "Sequence" + separator + "Variable Modifications" + separator + "Spectrum" + separator + "Spectrum File" + separator + "Identification File" + separator + "Mass Error" + separator + "Mascot E-Value" + separator + "OMSSA E-Value" + separator + "X!Tandem E-Value" + separator + getRatiosLabels(quantification) + getIntensitiesLabels() + "Comment" + "\n";
+            String content = "Protein" + separator + "Sequence" + separator + "Variable Modifications" + separator + "Spectrum" + separator 
+                    + "Spectrum File" + separator + "Identification File" + separator + "Mass Error" + separator + "Mascot E-Value" + separator
+                    + "OMSSA E-Value" + separator + "X!Tandem E-Value" + separator + getRatiosLabels(quantification) + getIntensitiesLabels() + "Comment" + "\n";
             spectraOutput.write(content);
             content = "Protein" + separator + "Sequence" + separator + "number of Spectra" + separator + getRatiosLabels(quantification) + "Comment" + "\n";
             peptidesOutput.write(content);
             content = "Protein" + separator + "Number of Peptides" + separator + "Number of Spectra" + separator + getRatiosLabels(quantification) + "Comment" + "\n";
             proteinsOutput.write(content);
-
 
             IgnoredRatios ignoredRatios = new IgnoredRatios();
             boolean seConflict, found;
@@ -135,7 +149,10 @@ public class ReporterExporter {
                                 comment += ion.getIndex() + " ignored. ";
                             }
                         }
-                        content = accession + separator + sequence + separator + variableModifications + separator + spectrumTitle + separator + spectrumFile + separator + idFile + separator + deltaMass + separator + mascotEValue + separator + omssaEValue + separator + xTandemEValue + separator + getRatios(spectrumQuantification) + getIntensities(spectrumQuantification) + comment + "\n";
+                        content = accession + separator + sequence + separator + variableModifications + separator + spectrumTitle
+                                + separator + spectrumFile + separator + idFile + separator + deltaMass + separator + mascotEValue
+                                + separator + omssaEValue + separator + xTandemEValue + separator + getRatios(spectrumQuantification)
+                                + getIntensities(spectrumQuantification) + comment + "\n";
                         spectraOutput.write(content);
                     }
                     comment = "";
@@ -145,7 +162,8 @@ public class ReporterExporter {
                             comment += ion.getIndex() + " ignored. ";
                         }
                     }
-                    content = accession + separator + sequence + separator + peptideQuantification.getSpectrumQuantification().size() + separator + getRatios(peptideQuantification) + comment + "\n";
+                    content = accession + separator + sequence + separator + peptideQuantification.getSpectrumQuantification().size()
+                            + separator + getRatios(peptideQuantification) + comment + "\n";
                     peptidesOutput.write(content);
                 }
                 comment = "";
@@ -155,7 +173,8 @@ public class ReporterExporter {
                         comment += ion.getIndex() + " ignored. ";
                     }
                 }
-                content = accession + separator + proteinQuantification.getPeptideQuantification().size() + separator + proteinQuantification.getProteinMatch().getSpectrumCount() + separator + getRatios(proteinQuantification) + comment + "\n";
+                content = accession + separator + proteinQuantification.getPeptideQuantification().size() + separator
+                        + proteinQuantification.getProteinMatch().getSpectrumCount() + separator + getRatios(proteinQuantification) + comment + "\n";
                 proteinsOutput.write(content);
             }
 
@@ -169,9 +188,14 @@ public class ReporterExporter {
             JOptionPane.showMessageDialog(null, "Output Failed" + report, "Output Failed", JOptionPane.ERROR_MESSAGE);
             return;
         }
-
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param quantification
+     * @return
+     */
     private String getRatiosLabels(ReporterIonQuantification quantification) {
         String result = "";
         for (ReporterIon ion : ions) {
@@ -181,6 +205,12 @@ public class ReporterExporter {
         return result;
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param proteinQuantification
+     * @return
+     */
     private String getRatios(ProteinQuantification proteinQuantification) {
         String result = "";
         for (ReporterIon ion : ions) {
@@ -193,6 +223,12 @@ public class ReporterExporter {
         return result;
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     * 
+     * @param peptideQuantification
+     * @return
+     */
     private String getRatios(PeptideQuantification peptideQuantification) {
         String result = "";
         for (ReporterIon ion : ions) {
@@ -205,6 +241,12 @@ public class ReporterExporter {
         return result;
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param spectrumQuantification
+     * @return
+     */
     private String getRatios(SpectrumQuantification spectrumQuantification) {
         String result = "";
         for (ReporterIon ion : ions) {
@@ -213,6 +255,12 @@ public class ReporterExporter {
         return result;
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param spectrumQuantification
+     * @return
+     */
     private String getIntensities(SpectrumQuantification spectrumQuantification) {
         String result = "";
         for (ReporterIon ion : ions) {
@@ -226,6 +274,11 @@ public class ReporterExporter {
         return result;
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @return
+     */
     private String getIntensitiesLabels() {
         String result = "";
         for (ReporterIon ion : ions) {

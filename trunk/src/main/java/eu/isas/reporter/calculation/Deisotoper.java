@@ -9,8 +9,9 @@ import java.util.HashMap;
 import org.ujmp.core.doublematrix.calculation.general.decomposition.Ginv;
 
 /**
+ * @TODO: JavaDoc missing
  *
- * @author Marc
+ * @author Marc Vaudel
  */
 public class Deisotoper {
 
@@ -18,11 +19,19 @@ public class Deisotoper {
 
     private ReporterMethod method;
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param method
+     */
     public Deisotoper(ReporterMethod method) {
         this.method = method;
         estimateCorrectionMatrix();
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     */
     private void estimateCorrectionMatrix() {
         ArrayList<CorrectionFactor> correctionFactors = method.getCorrectionFactors();
         ArrayList<ReporterIon> reporterIons = method.getReporterIons();
@@ -51,6 +60,12 @@ public class Deisotoper {
         correctionMatrix = Ginv.inverse(coefficients).toDoubleArray();
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param ionMatches
+     * @return
+     */
     public HashMap<Integer, Double> deisotope(HashMap<Integer, IonMatch> ionMatches) {
         ArrayList<ReporterIon> reporterIons = method.getReporterIons();
         double[] intensities = new double[reporterIons.size()];

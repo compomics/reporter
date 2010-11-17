@@ -19,8 +19,9 @@ import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.data.xy.DefaultIntervalXYDataset;
 
 /**
+ * @TODO: JavaDoc missing
  *
- * @author Marc
+ * @author Marc Vaudel
  */
 public class SpectrumScoreCharts {
 
@@ -28,6 +29,11 @@ public class SpectrumScoreCharts {
     private ReporterIonQuantification quantification;
     private RatioChart ratioCharts;
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param quantification
+     */
     public SpectrumScoreCharts(ReporterIonQuantification quantification) {
         this.quantification = quantification;
         ArrayList<ReporterIon> reporterIons = quantification.getReporterMethod().getReporterIons();
@@ -35,10 +41,18 @@ public class SpectrumScoreCharts {
         createRatioCharts();
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @return
+     */
     public JPanel getChart() {
         return new ChartPanel(new JFreeChart("Spectrum Quantification Quality", ratioCharts.getPlot()));
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     */
     private void createRatioCharts() {
 
         ArrayList<ReporterIon> ions = quantification.getReporterMethod().getReporterIons();
@@ -121,10 +135,18 @@ public class SpectrumScoreCharts {
         ratioCharts = new RatioChart(dataset);
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     * 
+     * @param spectrumQuantification
+     */
     public void setSpectrum(SpectrumQuantification spectrumQuantification) {
         ratioCharts.setSpectrum(spectrumQuantification);
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     */
     public class RatioChart {
 
         private XYPlot currentPlot = new XYPlot();
@@ -154,10 +176,20 @@ public class SpectrumScoreCharts {
             currentPlot.mapDatasetToRangeAxis(1000, 0);
         }
 
+        /**
+         * @TODO: JavaDoc missing
+         *
+         * @return
+         */
         public XYPlot getPlot() {
             return currentPlot;
         }
 
+        /**
+         * @TODO: JavaDoc missing
+         * 
+         * @param spectrumQuantification
+         */
         public void setSpectrum(SpectrumQuantification spectrumQuantification) {
             Double currentScore;
             IgnoredRatios ignoredRatios = (IgnoredRatios) spectrumQuantification.getUrParam(new IgnoredRatios());

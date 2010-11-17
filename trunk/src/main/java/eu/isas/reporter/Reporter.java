@@ -24,9 +24,9 @@ import javax.swing.UnsupportedLookAndFeelException;
 
 
 /**
- * This class.
+ * @TODO: JavaDoc missing
  *
- * @author Marc
+ * @author Marc Vaudel
  */
 public class Reporter {
     /**
@@ -42,6 +42,7 @@ public class Reporter {
      */
     private String lastSelectedFolder = "user.home";
     private Ignorer ignorer;
+
     /**
      * Main method.
      *
@@ -103,23 +104,43 @@ public class Reporter {
         mainFrame.setVisible(true);
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param calculator
+     * @param ignorer
+     */
     public void startProcessing(ItraqCalculator calculator, Ignorer ignorer) {
         this.ignorer = ignorer;
         calculator.computeRatios();
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     */
     public void restart() {
         mainFrame.dispose();
         createandshowGUI();
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @param quantification
+     * @param experiment
+     */
     public void displayResults(ReporterIonQuantification quantification, MsExperiment experiment) {
+
+        mainFrame.setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
+
         mainFrame.dispose();
-        mainFrame= new JFrame("Reporter " + new Properties().getVersion());
+        mainFrame = new JFrame("Reporter " + new Properties().getVersion());
+
+        mainFrame.setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
 
         mainFrame.addWindowListener(new WindowAdapter() {
 
-            /**
+        /**
              * Invoked when a window is in the process of being closed.
              * The close operation can be overridden at this point.
              */
@@ -146,6 +167,8 @@ public class Reporter {
         // Pack is the minimal size, so add 20 pixels in each dimension.
         mainFrame.setSize(new Dimension(mainFrame.getSize().width + 20, mainFrame.getSize().height));
         mainFrame.setVisible(true);
+
+        mainFrame.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
     }
 
     /**
@@ -265,7 +288,6 @@ public class Reporter {
         System.exit(aStatus);
     }
 
-
     /**
      * Sets the look and feel of the SearchGUI.
      * <p/>
@@ -284,11 +306,18 @@ public class Reporter {
         }
     }
 
+    /**
+     * @TODO: JavaDoc missing
+     *
+     * @return
+     */
     public JFrame getMainFrame() {
         return mainFrame;
     }
 
     /**
+     * @TODO: JavaDoc missing
+     *
      * @return the lastSelectedFolder
      */
     public String getLastSelectedFolder() {
@@ -296,6 +325,8 @@ public class Reporter {
     }
 
     /**
+     * @TODO: JavaDoc missing
+     *
      * @param lastSelectedFolder the lastSelectedFolder to set
      */
     public void setLastSelectedFolder(String lastSelectedFolder) {
