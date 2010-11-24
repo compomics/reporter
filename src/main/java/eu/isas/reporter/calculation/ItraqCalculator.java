@@ -88,6 +88,15 @@ public class ItraqCalculator {
     }
 
     /**
+     * Returns the experimet object.
+     *
+     * @return the experimet object
+     */
+    public MsExperiment getExperiment() {
+        return experiment;
+    }
+
+    /**
      * @TODO: JavaDoc missing
      */
     public void computeRatios() {
@@ -98,7 +107,7 @@ public class ItraqCalculator {
         mgfProcessor.execute();
         waitingDialog.appendReport("Importing spectra.");
         ratiosCompilator.execute();
-        waitingDialog.setLocationRelativeTo(null);
+        waitingDialog.setLocationRelativeTo(parent.getMainFrame());
         waitingDialog.setVisible(true);
     }
 

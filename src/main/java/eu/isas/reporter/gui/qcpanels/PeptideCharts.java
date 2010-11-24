@@ -76,20 +76,20 @@ public class PeptideCharts {
 
         double ratio;
         for (PeptideQuantification peptideQuantification : proteinQuantification.getPeptideQuantification()) {
-                ignoredRatios = (IgnoredRatios) peptideQuantification.getUrParam(ignoredRatios);
+            ignoredRatios = (IgnoredRatios) peptideQuantification.getUrParam(ignoredRatios);
             for (int ion : peptideQuantification.getRatios().keySet()) {
                 if (!ignoredRatios.isIgnored(ion)) {
-                ratio = peptideQuantification.getRatios().get(ion).getRatio();
-                if (!minima.containsKey(ion)) {
-                    minima.put(ion, ratio);
-                } else if (ratio < minima.get(ion)) {
-                    minima.put(ion, ratio);
-                }
-                if (!maxima.containsKey(ion)) {
-                    maxima.put(ion, ratio);
-                } else if (ratio > maxima.get(ion)) {
-                    maxima.put(ion, ratio);
-                }
+                    ratio = peptideQuantification.getRatios().get(ion).getRatio();
+                    if (!minima.containsKey(ion)) {
+                        minima.put(ion, ratio);
+                    } else if (ratio < minima.get(ion)) {
+                        minima.put(ion, ratio);
+                    }
+                    if (!maxima.containsKey(ion)) {
+                        maxima.put(ion, ratio);
+                    } else if (ratio > maxima.get(ion)) {
+                        maxima.put(ion, ratio);
+                    }
                 }
             }
         }
@@ -201,9 +201,9 @@ public class PeptideCharts {
          */
         public RatioChart(double[][] backGroundValues) {
 
-            NumberAxis xAxis = new NumberAxis("ratio");
-            NumberAxis nProtAxis = new NumberAxis("Number of Peptides");
-            NumberAxis nPepAxis = new NumberAxis("Number of Spectra");
+            NumberAxis xAxis = new NumberAxis("Ratio");
+            NumberAxis nProtAxis = new NumberAxis("#Peptides");
+            NumberAxis nPepAxis = new NumberAxis("#Spectra");
             nProtAxis.setAutoRangeIncludesZero(true);
             nPepAxis.setAutoRangeIncludesZero(true);
             currentPlot.setDomainAxis(xAxis);
@@ -213,7 +213,7 @@ public class PeptideCharts {
             currentPlot.setRangeAxisLocation(1, AxisLocation.BOTTOM_OR_RIGHT);
 
             DefaultIntervalXYDataset backGround = new DefaultIntervalXYDataset();
-            backGround.addSeries("Number of Peptides", backGroundValues);
+            backGround.addSeries("#Peptides", backGroundValues);
             XYBarRenderer backgroundRenderer = new XYBarRenderer();
             backgroundRenderer.setShadowVisible(false);
             backgroundRenderer.setSeriesPaint(0, Color.gray);
@@ -222,7 +222,6 @@ public class PeptideCharts {
             currentPlot.setDataset(4, backGround);
             currentPlot.setRenderer(4, backgroundRenderer);
             currentPlot.mapDatasetToRangeAxis(4, 0);
-
         }
 
         /**
