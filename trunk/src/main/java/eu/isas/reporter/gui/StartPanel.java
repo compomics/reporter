@@ -86,9 +86,7 @@ public class StartPanel extends javax.swing.JPanel {
         });
 
         txtConfigurationFileLocation.setText(METHODS_FILE);
-
-        experiment = new MsExperiment("new experiment");
-
+        experiment = new MsExperiment("Project Name");
         isotopeCorrectionTable.getColumnModel().getColumn(0).setMaxWidth(50);
     }
 
@@ -361,10 +359,10 @@ public class StartPanel extends javax.swing.JPanel {
 
         jPanel13.setBorder(javax.swing.BorderFactory.createTitledBorder("Project"));
 
-        txtProject.setText("Project name");
-        txtProject.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtProjectActionPerformed(evt);
+        txtProject.setText("Project Name");
+        txtProject.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                txtProjectKeyReleased(evt);
             }
         });
 
@@ -372,7 +370,7 @@ public class StartPanel extends javax.swing.JPanel {
 
         jLabel24.setText("Sample Name:");
 
-        sampleNameTxt.setText("Sample name");
+        sampleNameTxt.setText("Sample Name");
 
         jLabel25.setText("Replicate Number:");
 
@@ -1037,15 +1035,6 @@ public class StartPanel extends javax.swing.JPanel {
      *
      * @param evt
      */
-    private void txtProjectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtProjectActionPerformed
-        experiment.setReference(txtProject.getText().trim());
-}//GEN-LAST:event_txtProjectActionPerformed
-
-    /**
-     * @TODO: JavaDoc missing
-     *
-     * @param evt
-     */
     private void exitButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitButton1ActionPerformed
         parent.close(0);
     }//GEN-LAST:event_exitButton1ActionPerformed
@@ -1329,6 +1318,16 @@ public class StartPanel extends javax.swing.JPanel {
         fileListEdit.setLocationRelativeTo(this);
         fileListEdit.setVisible(true);
     }//GEN-LAST:event_editSpectraFilesJButtonActionPerformed
+
+    /**
+     * Stores the project name instered by the user.
+     * 
+     * @param evt
+     */
+    private void txtProjectKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtProjectKeyReleased
+        experiment.setReference(txtProject.getText().trim());
+    }//GEN-LAST:event_txtProjectKeyReleased
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addIdFilesButton;
     private javax.swing.JButton addPtm;
@@ -1417,6 +1416,7 @@ public class StartPanel extends javax.swing.JPanel {
     private javax.swing.JTextField txtSpectraFileLocation;
     private javax.swing.JTextField xTandemEvalueTxt;
     // End of variables declaration//GEN-END:variables
+
     private ReporterMethod selectedMethod = getMethod("Method");
     private int reference = 0;
     private MsExperiment experiment;

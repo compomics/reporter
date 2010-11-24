@@ -399,10 +399,10 @@
               <SubComponents>
                 <Component class="javax.swing.JTextField" name="txtProject">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Project name"/>
+                    <Property name="text" type="java.lang.String" value="Project Name"/>
                   </Properties>
                   <Events>
-                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="txtProjectActionPerformed"/>
+                    <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="txtProjectKeyReleased"/>
                   </Events>
                 </Component>
                 <Component class="javax.swing.JLabel" name="jLabel1">
@@ -417,7 +417,7 @@
                 </Component>
                 <Component class="javax.swing.JTextField" name="sampleNameTxt">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Sample name"/>
+                    <Property name="text" type="java.lang.String" value="Sample Name"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JLabel" name="jLabel25">

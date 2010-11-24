@@ -41,6 +41,7 @@ public class WaitingDialog extends javax.swing.JDialog {
         super(parent, modal);
         this.iTraqCalculator = iTraqCalculator;
         initComponents();
+        this.setTitle(this.getTitle() + " - " + iTraqCalculator.getExperiment().getReference());
         reportArea.setText("Reporter Calculation Report:\n\n");
     }
 
@@ -152,6 +153,7 @@ public class WaitingDialog extends javax.swing.JDialog {
         });
 
         saveButton.setText("Save Report");
+        saveButton.setEnabled(false);
         saveButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 saveButtonActionPerformed(evt);

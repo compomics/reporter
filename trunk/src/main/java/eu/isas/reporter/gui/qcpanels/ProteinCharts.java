@@ -170,9 +170,9 @@ public class ProteinCharts {
 
         public RatioChart(double[][] backGroundValues) {
 
-            NumberAxis xAxis = new NumberAxis("ratio");
-            NumberAxis nProtAxis = new NumberAxis("Number of Proteins");
-            NumberAxis nPepAxis = new NumberAxis("Number of Peptides");
+            NumberAxis xAxis = new NumberAxis("Ratio");
+            NumberAxis nProtAxis = new NumberAxis("#Proteins");
+            NumberAxis nPepAxis = new NumberAxis("#Peptides");
             nProtAxis.setAutoRangeIncludesZero(true);
             nPepAxis.setAutoRangeIncludesZero(true);
             currentPlot.setDomainAxis(xAxis);
@@ -182,7 +182,7 @@ public class ProteinCharts {
             currentPlot.setRangeAxisLocation(1, AxisLocation.BOTTOM_OR_RIGHT);
 
             DefaultIntervalXYDataset backGround = new DefaultIntervalXYDataset();
-            backGround.addSeries("Number of Proteins", backGroundValues);
+            backGround.addSeries("#Proteins", backGroundValues);
             XYBarRenderer backgroundRenderer = new XYBarRenderer();
             backgroundRenderer.setShadowVisible(false);
             backgroundRenderer.setSeriesPaint(0, Color.gray);
@@ -236,7 +236,7 @@ public class ProteinCharts {
             double[][] ratioData = new double[][]{ratio, ratioBegin, ratioEnd, peptides, peptides, peptides};
 
             DefaultIntervalXYDataset spread = new DefaultIntervalXYDataset();
-            spread.addSeries("Peptides Spread", spreadData);
+            spread.addSeries("Peptide Spread", spreadData);
             XYBarRenderer spreadRenderer = new XYBarRenderer();
             spreadRenderer.setShadowVisible(false);
             Color spreadColor = new Color(150, 0, 0, 75);

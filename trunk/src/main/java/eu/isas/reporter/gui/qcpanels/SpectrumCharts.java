@@ -204,15 +204,15 @@ public class SpectrumCharts {
 
         public RatioChart(double[][] backGroundValues) {
 
-            NumberAxis xAxis = new NumberAxis("ratio");
-            NumberAxis nSpectraAxis = new NumberAxis("Number of Spectra");
+            NumberAxis xAxis = new NumberAxis("Ratio");
+            NumberAxis nSpectraAxis = new NumberAxis("#Spectra");
             nSpectraAxis.setAutoRangeIncludesZero(true);
             currentPlot.setDomainAxis(xAxis);
             currentPlot.setRangeAxis(0, nSpectraAxis);
             currentPlot.setRangeAxisLocation(0, AxisLocation.TOP_OR_LEFT);
 
             DefaultIntervalXYDataset backGround = new DefaultIntervalXYDataset();
-            backGround.addSeries("Number of Peptides", backGroundValues);
+            backGround.addSeries("#Peptides", backGroundValues);
             XYBarRenderer backgroundRenderer = new XYBarRenderer();
             backgroundRenderer.setShadowVisible(false);
             backgroundRenderer.setSeriesPaint(0, Color.gray);

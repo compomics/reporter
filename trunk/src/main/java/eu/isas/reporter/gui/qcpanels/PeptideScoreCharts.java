@@ -149,7 +149,7 @@ public class PeptideScoreCharts {
         public RatioChart(double[][] backGroundValues) {
 
             NumberAxis xAxis = new NumberAxis("Quality");
-            NumberAxis nProtAxis = new NumberAxis("Number of Ratios");
+            NumberAxis nProtAxis = new NumberAxis("#Ratios");
             NumberAxis protAxis = new NumberAxis("Selected Peptide");
             nProtAxis.setAutoRangeIncludesZero(true);
             protAxis.setAutoRangeIncludesZero(true);

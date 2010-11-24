@@ -154,7 +154,7 @@ public class SpectrumScoreCharts {
         public RatioChart(double[][] backGroundValues) {
 
             NumberAxis xAxis = new NumberAxis("Quality");
-            NumberAxis nProtAxis = new NumberAxis("Number of Peaks");
+            NumberAxis nProtAxis = new NumberAxis("#Peaks");
             NumberAxis protAxis = new NumberAxis("Selected Spectrum");
             nProtAxis.setAutoRangeIncludesZero(true);
             protAxis.setAutoRangeIncludesZero(true);

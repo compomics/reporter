@@ -36,9 +36,10 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
@@ -91,7 +92,7 @@ public class ResultPanel extends javax.swing.JPanel {
         createTableIndex();
 
         initComponents();
-        projectTxt.setText(experiment.getReference());
+        parent.getMainFrame().setTitle(parent.getMainFrame().getTitle() + " - " + experiment.getReference());
 
         resultTable.setAutoCreateRowSorter(false);
         resultTable.getColumnModel().getColumn(0).setMaxWidth(10);
@@ -100,7 +101,7 @@ public class ResultPanel extends javax.swing.JPanel {
         resultTable.setDefaultRenderer(Integer.class, new ReporterCellRenderer());
         resultTable.setDefaultRenderer(Double.class, new ReporterCellRenderer());
 
-        // disables the user to drag column headers to reorder columns
+        // disables the dragging column headers to reorder columns
         resultTable.getTableHeader().setReorderingAllowed(false);
 
         // centrally align the combobox
@@ -115,7 +116,7 @@ public class ResultPanel extends javax.swing.JPanel {
 
         proteinCharts = new ProteinCharts(quantification, getResolution());
         horizontalPanel = new JPanel();
-        horizontalPanel.setLayout(new BoxLayout(horizontalPanel, BoxLayout.X_AXIS));
+        horizontalPanel.setLayout(new BoxLayout(horizontalPanel, BoxLayout.Y_AXIS));
         for (ReporterIon ion : reporterIons) {
             if (ion.getIndex() != quantification.getReferenceLabel()) {
                 horizontalPanel.add(Box.createHorizontalStrut(10));
@@ -124,9 +125,8 @@ public class ResultPanel extends javax.swing.JPanel {
             horizontalPanel.add(Box.createHorizontalStrut(10));
         }
         chartPanel.setLayout(new BoxLayout(chartPanel, BoxLayout.Y_AXIS));
-        chartPanel.add(Box.createVerticalStrut(10));
-        chartPanel.add(new JScrollPane(horizontalPanel));
-        chartPanel.add(Box.createVerticalStrut(10));
+        //chartPanel.add(new JScrollPane(horizontalPanel));
+        chartPanel.add(horizontalPanel);
         proteinScoreCharts = new ProteinScoreCharts(quantification);
         peptideScoreCharts = new PeptideScoreCharts(quantification);
         spectrumScoreCharts = new SpectrumScoreCharts(quantification);
@@ -161,6 +161,7 @@ public class ResultPanel extends javax.swing.JPanel {
                 new ActionListener() {
 
                     public void actionPerformed(ActionEvent e) {
+                        // @TODO: implement me...
                     }
                 });
         tablePopUp = new JPopupMenu();
@@ -190,12 +191,11 @@ public class ResultPanel extends javax.swing.JPanel {
 
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel1 = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        resultTable = new javax.swing.JTable();
         exitButton = new javax.swing.JButton();
         saveAsButton = new javax.swing.JButton();
-        projectTxt = new javax.swing.JTextField();
-        jLabel1 = new javax.swing.JLabel();
+        jSplitPane1 = new javax.swing.JSplitPane();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        resultTable = new javax.swing.JTable();
         chartPanel = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
@@ -212,14 +212,6 @@ public class ResultPanel extends javax.swing.JPanel {
         jLabel7 = new javax.swing.JLabel();
         separatorCmb = new javax.swing.JComboBox();
 
-        resultTable.setModel(new ResultTable());
-        resultTable.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                resultTableMouseClicked(evt);
-            }
-        });
-        jScrollPane1.setViewportView(resultTable);
-
         exitButton.setText("Exit");
         exitButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -234,42 +226,49 @@ public class ResultPanel extends javax.swing.JPanel {
             }
         });
 
-        projectTxt.setEditable(false);
-        projectTxt.setText("projectId");
-        projectTxt.setBorder(null);
+        jSplitPane1.setDividerLocation(500);
+        jSplitPane1.setResizeWeight(0.5);
 
-        jLabel1.setText("Quantification Results");
+        resultTable.setModel(new ResultTable());
+        resultTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                resultTableMouseClicked(evt);
+            }
+        });
+        resultTable.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                resultTableKeyReleased(evt);
+            }
+        });
+        jScrollPane1.setViewportView(resultTable);
+
+        jSplitPane1.setLeftComponent(jScrollPane1);
 
         org.jdesktop.layout.GroupLayout chartPanelLayout = new org.jdesktop.layout.GroupLayout(chartPanel);
         chartPanel.setLayout(chartPanelLayout);
         chartPanelLayout.setHorizontalGroup(
             chartPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 930, Short.MAX_VALUE)
+            .add(0, 537, Short.MAX_VALUE)
         );
         chartPanelLayout.setVerticalGroup(
             chartPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 472, Short.MAX_VALUE)
+            .add(0, 770, Short.MAX_VALUE)
         );
+
+        jSplitPane1.setRightComponent(chartPanel);
 
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(399, Short.MAX_VALUE)
-                .add(projectTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 85, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jLabel1)
-                .add(367, 367, 367))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
-                .add(20, 20, 20)
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, chartPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 930, Short.MAX_VALUE)
-                    .add(jPanel1Layout.createSequentialGroup()
+            .add(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
                         .add(saveAsButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 80, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(exitButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 84, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .add(exitButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 84, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1043, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -279,14 +278,8 @@ public class ResultPanel extends javax.swing.JPanel {
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
-                    .add(jLabel1)
-                    .add(projectTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(chartPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 386, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 772, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(exitButton)
                     .add(saveAsButton))
@@ -362,7 +355,7 @@ public class ResultPanel extends javax.swing.JPanel {
                 .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                     .add(ratioMinTxt)
                     .add(ratioMaxTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 65, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(423, Short.MAX_VALUE))
+                .addContainerGap(526, Short.MAX_VALUE))
         );
 
         jPanel3Layout.linkSize(new java.awt.Component[] {kTxt, ratioMaxTxt, ratioMinTxt, ratioResolutionTxt}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -406,7 +399,7 @@ public class ResultPanel extends javax.swing.JPanel {
                 .add(jLabel7)
                 .add(18, 18, 18)
                 .add(separatorCmb, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 86, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(677, Short.MAX_VALUE))
+                .addContainerGap(780, Short.MAX_VALUE))
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -422,11 +415,11 @@ public class ResultPanel extends javax.swing.JPanel {
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel2Layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -436,7 +429,7 @@ public class ResultPanel extends javax.swing.JPanel {
                 .add(jPanel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(754, Short.MAX_VALUE))
+                .addContainerGap(647, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Quantification Settings", jPanel2);
@@ -445,11 +438,11 @@ public class ResultPanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 965, Short.MAX_VALUE)
+            .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1068, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 963, Short.MAX_VALUE)
+            .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 856, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -499,6 +492,7 @@ public class ResultPanel extends javax.swing.JPanel {
         if (evt.getButton() == MouseEvent.BUTTON1) {
             tableLeftClicked();
         } else if (evt.getButton() == MouseEvent.BUTTON3) {
+            resultTable.changeSelection(resultTable.rowAtPoint(evt.getPoint()), resultTable.columnAtPoint(evt.getPoint()), false, false);
             tablePopUp.show(resultTable, evt.getX(), evt.getY());
         }
     }//GEN-LAST:event_resultTableMouseClicked
@@ -549,10 +543,20 @@ public class ResultPanel extends javax.swing.JPanel {
             parent.setLastSelectedFolder(fileChooser.getSelectedFile().getPath());
         }
     }//GEN-LAST:event_saveAsButtonActionPerformed
+
+    /**
+     * Makes is possible to use the arrow keys to move between rows in
+     * the results table.
+     * 
+     * @param evt
+     */
+    private void resultTableKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_resultTableKeyReleased
+            tableLeftClicked();
+    }//GEN-LAST:event_resultTableKeyReleased
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel chartPanel;
     private javax.swing.JButton exitButton;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -564,9 +568,9 @@ public class ResultPanel extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTextField kTxt;
-    private javax.swing.JTextField projectTxt;
     private javax.swing.JTextField ratioMaxTxt;
     private javax.swing.JTextField ratioMinTxt;
     private javax.swing.JTextField ratioResolutionTxt;
@@ -713,7 +717,7 @@ public class ResultPanel extends javax.swing.JPanel {
             }
         }
         ratioEstimator.estimateRatios(quantification.getProteinQuantification().get(tableKey.proteinIndex));
-        resultTable.repaint();
+        repaintResultsTable();
         proteinCharts = new ProteinCharts(quantification, getResolution());
         displayed = DISP_OBSOLETE;
         tableLeftClicked();
@@ -744,7 +748,7 @@ public class ResultPanel extends javax.swing.JPanel {
             }
         }
         ratioEstimator.estimateRatios(quantification.getProteinQuantification().get(tableKey.proteinIndex));
-        resultTable.repaint();
+        repaintResultsTable();
         proteinCharts = new ProteinCharts(quantification, getResolution());
         displayed = DISP_OBSOLETE;
         tableLeftClicked();
@@ -755,57 +759,45 @@ public class ResultPanel extends javax.swing.JPanel {
      */
     private void tableLeftClicked() {
         int row = resultTable.getSelectedRow();
-        TableKey tableKey = tableIndex.get(row);
-        int column = resultTable.getSelectedColumn();
-        if (column == 0 && resultTable.getValueAt(row, column).equals("+")) {
-            expandProtein(row);
-        } else if (column == 1 && resultTable.getValueAt(row, column).equals("+")) {
-            expandPeptide(row);
-        } else if (column == 0 && resultTable.getValueAt(row, column).equals("-")) {
-            concatProtein(row);
-        } else if (column == 1 && resultTable.getValueAt(row, column).equals("-")) {
-            concatPeptide(row);
-        } else if (column == 2 && tableKey.lineType == TableKey.PROTEIN) {
-            ProteinQuantification proteinQuantification = quantification.getProteinQuantification().get(tableKey.proteinIndex);
-            if (displayed == DISP_PROTEIN) {
-                proteinCharts.setProtein(proteinQuantification);
-            } else {
-                horizontalPanel.removeAll();
-                horizontalPanel.setLayout(new BoxLayout(horizontalPanel, BoxLayout.X_AXIS));
-                for (ReporterIon ion : reporterIons) {
-                    if (ion.getIndex() != quantification.getReferenceLabel()) {
-                        horizontalPanel.add(Box.createHorizontalStrut(10));
-                        horizontalPanel.add(proteinCharts.getChart(ion.getIndex()));
-                    }
-                    horizontalPanel.add(Box.createHorizontalStrut(10));
-                }
-                horizontalPanel.validate();
-            }
-            displayed = DISP_PROTEIN;
-        } else if (column == 3) {
-            if (peptideCharts == null) {
-                peptideCharts = new PeptideCharts(tableKey.proteinIndex, quantification, getResolution());
-            }
-            ProteinQuantification proteinQuantification = quantification.getProteinQuantification().get(tableKey.proteinIndex);
-            if (tableKey.lineType == TableKey.PROTEIN) {
-                peptideCharts = new PeptideCharts(tableKey.proteinIndex, quantification, getResolution());
-                horizontalPanel.removeAll();
-                horizontalPanel.setLayout(new BoxLayout(horizontalPanel, BoxLayout.X_AXIS));
-                for (ReporterIon ion : reporterIons) {
-                    if (ion.getIndex() != quantification.getReferenceLabel()) {
-                        horizontalPanel.add(Box.createHorizontalStrut(10));
-                        horizontalPanel.add(peptideCharts.getChart(ion.getIndex()));
-                    }
-                    horizontalPanel.add(Box.createHorizontalStrut(10));
-                }
-                horizontalPanel.validate();
-            } else if (tableKey.lineType == TableKey.PEPTIDE) {
-                if (displayed == DISP_PEPTIDE && peptideCharts.getProteinIndex() == tableKey.proteinIndex) {
-                    peptideCharts.setPeptide(proteinQuantification.getPeptideQuantification().get(tableKey.peptideIndex));
+
+        if (row < tableIndex.size()) {
+
+            TableKey tableKey = tableIndex.get(row);
+            int column = resultTable.getSelectedColumn();
+            if (column == 0 && resultTable.getValueAt(row, column).equals("+")) {
+                expandProtein(row);
+            } else if (column == 1 && resultTable.getValueAt(row, column).equals("+")) {
+                expandPeptide(row);
+            } else if (column == 0 && resultTable.getValueAt(row, column).equals("-")) {
+                concatProtein(row);
+            } else if (column == 1 && resultTable.getValueAt(row, column).equals("-")) {
+                concatPeptide(row);
+            } else if (column == 2 && tableKey.lineType == TableKey.PROTEIN) {
+                ProteinQuantification proteinQuantification = quantification.getProteinQuantification().get(tableKey.proteinIndex);
+                if (displayed == DISP_PROTEIN) {
+                    proteinCharts.setProtein(proteinQuantification);
                 } else {
+                    horizontalPanel.removeAll();
+                    horizontalPanel.setLayout(new BoxLayout(horizontalPanel, BoxLayout.Y_AXIS));
+                    for (ReporterIon ion : reporterIons) {
+                        if (ion.getIndex() != quantification.getReferenceLabel()) {
+                            horizontalPanel.add(Box.createHorizontalStrut(10));
+                            horizontalPanel.add(proteinCharts.getChart(ion.getIndex()));
+                        }
+                        horizontalPanel.add(Box.createHorizontalStrut(10));
+                    }
+                    horizontalPanel.validate();
+                }
+                displayed = DISP_PROTEIN;
+            } else if (column == 3) {
+                if (peptideCharts == null) {
+                    peptideCharts = new PeptideCharts(tableKey.proteinIndex, quantification, getResolution());
+                }
+                ProteinQuantification proteinQuantification = quantification.getProteinQuantification().get(tableKey.proteinIndex);
+                if (tableKey.lineType == TableKey.PROTEIN) {
                     peptideCharts = new PeptideCharts(tableKey.proteinIndex, quantification, getResolution());
                     horizontalPanel.removeAll();
-                    horizontalPanel.setLayout(new BoxLayout(horizontalPanel, BoxLayout.X_AXIS));
+                    horizontalPanel.setLayout(new BoxLayout(horizontalPanel, BoxLayout.Y_AXIS));
                     for (ReporterIon ion : reporterIons) {
                         if (ion.getIndex() != quantification.getReferenceLabel()) {
                             horizontalPanel.add(Box.createHorizontalStrut(10));
@@ -814,30 +806,30 @@ public class ResultPanel extends javax.swing.JPanel {
                         horizontalPanel.add(Box.createHorizontalStrut(10));
                     }
                     horizontalPanel.validate();
-                }
-            }
-            displayed = DISP_PEPTIDE;
-        } else if (column == 5) {
-            PeptideQuantification peptideQuantification = quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex);
-            if (tableKey.lineType == TableKey.PEPTIDE) {
-                spectrumCharts = new SpectrumCharts(tableKey.proteinIndex, tableKey.peptideIndex, quantification, getResolution());
-                horizontalPanel.removeAll();
-                horizontalPanel.setLayout(new BoxLayout(horizontalPanel, BoxLayout.X_AXIS));
-                for (ReporterIon ion : reporterIons) {
-                    if (ion.getIndex() != quantification.getReferenceLabel()) {
-                        horizontalPanel.add(Box.createHorizontalStrut(10));
-                        horizontalPanel.add(spectrumCharts.getChart(ion.getIndex()));
+                } else if (tableKey.lineType == TableKey.PEPTIDE) {
+                    if (displayed == DISP_PEPTIDE && peptideCharts.getProteinIndex() == tableKey.proteinIndex) {
+                        peptideCharts.setPeptide(proteinQuantification.getPeptideQuantification().get(tableKey.peptideIndex));
+                    } else {
+                        peptideCharts = new PeptideCharts(tableKey.proteinIndex, quantification, getResolution());
+                        horizontalPanel.removeAll();
+                        horizontalPanel.setLayout(new BoxLayout(horizontalPanel, BoxLayout.Y_AXIS));
+                        for (ReporterIon ion : reporterIons) {
+                            if (ion.getIndex() != quantification.getReferenceLabel()) {
+                                horizontalPanel.add(Box.createHorizontalStrut(10));
+                                horizontalPanel.add(peptideCharts.getChart(ion.getIndex()));
+                            }
+                            horizontalPanel.add(Box.createHorizontalStrut(10));
+                        }
+                        horizontalPanel.validate();
                     }
-                    horizontalPanel.add(Box.createHorizontalStrut(10));
                 }
-                horizontalPanel.validate();
-            } else if (tableKey.lineType == TableKey.SPECTRUM) {
-                if (displayed == DISP_SPECTRUM && spectrumCharts.getProteinIndex() == tableKey.proteinIndex && spectrumCharts.getPeptideIndex() == tableKey.peptideIndex) {
-                    spectrumCharts.setSpectrum(peptideQuantification.getSpectrumQuantification().get(tableKey.spectrumIndex));
-                } else {
+                displayed = DISP_PEPTIDE;
+            } else if (column == 5) {
+                PeptideQuantification peptideQuantification = quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex);
+                if (tableKey.lineType == TableKey.PEPTIDE) {
                     spectrumCharts = new SpectrumCharts(tableKey.proteinIndex, tableKey.peptideIndex, quantification, getResolution());
                     horizontalPanel.removeAll();
-                    horizontalPanel.setLayout(new BoxLayout(horizontalPanel, BoxLayout.X_AXIS));
+                    horizontalPanel.setLayout(new BoxLayout(horizontalPanel, BoxLayout.Y_AXIS));
                     for (ReporterIon ion : reporterIons) {
                         if (ion.getIndex() != quantification.getReferenceLabel()) {
                             horizontalPanel.add(Box.createHorizontalStrut(10));
@@ -846,50 +838,66 @@ public class ResultPanel extends javax.swing.JPanel {
                         horizontalPanel.add(Box.createHorizontalStrut(10));
                     }
                     horizontalPanel.validate();
+                } else if (tableKey.lineType == TableKey.SPECTRUM) {
+                    if (displayed == DISP_SPECTRUM && spectrumCharts.getProteinIndex() == tableKey.proteinIndex && spectrumCharts.getPeptideIndex() == tableKey.peptideIndex) {
+                        spectrumCharts.setSpectrum(peptideQuantification.getSpectrumQuantification().get(tableKey.spectrumIndex));
+                    } else {
+                        spectrumCharts = new SpectrumCharts(tableKey.proteinIndex, tableKey.peptideIndex, quantification, getResolution());
+                        horizontalPanel.removeAll();
+                        horizontalPanel.setLayout(new BoxLayout(horizontalPanel, BoxLayout.Y_AXIS));
+                        for (ReporterIon ion : reporterIons) {
+                            if (ion.getIndex() != quantification.getReferenceLabel()) {
+                                horizontalPanel.add(Box.createHorizontalStrut(10));
+                                horizontalPanel.add(spectrumCharts.getChart(ion.getIndex()));
+                            }
+                            horizontalPanel.add(Box.createHorizontalStrut(10));
+                        }
+                        horizontalPanel.validate();
+                    }
+                    displayed = DISP_SPECTRUM;
                 }
-                displayed = DISP_SPECTRUM;
+            } else if (column == 5 + reporterIons.size()) {
+                if (tableKey.lineType == TableKey.PROTEIN) {
+                    if (displayed != DISP_PROTEIN_SCORE) {
+                        proteinScoreCharts = new ProteinScoreCharts(quantification);
+                        horizontalPanel.removeAll();
+                        horizontalPanel.setLayout(new BoxLayout(horizontalPanel, BoxLayout.X_AXIS));
+                        horizontalPanel.add(Box.createHorizontalStrut(10));
+                        horizontalPanel.add(proteinScoreCharts.getChart());
+                        horizontalPanel.add(Box.createHorizontalStrut(10));
+                        horizontalPanel.validate();
+                    }
+                    proteinScoreCharts.setProtein(quantification.getProteinQuantification().get(tableKey.proteinIndex));
+                    displayed = DISP_PROTEIN_SCORE;
+                } else if (tableKey.lineType == TableKey.PEPTIDE) {
+                    if (displayed != DISP_PEPTIDE_SCORE) {
+                        peptideScoreCharts = new PeptideScoreCharts(quantification);
+                        horizontalPanel.removeAll();
+                        horizontalPanel.setLayout(new BoxLayout(horizontalPanel, BoxLayout.X_AXIS));
+                        horizontalPanel.add(Box.createHorizontalStrut(10));
+                        horizontalPanel.add(peptideScoreCharts.getChart());
+                        horizontalPanel.add(Box.createHorizontalStrut(10));
+                        horizontalPanel.validate();
+                    }
+                    peptideScoreCharts.setPeptide(quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex));
+                    displayed = DISP_PEPTIDE_SCORE;
+                } else if (tableKey.lineType == TableKey.SPECTRUM) {
+                    if (displayed != DISP_SPECTRUM_SCORE) {
+                        spectrumScoreCharts = new SpectrumScoreCharts(quantification);
+                        horizontalPanel.removeAll();
+                        horizontalPanel.setLayout(new BoxLayout(horizontalPanel, BoxLayout.X_AXIS));
+                        horizontalPanel.add(Box.createHorizontalStrut(10));
+                        horizontalPanel.add(spectrumScoreCharts.getChart());
+                        horizontalPanel.add(Box.createHorizontalStrut(10));
+                        horizontalPanel.validate();
+                    }
+                    spectrumScoreCharts.setSpectrum(quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(
+                            tableKey.peptideIndex).getSpectrumQuantification().get(tableKey.spectrumIndex));
+                    displayed = DISP_SPECTRUM_SCORE;
+                }
             }
-        } else if (column == 5 + reporterIons.size()) {
-            if (tableKey.lineType == TableKey.PROTEIN) {
-                if (displayed != DISP_PROTEIN_SCORE) {
-                    proteinScoreCharts = new ProteinScoreCharts(quantification);
-                    horizontalPanel.removeAll();
-                    horizontalPanel.setLayout(new BoxLayout(horizontalPanel, BoxLayout.X_AXIS));
-                    horizontalPanel.add(Box.createHorizontalStrut(10));
-                    horizontalPanel.add(proteinScoreCharts.getChart());
-                    horizontalPanel.add(Box.createHorizontalStrut(10));
-                    horizontalPanel.validate();
-                }
-                proteinScoreCharts.setProtein(quantification.getProteinQuantification().get(tableKey.proteinIndex));
-                displayed = DISP_PROTEIN_SCORE;
-            } else if (tableKey.lineType == TableKey.PEPTIDE) {
-                if (displayed != DISP_PEPTIDE_SCORE) {
-                    peptideScoreCharts = new PeptideScoreCharts(quantification);
-                    horizontalPanel.removeAll();
-                    horizontalPanel.setLayout(new BoxLayout(horizontalPanel, BoxLayout.X_AXIS));
-                    horizontalPanel.add(Box.createHorizontalStrut(10));
-                    horizontalPanel.add(peptideScoreCharts.getChart());
-                    horizontalPanel.add(Box.createHorizontalStrut(10));
-                    horizontalPanel.validate();
-                }
-                peptideScoreCharts.setPeptide(quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex));
-                displayed = DISP_PEPTIDE_SCORE;
-            } else if (tableKey.lineType == TableKey.SPECTRUM) {
-                if (displayed != DISP_SPECTRUM_SCORE) {
-                    spectrumScoreCharts = new SpectrumScoreCharts(quantification);
-                    horizontalPanel.removeAll();
-                    horizontalPanel.setLayout(new BoxLayout(horizontalPanel, BoxLayout.X_AXIS));
-                    horizontalPanel.add(Box.createHorizontalStrut(10));
-                    horizontalPanel.add(spectrumScoreCharts.getChart());
-                    horizontalPanel.add(Box.createHorizontalStrut(10));
-                    horizontalPanel.validate();
-                }
-                spectrumScoreCharts.setSpectrum(quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(
-                        tableKey.peptideIndex).getSpectrumQuantification().get(tableKey.spectrumIndex));
-                displayed = DISP_SPECTRUM_SCORE;
-            }
+            this.repaint();
         }
-        this.repaint();
     }
 
     /**
@@ -903,6 +911,7 @@ public class ResultPanel extends javax.swing.JPanel {
         for (int i = nPeptides - 1; i >= 0; i--) {
             tableIndex.add(row + 1, new TableKey(TableKey.PEPTIDE, tableKey.proteinIndex, i, 0));
         }
+        repaintResultsTable();
     }
 
     /**
@@ -916,6 +925,7 @@ public class ResultPanel extends javax.swing.JPanel {
         for (int i = nSpectra - 1; i >= 0; i--) {
             tableIndex.add(row + 1, new TableKey(TableKey.SPECTRUM, tableKey.proteinIndex, tableKey.peptideIndex, i));
         }
+        repaintResultsTable();
     }
 
     /**
@@ -930,6 +940,7 @@ public class ResultPanel extends javax.swing.JPanel {
                 break;
             }
         }
+        repaintResultsTable();
     }
 
     /**
@@ -945,6 +956,21 @@ public class ResultPanel extends javax.swing.JPanel {
                 break;
             }
         }
+        repaintResultsTable();
+    }
+
+    /**
+     * Revalidates and repaints the results table.
+     */
+    private void repaintResultsTable() {
+
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                resultTable.revalidate();
+                resultTable.repaint();
+            }
+        });
     }
 
     /**
@@ -968,7 +994,7 @@ public class ResultPanel extends javax.swing.JPanel {
         for (String key : accessions) {
             tableIndex.addAll(tempMap.get(key));
         }
-        resultTable.repaint();
+        repaintResultsTable();
     }
 
     /**
@@ -992,7 +1018,7 @@ public class ResultPanel extends javax.swing.JPanel {
         for (int i = nPeptides.size() - 1; i >= 0; i--) {
             tableIndex.addAll(tempMap.get(nPeptides.get(i)));
         }
-        resultTable.repaint();
+        repaintResultsTable();
     }
 
     /**
@@ -1022,7 +1048,7 @@ public class ResultPanel extends javax.swing.JPanel {
             }
         }
         tableIndex = tempIndex;
-        resultTable.repaint();
+        repaintResultsTable();
     }
 
     /**
@@ -1053,7 +1079,7 @@ public class ResultPanel extends javax.swing.JPanel {
             }
         }
         tableIndex = tempIndex;
-        resultTable.repaint();
+        repaintResultsTable();
     }
 
     /**
@@ -1077,7 +1103,7 @@ public class ResultPanel extends javax.swing.JPanel {
         for (int i = nSpectra.size() - 1; i >= 0; i--) {
             tableIndex.addAll(tempMap.get(nSpectra.get(i)));
         }
-        resultTable.repaint();
+        repaintResultsTable();
     }
 
     /**
@@ -1107,7 +1133,7 @@ public class ResultPanel extends javax.swing.JPanel {
             }
         }
         tableIndex = tempIndex;
-        resultTable.repaint();
+        repaintResultsTable();
     }
 
     /**
@@ -1190,7 +1216,7 @@ public class ResultPanel extends javax.swing.JPanel {
             tableIndex.addAll(tempMap.get(keyRatio));
         }
 
-        resultTable.repaint();
+        repaintResultsTable();
     }
 
     /**
@@ -1271,11 +1297,11 @@ public class ResultPanel extends javax.swing.JPanel {
             tableIndex.addAll(tempMap.get(qualities.get(i)));
         }
 
-        resultTable.repaint();
+        repaintResultsTable();
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Sorts the results table according to the values in the selected column.
      */
     private void sort() {
         int column = resultTable.getSelectedColumn();
@@ -1289,6 +1315,8 @@ public class ResultPanel extends javax.swing.JPanel {
                 sortProteinsNPeptides();
             }
         } else if (column == 4) {
+            // @TODO: implement sorting on variable modifications...
+        } else if (column == 5) {
             TableKey tableKey = tableIndex.get(resultTable.getSelectedRow());
             if (tableKey.lineType == TableKey.SPECTRUM) {
                 sortSpectra();
@@ -1297,9 +1325,9 @@ public class ResultPanel extends javax.swing.JPanel {
             } else if (tableKey.lineType == TableKey.PROTEIN) {
                 sortProteinsNSpectra();
             }
-        } else if (column > 4 && column < 4 + reporterIons.size()) {
-            sortRatio(column - 4);
-        } else if (column == 4 + reporterIons.size()) {
+        } else if (column > 5 && column < 5 + reporterIons.size()) {
+            sortRatio(column - 5);
+        } else if (column == 5 + reporterIons.size()) {
             sortQuality();
         }
     }
@@ -1311,8 +1339,7 @@ public class ResultPanel extends javax.swing.JPanel {
 
         @Override
         public int getRowCount() {
-            tableIndex.size();
-            return getNLines();
+            return tableIndex.size();
         }
 
         @Override
@@ -1334,7 +1361,6 @@ public class ResultPanel extends javax.swing.JPanel {
                 int pos = column - 5;
                 return quantification.getSample(reporterIons.get(pos).getIndex()).getReference() + "/"
                         + quantification.getSample(quantification.getReferenceLabel()).getReference();
-
             } else if (column == 5 + reporterIons.size()) {
                 return "Quality";
             } else {
@@ -1543,6 +1569,13 @@ public class ResultPanel extends javax.swing.JPanel {
                 } else {
                     label.setText(" ");
                 }
+            }
+
+            // add selected cell highlighting
+            if (hasFocus) {
+                label.setBorder(new LineBorder(Color.BLACK, 1));
+            } else {
+                label.setBorder(null);
             }
 
             return label;

@@ -144,8 +144,8 @@ public class ProteinScoreCharts {
         public RatioChart(double[][] backGroundValues) {
 
             NumberAxis xAxis = new NumberAxis("Quality");
-            NumberAxis nProtAxis = new NumberAxis("Number of Ratios");
-            NumberAxis protAxis = new NumberAxis("Selected protein");
+            NumberAxis nProtAxis = new NumberAxis("#Ratios");
+            NumberAxis protAxis = new NumberAxis("Selected Protein");
             nProtAxis.setAutoRangeIncludesZero(true);
             protAxis.setAutoRangeIncludesZero(true);
             currentPlot.setDomainAxis(xAxis);
