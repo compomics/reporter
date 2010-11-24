@@ -26,6 +26,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -1104,7 +1105,7 @@ public class StartPanel extends javax.swing.JPanel {
         };
 
         fileChooser.setFileFilter(filter);
-        
+
         int returnVal = fileChooser.showDialog(this.getParent(), "Add");
 
         if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -1132,7 +1133,7 @@ public class StartPanel extends javax.swing.JPanel {
 
                 parent.setLastSelectedFolder(newFile.getPath());
             }
-            
+
             txtIdFileLocation.setText(idFiles.size() + " file(s) selected.");
         }
     }//GEN-LAST:event_addIdFilesButtonActionPerformed
@@ -1467,15 +1468,29 @@ public class StartPanel extends javax.swing.JPanel {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Updates the combo box and tables values based on the currently selected
+     * quantification method.
      */
     private void refresh() {
         reference = 0;
-        comboMethod1.setSelectedItem(selectedMethod);
-        comboMethod2.setSelectedItem(selectedMethod);
-        reporterIonConfigurationTable.repaint();
-        isotopeCorrectionTable.repaint();
+
+        comboMethod1.setSelectedItem(selectedMethod.getMethodName());
+        comboMethod2.setSelectedItem(selectedMethod.getMethodName());
         sampleAssignmentTable.setModel(new AssignementTableModel());
+
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                sampleAssignmentTable.revalidate();
+                sampleAssignmentTable.repaint();
+
+                reporterIonConfigurationTable.revalidate();
+                reporterIonConfigurationTable.repaint();
+
+                isotopeCorrectionTable.revalidate();
+                isotopeCorrectionTable.repaint();
+            }
+        });
     }
 
     /**
