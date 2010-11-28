@@ -1,6 +1,5 @@
 package eu.isas.reporter.gui.qcpanels;
 
-import com.compomics.util.experiment.biology.ions.ReporterIon;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.PeptideQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.ProteinQuantification;
@@ -9,11 +8,11 @@ import eu.isas.reporter.compomicsutilitiessettings.IgnoredRatios;
 import eu.isas.reporter.compomicsutilitiessettings.ItraqScore;
 import java.awt.Color;
 import java.util.ArrayList;
-import javax.swing.JPanel;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.AxisLocation;
 import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.labels.StandardXYToolTipGenerator;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.data.xy.DefaultIntervalXYDataset;
@@ -29,6 +28,8 @@ public class SpectrumScoreCharts {
     private ReporterIonQuantification quantification;
     private RatioChart ratioCharts;
 
+    private Color allSpectraColor = Color.lightGray;
+
     /**
      * @TODO: JavaDoc missing
      *
@@ -36,26 +37,27 @@ public class SpectrumScoreCharts {
      */
     public SpectrumScoreCharts(ReporterIonQuantification quantification) {
         this.quantification = quantification;
-        ArrayList<ReporterIon> reporterIons = quantification.getReporterMethod().getReporterIons();
-
         createRatioCharts();
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Returns the chart panel.
      *
-     * @return
+     * @param showLegend if true the chart legend is shown
+     * @return the chart panel.
      */
-    public JPanel getChart() {
-        return new ChartPanel(new JFreeChart("Spectrum Quantification Quality", ratioCharts.getPlot()));
+    public ChartPanel getChart(boolean showLegend) {
+        ChartPanel chartPanel = new ChartPanel(new JFreeChart("Spectrum Quantification Quality", ratioCharts.getPlot()));
+
+        chartPanel.getChart().getLegend().setVisible(showLegend);
+
+        return chartPanel;
     }
 
     /**
      * @TODO: JavaDoc missing
      */
     private void createRatioCharts() {
-
-        ArrayList<ReporterIon> ions = quantification.getReporterMethod().getReporterIons();
 
         double minimum = -1, maximum = -1;
 
@@ -168,8 +170,9 @@ public class SpectrumScoreCharts {
             backGround.addSeries("All Spectra", backGroundValues);
             XYBarRenderer backgroundRenderer = new XYBarRenderer();
             backgroundRenderer.setShadowVisible(false);
-            backgroundRenderer.setSeriesPaint(0, Color.gray);
+            backgroundRenderer.setSeriesPaint(0, allSpectraColor);
             backgroundRenderer.setMargin(0.2);
+            backgroundRenderer.setBaseToolTipGenerator(new StandardXYToolTipGenerator());
 
             currentPlot.setDataset(1000, backGround);
             currentPlot.setRenderer(1000, backgroundRenderer);
@@ -205,6 +208,7 @@ public class SpectrumScoreCharts {
                         scoreDataset.addSeries(quantification.getSample(ion).getReference(), scoreValues);
                         XYBarRenderer scoreRenderer = new XYBarRenderer();
                         scoreRenderer.setShadowVisible(false);
+                        scoreRenderer.setBaseToolTipGenerator(new StandardXYToolTipGenerator());
 
                         currentPlot.setDataset(ion, scoreDataset);
                         currentPlot.setRenderer(ion, scoreRenderer);
@@ -217,6 +221,7 @@ public class SpectrumScoreCharts {
                         scoreDataset.addSeries(quantification.getSample(ion).getReference(), scoreValues);
                         XYBarRenderer scoreRenderer = new XYBarRenderer();
                         scoreRenderer.setShadowVisible(false);
+                        scoreRenderer.setBaseToolTipGenerator(new StandardXYToolTipGenerator());
 
                         currentPlot.setDataset(ion, scoreDataset);
                         currentPlot.setRenderer(ion, scoreRenderer);

@@ -14,14 +14,15 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-
 
 /**
  * @TODO: JavaDoc missing
@@ -29,6 +30,7 @@ import javax.swing.UnsupportedLookAndFeelException;
  * @author Marc Vaudel
  */
 public class Reporter {
+
     /**
      * If set to true all messages will be sent to a log file.
      */
@@ -51,8 +53,9 @@ public class Reporter {
     public static void main(String[] args) {
         new Reporter();
     }
+
     /**
-     * main constructor.
+     * Reporter constructor.
      */
     public Reporter() {
         // check if a newer version of Reporter is available
@@ -75,7 +78,7 @@ public class Reporter {
 
         mainFrame.addWindowListener(new WindowAdapter() {
 
-            /**
+        /**
              * Invoked when a window is in the process of being closed.
              * The close operation can be overridden at this point.
              */
@@ -140,7 +143,7 @@ public class Reporter {
 
         mainFrame.addWindowListener(new WindowAdapter() {
 
-        /**
+            /**
              * Invoked when a window is in the process of being closed.
              * The close operation can be overridden at this point.
              */
@@ -177,58 +180,58 @@ public class Reporter {
      * @param currentVersion the version number of the currently running reporter
      */
     private static void checkForNewVersion(String currentVersion) {
-/*
+        /*
         try {
-            boolean deprecatedOrDeleted = false;
-            URL downloadPage = new URL(
-                    "http://code.google.com/p/reporter/downloads/detail?name=reporter-" +
-                    currentVersion + ".zip");
-            int respons = ((java.net.HttpURLConnection) downloadPage.openConnection()).getResponseCode();
+        boolean deprecatedOrDeleted = false;
+        URL downloadPage = new URL(
+        "http://code.google.com/p/reporter/downloads/detail?name=reporter-" +
+        currentVersion + ".zip");
+        int respons = ((java.net.HttpURLConnection) downloadPage.openConnection()).getResponseCode();
 
-            // 404 means that the file no longer exists, which means that
-            // the running version is no longer available for download,
-            // which again means that a never version is available.
-            if (respons == 404) {
-                deprecatedOrDeleted = true;
-            } else {
+        // 404 means that the file no longer exists, which means that
+        // the running version is no longer available for download,
+        // which again means that a never version is available.
+        if (respons == 404) {
+        deprecatedOrDeleted = true;
+        } else {
 
-                // also need to check if the available running version has been
-                // deprecated (but not deleted)
-                BufferedReader in = new BufferedReader(
-                        new InputStreamReader(downloadPage.openStream()));
+        // also need to check if the available running version has been
+        // deprecated (but not deleted)
+        BufferedReader in = new BufferedReader(
+        new InputStreamReader(downloadPage.openStream()));
 
-                String inputLine;
+        String inputLine;
 
-                while ((inputLine = in.readLine()) != null && !deprecatedOrDeleted) {
-                    if (inputLine.lastIndexOf("Deprecated") != -1 &&
-                            inputLine.lastIndexOf("Deprecated Downloads") == -1 &&
-                            inputLine.lastIndexOf("Deprecated downloads") == -1) {
-                        deprecatedOrDeleted = true;
-                    }
-                }
+        while ((inputLine = in.readLine()) != null && !deprecatedOrDeleted) {
+        if (inputLine.lastIndexOf("Deprecated") != -1 &&
+        inputLine.lastIndexOf("Deprecated Downloads") == -1 &&
+        inputLine.lastIndexOf("Deprecated downloads") == -1) {
+        deprecatedOrDeleted = true;
+        }
+        }
 
-                in.close();
-            }
+        in.close();
+        }
 
-            // informs the user about an updated version of the converter, unless the user
-            // is running a beta version
-            if (deprecatedOrDeleted && currentVersion.lastIndexOf("beta") == -1) {
-                int option = JOptionPane.showConfirmDialog(null,
-                        "A newer version of reporter is available.\n" +
-                        "Do you want to upgrade?",
-                        "Upgrade Available",
-                        JOptionPane.YES_NO_CANCEL_OPTION);
-                if (option == JOptionPane.YES_OPTION) {
-                    BareBonesBrowserLaunch.openURL("http://reporter.googlecode.com/");
-                    System.exit(0);
-                } else if (option == JOptionPane.CANCEL_OPTION) {
-                    System.exit(0);
-                }
-            }
+        // informs the user about an updated version of the converter, unless the user
+        // is running a beta version
+        if (deprecatedOrDeleted && currentVersion.lastIndexOf("beta") == -1) {
+        int option = JOptionPane.showConfirmDialog(null,
+        "A newer version of reporter is available.\n" +
+        "Do you want to upgrade?",
+        "Upgrade Available",
+        JOptionPane.YES_NO_CANCEL_OPTION);
+        if (option == JOptionPane.YES_OPTION) {
+        BareBonesBrowserLaunch.openURL("http://reporter.googlecode.com/");
+        System.exit(0);
+        } else if (option == JOptionPane.CANCEL_OPTION) {
+        System.exit(0);
+        }
+        }
         } catch (MalformedURLException e) {
-            e.printStackTrace();
+        e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();
+        e.printStackTrace();
         }*/
     }
 
@@ -236,23 +239,28 @@ public class Reporter {
      * Set up the log file.
      */
     private void setUpLogFile() {
+
         if (useLogFile && !getJarFilePath().equalsIgnoreCase(".")) {
             try {
                 String path = getJarFilePath() + "/conf/reporterLog.txt";
 
                 File file = new File(path);
+                System.setOut(new java.io.PrintStream(new FileOutputStream(file, true)));
+                System.setErr(new java.io.PrintStream(new FileOutputStream(file, true)));
 
                 // creates a new log file if it does not exist
                 if (!file.exists()) {
                     file.createNewFile();
-                }
 
-                System.setOut(new java.io.PrintStream(new FileOutputStream(file, true)));
-                System.setErr(new java.io.PrintStream(new FileOutputStream(file, true)));
-                
+                    FileWriter w = new FileWriter(file);
+                    BufferedWriter bw = new BufferedWriter(w);
+
+                    bw.close();
+                    w.close();
+                }
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(
-                        null, "An error occured when trying to create the SearchGUILog.",
+                        null, "An error occured when trying to create the Reporter log file.",
                         "Error Creating Log File", JOptionPane.ERROR_MESSAGE);
                 e.printStackTrace();
             }
@@ -267,8 +275,8 @@ public class Reporter {
     private String getJarFilePath() {
         String path = this.getClass().getResource("Reporter.class").getPath();
 
-        if (path.lastIndexOf("/reporter-") != -1) {
-            path = path.substring(5, path.lastIndexOf("/reporter-"));
+        if (path.lastIndexOf("/Reporter-") != -1) {
+            path = path.substring(5, path.lastIndexOf("/Reporter-"));
             path = path.replace("%20", " ");
         } else {
             path = ".";

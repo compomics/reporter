@@ -9,11 +9,11 @@ import eu.isas.reporter.compomicsutilitiessettings.RatioLimits;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
-import javax.swing.JPanel;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.AxisLocation;
 import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.labels.StandardXYToolTipGenerator;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.data.xy.DefaultIntervalXYDataset;
@@ -31,6 +31,10 @@ public class SpectrumCharts {
     private double resolution;
     private ReporterIonQuantification quantification;
     private HashMap<Integer, RatioChart> ratioCharts = new HashMap<Integer, RatioChart>();
+    private Color numeberOfPeptidesColor = Color.lightGray;
+    private Color spectrumSpreadColor = new Color(0, 0, 150, 75);
+    private Color peptideRatioColor = new Color(0, 0, 255, 255);
+    private Color spectrumRatioColor = new Color(255, 0, 0, 255);
 
     /**
      * @TODO: JavaDoc missing
@@ -44,7 +48,6 @@ public class SpectrumCharts {
         this.proteinIndex = proteinIndex;
         this.peptideIndex = peptideIndex;
         this.quantification = quantification;
-        ArrayList<ReporterIon> reporterIons = quantification.getReporterMethod().getReporterIons();
         this.peptideQuantification = quantification.getProteinQuantification().get(proteinIndex).getPeptideQuantification().get(peptideIndex);
         this.resolution = resolution;
 
@@ -52,14 +55,19 @@ public class SpectrumCharts {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Returns the chart panel for the given ion.
      *
-     * @param ion
-     * @return
+     * @param ion the index of the ion to get the chart panel for
+     * @param showLegend if true the chart legend is shown
+     * @return the chart panel for the given ion
      */
-    public JPanel getChart(int ion) {
-        return new ChartPanel(new JFreeChart(quantification.getSample(ion).getReference() + "/"
+    public ChartPanel getChart(int ion, boolean showLegend) {
+        ChartPanel chartPanel = new ChartPanel(new JFreeChart(quantification.getSample(ion).getReference() + " / "
                 + quantification.getSample(quantification.getReferenceLabel()).getReference(), ratioCharts.get(ion).getPlot()));
+
+        chartPanel.getChart().getLegend().setVisible(showLegend);
+
+        return chartPanel;
     }
 
     /**
@@ -215,8 +223,9 @@ public class SpectrumCharts {
             backGround.addSeries("#Peptides", backGroundValues);
             XYBarRenderer backgroundRenderer = new XYBarRenderer();
             backgroundRenderer.setShadowVisible(false);
-            backgroundRenderer.setSeriesPaint(0, Color.gray);
+            backgroundRenderer.setSeriesPaint(0, numeberOfPeptidesColor);
             backgroundRenderer.setMargin(0.2);
+            backgroundRenderer.setBaseToolTipGenerator(new StandardXYToolTipGenerator());
 
             currentPlot.setDataset(3, backGround);
             currentPlot.setRenderer(3, backgroundRenderer);
@@ -266,8 +275,8 @@ public class SpectrumCharts {
             spread.addSeries("Spectra Spread", spreadData);
             XYBarRenderer spreadRenderer = new XYBarRenderer();
             spreadRenderer.setShadowVisible(false);
-            Color spreadColor = new Color(0, 0, 150, 75);
-            spreadRenderer.setSeriesPaint(0, spreadColor);
+            spreadRenderer.setSeriesPaint(0, spectrumSpreadColor);
+            spreadRenderer.setBaseToolTipGenerator(new StandardXYToolTipGenerator());
 
             currentPlot.setDataset(2, spread);
             currentPlot.setRenderer(2, spreadRenderer);
@@ -277,8 +286,8 @@ public class SpectrumCharts {
             ratioDataset.addSeries("Peptide Ratio", ratioData);
             XYBarRenderer ratioRenderer = new XYBarRenderer();
             ratioRenderer.setShadowVisible(false);
-            Color ratioColor = new Color(0, 0, 255, 255);
-            ratioRenderer.setSeriesPaint(0, ratioColor);
+            ratioRenderer.setSeriesPaint(0, peptideRatioColor);
+            ratioRenderer.setBaseToolTipGenerator(new StandardXYToolTipGenerator());
 
             currentPlot.setDataset(1, ratioDataset);
             currentPlot.setRenderer(1, ratioRenderer);
@@ -304,8 +313,8 @@ public class SpectrumCharts {
             ratioDataset.addSeries("Spectrum Ratio", ratioData);
             XYBarRenderer ratioRenderer = new XYBarRenderer();
             ratioRenderer.setShadowVisible(false);
-            Color ratioColor = new Color(255, 0, 0, 255);
-            ratioRenderer.setSeriesPaint(0, ratioColor);
+            ratioRenderer.setSeriesPaint(0, spectrumRatioColor);
+            ratioRenderer.setBaseToolTipGenerator(new StandardXYToolTipGenerator());
 
             currentPlot.setDataset(0, ratioDataset);
             currentPlot.setRenderer(0, ratioRenderer);

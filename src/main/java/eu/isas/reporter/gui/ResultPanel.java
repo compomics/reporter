@@ -66,7 +66,7 @@ public class ResultPanel extends javax.swing.JPanel {
     private ArrayList<TableKey> tableIndex = new ArrayList<TableKey>();
     private Ignorer ignorer;
     // QC Panels
-    private JPanel horizontalPanel;
+    private JPanel verticalChartPanel;
     private ProteinCharts proteinCharts;
     private PeptideCharts peptideCharts;
     private SpectrumCharts spectrumCharts;
@@ -114,19 +114,13 @@ public class ResultPanel extends javax.swing.JPanel {
             estimateAllProteinRatios();
         }
 
+        verticalChartPanel = new JPanel();
         proteinCharts = new ProteinCharts(quantification, getResolution());
-        horizontalPanel = new JPanel();
-        horizontalPanel.setLayout(new BoxLayout(horizontalPanel, BoxLayout.Y_AXIS));
-        for (ReporterIon ion : reporterIons) {
-            if (ion.getIndex() != quantification.getReferenceLabel()) {
-                horizontalPanel.add(Box.createHorizontalStrut(10));
-                horizontalPanel.add(proteinCharts.getChart(ion.getIndex()));
-            }
-            horizontalPanel.add(Box.createHorizontalStrut(10));
-        }
+        updateProteinCharts();
+
         chartPanel.setLayout(new BoxLayout(chartPanel, BoxLayout.Y_AXIS));
-        //chartPanel.add(new JScrollPane(horizontalPanel));
-        chartPanel.add(horizontalPanel);
+        chartPanel.add(verticalChartPanel);
+
         proteinScoreCharts = new ProteinScoreCharts(quantification);
         peptideScoreCharts = new PeptideScoreCharts(quantification);
         spectrumScoreCharts = new SpectrumScoreCharts(quantification);
@@ -553,7 +547,6 @@ public class ResultPanel extends javax.swing.JPanel {
     private void resultTableKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_resultTableKeyReleased
             tableLeftClicked();
     }//GEN-LAST:event_resultTableKeyReleased
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel chartPanel;
     private javax.swing.JButton exitButton;
@@ -776,17 +769,9 @@ public class ResultPanel extends javax.swing.JPanel {
                 ProteinQuantification proteinQuantification = quantification.getProteinQuantification().get(tableKey.proteinIndex);
                 if (displayed == DISP_PROTEIN) {
                     proteinCharts.setProtein(proteinQuantification);
+                    verticalChartPanel.validate();
                 } else {
-                    horizontalPanel.removeAll();
-                    horizontalPanel.setLayout(new BoxLayout(horizontalPanel, BoxLayout.Y_AXIS));
-                    for (ReporterIon ion : reporterIons) {
-                        if (ion.getIndex() != quantification.getReferenceLabel()) {
-                            horizontalPanel.add(Box.createHorizontalStrut(10));
-                            horizontalPanel.add(proteinCharts.getChart(ion.getIndex()));
-                        }
-                        horizontalPanel.add(Box.createHorizontalStrut(10));
-                    }
-                    horizontalPanel.validate();
+                    updateProteinCharts();
                 }
                 displayed = DISP_PROTEIN;
             } else if (column == 3) {
@@ -796,31 +781,14 @@ public class ResultPanel extends javax.swing.JPanel {
                 ProteinQuantification proteinQuantification = quantification.getProteinQuantification().get(tableKey.proteinIndex);
                 if (tableKey.lineType == TableKey.PROTEIN) {
                     peptideCharts = new PeptideCharts(tableKey.proteinIndex, quantification, getResolution());
-                    horizontalPanel.removeAll();
-                    horizontalPanel.setLayout(new BoxLayout(horizontalPanel, BoxLayout.Y_AXIS));
-                    for (ReporterIon ion : reporterIons) {
-                        if (ion.getIndex() != quantification.getReferenceLabel()) {
-                            horizontalPanel.add(Box.createHorizontalStrut(10));
-                            horizontalPanel.add(peptideCharts.getChart(ion.getIndex()));
-                        }
-                        horizontalPanel.add(Box.createHorizontalStrut(10));
-                    }
-                    horizontalPanel.validate();
+                    updatePeptideCharts();
                 } else if (tableKey.lineType == TableKey.PEPTIDE) {
                     if (displayed == DISP_PEPTIDE && peptideCharts.getProteinIndex() == tableKey.proteinIndex) {
                         peptideCharts.setPeptide(proteinQuantification.getPeptideQuantification().get(tableKey.peptideIndex));
+                        verticalChartPanel.validate();
                     } else {
                         peptideCharts = new PeptideCharts(tableKey.proteinIndex, quantification, getResolution());
-                        horizontalPanel.removeAll();
-                        horizontalPanel.setLayout(new BoxLayout(horizontalPanel, BoxLayout.Y_AXIS));
-                        for (ReporterIon ion : reporterIons) {
-                            if (ion.getIndex() != quantification.getReferenceLabel()) {
-                                horizontalPanel.add(Box.createHorizontalStrut(10));
-                                horizontalPanel.add(peptideCharts.getChart(ion.getIndex()));
-                            }
-                            horizontalPanel.add(Box.createHorizontalStrut(10));
-                        }
-                        horizontalPanel.validate();
+                        updatePeptideCharts();
                     }
                 }
                 displayed = DISP_PEPTIDE;
@@ -828,31 +796,14 @@ public class ResultPanel extends javax.swing.JPanel {
                 PeptideQuantification peptideQuantification = quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex);
                 if (tableKey.lineType == TableKey.PEPTIDE) {
                     spectrumCharts = new SpectrumCharts(tableKey.proteinIndex, tableKey.peptideIndex, quantification, getResolution());
-                    horizontalPanel.removeAll();
-                    horizontalPanel.setLayout(new BoxLayout(horizontalPanel, BoxLayout.Y_AXIS));
-                    for (ReporterIon ion : reporterIons) {
-                        if (ion.getIndex() != quantification.getReferenceLabel()) {
-                            horizontalPanel.add(Box.createHorizontalStrut(10));
-                            horizontalPanel.add(spectrumCharts.getChart(ion.getIndex()));
-                        }
-                        horizontalPanel.add(Box.createHorizontalStrut(10));
-                    }
-                    horizontalPanel.validate();
+                    updateSpectrumCharts();
                 } else if (tableKey.lineType == TableKey.SPECTRUM) {
                     if (displayed == DISP_SPECTRUM && spectrumCharts.getProteinIndex() == tableKey.proteinIndex && spectrumCharts.getPeptideIndex() == tableKey.peptideIndex) {
                         spectrumCharts.setSpectrum(peptideQuantification.getSpectrumQuantification().get(tableKey.spectrumIndex));
+                        verticalChartPanel.validate();
                     } else {
                         spectrumCharts = new SpectrumCharts(tableKey.proteinIndex, tableKey.peptideIndex, quantification, getResolution());
-                        horizontalPanel.removeAll();
-                        horizontalPanel.setLayout(new BoxLayout(horizontalPanel, BoxLayout.Y_AXIS));
-                        for (ReporterIon ion : reporterIons) {
-                            if (ion.getIndex() != quantification.getReferenceLabel()) {
-                                horizontalPanel.add(Box.createHorizontalStrut(10));
-                                horizontalPanel.add(spectrumCharts.getChart(ion.getIndex()));
-                            }
-                            horizontalPanel.add(Box.createHorizontalStrut(10));
-                        }
-                        horizontalPanel.validate();
+                        updateSpectrumCharts();
                     }
                     displayed = DISP_SPECTRUM;
                 }
@@ -860,44 +811,135 @@ public class ResultPanel extends javax.swing.JPanel {
                 if (tableKey.lineType == TableKey.PROTEIN) {
                     if (displayed != DISP_PROTEIN_SCORE) {
                         proteinScoreCharts = new ProteinScoreCharts(quantification);
-                        horizontalPanel.removeAll();
-                        horizontalPanel.setLayout(new BoxLayout(horizontalPanel, BoxLayout.X_AXIS));
-                        horizontalPanel.add(Box.createHorizontalStrut(10));
-                        horizontalPanel.add(proteinScoreCharts.getChart());
-                        horizontalPanel.add(Box.createHorizontalStrut(10));
-                        horizontalPanel.validate();
+                        verticalChartPanel.removeAll();
+                        verticalChartPanel.setLayout(new BoxLayout(verticalChartPanel, BoxLayout.X_AXIS));
+                        verticalChartPanel.add(Box.createHorizontalStrut(10));
+                        verticalChartPanel.add(proteinScoreCharts.getChart(true));
+                        verticalChartPanel.add(Box.createHorizontalStrut(10));
+                        verticalChartPanel.validate();
                     }
                     proteinScoreCharts.setProtein(quantification.getProteinQuantification().get(tableKey.proteinIndex));
                     displayed = DISP_PROTEIN_SCORE;
                 } else if (tableKey.lineType == TableKey.PEPTIDE) {
                     if (displayed != DISP_PEPTIDE_SCORE) {
                         peptideScoreCharts = new PeptideScoreCharts(quantification);
-                        horizontalPanel.removeAll();
-                        horizontalPanel.setLayout(new BoxLayout(horizontalPanel, BoxLayout.X_AXIS));
-                        horizontalPanel.add(Box.createHorizontalStrut(10));
-                        horizontalPanel.add(peptideScoreCharts.getChart());
-                        horizontalPanel.add(Box.createHorizontalStrut(10));
-                        horizontalPanel.validate();
+                        verticalChartPanel.removeAll();
+                        verticalChartPanel.setLayout(new BoxLayout(verticalChartPanel, BoxLayout.X_AXIS));
+                        verticalChartPanel.add(Box.createHorizontalStrut(10));
+                        verticalChartPanel.add(peptideScoreCharts.getChart(true));
+                        verticalChartPanel.add(Box.createHorizontalStrut(10));
+                        verticalChartPanel.validate();
                     }
                     peptideScoreCharts.setPeptide(quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex));
                     displayed = DISP_PEPTIDE_SCORE;
                 } else if (tableKey.lineType == TableKey.SPECTRUM) {
                     if (displayed != DISP_SPECTRUM_SCORE) {
                         spectrumScoreCharts = new SpectrumScoreCharts(quantification);
-                        horizontalPanel.removeAll();
-                        horizontalPanel.setLayout(new BoxLayout(horizontalPanel, BoxLayout.X_AXIS));
-                        horizontalPanel.add(Box.createHorizontalStrut(10));
-                        horizontalPanel.add(spectrumScoreCharts.getChart());
-                        horizontalPanel.add(Box.createHorizontalStrut(10));
-                        horizontalPanel.validate();
+                        verticalChartPanel.removeAll();
+                        verticalChartPanel.setLayout(new BoxLayout(verticalChartPanel, BoxLayout.X_AXIS));
+                        verticalChartPanel.add(Box.createHorizontalStrut(10));
+                        verticalChartPanel.add(spectrumScoreCharts.getChart(true));
+                        verticalChartPanel.add(Box.createHorizontalStrut(10));
+                        verticalChartPanel.validate();
                     }
                     spectrumScoreCharts.setSpectrum(quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(
                             tableKey.peptideIndex).getSpectrumQuantification().get(tableKey.spectrumIndex));
+                    verticalChartPanel.validate();
                     displayed = DISP_SPECTRUM_SCORE;
                 }
             }
             this.repaint();
         }
+    }
+
+    /**
+     * Update the peptide charts.
+     */
+    private void updatePeptideCharts() {
+        verticalChartPanel.removeAll();
+        verticalChartPanel.setLayout(new BoxLayout(verticalChartPanel, BoxLayout.Y_AXIS));
+
+        int chartCounter = 0;
+
+        for (ReporterIon ion : reporterIons) {
+            if (ion.getIndex() != quantification.getReferenceLabel()) {
+
+                chartCounter++;
+
+                verticalChartPanel.add(Box.createHorizontalStrut(10));
+
+                boolean showLegend = true;
+
+                // hide the chart legends for all but the last chart
+                if (chartCounter < reporterIons.size() - 1) {
+                    showLegend = false;
+                }
+
+                verticalChartPanel.add(peptideCharts.getChart(ion.getIndex(), showLegend));
+            }
+            verticalChartPanel.add(Box.createHorizontalStrut(10));
+        }
+        verticalChartPanel.validate();
+    }
+
+    /**
+     * Update the protein charts.
+     */
+    private void updateProteinCharts() {
+        verticalChartPanel.removeAll();
+        verticalChartPanel.setLayout(new BoxLayout(verticalChartPanel, BoxLayout.Y_AXIS));
+
+        int chartCounter = 0;
+
+        for (ReporterIon ion : reporterIons) {
+            if (ion.getIndex() != quantification.getReferenceLabel()) {
+
+                chartCounter++;
+
+                verticalChartPanel.add(Box.createHorizontalStrut(10));
+
+                boolean showLegend = true;
+
+                // hide the chart legends for all but the last chart
+                if (chartCounter < reporterIons.size() - 1) {
+                    showLegend = false;
+                }
+
+                verticalChartPanel.add(proteinCharts.getChart(ion.getIndex(), showLegend));
+            }
+            verticalChartPanel.add(Box.createHorizontalStrut(10));
+        }
+        verticalChartPanel.validate();
+    }
+
+    /**
+     * Update the spectrum charts.
+     */
+    private void updateSpectrumCharts() {
+        verticalChartPanel.removeAll();
+        verticalChartPanel.setLayout(new BoxLayout(verticalChartPanel, BoxLayout.Y_AXIS));
+
+        int chartCounter = 0;
+
+        for (ReporterIon ion : reporterIons) {
+            if (ion.getIndex() != quantification.getReferenceLabel()) {
+
+                chartCounter++;
+
+                verticalChartPanel.add(Box.createHorizontalStrut(10));
+
+                boolean showLegend = true;
+
+                // hide the chart legends for all but the last chart
+                if (chartCounter < reporterIons.size() - 1) {
+                    showLegend = false;
+                }
+
+                verticalChartPanel.add(spectrumCharts.getChart(ion.getIndex(), showLegend));
+            }
+            verticalChartPanel.add(Box.createHorizontalStrut(10));
+        }
+        verticalChartPanel.validate();
     }
 
     /**

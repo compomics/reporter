@@ -8,11 +8,11 @@ import eu.isas.reporter.compomicsutilitiessettings.IgnoredRatios;
 import eu.isas.reporter.compomicsutilitiessettings.ItraqScore;
 import java.awt.Color;
 import java.util.ArrayList;
-import javax.swing.JPanel;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.AxisLocation;
 import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.labels.StandardXYToolTipGenerator;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.data.xy.DefaultIntervalXYDataset;
@@ -28,6 +28,8 @@ public class PeptideScoreCharts {
     private ReporterIonQuantification quantification;
     private RatioChart ratioCharts;
 
+    private Color allPeptidesColor = Color.lightGray;
+
     /**
      * @TODO: JavaDoc missing
      *
@@ -41,12 +43,17 @@ public class PeptideScoreCharts {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Returns the chart panel.
      *
-     * @return
+     * @param showLegend if true the chart legend is shown
+     * @return the chart panel.
      */
-    public JPanel getChart() {
-        return new ChartPanel(new JFreeChart("Peptide Quantification Quality", ratioCharts.getPlot()));
+    public ChartPanel getChart(boolean showLegend) {
+        ChartPanel chartPanel = new ChartPanel(new JFreeChart("Peptide Quantification Quality", ratioCharts.getPlot()));
+
+        chartPanel.getChart().getLegend().setVisible(showLegend);
+
+        return chartPanel;
     }
 
     /**
@@ -163,8 +170,9 @@ public class PeptideScoreCharts {
             backGround.addSeries("All Peptides", backGroundValues);
             XYBarRenderer backgroundRenderer = new XYBarRenderer();
             backgroundRenderer.setShadowVisible(false);
-            backgroundRenderer.setSeriesPaint(0, Color.gray);
+            backgroundRenderer.setSeriesPaint(0, allPeptidesColor);
             backgroundRenderer.setMargin(0.2);
+            backgroundRenderer.setBaseToolTipGenerator(new StandardXYToolTipGenerator());
 
             currentPlot.setDataset(1000, backGround);
             currentPlot.setRenderer(1000, backgroundRenderer);
@@ -197,10 +205,11 @@ public class PeptideScoreCharts {
                         double[] scoreHeight = {1};
                         double[][] scoreValues = {score, score, score, scoreHeight, scoreHeight, scoreHeight};
                         DefaultIntervalXYDataset scoreDataset = new DefaultIntervalXYDataset();
-                        scoreDataset.addSeries(peptideQuantification.getRatios().get(ion).getMeasureSample() + "/"
+                        scoreDataset.addSeries(peptideQuantification.getRatios().get(ion).getMeasureSample() + " / "
                                 + peptideQuantification.getRatios().get(ion).getControlSample(), scoreValues);
                         XYBarRenderer scoreRenderer = new XYBarRenderer();
                         scoreRenderer.setShadowVisible(false);
+                        scoreRenderer.setBaseToolTipGenerator(new StandardXYToolTipGenerator());
 
                         currentPlot.setDataset(ion, scoreDataset);
                         currentPlot.setRenderer(ion, scoreRenderer);

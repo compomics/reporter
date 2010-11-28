@@ -1798,7 +1798,7 @@ public class StartPanel extends javax.swing.JPanel {
                     return selectedMethod.getReporterIons().get(row).getName();
                 case 1:
                     if (experiment.getSample(row) == null) {
-                        experiment.setSample(row, new Sample("Sample " + row));
+                        experiment.setSample(row, new Sample("Sample " + (row+1)));
                     }
                     return experiment.getSample(row).getReference();
                 case 2:
