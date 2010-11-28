@@ -9,11 +9,11 @@ import eu.isas.reporter.compomicsutilitiessettings.RatioLimits;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
-import javax.swing.JPanel;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.AxisLocation;
 import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.labels.StandardXYToolTipGenerator;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.data.xy.DefaultIntervalXYDataset;
@@ -28,6 +28,11 @@ public class ProteinCharts {
     private ReporterIonQuantification quantification;
     private double resolution;
     private HashMap<Integer, RatioChart> ratioCharts = new HashMap<Integer, RatioChart>();
+
+    private Color peptideSpreadColor = new Color(150, 0, 0, 75);
+    private Color proteinRatioColor = new Color(255, 0, 0, 255);
+    private Color numberOfProteinsColor = Color.lightGray;
+
 
     /**
      * @TODO: JavaDoc missing
@@ -44,14 +49,19 @@ public class ProteinCharts {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Returns the chart panel for the given ion.
      *
-     * @param ion
-     * @return
+     * @param ion the index of the ion to get the chart panel for
+     * @param showLegend if true the chart legend is shown
+     * @return the chart panel for the given ion
      */
-    public JPanel getChart(int ion) {
-        return new ChartPanel(new JFreeChart(quantification.getSample(ion).getReference() + "/"
+    public ChartPanel getChart(int ion, boolean showLegend) {
+        ChartPanel chartPanel = new ChartPanel(new JFreeChart(quantification.getSample(ion).getReference() + " / "
                 + quantification.getSample(quantification.getReferenceLabel()).getReference(), ratioCharts.get(ion).getPlot()));
+
+        chartPanel.getChart().getLegend().setVisible(showLegend);
+
+        return chartPanel;
     }
 
     /**
@@ -185,8 +195,9 @@ public class ProteinCharts {
             backGround.addSeries("#Proteins", backGroundValues);
             XYBarRenderer backgroundRenderer = new XYBarRenderer();
             backgroundRenderer.setShadowVisible(false);
-            backgroundRenderer.setSeriesPaint(0, Color.gray);
+            backgroundRenderer.setSeriesPaint(0, numberOfProteinsColor);
             backgroundRenderer.setMargin(0.2);
+            backgroundRenderer.setBaseToolTipGenerator(new StandardXYToolTipGenerator());
 
             currentPlot.setDataset(2, backGround);
             currentPlot.setRenderer(2, backgroundRenderer);
@@ -239,8 +250,8 @@ public class ProteinCharts {
             spread.addSeries("Peptide Spread", spreadData);
             XYBarRenderer spreadRenderer = new XYBarRenderer();
             spreadRenderer.setShadowVisible(false);
-            Color spreadColor = new Color(150, 0, 0, 75);
-            spreadRenderer.setSeriesPaint(0, spreadColor);
+            spreadRenderer.setSeriesPaint(0, peptideSpreadColor);
+            spreadRenderer.setBaseToolTipGenerator(new StandardXYToolTipGenerator());
 
             currentPlot.setDataset(1, spread);
             currentPlot.setRenderer(1, spreadRenderer);
@@ -250,8 +261,8 @@ public class ProteinCharts {
             ratioDataset.addSeries("Protein Ratio", ratioData);
             XYBarRenderer ratioRenderer = new XYBarRenderer();
             ratioRenderer.setShadowVisible(false);
-            Color ratioColor = new Color(255, 0, 0, 255);
-            ratioRenderer.setSeriesPaint(0, ratioColor);
+            ratioRenderer.setSeriesPaint(0, proteinRatioColor);
+            ratioRenderer.setBaseToolTipGenerator(new StandardXYToolTipGenerator());
 
             currentPlot.setDataset(0, ratioDataset);
             currentPlot.setRenderer(0, ratioRenderer);
