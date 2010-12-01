@@ -275,6 +275,7 @@ public class ItraqCalculator {
                 waitingDialog.appendReport("Ratio computation completed.");
                 waitingDialog.setRunFinished();
             } catch (Exception e) {
+                e.printStackTrace();
                 waitingDialog.appendReport("An error occured while calculating ratios:");
                 waitingDialog.appendReport(e.getLocalizedMessage());
                 waitingDialog.setRunCancelled();
@@ -323,6 +324,7 @@ public class ItraqCalculator {
                     wait();
                 }
             } catch (Exception e) {
+                e.printStackTrace();
                 waitingDialog.appendReport("An error occured when waiting for file processing.");
                 waitingDialog.appendReport(e.getLocalizedMessage());
                 waitingDialog.setRunCancelled();
@@ -338,6 +340,7 @@ public class ItraqCalculator {
                     notify();
                 }
             } catch (Exception e) {
+                e.printStackTrace();
                 waitingDialog.appendReport("An error occured when waiting for file processing.");
                 waitingDialog.appendReport(e.getLocalizedMessage());
                 waitingDialog.setRunCancelled();
@@ -451,6 +454,7 @@ public class ItraqCalculator {
                 finished = true;
                 ratiosCompilator.restart();
             } catch (Exception e) {
+                e.printStackTrace();
                 waitingDialog.appendReport("An error occured while loading the identification Files:");
                 waitingDialog.appendReport(e.getLocalizedMessage());
                 waitingDialog.setRunCancelled();
@@ -489,7 +493,8 @@ public class ItraqCalculator {
                 finished = true;
                 ratiosCompilator.restart();
             } catch (Exception e) {
-                waitingDialog.appendReport("An error occured while loading the mgf Files:");
+                e.printStackTrace();
+                waitingDialog.appendReport("An error occured while loading the mgf files:");
                 waitingDialog.appendReport(e.getLocalizedMessage());
                 waitingDialog.setRunCancelled();
             }

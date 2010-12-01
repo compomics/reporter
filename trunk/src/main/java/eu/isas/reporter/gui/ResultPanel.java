@@ -812,7 +812,7 @@ public class ResultPanel extends javax.swing.JPanel {
                     if (displayed != DISP_PROTEIN_SCORE) {
                         proteinScoreCharts = new ProteinScoreCharts(quantification);
                         verticalChartPanel.removeAll();
-                        verticalChartPanel.setLayout(new BoxLayout(verticalChartPanel, BoxLayout.X_AXIS));
+                        verticalChartPanel.setLayout(new BoxLayout(verticalChartPanel, BoxLayout.Y_AXIS));
                         verticalChartPanel.add(Box.createHorizontalStrut(10));
                         verticalChartPanel.add(proteinScoreCharts.getChart(true));
                         verticalChartPanel.add(Box.createHorizontalStrut(10));
@@ -824,7 +824,7 @@ public class ResultPanel extends javax.swing.JPanel {
                     if (displayed != DISP_PEPTIDE_SCORE) {
                         peptideScoreCharts = new PeptideScoreCharts(quantification);
                         verticalChartPanel.removeAll();
-                        verticalChartPanel.setLayout(new BoxLayout(verticalChartPanel, BoxLayout.X_AXIS));
+                        verticalChartPanel.setLayout(new BoxLayout(verticalChartPanel, BoxLayout.Y_AXIS));
                         verticalChartPanel.add(Box.createHorizontalStrut(10));
                         verticalChartPanel.add(peptideScoreCharts.getChart(true));
                         verticalChartPanel.add(Box.createHorizontalStrut(10));
@@ -836,7 +836,7 @@ public class ResultPanel extends javax.swing.JPanel {
                     if (displayed != DISP_SPECTRUM_SCORE) {
                         spectrumScoreCharts = new SpectrumScoreCharts(quantification);
                         verticalChartPanel.removeAll();
-                        verticalChartPanel.setLayout(new BoxLayout(verticalChartPanel, BoxLayout.X_AXIS));
+                        verticalChartPanel.setLayout(new BoxLayout(verticalChartPanel, BoxLayout.Y_AXIS));
                         verticalChartPanel.add(Box.createHorizontalStrut(10));
                         verticalChartPanel.add(spectrumScoreCharts.getChart(true));
                         verticalChartPanel.add(Box.createHorizontalStrut(10));
