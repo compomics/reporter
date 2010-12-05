@@ -285,7 +285,7 @@
         <dependency>
             <groupId>com.compomics</groupId>
             <artifactId>utilities</artifactId>
-            <version>3.0.30</version>
+            <version>3.0.31</version>
             <type>jar</type>
             <exclusions>
                 <exclusion>
@@ -307,6 +307,14 @@
                 <exclusion>
                     <artifactId>swing-layout</artifactId>
                     <groupId>org.swinglabs</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>batik-all</artifactId>
+                    <groupId>batik</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>pdf-transcoder</artifactId>
+                    <groupId>batik</groupId>
                 </exclusion>
             </exclusions>
         </dependency>
