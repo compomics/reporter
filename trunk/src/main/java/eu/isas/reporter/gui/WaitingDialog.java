@@ -67,7 +67,6 @@ public class WaitingDialog extends javax.swing.JDialog {
     public void setRunCancelled() {
         if (progressBar.isIndeterminate()) {
             progressBar.setIndeterminate(false);
-            ;
         }
 
         SwingUtilities.invokeLater(new Runnable() {
