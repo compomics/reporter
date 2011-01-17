@@ -1,47 +1,50 @@
-package eu.isas.reporter.compomicsutilitiessettings;
+package eu.isas.reporter.myparameters;
 
-import com.compomics.util.experiment.utils.UrParameter;
+import com.compomics.util.experiment.personalization.UrParameter;
 import java.util.HashMap;
 
 /**
- * @TODO: JavaDoc missing
+ * This class will be used to flag ignored ratios
  *
  * @author Marc Vaudel
  */
 public class IgnoredRatios implements UrParameter {
 
+    /**
+     * List of ignored ratios
+     */
     private HashMap<Integer, Boolean> ignoredRatios = new HashMap<Integer, Boolean>();
 
     /**
-     * @TODO: JavaDoc missing
+     * Constructor
      */
     public IgnoredRatios() {
 
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Method used to ignore a specific ratio
      *
-     * @param reporterIon
+     * @param reporterIon the reporter ion on which the calculation was done
      */
     public void ignore(int reporterIon) {
         ignoredRatios.put(reporterIon, true);
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Method used to account a specific ratio
      *
-     * @param reporterIon
+     * @param reporterIon the reporter ion on which the calculation was done
      */
     public void account(int reporterIon) {
         ignoredRatios.put(reporterIon, false);
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Method indicating whether a reporter ion should be ignored for the calculation
      *
-     * @param reporterIon
-     * @return
+     * @param reporterIon the reporter ion of interest
+     * @return a boolean indicating whether the ratio should be ignored
      */
     public boolean isIgnored(int reporterIon) {
         if (ignoredRatios.get(reporterIon) == null) {
@@ -51,20 +54,12 @@ public class IgnoredRatios implements UrParameter {
         }
     }
 
-    /**
-     * @TODO: JavaDoc missing
-     *
-     * @return
-     */
+    @Override
     public String getFamilyName() {
         return "Reporter";
     }
 
-    /**
-     * @TODO: JavaDoc missing
-     *
-     * @return
-     */
+    @Override
     public int getIndex() {
         return 0;
     }
