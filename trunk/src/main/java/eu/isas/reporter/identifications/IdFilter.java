@@ -4,24 +4,36 @@ import com.compomics.util.experiment.identification.PeptideAssumption;
 import java.util.HashMap;
 
 /**
- * @TODO: JavaDoc missing
+ * This class will filter out identifications which should not be retained for further calculation
  *
  * @author Marc Vaudel
  */
 public class IdFilter {
 
+    /**
+     * Minimal size for a sequence
+     */
     private double nAAmin;
+    /**
+     * Maximal size for a sequence
+     */
     private double nAAmax;
+    /**
+     * maximal mass deviation
+     */
     private double deltaMass;
+    /**
+     * Maximal e-values allowed indexed by their search engine
+     */
     private HashMap<Integer, Double> eValues;
 
     /**
-     * @TODO: JavaDoc missing
+     * constructor
      *
-     * @param nAAmin
-     * @param nAAmax
-     * @param deltaMass
-     * @param eValues
+     * @param nAAmin    Minimal sequence size
+     * @param nAAmax    Maximal sequence size
+     * @param deltaMass Maximal mass deviation
+     * @param eValues   Maximal e-values
      */
     public IdFilter(double nAAmin, double nAAmax, double deltaMass, HashMap<Integer, Double> eValues) {
         this.nAAmin = nAAmin;
@@ -31,10 +43,10 @@ public class IdFilter {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Validates a peptide assumption: returns true if the identification did pass the filter; false otherwise.
      *
-     * @param identification
-     * @return
+     * @param identification    The considered peptide assumption
+     * @return  a boolean indicating whether the identification did pass the filter
      */
     public boolean validate(PeptideAssumption identification) {
         int sequenceLength = identification.getPeptide().getSequence().length();

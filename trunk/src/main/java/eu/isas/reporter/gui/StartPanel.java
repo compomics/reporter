@@ -1,10 +1,14 @@
 package eu.isas.reporter.gui;
 
 import com.compomics.util.experiment.MsExperiment;
+import com.compomics.util.experiment.ProteomicAnalysis;
+import com.compomics.util.experiment.SampleAnalysisSet;
 import com.compomics.util.experiment.biology.PTM;
 import com.compomics.util.experiment.biology.PTMFactory;
 import com.compomics.util.experiment.biology.Sample;
+import com.compomics.util.experiment.identification.IdentificationMethod;
 import com.compomics.util.experiment.identification.advocates.SearchEngine;
+import com.compomics.util.experiment.identification.identifications.Ms2Identification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethodFactory;
@@ -13,7 +17,9 @@ import eu.isas.reporter.calculation.ItraqCalculator;
 import eu.isas.reporter.Reporter;
 import eu.isas.reporter.calculation.IdentificationQuantificationLinker;
 import eu.isas.reporter.calculation.Ignorer;
+import eu.isas.reporter.gui.startPanels.SampleSelection;
 import eu.isas.reporter.identifications.IdFilter;
+import eu.isas.reporter.io.UtilitiesInput;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -31,24 +37,77 @@ import javax.swing.table.DefaultTableModel;
 import org.xmlpull.v1.XmlPullParserException;
 
 /**
- * @TODO: JavaDoc missing
+ * This panel will be used to load the necessary files and settings to start the analysis
  *
  * @author Marc Vaudel
  */
 public class StartPanel extends javax.swing.JPanel {
 
+    /**
+     * File containing the various reporter methods
+     */
     private final String METHODS_FILE = "conf/reporterMethods.xml";
+    /**
+     * modification file
+     */
     private final String MODIFICATIONS_FILE = "conf/reporter_mods.xml";
+    /**
+     * user modification file
+     */
     private final String USER_MODIFICATIONS_FILE = "conf/reporter_usermods.xml";
+    /**
+     * The compomics reporter methods factory
+     */
     private ReporterMethodFactory methodsFactory = ReporterMethodFactory.getInstance();
+    /**
+     * The compomics PTM factory
+     */
     private PTMFactory ptmFactory = PTMFactory.getInstance();
-    private Reporter parent;
-    private HashMap<String, PTM> ptmMap = new HashMap<String, PTM>();
 
     /**
-     * @TODO: JavaDoc missing
+     * The reporter class
+     */
+    private Reporter parent;
+
+    /**
+     * a map of the loaded ptms
+     */
+    private HashMap<String, PTM> ptmMap = new HashMap<String, PTM>();
+    /**
+     * The method selected
+     */
+    private ReporterMethod selectedMethod = getMethod("Method");
+    /**
+     * The  reporter ion reference
+     */
+    private int reference = 0;
+
+    /**
+     * The experiment conducted
+     */
+    private MsExperiment experiment;
+    /**
+     * The sample analyzed
+     */
+    private Sample sample;
+    /**
+     * The replicate number
+     */
+    private int replicateNumber;
+
+    /**
+     * The mgf files loaded
+     */
+    private ArrayList<File> mgfFiles = new ArrayList<File>();
+    /**
+     * The identification files loaded
+     */
+    private ArrayList<File> idFiles = new ArrayList<File>();
+
+    /**
+     * constructor
      *
-     * @param parent
+     * @param parent the reporter class
      */
     public StartPanel(Reporter parent) {
         this.parent = parent;
@@ -86,7 +145,12 @@ public class StartPanel extends javax.swing.JPanel {
         });
 
         txtConfigurationFileLocation.setText(METHODS_FILE);
+
+        // blank experiment by default, will be overwritten if a compomics project is loaded
         experiment = new MsExperiment("Project Name");
+        sample = new Sample("sample");
+        experiment.addAnalysisSet(sample, new SampleAnalysisSet(sample, new ProteomicAnalysis(replicateNumber)));
+        experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).addIdentificationResults(IdentificationMethod.MS2_IDENTIFICATION, new Ms2Identification());
         isotopeCorrectionTable.getColumnModel().getColumn(0).setMaxWidth(50);
     }
 
@@ -121,7 +185,7 @@ public class StartPanel extends javax.swing.JPanel {
         jLabel5 = new javax.swing.JLabel();
         comboMethod1 = new javax.swing.JComboBox();
         jPanel13 = new javax.swing.JPanel();
-        txtProject = new javax.swing.JTextField();
+        txtExperiment = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         jLabel24 = new javax.swing.JLabel();
         sampleNameTxt = new javax.swing.JTextField();
@@ -264,8 +328,8 @@ public class StartPanel extends javax.swing.JPanel {
                     .add(jLabel2))
                 .add(18, 18, 18)
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, txtSpectraFileLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 581, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, txtIdFileLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 581, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, txtSpectraFileLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 577, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, txtIdFileLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 577, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel2Layout.createSequentialGroup()
@@ -338,11 +402,11 @@ public class StartPanel extends javax.swing.JPanel {
             .add(jPanel8Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jPanel8Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 909, Short.MAX_VALUE)
+                    .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 905, Short.MAX_VALUE)
                     .add(jPanel8Layout.createSequentialGroup()
                         .add(jLabel5)
                         .add(26, 26, 26)
-                        .add(comboMethod1, 0, 799, Short.MAX_VALUE)))
+                        .add(comboMethod1, 0, 795, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel8Layout.setVerticalGroup(
@@ -353,24 +417,29 @@ public class StartPanel extends javax.swing.JPanel {
                     .add(jLabel5)
                     .add(comboMethod1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(18, 18, 18)
-                .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE)
+                .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
         jPanel13.setBorder(javax.swing.BorderFactory.createTitledBorder("Project"));
 
-        txtProject.setText("Project Name");
-        txtProject.addKeyListener(new java.awt.event.KeyAdapter() {
+        txtExperiment.setText("Project Name");
+        txtExperiment.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
-                txtProjectKeyReleased(evt);
+                txtExperimentKeyReleased(evt);
             }
         });
 
-        jLabel1.setText("Project Name:");
+        jLabel1.setText("Experiment Name:");
 
         jLabel24.setText("Sample Name:");
 
         sampleNameTxt.setText("Sample Name");
+        sampleNameTxt.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sampleNameTxtActionPerformed(evt);
+            }
+        });
 
         jLabel25.setText("Replicate Number:");
 
@@ -388,9 +457,9 @@ public class StartPanel extends javax.swing.JPanel {
                     .add(jLabel25))
                 .add(20, 20, 20)
                 .add(jPanel13Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(sampleNameTxt, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 801, Short.MAX_VALUE)
-                    .add(txtProject, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 801, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, replicateNumberTxt, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 801, Short.MAX_VALUE))
+                    .add(sampleNameTxt, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 797, Short.MAX_VALUE)
+                    .add(txtExperiment, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 797, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, replicateNumberTxt, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 797, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel13Layout.setVerticalGroup(
@@ -398,7 +467,7 @@ public class StartPanel extends javax.swing.JPanel {
             .add(jPanel13Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jPanel13Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(txtProject, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(txtExperiment, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel1))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel13Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
@@ -457,7 +526,7 @@ public class StartPanel extends javax.swing.JPanel {
             jPanel5Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel5Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 909, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 905, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel5Layout.setVerticalGroup(
@@ -479,14 +548,14 @@ public class StartPanel extends javax.swing.JPanel {
             jPanel6Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel6Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 909, Short.MAX_VALUE)
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 905, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel6Layout.setVerticalGroup(
             jPanel6Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel6Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 140, Short.MAX_VALUE)
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -511,7 +580,7 @@ public class StartPanel extends javax.swing.JPanel {
             jPanel7Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel7Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(txtConfigurationFileLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 678, Short.MAX_VALUE)
+                .add(txtConfigurationFileLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 674, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(browseConfigButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -559,7 +628,7 @@ public class StartPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(jLabel4)
                 .add(18, 18, 18)
-                .add(comboMethod2, 0, 807, Short.MAX_VALUE)
+                .add(comboMethod2, 0, 803, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel14Layout.setVerticalGroup(
@@ -620,7 +689,7 @@ public class StartPanel extends javax.swing.JPanel {
                 .add(jLabel6)
                 .add(18, 18, 18)
                 .add(ionToleranceTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 102, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(655, Short.MAX_VALUE))
+                .addContainerGap(651, Short.MAX_VALUE))
         );
         jPanel10Layout.setVerticalGroup(
             jPanel10Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -895,7 +964,7 @@ public class StartPanel extends javax.swing.JPanel {
                     .add(removePtm))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jPanel12Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 290, Short.MAX_VALUE)
+                    .add(jScrollPane5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 286, Short.MAX_VALUE)
                     .add(jLabel23))
                 .addContainerGap())
         );
@@ -985,11 +1054,6 @@ public class StartPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    /**
-     * @TODO: JavaDoc missing
-     *
-     * @param evt
-     */
     private void browseConfigButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseConfigButtonActionPerformed
         JFileChooser fileChooser = new JFileChooser(parent.getLastSelectedFolder());
         fileChooser.setDialogTitle("Select Configuration file");
@@ -1019,59 +1083,29 @@ public class StartPanel extends javax.swing.JPanel {
         }
 }//GEN-LAST:event_browseConfigButtonActionPerformed
 
-    /**
-     * @TODO: JavaDoc missing
-     *
-     * @param evt
-     */
     private void editIdFilesJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editIdFilesJButtonActionPerformed
         FilterListDialog fileListEdit = new FilterListDialog(parent.getMainFrame(), true, this, idFiles, true);
         fileListEdit.setLocationRelativeTo(this);
         fileListEdit.setVisible(true);
 }//GEN-LAST:event_editIdFilesJButtonActionPerformed
 
-    /**
-     * @TODO: JavaDoc missing
-     *
-     * @param evt
-     */
     private void exitButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitButton1ActionPerformed
         parent.close(0);
     }//GEN-LAST:event_exitButton1ActionPerformed
 
-    /**
-     * @TODO: JavaDoc missing
-     *
-     * @param evt
-     */
     private void exitButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitButton2ActionPerformed
         parent.close(0);
     }//GEN-LAST:event_exitButton2ActionPerformed
 
-    /**
-     * @TODO: JavaDoc missing
-     *
-     * @param evt
-     */
     private void exitButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitButton3ActionPerformed
         parent.close(0);
     }//GEN-LAST:event_exitButton3ActionPerformed
 
-    /**
-     * @TODO: JavaDoc missing
-     *
-     * @param evt
-     */
     private void clearSpectraJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearSpectraJButtonActionPerformed
         mgfFiles = new ArrayList<File>();
         txtSpectraFileLocation.setText("Please select file(s)");
     }//GEN-LAST:event_clearSpectraJButtonActionPerformed
 
-    /**
-     * @TODO: JavaDoc missing
-     *
-     * @param evt
-     */
     private void addIdFilesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addIdFilesButtonActionPerformed
 
         JFileChooser fileChooser = new JFileChooser(parent.getLastSelectedFolder());
@@ -1085,6 +1119,7 @@ public class StartPanel extends javax.swing.JPanel {
                 return myFile.getName().endsWith("dat")
                         || myFile.getName().endsWith("omx")
                         || myFile.getName().endsWith("xml")
+                        || myFile.getName().endsWith("cps") // compomics peptide shaker files
                         || myFile.isDirectory();
             }
 
@@ -1104,7 +1139,8 @@ public class StartPanel extends javax.swing.JPanel {
                     for (File file : tempFiles) {
                         if (file.getName().endsWith("dat")
                                 || file.getName().endsWith("omx")
-                                || file.getName().endsWith("xml")) {
+                                || file.getName().endsWith("xml")
+                                || file.getName().endsWith("cps")) {
                             if (!idFiles.contains(file)) {
                                 idFiles.add(file);
                             }
@@ -1113,7 +1149,8 @@ public class StartPanel extends javax.swing.JPanel {
                 } else {
                     if (newFile.getName().endsWith("dat")
                             || newFile.getName().endsWith("omx")
-                            || newFile.getName().endsWith("xml")) {
+                            || newFile.getName().endsWith("xml")
+                            || newFile.getName().endsWith("cps")) {
                         if (!idFiles.contains(newFile)) {
                             idFiles.add(newFile);
                         }
@@ -1122,26 +1159,30 @@ public class StartPanel extends javax.swing.JPanel {
 
                 parent.setLastSelectedFolder(newFile.getPath());
             }
-
+            if (idFiles.size() > 1) {
+                for (File file : idFiles) {
+                    if (file.getName().endsWith(".cps")) {
+                        JOptionPane.showMessageDialog(this, "A PeptideShaker file must be imported alone.", "Wrong identification file.", JOptionPane.ERROR_MESSAGE);
+                        idFiles = new ArrayList<File>();
+                    }
+                }
+            }
             txtIdFileLocation.setText(idFiles.size() + " file(s) selected.");
+            if (idFiles.size() == 1 && idFiles.get(0).getName().endsWith(".cps")) {
+                importPeptideShakerFile(idFiles.get(0));
+            } else {
+                txtExperiment.setEditable(true);
+                sampleNameTxt.setEditable(true);
+                replicateNumberTxt.setEditable(true);
+            }
         }
     }//GEN-LAST:event_addIdFilesButtonActionPerformed
 
-    /**
-     * @TODO: JavaDoc missing
-     *
-     * @param evt
-     */
     private void clearIdFilesJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearIdFilesJButtonActionPerformed
         idFiles = new ArrayList<File>();
         txtIdFileLocation.setText("Please select file(s)");
     }//GEN-LAST:event_clearIdFilesJButtonActionPerformed
 
-    /**
-     * @TODO: JavaDoc missing
-     *
-     * @param evt
-     */
     private void startButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startButtonActionPerformed
         if (validateInput()) {
             ArrayList<String> selectedModifications = new ArrayList<String>();
@@ -1159,7 +1200,7 @@ public class StartPanel extends javax.swing.JPanel {
                 linker.setMzTolerance(new Double(mzTolTxt.getText().trim()));
                 linker.setRtTolerance(new Double(rtTolTxt.getText().trim()));
             }
-            ItraqCalculator itraqCalculator = new ItraqCalculator(parent, experiment, idFiles, mgfFiles, idFilter, getFdrThreshold(), getReporterIonQuantification(), getIonTolerance(), linker);
+            ItraqCalculator itraqCalculator = new ItraqCalculator(parent, experiment, sample, replicateNumber, idFiles, mgfFiles, idFilter, getFdrThreshold(), getReporterIonQuantification(), getIonTolerance(), linker);
             parent.startProcessing(itraqCalculator, ignorer);
         }
     }//GEN-LAST:event_startButtonActionPerformed
@@ -1184,11 +1225,6 @@ public class StartPanel extends javax.swing.JPanel {
         // TODO add your handling code here:
     }//GEN-LAST:event_deltaMassTxtActionPerformed
 
-    /**
-     * @TODO: JavaDoc missing
-     *
-     * @param evt
-     */
     private void addPtmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addPtmActionPerformed
         int nNew = ptmList.getSelectedValues().length;
         int nSelected = selectedPtm.getModel().getSize();
@@ -1206,11 +1242,6 @@ public class StartPanel extends javax.swing.JPanel {
         ptmList.setListData(getModifications());
     }//GEN-LAST:event_addPtmActionPerformed
 
-    /**
-     * @TODO: JavaDoc missing
-     *
-     * @param evt
-     */
     private void removePtmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removePtmActionPerformed
         int nNew = selectedPtm.getSelectedValues().length;
         int nSelected = selectedPtm.getModel().getSize();
@@ -1236,29 +1267,14 @@ public class StartPanel extends javax.swing.JPanel {
         ptmList.setListData(getModifications());
     }//GEN-LAST:event_removePtmActionPerformed
 
-    /**
-     * @TODO: JavaDoc missing
-     *
-     * @param evt
-     */
     private void sameSpectraActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sameSpectraActionPerformed
         precursorMatching.setSelected(!sameSpectra.isSelected());
     }//GEN-LAST:event_sameSpectraActionPerformed
 
-    /**
-     * @TODO: JavaDoc missing
-     *
-     * @param evt
-     */
     private void precursorMatchingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_precursorMatchingActionPerformed
         sameSpectra.setSelected(!precursorMatching.isSelected());
     }//GEN-LAST:event_precursorMatchingActionPerformed
 
-    /**
-     * @TODO: JavaDoc missing
-     *
-     * @param evt
-     */
     private void addSpectraFilesJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addSpectraFilesJButtonActionPerformed
 
         JFileChooser fileChooser = new JFileChooser(parent.getLastSelectedFolder());
@@ -1308,25 +1324,19 @@ public class StartPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_addSpectraFilesJButtonActionPerformed
 
-    /**
-     * @TODO: JavaDoc missing
-     *
-     * @param evt
-     */
     private void editSpectraFilesJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editSpectraFilesJButtonActionPerformed
         FilterListDialog fileListEdit = new FilterListDialog(parent.getMainFrame(), true, this, mgfFiles, false);
         fileListEdit.setLocationRelativeTo(this);
         fileListEdit.setVisible(true);
     }//GEN-LAST:event_editSpectraFilesJButtonActionPerformed
 
-    /**
-     * Stores the project name instered by the user.
-     * 
-     * @param evt
-     */
-    private void txtProjectKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtProjectKeyReleased
-        experiment.setReference(txtProject.getText().trim());
-    }//GEN-LAST:event_txtProjectKeyReleased
+    private void txtExperimentKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtExperimentKeyReleased
+        experiment.setReference(txtExperiment.getText().trim());
+    }//GEN-LAST:event_txtExperimentKeyReleased
+
+    private void sampleNameTxtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sampleNameTxtActionPerformed
+        
+    }//GEN-LAST:event_sampleNameTxtActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addIdFilesButton;
@@ -1411,33 +1421,25 @@ public class StartPanel extends javax.swing.JPanel {
     private javax.swing.JList selectedPtm;
     private javax.swing.JButton startButton;
     private javax.swing.JTextField txtConfigurationFileLocation;
+    private javax.swing.JTextField txtExperiment;
     private javax.swing.JTextField txtIdFileLocation;
-    private javax.swing.JTextField txtProject;
     private javax.swing.JTextField txtSpectraFileLocation;
     private javax.swing.JTextField xTandemEvalueTxt;
     // End of variables declaration//GEN-END:variables
 
-    private ReporterMethod selectedMethod = getMethod("Method");
-    private int reference = 0;
-    private MsExperiment experiment;
-    private Sample sample;
-    private int replicateNumber;
-    private ArrayList<File> mgfFiles = new ArrayList<File>();
-    private ArrayList<File> idFiles = new ArrayList<File>();
-
     /**
-     * @TODO: JavaDoc missing
+     * returns the experiment reference
      *
-     * @return
+     * @return the experiment reference
      */
     public int getReference() {
         return reference;
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * returns the quantification method selected
      *
-     * @return
+     * @return the quantification method selected
      */
     private ReporterIonQuantification getReporterIonQuantification() {
         ReporterIonQuantification quantification = new ReporterIonQuantification(selectedMethod.getMethodIndex());
@@ -1450,10 +1452,10 @@ public class StartPanel extends javax.swing.JPanel {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Returns the reporter method corresponding to the given name
      *
-     * @param methodName
-     * @return
+     * @param methodName the given name
+     * @return the corresponding reporter method
      */
     private ReporterMethod getMethod(String methodName) {
         if (methodsFactory.getMethods() == null) {
@@ -1494,54 +1496,54 @@ public class StartPanel extends javax.swing.JPanel {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * returns the ion tolerance set by the user
      *
-     * @return
+     * @return the ion tolerance set by the user
      */
     public double getIonTolerance() {
         return new Double(ionToleranceTxt.getText().trim());
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * returns the FDR threshold set by the user
      *
-     * @return
+     * @return the FDR threshold set by the user
      */
     public double getFdrThreshold() {
         return new Double(fdrThresholdTxt.getText().trim());
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * returns the minimal peptide size set by the user
      *
-     * @return
+     * @return the minimal peptide size set by the user
      */
     private double getNAaMin() {
         return new Double(nAaMinTxt.getText().trim());
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * returns the maximal peptide size set by the user
      *
-     * @return
+     * @return the maximal peptide size set by the user
      */
     private double getNAaMax() {
         return new Double(nAaMaxTxt.getText().trim());
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * returns the maximal mass deviation set by the user
      *
-     * @return
+     * @return the maximal mass deviation set by the user
      */
     private double getDeltaMass() {
         return new Double(deltaMassTxt.getText().trim());
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * returns a map containing the maximal e-values set by the user for each search engine indexed by its utilities index
      *
-     * @return
+     * @return the maximal e-values set by the user
      */
     public HashMap<Integer, Double> getEValues() {
         HashMap<Integer, Double> result = new HashMap<Integer, Double>();
@@ -1552,7 +1554,7 @@ public class StartPanel extends javax.swing.JPanel {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Imports the methods from the methods file
      */
     private void importMethods() {
         try {
@@ -1563,7 +1565,55 @@ public class StartPanel extends javax.swing.JPanel {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Method used to import a peptide shaker file
+     * @param psFile a peptide shaker file
+     */
+    private void importPeptideShakerFile(File psFile) {
+        UtilitiesInput importer = new UtilitiesInput();
+        experiment = importer.importExperiment(psFile);
+        txtExperiment.setText(experiment.getReference());
+        txtExperiment.setEditable(false);
+
+        ArrayList<Sample> samples = new ArrayList(experiment.getSamples().values());
+        if (samples.size() == 1) {
+            sample = samples.get(0);
+        } else {
+            String[] sampleNames = new String[samples.size()];
+            for (int cpt = 0; cpt < sampleNames.length; cpt++) {
+                sampleNames[cpt] = samples.get(cpt).getReference();
+            }
+            SampleSelection sampleSelection = new SampleSelection(null, true, sampleNames, "sample");
+            sampleSelection.setVisible(true);
+            String choice = sampleSelection.getChoice();
+            for (Sample sampleTemp : samples) {
+                if (sampleTemp.getReference().equals(choice)) {
+                    sample = sampleTemp;
+                    break;
+                }
+            }
+        }
+        sampleNameTxt.setText(sample.getReference());
+        sampleNameTxt.setEditable(false);
+
+        ArrayList<Integer> replicates = new ArrayList(experiment.getAnalysisSet(sample).getReplicateNumberList());
+        if (replicates.size() == 1) {
+            replicateNumber = replicates.get(0);
+        } else {
+            String[] replicateNames = new String[replicates.size()];
+            for (int cpt = 0; cpt < replicateNames.length; cpt++) {
+                replicateNames[cpt] = samples.get(cpt).getReference();
+            }
+            SampleSelection sampleSelection = new SampleSelection(null, true, replicateNames, "replicate");
+            sampleSelection.setVisible(true);
+            Integer choice = new Integer(sampleSelection.getChoice());
+            replicateNumber = choice;
+        }
+        replicateNumberTxt.setText(replicateNumber + "");
+        replicateNumberTxt.setEditable(false);
+    }
+
+    /**
+     * Loads the modifications from the modification file
      */
     private void loadModifications() {
         try {
@@ -1584,9 +1634,9 @@ public class StartPanel extends javax.swing.JPanel {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * returns the names of the modifications as an array of Strings
      *
-     * @return
+     * @return the names of the modifications
      */
     private String[] getModifications() {
         int nSelected = selectedPtm.getModel().getSize();
@@ -1611,7 +1661,7 @@ public class StartPanel extends javax.swing.JPanel {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Method called whenever an error was encountered while loading the modifications
      */
     private void importMethodsError() {
         JOptionPane.showMessageDialog(this, "\"" + METHODS_FILE + "\" could not be found, please select a method file.", "No Spectra File Selected", JOptionPane.ERROR_MESSAGE);
@@ -1641,9 +1691,9 @@ public class StartPanel extends javax.swing.JPanel {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Methods which validates the user input (returns false in case of wrong input)
      *
-     * @return
+     * @return true if the input can be processed
      */
     private boolean validateInput() {
         if (mgfFiles.isEmpty()) {
@@ -1725,9 +1775,9 @@ public class StartPanel extends javax.swing.JPanel {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Sets the identification files to process
      *
-     * @param files
+     * @param files the identification files to process
      */
     public void setIdFiles(ArrayList<File> files) {
         idFiles = files;
@@ -1735,9 +1785,9 @@ public class StartPanel extends javax.swing.JPanel {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Sets the spectra files to process
      *
-     * @param files
+     * @param files the spectra files to process
      */
     public void setSpectraFiles(ArrayList<File> files) {
         mgfFiles = files;
@@ -1745,25 +1795,25 @@ public class StartPanel extends javax.swing.JPanel {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * returns the last selected folder
      *
-     * @return
+     * @return the last selected folder
      */
     public String getLastSelectedFolder() {
         return parent.getLastSelectedFolder();
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * sets the last selected folder
      *
-     * @param lastSelectedFolder
+     * @param lastSelectedFolder the last selected folder
      */
     public void setLastSelectedFolder(String lastSelectedFolder) {
         parent.setLastSelectedFolder(lastSelectedFolder);
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Table model for the sample to reporter ion assignement
      */
     private class AssignementTableModel extends DefaultTableModel {
 
@@ -1798,7 +1848,7 @@ public class StartPanel extends javax.swing.JPanel {
                     return selectedMethod.getReporterIons().get(row).getName();
                 case 1:
                     if (experiment.getSample(row) == null) {
-                        experiment.setSample(row, new Sample("Sample " + (row+1)));
+                        experiment.setSample(row, new Sample("Sample " + (row + 1)));
                     }
                     return experiment.getSample(row).getReference();
                 case 2:
@@ -1831,7 +1881,7 @@ public class StartPanel extends javax.swing.JPanel {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Table model for the reporter ions table
      */
     private class IonTableModel extends DefaultTableModel {
 
@@ -1880,7 +1930,7 @@ public class StartPanel extends javax.swing.JPanel {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Table model for the correction factors table
      */
     private class CorrectionTableModel extends DefaultTableModel {
 

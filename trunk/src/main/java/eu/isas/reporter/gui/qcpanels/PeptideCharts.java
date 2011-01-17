@@ -5,8 +5,8 @@ import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuant
 import com.compomics.util.experiment.quantification.reporterion.quantification.PeptideQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.ProteinQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.SpectrumQuantification;
-import eu.isas.reporter.compomicsutilitiessettings.IgnoredRatios;
-import eu.isas.reporter.compomicsutilitiessettings.RatioLimits;
+import eu.isas.reporter.myparameters.IgnoredRatios;
+import eu.isas.reporter.myparameters.RatioLimits;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,30 +20,60 @@ import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.data.xy.DefaultIntervalXYDataset;
 
 /**
- * @TODO: JavaDoc missing
+ * This panel will display the distribution of the ratios of peptides ascribed to the selected protein (also displayed), the selected peptide ratio and its distribution spread.
  *
  * @author Marc Vaudel
  */
 public class PeptideCharts {
 
+    /**
+     * The protein quantification of interest
+     */
     private ProteinQuantification proteinQuantification;
+    /**
+     * The protein index
+     */
     private int proteinIndex;
+    /**
+     * The method resolution
+     */
     private double resolution;
+    /**
+     * The reporter ion quantification
+     */
     private ReporterIonQuantification quantification;
+    /**
+     * The various ratios charts indexed by the reporter ion index.
+     */
     private HashMap<Integer, RatioChart> ratioCharts = new HashMap<Integer, RatioChart>();
 
+    /**
+     * color for the peptide distribution
+     */
     private Color peptideColor = Color.lightGray;
+    /**
+     * color for the spread of peptides
+     */
     private Color peptideSpreadColor = new Color(0, 0, 150, 75);
+    /**
+     * Color for the spread of spectra
+     */
     private Color spectrumSpreadColor = new Color(150, 0, 0, 75);
+    /**
+     * Color for the protein ratio
+     */
     private Color proteinRatioColor = new Color(0, 0, 255, 255);
+    /**
+     * Color for the peptide ratio
+     */
     private Color peptideRatioColor = new Color(255, 0, 0, 255);
 
     /**
-     * @TODO: JavaDoc missing
+     * constructor
      *
-     * @param proteinIndex
-     * @param quantification
-     * @param resolution
+     * @param proteinIndex      The protein index of the selected protein
+     * @param quantification    The quantification
+     * @param resolution        The resolution to be used
      */
     public PeptideCharts(int proteinIndex, ReporterIonQuantification quantification, double resolution) {
         this.proteinIndex = proteinIndex;
@@ -72,9 +102,9 @@ public class PeptideCharts {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * creates the display panels
      * 
-     * @param proteinQuantification
+     * @param proteinQuantification The protein quantification of interest
      */
     private void createReporterPanels(ProteinQuantification proteinQuantification) {
 
@@ -176,9 +206,9 @@ public class PeptideCharts {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Method used to change the peptide to display
      *
-     * @param peptideQuantification
+     * @param peptideQuantification the peptide quantification of interest
      */
     public void setPeptide(PeptideQuantification peptideQuantification) {
         IgnoredRatios ignoredRatios = (IgnoredRatios) peptideQuantification.getUrParam(new IgnoredRatios());
@@ -199,16 +229,19 @@ public class PeptideCharts {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Private class to construct a chart
      */
     private class RatioChart {
 
+        /**
+         * The JFree plot
+         */
         private XYPlot currentPlot = new XYPlot();
 
         /**
-         * @TODO: JavaDoc missing
+         * Constructs the chart with only the background
          *
-         * @param backGroundValues
+         * @param backGroundValues ratios of the background
          */
         public RatioChart(double[][] backGroundValues) {
 
@@ -237,19 +270,19 @@ public class PeptideCharts {
         }
 
         /**
-         * @TODO: JavaDoc missing
+         * getter for the plot
          *
-         * @return
+         * @return  the jFree plot
          */
         public XYPlot getPlot() {
             return currentPlot;
         }
 
         /**
-         * @TODO: JavaDoc missing
+         * display a protein ratio of interest
          *
-         * @param proteinQuantification
-         * @param ion
+         * @param proteinQuantification the protein quantification of interest
+         * @param ion                   the reporter ion considered
          */
         public void addProteinRatio(ProteinQuantification proteinQuantification, int ion) {
             RatioLimits ratioLimits = (RatioLimits) proteinQuantification.getUrParam(new RatioLimits());
@@ -302,10 +335,10 @@ public class PeptideCharts {
         }
 
         /**
-         * @TODO: JavaDoc missing
+         * Displays a peptide quantification of interest
          *
-         * @param peptideQuantification
-         * @param ion
+         * @param peptideQuantification the peptide quantification
+         * @param ion                   the considered reporter ion
          */
         public void setPeptide(PeptideQuantification peptideQuantification, int ion) {
             RatioLimits ratioLimits = (RatioLimits) peptideQuantification.getUrParam(new RatioLimits());

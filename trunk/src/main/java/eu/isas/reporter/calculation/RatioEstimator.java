@@ -1,38 +1,49 @@
 package eu.isas.reporter.calculation;
 
-import com.compomics.util.experiment.biology.Protein;
 import com.compomics.util.experiment.biology.ions.ReporterIon;
 import com.compomics.util.experiment.quantification.Ratio;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.PeptideQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.ProteinQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.SpectrumQuantification;
-import eu.isas.reporter.compomicsutilitiessettings.IgnoredRatios;
-import eu.isas.reporter.compomicsutilitiessettings.ItraqScore;
-import eu.isas.reporter.compomicsutilitiessettings.RatioLimits;
+import eu.isas.reporter.myparameters.IgnoredRatios;
+import eu.isas.reporter.myparameters.ItraqScore;
+import eu.isas.reporter.myparameters.RatioLimits;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
 /**
- * @TODO: JavaDoc missing
+ * This class estimates ratios at the peptide and protein level
  *
  * @author Marc Vaudel
  */
 public class RatioEstimator {
 
+    /**
+     * The resolution of the method
+     */
     private double resolution;
+    /**
+     * the "k" of the M-estimator (see PMID )
+     */
     private double k;
+    /**
+     * The quantification in processing
+     */
     private ReporterIonQuantification quantification;
+    /**
+     * The ignorer to be used
+     */
     private Ignorer ignorer;
 
     /**
-     * @TODO: JavaDoc missing
+     * constructor
      *
-     * @param quantification
-     * @param resolution
-     * @param k
-     * @param ignorer
+     * @param quantification    The quantification in processing
+     * @param resolution        The resolution to use
+     * @param k                 The k to be used for distribution width estimation
+     * @param ignorer           The ignorer to be used
      */
     public RatioEstimator(ReporterIonQuantification quantification, double resolution, double k, Ignorer ignorer) {
         this.resolution = resolution;
@@ -42,9 +53,9 @@ public class RatioEstimator {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * method to estimate ratios at the protein level
      *
-     * @param proteinQuantification
+     * @param proteinQuantification the processed protein quantification
      */
     public void estimateRatios(ProteinQuantification proteinQuantification) {
         for (PeptideQuantification peptideQuantification : proteinQuantification.getPeptideQuantification()) {
@@ -108,13 +119,13 @@ public class RatioEstimator {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Returns the number of peptides supporting this protein ratio
      *
-     * @param ion
-     * @param proteinQuantification
-     * @param ratio
-     * @param window
-     * @return
+     * @param ion                       The reporter ion considered
+     * @param proteinQuantification     The protein quantification considered
+     * @param ratio                     The protein ratio
+     * @param window                    The window indicating the width of the peptide distribution
+     * @return  the number of peptides in the window centered around the protein ratio
      */
     private int getNPeptides(int ion, ProteinQuantification proteinQuantification, double ratio, double window) {
         int nPeptides = 0;
@@ -132,9 +143,9 @@ public class RatioEstimator {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Returns the peptide ratios of a given peptide quantification
      *
-     * @param peptideQuantification
+     * @param peptideQuantification the peptide quantification considered
      */
     private void estimateRatios(PeptideQuantification peptideQuantification) {
         IgnoredRatios ignoredRatios = new IgnoredRatios();
@@ -205,13 +216,13 @@ public class RatioEstimator {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Returns the number of psm supporting a peptide ratio
      *
-     * @param ion
-     * @param peptideQuantification
-     * @param ratio
-     * @param window
-     * @return
+     * @param ion                       The reporter ion considered
+     * @param peptideQuantification     The processed peptide quantification
+     * @param ratio                     The peptide ratio considered
+     * @param window                    The window representing the width of psm ratios distribution
+     * @return  the number of psm ratios comprised in the window centered around the peptide ratio
      */
     private int getNSpectra(int ion, PeptideQuantification peptideQuantification, double ratio, double window) {
         int nSpectra = 0;
@@ -229,10 +240,10 @@ public class RatioEstimator {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Estimate the ratio resulting from the compilation of several ratios.
      *
-     * @param ratios
-     * @return
+     * @param ratios    The input ratios
+     * @return the resulting ratio
      */
     private double estimateRatios(double[] ratios) {
         if (ratios.length < 6) {
@@ -243,10 +254,10 @@ public class RatioEstimator {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Returns the compilation of various ratios using a redescending M-estimator
      *
-     * @param ratios
-     * @return
+     * @param ratios various imput ratios
+     * @return the resulting ratio
      */
     private double mEstimate(double[] ratios) {
         Arrays.sort(ratios);

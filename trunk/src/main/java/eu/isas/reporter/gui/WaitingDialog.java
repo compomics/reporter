@@ -14,28 +14,37 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 /**
- * @TODO: JavaDoc missing
+ * This dialog will display feedback to the user while the data is being processed
  *
  * @author Marc Vaudel
  * @author Harald Barsnes
  */
 public class WaitingDialog extends javax.swing.JDialog {
 
+    /**
+     * Boolean indicating whether the run has been canceled
+     */
     private boolean runCancelled = false;
+    /**
+     * Boolean indicating whether the run is finished
+     */
     private boolean runFinished = false;
     /**
      * Convenience date format
      */
     private static final SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy, HH:mm");
+    /**
+     * The calculator processing the data
+     */
     private ItraqCalculator iTraqCalculator;
 
     /**
-     * @TODO: JavaDoc missing
+     * Constructor for the waiting dialog
      *
-     * @param parent
-     * @param modal
-     * @param projectName
-     * @param iTraqCalculator
+     * @param parent            The parent frame
+     * @param modal             boolean indicating whether the dialog is modal
+     * @param projectName       The experiment name
+     * @param iTraqCalculator   The calculator processing the data
      */
     public WaitingDialog(java.awt.Frame parent, boolean modal, ItraqCalculator iTraqCalculator) {
         super(parent, modal);
@@ -191,11 +200,6 @@ public class WaitingDialog extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    /**
-     * @TODO: JavaDoc missing
-     *
-     * @param evt
-     */
     private void closeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeButtonActionPerformed
         if (runFinished) {
             iTraqCalculator.displayResults();
@@ -210,11 +214,6 @@ public class WaitingDialog extends javax.swing.JDialog {
         }
 }//GEN-LAST:event_closeButtonActionPerformed
 
-    /**
-     * @TODO: JavaDoc missing
-     *
-     * @param evt
-     */
     private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
         File outputFile = null;
         JFileChooser fc = new JFileChooser();
@@ -246,18 +245,18 @@ public class WaitingDialog extends javax.swing.JDialog {
     // End of variables declaration//GEN-END:variables
 
     /**
-     * @TODO: JavaDoc missing
+     * returns true if the run has been cancelled
      *
-     * @return
+     * @return true if the run has been cancelled
      */
     public boolean isRunCancelled() {
         return runCancelled;
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Appends a string to the report displayed with the current date
      *
-     * @param report
+     * @param report the new report
      */
     public void appendReport(String report) {
         Date date = new Date();

@@ -4,8 +4,8 @@ import com.compomics.util.experiment.biology.ions.ReporterIon;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.PeptideQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.ProteinQuantification;
-import eu.isas.reporter.compomicsutilitiessettings.IgnoredRatios;
-import eu.isas.reporter.compomicsutilitiessettings.RatioLimits;
+import eu.isas.reporter.myparameters.IgnoredRatios;
+import eu.isas.reporter.myparameters.RatioLimits;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,26 +19,44 @@ import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.data.xy.DefaultIntervalXYDataset;
 
 /**
- * @TODO: JavaDoc missing
+ * displays a protein ratio and spread with the protein background distribution
  *
  * @author Marc Vaudel
  */
 public class ProteinCharts {
 
+    /**
+     * The quantification
+     */
     private ReporterIonQuantification quantification;
+    /**
+     * The resolution used
+     */
     private double resolution;
+    /**
+     * The ratio charts indexed by their reporter ion index
+     */
     private HashMap<Integer, RatioChart> ratioCharts = new HashMap<Integer, RatioChart>();
 
+    /**
+     * color for the peptide spread
+     */
     private Color peptideSpreadColor = new Color(150, 0, 0, 75);
+    /**
+     * Color for the protein ratio
+     */
     private Color proteinRatioColor = new Color(255, 0, 0, 255);
+    /**
+     * Color for the background
+     */
     private Color numberOfProteinsColor = Color.lightGray;
 
 
     /**
-     * @TODO: JavaDoc missing
+     * constructor
      *
-     * @param quantification
-     * @param resolution
+     * @param quantification    the quantification
+     * @param resolution        The resolution
      */
     public ProteinCharts(ReporterIonQuantification quantification, double resolution) {
         this.quantification = quantification;
@@ -65,7 +83,7 @@ public class ProteinCharts {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Creates the ratios charts
      */
     private void createRatioCharts() {
 
@@ -161,9 +179,9 @@ public class ProteinCharts {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Displays a new protein quantification
      *
-     * @param proteinQuantification
+     * @param proteinQuantification the corresponding protein quantification
      */
     public void setProtein(ProteinQuantification proteinQuantification) {
         for (int ion : ratioCharts.keySet()) {
@@ -172,12 +190,19 @@ public class ProteinCharts {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * private class to construct a ratio chart
      */
     public class RatioChart {
 
+        /**
+         * The jFree plot
+         */
         private XYPlot currentPlot = new XYPlot();
 
+        /**
+         * constructor
+         * @param backGroundValues the protein background
+         */
         public RatioChart(double[][] backGroundValues) {
 
             NumberAxis xAxis = new NumberAxis("Ratio");
@@ -205,19 +230,19 @@ public class ProteinCharts {
         }
 
         /**
-         * @TODO: JavaDoc missing
+         * returns the jFree plot
          *
-         * @return
+         * @return the jFree plot
          */
         public XYPlot getPlot() {
             return currentPlot;
         }
 
         /**
-         * @TODO: JavaDoc missing
+         * sets a new protein quantification to display
          * 
-         * @param proteinQuantification
-         * @param ion
+         * @param proteinQuantification the corresponding protein quantification
+         * @param ion   the selected reporter ion
          */
         public void setProtein(ProteinQuantification proteinQuantification, int ion) {
             RatioLimits ratioLimits = (RatioLimits) proteinQuantification.getUrParam(new RatioLimits());

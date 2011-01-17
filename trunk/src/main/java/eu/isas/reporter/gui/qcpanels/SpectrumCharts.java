@@ -4,8 +4,8 @@ import com.compomics.util.experiment.biology.ions.ReporterIon;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.PeptideQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.SpectrumQuantification;
-import eu.isas.reporter.compomicsutilitiessettings.IgnoredRatios;
-import eu.isas.reporter.compomicsutilitiessettings.RatioLimits;
+import eu.isas.reporter.myparameters.IgnoredRatios;
+import eu.isas.reporter.myparameters.RatioLimits;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,30 +19,60 @@ import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.data.xy.DefaultIntervalXYDataset;
 
 /**
- * @TODO: JavaDoc missing
+ * This chart will display the spectrum ratio among the other spectrum ratios belonging from a peptide quantification, itself also displayed.
  *
  * @author Marc Vaudel
  */
 public class SpectrumCharts {
 
+    /**
+     * The peptide quantification
+     */
     private PeptideQuantification peptideQuantification;
+    /**
+     * The index of the protein selected
+     */
     private int proteinIndex;
+    /**
+     * The index of the peptide selected
+     */
     private int peptideIndex;
+    /**
+     * The resolution
+     */
     private double resolution;
+    /**
+     * The quantification
+     */
     private ReporterIonQuantification quantification;
+    /**
+     * The various ratio charts indexed by the reporter ion index
+     */
     private HashMap<Integer, RatioChart> ratioCharts = new HashMap<Integer, RatioChart>();
+    /**
+     * color for the background
+     */
     private Color numeberOfPeptidesColor = Color.lightGray;
+    /**
+     * color for the spectrum spread
+     */
     private Color spectrumSpreadColor = new Color(0, 0, 150, 75);
+    /**
+     * Color for the peptide ratio
+     */
     private Color peptideRatioColor = new Color(0, 0, 255, 255);
+    /**
+     * Color for the spectrum ratio
+     */
     private Color spectrumRatioColor = new Color(255, 0, 0, 255);
 
     /**
-     * @TODO: JavaDoc missing
+     * constructor
      *
-     * @param proteinIndex
-     * @param peptideIndex
-     * @param quantification
-     * @param resolution
+     * @param proteinIndex      the protein index
+     * @param peptideIndex      the peptide index
+     * @param quantification    the quantification
+     * @param resolution        the resolution
      */
     public SpectrumCharts(int proteinIndex, int peptideIndex, ReporterIonQuantification quantification, double resolution) {
         this.proteinIndex = proteinIndex;
@@ -71,9 +101,9 @@ public class SpectrumCharts {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * creates the different panels for each reporter ion
      * 
-     * @param peptideQuantification
+     * @param peptideQuantification the peptide quantification
      */
     private void createReporterPanels(PeptideQuantification peptideQuantification) {
 
@@ -175,9 +205,9 @@ public class SpectrumCharts {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * selects a new spectrum quantification
      *
-     * @param spectrumQuantification
+     * @param spectrumQuantification the selected spectrum quantification
      */
     public void setSpectrum(SpectrumQuantification spectrumQuantification) {
         for (int ion : ratioCharts.keySet()) {
@@ -204,12 +234,19 @@ public class SpectrumCharts {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Private class for the ratio chart
      */
     private class RatioChart {
 
+        /**
+         * The jFree plot
+         */
         private XYPlot currentPlot = new XYPlot();
 
+        /**
+         * Constructor
+         * @param backGroundValues the background ratios
+         */
         public RatioChart(double[][] backGroundValues) {
 
             NumberAxis xAxis = new NumberAxis("Ratio");
@@ -232,18 +269,19 @@ public class SpectrumCharts {
             currentPlot.mapDatasetToRangeAxis(3, 0);
         }
 
-        /*
-         * @TODO: JavaDoc missing
+        /**
+         * Returns the jFree plot
+         * @return the jFree plot
          */
         public XYPlot getPlot() {
             return currentPlot;
         }
 
         /**
-         * @TODO: JavaDoc missing
+         * sets the selection of a new peptide quantification
          *
-         * @param peptideQuantification
-         * @param ion
+         * @param peptideQuantification the selected peptide quantification
+         * @param ion   the selected reporter ion
          */
         public void addPeptideRatio(PeptideQuantification peptideQuantification, int ion) {
             RatioLimits ratioLimits = (RatioLimits) peptideQuantification.getUrParam(new RatioLimits());
@@ -295,10 +333,10 @@ public class SpectrumCharts {
         }
 
         /**
-         * @TODO: JavaDoc missing
+         * sets the selection of a new spectrum quantification
          * 
-         * @param spectrumQuantification
-         * @param ion
+         * @param spectrumQuantification the selected spectrum quantification
+         * @param ion                    the selected reporter ion
          */
         public void setSpectrum(SpectrumQuantification spectrumQuantification, int ion) {
 

@@ -3,29 +3,42 @@ package eu.isas.reporter.gui;
 import java.io.File;
 import java.util.ArrayList;
 import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
 
 /**
- * @TODO: JavaDoc missing
+ * This dialog will allow the user to modify the list of selected files.
  *
  * @author Marc Vaudel
  * @author Harald Barsnes
  */
 public class FilterListDialog extends javax.swing.JDialog {
 
+    /**
+     * List of selected files
+     */
     private ArrayList<File> files;
+    /**
+     * Array indicating the user's selection
+     */
     private ArrayList<Boolean> selection = new ArrayList<Boolean>();
+    /**
+     * The parent start panel
+     */
     private StartPanel startPanel;
+    /**
+     * boolean indicating whether these files are identification files (true) or specrum files (false)
+     */
     private boolean idFiles;
 
     /**
-     * @TODO: JavaDoc missing
-     *
-     * @param parent
-     * @param modal
+     * The main constructor
+     * @param parent        The parent frame
+     * @param modal         boolean indicating whether the dialog is modal
+     * @param startPanel    The start panel
+     * @param files         The selected files
+     * @param idFiles       boolean indicating whether these files are identification files
      */
     public FilterListDialog(java.awt.Frame parent, boolean modal, StartPanel startPanel, ArrayList<File> files, boolean idFiles) {
         super(parent, modal);
@@ -156,11 +169,6 @@ public class FilterListDialog extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    /**
-     * @TODO: JavaDoc missing
-     *
-     * @param evt
-     */
     private void addJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addJButtonActionPerformed
 
         if (idFiles) {
@@ -276,11 +284,6 @@ public class FilterListDialog extends javax.swing.JDialog {
         }
 }//GEN-LAST:event_addJButtonActionPerformed
 
-    /**
-     * @TODO: JavaDoc missing
-     *
-     * @param evt
-     */
     private void removeJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeJButtonActionPerformed
         int cpt = 0;
 
@@ -306,11 +309,6 @@ public class FilterListDialog extends javax.swing.JDialog {
         });
 }//GEN-LAST:event_removeJButtonActionPerformed
 
-    /**
-     * @TODO: JavaDoc missing
-     *
-     * @param evt
-     */
     private void clearJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearJButtonActionPerformed
         files = new ArrayList<File>();
         selection = new ArrayList<Boolean>();
@@ -324,11 +322,6 @@ public class FilterListDialog extends javax.swing.JDialog {
         });
 }//GEN-LAST:event_clearJButtonActionPerformed
 
-    /**
-     * @TODO: JavaDoc missing
-     *
-     * @param evt
-     */
     private void okJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okJButtonActionPerformed
 
         if (idFiles) {
@@ -350,18 +343,21 @@ public class FilterListDialog extends javax.swing.JDialog {
     // End of variables declaration//GEN-END:variables
 
     /**
-     * @TODO: JavaDoc missing
+     * Table model for the file list
      */
     private class FileListTable extends DefaultTableModel {
 
+        @Override
         public int getRowCount() {
             return files.size();
         }
 
+        @Override
         public int getColumnCount() {
             return 2;
         }
 
+        @Override
         public String getColumnName(int column) {
             switch (column) {
                 case 0:
@@ -373,6 +369,7 @@ public class FilterListDialog extends javax.swing.JDialog {
             }
         }
 
+        @Override
         public Object getValueAt(int row, int column) {
             switch (column) {
                 case 0:
@@ -384,12 +381,14 @@ public class FilterListDialog extends javax.swing.JDialog {
             }
         }
 
+        @Override
         public void setValueAt(Object aValue, int row, int column) {
             if (column == 1) {
                 selection.set(row, !selection.get(row));
             }
         }
 
+        @Override
         public Class getColumnClass(int columnIndex) {
             return getValueAt(0, columnIndex).getClass();
         }

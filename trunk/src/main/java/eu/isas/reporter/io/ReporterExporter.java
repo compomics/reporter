@@ -11,7 +11,7 @@ import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuant
 import com.compomics.util.experiment.quantification.reporterion.quantification.PeptideQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.ProteinQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.SpectrumQuantification;
-import eu.isas.reporter.compomicsutilitiessettings.IgnoredRatios;
+import eu.isas.reporter.myparameters.IgnoredRatios;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -20,25 +20,47 @@ import java.util.ArrayList;
 import javax.swing.JOptionPane;
 
 /**
- * @TODO: JavaDoc missing
+ * This class will export the quantification results as csv files
  *
  * @author Marc Vaudel
  */
 public class ReporterExporter {
 
+    /**
+     * suffix for psm file
+     */
     private final static String spectraSuffix = "_Reporter_spectra.txt";
+    /**
+     * suffix for peptide file
+     */
     private final static String peptidesSuffix = "_Reporter_peptides.txt";
+    /**
+     * suffix for protein file
+     */
     private final static String proteinsSuffix = "_Reporter_proteins.txt";
+    /**
+     * separator used to create the csv files
+     */
     private String separator;
+
+    /**
+     * The experiment conducted
+     */
     private MsExperiment experiment;
+    /**
+     * the reporter ions used in the method method
+     */
     private ArrayList<ReporterIon> ions;
+    /**
+     * The reference reporter ion
+     */
     private int reference;
 
     /**
-     * @TODO: JavaDoc missing
+     * Constructor
      *
-     * @param experiment
-     * @param separator
+     * @param experiment    The experiment conducted
+     * @param separator     The separator to use
      */
     public ReporterExporter(MsExperiment experiment, String separator) {
         this.separator = separator;
@@ -46,10 +68,10 @@ public class ReporterExporter {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Exports the quantification results into csv files
      *
-     * @param quantification
-     * @param location
+     * @param quantification    The quantification achieved
+     * @param location          The folder where to save the files
      */
     public void exportResults(ReporterIonQuantification quantification, String location) {
 
@@ -191,10 +213,10 @@ public class ReporterExporter {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Returns the labels of the computed ratios
      *
-     * @param quantification
-     * @return
+     * @param quantification the quantification achieved
+     * @return String of the different labels
      */
     private String getRatiosLabels(ReporterIonQuantification quantification) {
         String result = "";
@@ -206,10 +228,10 @@ public class ReporterExporter {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * returns the ratios of the selected protein quantification
      *
-     * @param proteinQuantification
-     * @return
+     * @param proteinQuantification the selected protein quantification
+     * @return  the corresponding ratios
      */
     private String getRatios(ProteinQuantification proteinQuantification) {
         String result = "";
@@ -224,10 +246,10 @@ public class ReporterExporter {
     }
 
     /**
-     * @TODO: JavaDoc missing
-     * 
-     * @param peptideQuantification
-     * @return
+     * returns the ratios of the selected peptide quantification
+     *
+     * @param peptideQuantification the selected peptide quantification
+     * @return  the corresponding ratios
      */
     private String getRatios(PeptideQuantification peptideQuantification) {
         String result = "";
@@ -242,10 +264,10 @@ public class ReporterExporter {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * returns the ratios of the selected spectrum quantification
      *
-     * @param spectrumQuantification
-     * @return
+     * @param spectrumQuantification the selected spectrum quantification
+     * @return  the corresponding ratios
      */
     private String getRatios(SpectrumQuantification spectrumQuantification) {
         String result = "";
@@ -256,10 +278,10 @@ public class ReporterExporter {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * returns the intensities of the selected spectrum quantification
      *
-     * @param spectrumQuantification
-     * @return
+     * @param spectrumQuantification the selected spectrum quantification
+     * @return  the corresponding intensities
      */
     private String getIntensities(SpectrumQuantification spectrumQuantification) {
         String result = "";
@@ -275,9 +297,9 @@ public class ReporterExporter {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Returns the labels of the different ions
      *
-     * @return
+     * @return the labels of the different ions
      */
     private String getIntensitiesLabels() {
         String result = "";

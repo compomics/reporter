@@ -43,6 +43,9 @@ public class Reporter {
      * The last folder opened by the user. Defaults to user.home.
      */
     private String lastSelectedFolder = "user.home";
+    /**
+     * The ignorer will be used to ignore ratios or identifications
+     */
     private Ignorer ignorer;
 
     /**
@@ -108,10 +111,10 @@ public class Reporter {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Starts the processing
      *
-     * @param calculator
-     * @param ignorer
+     * @param calculator a reporter ratios calculator
+     * @param ignorer    an ignorer
      */
     public void startProcessing(ItraqCalculator calculator, Ignorer ignorer) {
         this.ignorer = ignorer;
@@ -119,7 +122,7 @@ public class Reporter {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * restarts reporter
      */
     public void restart() {
         mainFrame.dispose();
@@ -127,10 +130,10 @@ public class Reporter {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Displays the results in a result panel
      *
-     * @param quantification
-     * @param experiment
+     * @param quantification    The quantification achieved
+     * @param experiment        The experiment conducted
      */
     public void displayResults(ReporterIonQuantification quantification, MsExperiment experiment) {
 
@@ -315,16 +318,16 @@ public class Reporter {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * returns the main frame
      *
-     * @return
+     * @return the main frame
      */
     public JFrame getMainFrame() {
         return mainFrame;
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * returns the last selected foleder
      *
      * @return the lastSelectedFolder
      */
@@ -333,7 +336,7 @@ public class Reporter {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Sets the last selected folder
      *
      * @param lastSelectedFolder the lastSelectedFolder to set
      */

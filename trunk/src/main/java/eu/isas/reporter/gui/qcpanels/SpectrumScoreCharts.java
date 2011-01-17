@@ -4,8 +4,8 @@ import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuant
 import com.compomics.util.experiment.quantification.reporterion.quantification.PeptideQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.ProteinQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.SpectrumQuantification;
-import eu.isas.reporter.compomicsutilitiessettings.IgnoredRatios;
-import eu.isas.reporter.compomicsutilitiessettings.ItraqScore;
+import eu.isas.reporter.myparameters.IgnoredRatios;
+import eu.isas.reporter.myparameters.ItraqScore;
 import java.awt.Color;
 import java.util.ArrayList;
 import org.jfree.chart.ChartPanel;
@@ -18,22 +18,34 @@ import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.data.xy.DefaultIntervalXYDataset;
 
 /**
- * @TODO: JavaDoc missing
+ * This chart displays the spectrum score (intensity) distribution
  *
  * @author Marc Vaudel
  */
 public class SpectrumScoreCharts {
 
+    /**
+     * The resolution
+     */
     private final double resolution = 0.1;
+    /**
+     * The quantification
+     */
     private ReporterIonQuantification quantification;
+    /**
+     * The score distribution chart
+     */
     private RatioChart ratioCharts;
 
+    /**
+     * color for the background
+     */
     private Color allSpectraColor = Color.lightGray;
 
     /**
-     * @TODO: JavaDoc missing
+     * constructor
      *
-     * @param quantification
+     * @param quantification the quantification
      */
     public SpectrumScoreCharts(ReporterIonQuantification quantification) {
         this.quantification = quantification;
@@ -55,7 +67,7 @@ public class SpectrumScoreCharts {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * creates the charts
      */
     private void createRatioCharts() {
 
@@ -138,21 +150,28 @@ public class SpectrumScoreCharts {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * sets a new spectrum quantification selected
      * 
-     * @param spectrumQuantification
+     * @param spectrumQuantification the spectrum quantification selected
      */
     public void setSpectrum(SpectrumQuantification spectrumQuantification) {
         ratioCharts.setSpectrum(spectrumQuantification);
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * private class for the chart
      */
     public class RatioChart {
 
+        /**
+         * The jFree plot
+         */
         private XYPlot currentPlot = new XYPlot();
 
+        /**
+         * Constructor
+         * @param backGroundValues the background values
+         */
         public RatioChart(double[][] backGroundValues) {
 
             NumberAxis xAxis = new NumberAxis("Quality");
@@ -180,18 +199,18 @@ public class SpectrumScoreCharts {
         }
 
         /**
-         * @TODO: JavaDoc missing
+         * returns the jFree plot
          *
-         * @return
+         * @return the jFree plot
          */
         public XYPlot getPlot() {
             return currentPlot;
         }
 
         /**
-         * @TODO: JavaDoc missing
+         * sets a new spectrum quantification selected
          * 
-         * @param spectrumQuantification
+         * @param spectrumQuantification a new spectrum quantification selected
          */
         public void setSpectrum(SpectrumQuantification spectrumQuantification) {
             Double currentScore;
