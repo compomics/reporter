@@ -1,48 +1,51 @@
-package eu.isas.reporter.compomicsutilitiessettings;
+package eu.isas.reporter.myparameters;
 
-import com.compomics.util.experiment.utils.UrParameter;
+import com.compomics.util.experiment.personalization.UrParameter;
 import java.util.HashMap;
 
 /**
- * @TODO: JavaDoc missing
+ * This class contains the different reporter scores
  *
  * @author Marc Vaudel
  */
 public class ItraqScore implements UrParameter {
 
+    /**
+     * the reporter scores indexed by the reporter ion index
+     */
     private HashMap<Integer, Double> scores = new HashMap<Integer, Double>();
 
     /**
-     * @TODO: JavaDoc missing
+     * constructor
      */
     public ItraqScore() {
 
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * adds a score
      *
-     * @param ion
-     * @param score
+     * @param ion   the reporter ion index
+     * @param score the corresponding score
      */
     public void addScore(int ion, double score) {
         scores.put(ion, score);
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * returns the score corresponding to the selected ion
      *
-     * @param ion
-     * @return
+     * @param ion the reporter ion
+     * @return the corresponding score
      */
     public Double getScore(int ion) {
         return scores.get(ion);
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * returns the minimal score
      *
-     * @return
+     * @return the minimal score
      */
     public Double getMinScore() {
         Double score = null;
@@ -54,20 +57,12 @@ public class ItraqScore implements UrParameter {
         return score;
     }
 
-    /**
-     * @TODO: JavaDoc missing
-     *
-     * @return
-     */
+    @Override
     public String getFamilyName() {
         return "Reporter";
     }
 
-    /**
-     * @TODO: JavaDoc missing
-     *
-     * @return
-     */
+    @Override
     public int getIndex() {
         return 1;
     }

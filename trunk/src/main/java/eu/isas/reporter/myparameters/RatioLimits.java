@@ -1,30 +1,36 @@
-package eu.isas.reporter.compomicsutilitiessettings;
+package eu.isas.reporter.myparameters;
 
-import com.compomics.util.experiment.utils.UrParameter;
+import com.compomics.util.experiment.personalization.UrParameter;
 import java.util.HashMap;
 
 /**
- * @TODO: JavaDoc missing
+ * This class will contain the limits of the considered ratios
  *
  * @author Marc Vaudel
  */
 public class RatioLimits implements UrParameter {
 
+    /**
+     * Lower limits indexed by the reporter ion index
+     */
     private HashMap<Integer, Double> limitInf = new HashMap<Integer, Double>();
+    /**
+     * Higher limit indexed by the reporter ion index
+     */
     private HashMap<Integer, Double> limitSup = new HashMap<Integer, Double>();
 
     /**
-     * @TODO: JavaDoc missing
+     * constructor
      */
     public RatioLimits() {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * adds limits for the considered reporter ion
      *
-     * @param ion
-     * @param limitInf
-     * @param limitSup
+     * @param ion       the reporter ion
+     * @param limitInf  the lower limit
+     * @param limitSup  the upper limit
      */
     public void addLimits(int ion, double limitInf, double limitSup) {
         this.limitInf.put(ion, limitInf);
@@ -32,29 +38,25 @@ public class RatioLimits implements UrParameter {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * returns the limits for the considered reporter ion
      *
-     * @param ion
-     * @return
+     * @param ion   the reporter ion
+     * @return the lower and upper limit
      */
     public double[] getLimits(int ion) {
+        try {
         return new double[] {limitInf.get(ion), limitSup.get(ion)};
+        } catch (Exception e) {
+            return new double[] {0.1, 10};
+        }
     }
 
-    /**
-     * @TODO: JavaDoc missing
-     *
-     * @return
-     */
+    @Override
     public String getFamilyName() {
         return "Reporter";
     }
 
-    /**
-     * @TODO: JavaDoc missing
-     *
-     * @return
-     */
+    @Override
     public int getIndex() {
         return 2;
     }
