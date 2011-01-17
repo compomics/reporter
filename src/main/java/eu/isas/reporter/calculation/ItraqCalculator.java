@@ -3,26 +3,28 @@ package eu.isas.reporter.calculation;
 import com.compomics.util.Util;
 import com.compomics.util.experiment.MsExperiment;
 import com.compomics.util.experiment.biology.PTMFactory;
-import com.compomics.util.experiment.biology.Peptide;
-import com.compomics.util.experiment.biology.Protein;
+import com.compomics.util.experiment.biology.Sample;
 import com.compomics.util.experiment.biology.ions.ReporterIon;
-import com.compomics.util.experiment.identification.IdfileReader;
-import com.compomics.util.experiment.identification.IdfileReaderFactory;
+import com.compomics.util.experiment.identification.Identification;
+import com.compomics.util.experiment.identification.IdentificationMethod;
 import com.compomics.util.experiment.identification.advocates.SearchEngine;
 import com.compomics.util.experiment.identification.matches.IonMatch;
 import com.compomics.util.experiment.identification.matches.PeptideMatch;
 import com.compomics.util.experiment.identification.matches.ProteinMatch;
 import com.compomics.util.experiment.identification.matches.SpectrumMatch;
+import com.compomics.util.experiment.io.identifications.IdfileReader;
+import com.compomics.util.experiment.io.identifications.IdfileReaderFactory;
+import com.compomics.util.experiment.io.massspectrometry.MgfReader;
 import com.compomics.util.experiment.massspectrometry.MSnSpectrum;
 import com.compomics.util.experiment.massspectrometry.Peak;
-import com.compomics.util.experiment.massspectrometry.filereaders.MgfReader;
 import com.compomics.util.experiment.quantification.Ratio;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.PeptideQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.ProteinQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.SpectrumQuantification;
+import eu.isas.peptideshaker.myparameters.PSParameter;
 import eu.isas.reporter.Reporter;
-import eu.isas.reporter.compomicsutilitiessettings.IgnoredRatios;
+import eu.isas.reporter.myparameters.IgnoredRatios;
 import eu.isas.reporter.gui.WaitingDialog;
 import eu.isas.reporter.identifications.FdrCalculator;
 import eu.isas.reporter.identifications.IdFilter;
@@ -41,44 +43,101 @@ import javax.swing.SwingWorker;
  */
 public class ItraqCalculator {
 
+    /**
+     * The reporter class
+     */
     private Reporter parent;
+
+    /**
+     * The dialog which will display feedback to the user
+     */
     private WaitingDialog waitingDialog;
+
+    /**
+     * The experiment conducted
+     */
     private MsExperiment experiment;
+    /**
+     * The sample analyzed
+     */
+    private Sample sample;
+    /**
+     * The replicate number
+     */
+    private int replicateNumber;
+
+    /**
+     * The identification files to process
+     */
     private ArrayList<File> idFiles;
+    /**
+     * The corresponding mgf files
+     */
     private ArrayList<File> mgfFiles;
+    /**
+     * The identification filter to use
+     */
     private IdFilter idFilter;
+    /**
+     * The FDR threshold
+     */
     private double fdrLimit;
+    /**
+     * The tolerance for reporter ion matching
+     */
     private double ionTolerance;
+    /**
+     * Map of all spectra
+     */
     private HashMap<String, MSnSpectrum> spectra = new HashMap<String, MSnSpectrum>();
-    private HashMap<String, ProteinMatch> proteins = new HashMap<String, ProteinMatch>();
+
+    /**
+     * The worker which will compile all ratios
+     */
     private RatiosCompilator ratiosCompilator = new RatiosCompilator();
+    /**
+     * The worker which will process identifications
+     */
     private IdentificationProcessor identificationProcessor = new IdentificationProcessor();
+    /**
+     * The worker which will process the mgf files
+     */
     private MgfProcessor mgfProcessor = new MgfProcessor();
+
+    /**
+     * The resulting quantification
+     */
     private ReporterIonQuantification quantification;
+    /**
+     * The identification-quantification linker
+     */
     private IdentificationQuantificationLinker linker;
     /**
      * The number of decimals to display for the e-values in the report.
      */
-    private int eValueDecimals = 6;
+    private final int eValueDecimals = 6;
 
     /**
-     * @TODO: JavaDoc missing
-     *
-     * @param parent
-     * @param experiment
-     * @param idFiles
-     * @param mgfFiles
-     * @param idFilter
-     * @param fdrLimit
-     * @param quantification
-     * @param ionTolerance
-     * @param linker
+     * Constructor
+     * @param parent            The reporter class
+     * @param experiment        The experiment conducted
+     * @param sample            The sample analyzed
+     * @param replicateNum      The replicate number
+     * @param idFiles           The identification files to process
+     * @param mgfFiles          The mgf files to process
+     * @param idFilter          The identification filter
+     * @param fdrLimit          The FDR threshold to be used
+     * @param quantification    The quantification to work on
+     * @param ionTolerance      The tolerance for reporter ion matching
+     * @param linker            The identification-quantification linker
      */
-    public ItraqCalculator(Reporter parent, MsExperiment experiment, ArrayList<File> idFiles, ArrayList<File> mgfFiles,
+    public ItraqCalculator(Reporter parent, MsExperiment experiment, Sample sample, int replicateNum, ArrayList<File> idFiles, ArrayList<File> mgfFiles,
             IdFilter idFilter, double fdrLimit, ReporterIonQuantification quantification, double ionTolerance, IdentificationQuantificationLinker linker) {
         this.idFiles = idFiles;
         this.mgfFiles = mgfFiles;
         this.experiment = experiment;
+        this.sample = sample;
+        this.replicateNumber = replicateNum;
         this.parent = parent;
         this.idFilter = idFilter;
         this.fdrLimit = fdrLimit;
@@ -88,16 +147,16 @@ public class ItraqCalculator {
     }
 
     /**
-     * Returns the experimet object.
+     * Returns the experiment conducted.
      *
-     * @return the experimet object
+     * @return the experiment conducted
      */
     public MsExperiment getExperiment() {
         return experiment;
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Method starting the various workers
      */
     public void computeRatios() {
         waitingDialog = new WaitingDialog(parent.getMainFrame(), true, this);
@@ -112,23 +171,23 @@ public class ItraqCalculator {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Method called for result display
      */
     public void displayResults() {
         parent.displayResults(quantification, experiment);
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Method called to restart reporter
      */
     public void restart() {
         parent.restart();
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Method used to process a spectrum
      *
-     * @param spectrumQuantification
+     * @param spectrumQuantification the quantification at the spectrum level
      */
     private void processSpectrum(SpectrumQuantification spectrumQuantification) {
         for (ReporterIon reporterIon : quantification.getReporterMethod().getReporterIons()) {
@@ -138,9 +197,9 @@ public class ItraqCalculator {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Method which estimates ratios for a spectrum
      *
-     * @param spectrumQuantification
+     * @param spectrumQuantification the current spectrum quantification
      */
     private void estimateRatios(SpectrumQuantification spectrumQuantification) {
         IgnoredRatios ignoredRatios = new IgnoredRatios();
@@ -177,11 +236,11 @@ public class ItraqCalculator {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Method which matches an ion to a peak
      *
-     * @param ion
-     * @param spectrum
-     * @return
+     * @param ion       The ion to look for
+     * @param spectrum  The spectrum analyzed
+     * @return the corresponding ion match. If no peak was found the peak will be null.
      */
     private IonMatch matchIon(ReporterIon ion, MSnSpectrum spectrum) {
         HashMap<Double, Peak> peakMap = spectrum.getPeakMap();
@@ -206,7 +265,7 @@ public class ItraqCalculator {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Worker which compiles psm ratios into peptide ratios and protein ratios
      */
     private class RatiosCompilator extends SwingWorker {
 
@@ -215,12 +274,14 @@ public class ItraqCalculator {
             queue();
             try {
                 waitingDialog.appendReport("Spectrum ratio computation.");
+                ArrayList<ProteinMatch> proteins = new ArrayList(experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).getIdentification(IdentificationMethod.MS2_IDENTIFICATION).getProteinIdentification().values());
                 if (proteins.isEmpty()) {
                     waitingDialog.appendReport("No proteins imported.");
                     waitingDialog.setRunCancelled();
                     return 1;
                 }
-                for (ProteinMatch proteinMatch : proteins.values()) {
+                PSParameter psParameter = new PSParameter();
+                for (ProteinMatch proteinMatch : proteins) {
                     ArrayList<PeptideQuantification> peptideQuantifications = new ArrayList<PeptideQuantification>();
                     for (PeptideMatch peptideMatch : proteinMatch.getPeptideMatches().values()) {
                         ArrayList<SpectrumQuantification> spectrumQuantifications = new ArrayList<SpectrumQuantification>();
@@ -258,6 +319,18 @@ public class ItraqCalculator {
                                 if (reporterFound) {
                                     spectrumQuantifications.add(spectrumQuantification);
                                 }
+                                try {
+                                    psParameter = (PSParameter) spectrumMatch.getUrParam(psParameter);
+                                    if (!psParameter.isValidated()) {
+                                        IgnoredRatios ignoredRatios = new IgnoredRatios();
+                                        ignoredRatios = (IgnoredRatios) spectrumQuantification.getUrParam(ignoredRatios);
+                                        for (ReporterIon ion : quantification.getReporterMethod().getReporterIons()) {
+                                            ignoredRatios.ignore(ion.getIndex());
+                                        }
+                                    }
+                                } catch (Exception e) {
+                                    // the identifications were not processed by peptide shaker
+                                }
                                 if (waitingDialog.isRunCancelled()) {
                                     waitingDialog.setRunCancelled();
                                     return 1;
@@ -284,10 +357,10 @@ public class ItraqCalculator {
         }
 
         /**
-         * @TODO: JavaDoc missing
+         * Method which returns the keys of the spectra potentially containing the quantitative information of a desired psm.
          *
-         * @param spectrumMatch
-         * @return
+         * @param spectrumMatch the inspectred psm
+         * @return the spectrum references of the corresponding spectra
          */
         private ArrayList<String> getSpectrumIds(SpectrumMatch spectrumMatch) {
             String spectrumKey = spectrumMatch.getSpectrum().getFileName() + "_" + spectrumMatch.getSpectrum().getSpectrumTitle();
@@ -316,7 +389,7 @@ public class ItraqCalculator {
         }
 
         /**
-         * @TODO: JavaDoc missing
+         * Method used to synchronize the workers. The ratio compilation will only start once the identification worker and the spectrum worker are done.
          */
         private synchronized void queue() {
             try {
@@ -332,7 +405,7 @@ public class ItraqCalculator {
         }
 
         /**
-         * @TODO: JavaDoc missing
+         * Method used to restart the worker once the others are ready
          */
         public synchronized void restart() {
             try {
@@ -349,14 +422,29 @@ public class ItraqCalculator {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Worker which processed the identifications
      */
     private class IdentificationProcessor extends SwingWorker {
 
+        /**
+         * Map containing all psms from the various search engines indexed by their compomics utilities index.
+         */
         private HashMap<Integer, HashSet<SpectrumMatch>> allSpectrumMatches = new HashMap<Integer, HashSet<SpectrumMatch>>();
+        /**
+         * Boolean indicating whether the worker is done or not
+         */
         private boolean finished = false;
+        /**
+         * The compomics utilities identification file reader factory
+         */
         private IdfileReaderFactory readerFactory = IdfileReaderFactory.getInstance();
+        /**
+         * The compomics utilities post-translational modifications factory
+         */
         private PTMFactory ptmFactory = PTMFactory.getInstance();
+        /**
+         * The FDR estimator
+         */
         private FdrCalculator fdrCalculator = new FdrCalculator();
 
         @Override
@@ -364,93 +452,88 @@ public class ItraqCalculator {
             int nTotal = 0;
             int nRetained = 0;
             try {
-                HashSet<SpectrumMatch> tempSet;
-                for (File idFile : idFiles) {
-                    int searchEngine = readerFactory.getSearchEngine(idFile);
-                    IdfileReader fileReader = readerFactory.getFileReader(idFile);
-                    tempSet = fileReader.getAllSpectrumMatches();
-                    Iterator<SpectrumMatch> matchIt = tempSet.iterator();
-                    SpectrumMatch match;
-                    while (matchIt.hasNext()) {
-                        match = matchIt.next();
-                        nTotal++;
-                        if (!idFilter.validate(match.getFirstHit(searchEngine))) {
-                            matchIt.remove();
+                if (idFiles.size() > 1 || !idFiles.get(0).getName().endsWith(".cps")) {
+                    HashSet<SpectrumMatch> tempSet;
+                    for (File idFile : idFiles) {
+                        int searchEngine = readerFactory.getSearchEngine(idFile);
+                        IdfileReader fileReader = readerFactory.getFileReader(idFile);
+                        tempSet = fileReader.getAllSpectrumMatches();
+                        Iterator<SpectrumMatch> matchIt = tempSet.iterator();
+                        SpectrumMatch match;
+                        while (matchIt.hasNext()) {
+                            match = matchIt.next();
+                            nTotal++;
+                            if (!idFilter.validate(match.getFirstHit(searchEngine))) {
+                                matchIt.remove();
+                            } else {
+                                fdrCalculator.addHit(searchEngine, match.getFirstHit(searchEngine).getEValue(), match.getFirstHit(searchEngine).isDecoy());
+                                nRetained++;
+                            }
+                            if (waitingDialog.isRunCancelled()) {
+                                waitingDialog.setRunCancelled();
+                                return 1;
+                            }
+                        }
+                        if (allSpectrumMatches.get(searchEngine) == null) {
+                            allSpectrumMatches.put(searchEngine, tempSet);
                         } else {
-                            fdrCalculator.addHit(searchEngine, match.getFirstHit(searchEngine).getEValue(), match.getFirstHit(searchEngine).isDecoy());
-                            nRetained++;
+                            allSpectrumMatches.get(searchEngine).addAll(tempSet);
                         }
                         if (waitingDialog.isRunCancelled()) {
                             waitingDialog.setRunCancelled();
                             return 1;
                         }
                     }
-                    if (allSpectrumMatches.get(searchEngine) == null) {
-                        allSpectrumMatches.put(searchEngine, tempSet);
-                    } else {
-                        allSpectrumMatches.get(searchEngine).addAll(tempSet);
-                    }
-                    if (waitingDialog.isRunCancelled()) {
-                        waitingDialog.setRunCancelled();
+                    if (nRetained == 0) {
+                        waitingDialog.appendReport("No identification retained.");
                         return 1;
                     }
-                }
-                if (nRetained == 0) {
-                    waitingDialog.appendReport("No identification retained.");
-                    return 1;
-                }
-                waitingDialog.appendReport("Identification file(s) import completed. " + nTotal + " identifications imported, " + nRetained + " identifications retained.");
-                waitingDialog.appendReport("FDR estimation.");
-                HashMap<Integer, Double> thresholds = fdrCalculator.getEvalueLimits(fdrLimit);
-                double eValueMax;
-                for (int searchEngine : allSpectrumMatches.keySet()) {
-                    eValueMax = thresholds.get(searchEngine);
-                    Iterator<SpectrumMatch> matchIt = allSpectrumMatches.get(searchEngine).iterator();
-                    SpectrumMatch match;
-                    while (matchIt.hasNext()) {
-                        match = matchIt.next();
-                        if (match.getFirstHit(searchEngine).getEValue() > eValueMax
-                                || match.getFirstHit(searchEngine).isDecoy()) {
-                            matchIt.remove();
+                    waitingDialog.appendReport("Identification file(s) import completed. " + nTotal + " identifications imported, " + nRetained + " identifications retained.");
+                    waitingDialog.appendReport("FDR estimation.");
+                    HashMap<Integer, Double> thresholds = fdrCalculator.getEvalueLimits(fdrLimit);
+                    double eValueMax;
+                    for (int searchEngine : allSpectrumMatches.keySet()) {
+                        eValueMax = thresholds.get(searchEngine);
+                        Iterator<SpectrumMatch> matchIt = allSpectrumMatches.get(searchEngine).iterator();
+                        SpectrumMatch match;
+                        while (matchIt.hasNext()) {
+                            match = matchIt.next();
+                            if (match.getFirstHit(searchEngine).getEValue() > eValueMax
+                                    || match.getFirstHit(searchEngine).isDecoy()) {
+                                matchIt.remove();
+                            }
                         }
                     }
-                }
-                String report = "FDR processing completed:\n\n\tEngine\te-value\t#hits at " + fdrLimit + "% FDR\n";
-                if (allSpectrumMatches.get(SearchEngine.MASCOT) == null) {
-                    report += "\tMascot\t\t\tno hits\n";
-                } else {
-                    report += "\tMascot\t" + Util.roundDouble(thresholds.get(SearchEngine.MASCOT), eValueDecimals)
-                            + "\t" + allSpectrumMatches.get(SearchEngine.MASCOT).size() + "\n";
-                }
-                if (allSpectrumMatches.get(SearchEngine.OMSSA) == null) {
-                    report += "\tOMSSA\t\t\tno hits\n";
-                } else {
-                    report += "\tOMSSA\t" + Util.roundDouble(thresholds.get(SearchEngine.OMSSA), eValueDecimals)
-                            + "\t" + allSpectrumMatches.get(SearchEngine.OMSSA).size() + "\n";
-                }
-                if (allSpectrumMatches.get(SearchEngine.XTANDEM) == null) {
-                    report += "\tX!Tandem\t\t\tno hits\n";
-                } else {
-                    report += "\tX!Tandem\t" + Util.roundDouble(thresholds.get(SearchEngine.XTANDEM), eValueDecimals)
-                            + "\t" + allSpectrumMatches.get(SearchEngine.XTANDEM).size() + "\n";
-                }
-                waitingDialog.appendReport(report);
-                waitingDialog.appendReport("Building protein objects.");
-
-                for (int searchEngine : allSpectrumMatches.keySet()) {
-                    for (SpectrumMatch match : allSpectrumMatches.get(searchEngine)) {
-                        Peptide peptide = match.getFirstHit(searchEngine).getPeptide();
-                        Protein protein = peptide.getParentProteins().get(0);
-                        PeptideMatch peptideMatch = new PeptideMatch(peptide, match);
-                        if (proteins.get(protein.getAccession()) == null) {
-                            proteins.put(protein.getAccession(), new ProteinMatch(protein, peptideMatch));
-                        } else {
-                            proteins.get(protein.getAccession()).addPeptideMatch(peptideMatch);
-                        }
+                    String report = "FDR processing completed:\n\n\tEngine\te-value\t#hits at " + fdrLimit + "% FDR\n";
+                    if (allSpectrumMatches.get(SearchEngine.MASCOT) == null) {
+                        report += "\tMascot\t\t\tno hits\n";
+                    } else {
+                        report += "\tMascot\t" + Util.roundDouble(thresholds.get(SearchEngine.MASCOT), eValueDecimals)
+                                + "\t" + allSpectrumMatches.get(SearchEngine.MASCOT).size() + "\n";
                     }
-                }
-                waitingDialog.appendReport(proteins.size() + " proteins imported.");
+                    if (allSpectrumMatches.get(SearchEngine.OMSSA) == null) {
+                        report += "\tOMSSA\t\t\tno hits\n";
+                    } else {
+                        report += "\tOMSSA\t" + Util.roundDouble(thresholds.get(SearchEngine.OMSSA), eValueDecimals)
+                                + "\t" + allSpectrumMatches.get(SearchEngine.OMSSA).size() + "\n";
+                    }
+                    if (allSpectrumMatches.get(SearchEngine.XTANDEM) == null) {
+                        report += "\tX!Tandem\t\t\tno hits\n";
+                    } else {
+                        report += "\tX!Tandem\t" + Util.roundDouble(thresholds.get(SearchEngine.XTANDEM), eValueDecimals)
+                                + "\t" + allSpectrumMatches.get(SearchEngine.XTANDEM).size() + "\n";
+                    }
+                    waitingDialog.appendReport(report);
+                    waitingDialog.appendReport("Building protein objects.");
 
+                    Identification identification = experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).getIdentification(IdentificationMethod.MS2_IDENTIFICATION);
+                    for (int searchEngine : allSpectrumMatches.keySet()) {
+                        identification.addSpectrumMatch(allSpectrumMatches.get(searchEngine));
+                    }
+                    waitingDialog.appendReport(identification.getProteinIdentification().size() + " proteins imported.");
+                } else {
+                    waitingDialog.appendReport("Identifications imported from Compomics experiment " + experiment.getReference() + " semple " + sample.getReference() + " replicate " + replicateNumber + ".");
+                }
                 finished = true;
                 ratiosCompilator.restart();
             } catch (Exception e) {
@@ -462,16 +545,23 @@ public class ItraqCalculator {
             return 0;
         }
 
+        /**
+         * Method indicating whether the worker is done or not
+         * @return a boolean indicating whether the worker is done or not
+         */
         public boolean isFinished() {
             return finished;
         }
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * worker used to process an mgf file
      */
     private class MgfProcessor extends SwingWorker {
 
+        /**
+         * Boolean indicating whether the worker is done
+         */
         private boolean finished = false;
 
         @Override
@@ -500,7 +590,10 @@ public class ItraqCalculator {
             }
             return 0;
         }
-
+         /**
+         * Method indicating whether the worker is done or not
+         * @return a boolean indicating whether the worker is done or not
+         */
         public boolean isfinished() {
             return finished;
         }

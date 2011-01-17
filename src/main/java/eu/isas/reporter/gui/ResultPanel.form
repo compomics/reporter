@@ -180,7 +180,7 @@
                       <Component id="jPanel3" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jPanel4" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="647" max="32767" attributes="0"/>
+                      <EmptySpace pref="641" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -221,7 +221,7 @@
                               <Component id="ratioMinTxt" linkSize="2" max="32767" attributes="1"/>
                               <Component id="ratioMaxTxt" linkSize="2" alignment="0" min="-2" pref="65" max="-2" attributes="1"/>
                           </Group>
-                          <EmptySpace pref="526" max="32767" attributes="0"/>
+                          <EmptySpace pref="522" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -338,7 +338,7 @@
                           <Component id="jLabel7" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="separate" max="-2" attributes="0"/>
                           <Component id="separatorCmb" min="-2" pref="86" max="-2" attributes="0"/>
-                          <EmptySpace pref="780" max="32767" attributes="0"/>
+                          <EmptySpace pref="776" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>

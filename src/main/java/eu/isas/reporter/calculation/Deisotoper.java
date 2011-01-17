@@ -9,20 +9,26 @@ import java.util.HashMap;
 import org.ujmp.core.doublematrix.calculation.general.decomposition.Ginv;
 
 /**
- * @TODO: JavaDoc missing
+ * This class takes care of the deisotoping of reporter ion intensities.
  *
  * @author Marc Vaudel
  */
 public class Deisotoper {
 
+    /**
+     * The correction matrix (see PMID: 19953549)
+     */
     private double[][] correctionMatrix;
 
+    /**
+     * the reporter method used
+     */
     private ReporterMethod method;
 
     /**
-     * @TODO: JavaDoc missing
+     * constructor
      *
-     * @param method
+     * @param method the reporter method used
      */
     public Deisotoper(ReporterMethod method) {
         this.method = method;
@@ -30,7 +36,7 @@ public class Deisotoper {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Method which estimates the correction factors matrix
      */
     private void estimateCorrectionMatrix() {
         ArrayList<CorrectionFactor> correctionFactors = method.getCorrectionFactors();
@@ -61,10 +67,10 @@ public class Deisotoper {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * this method returns deisotoped intensities
      *
-     * @param ionMatches
-     * @return
+     * @param ionMatches the ion matches to deisotope
+     * @return a map of the deisotoped intensities (ion index -> intensity)
      */
     public HashMap<Integer, Double> deisotope(HashMap<Integer, IonMatch> ionMatches) {
         ArrayList<ReporterIon> reporterIons = method.getReporterIons();

@@ -1,6 +1,8 @@
 package eu.isas.reporter.gui;
 
 import com.compomics.util.experiment.MsExperiment;
+import com.compomics.util.experiment.biology.Peptide;
+import com.compomics.util.experiment.biology.Protein;
 import com.compomics.util.experiment.biology.ions.ReporterIon;
 import com.compomics.util.experiment.identification.matches.ModificationMatch;
 import com.compomics.util.experiment.massspectrometry.MSnSpectrum;
@@ -11,8 +13,8 @@ import com.compomics.util.gui.renderers.AlignedListCellRenderer;
 import eu.isas.reporter.Reporter;
 import eu.isas.reporter.calculation.Ignorer;
 import eu.isas.reporter.calculation.RatioEstimator;
-import eu.isas.reporter.compomicsutilitiessettings.IgnoredRatios;
-import eu.isas.reporter.compomicsutilitiessettings.ItraqScore;
+import eu.isas.reporter.myparameters.IgnoredRatios;
+import eu.isas.reporter.myparameters.ItraqScore;
 import eu.isas.reporter.gui.qcpanels.PeptideCharts;
 import eu.isas.reporter.gui.qcpanels.PeptideScoreCharts;
 import eu.isas.reporter.gui.qcpanels.ProteinCharts;
@@ -44,44 +46,116 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
 /**
- * @TODO: JavaDoc missing
+ * This panel will be used to display the quantification results
  *
  * @author Marc Vaudel
  */
 public class ResultPanel extends javax.swing.JPanel {
 
+    /**
+     * index for obsolete chart display
+     */
     private static final int DISP_OBSOLETE = -1;
+    /**
+     * spectrum chart index
+     */
     private static final int DISP_SPECTRUM = 0;
+    /**
+     * peptide chart index
+     */
     private static final int DISP_PEPTIDE = 1;
+    /**
+     * protein chart index
+     */
     private static final int DISP_PROTEIN = 2;
+    /**
+     * spectrum score chart index
+     */
     private static final int DISP_SPECTRUM_SCORE = 3;
+    /**
+     * peptide score chart index
+     */
     private static final int DISP_PEPTIDE_SCORE = 4;
+    /**
+     * protein score chart index
+     */
     private static final int DISP_PROTEIN_SCORE = 5;
+    /**
+     * index indicating which chart is being displayed
+     */
     private int displayed;
+
+    /**
+     * The currently processed quantification
+     */
     private ReporterIonQuantification quantification;
+    /**
+     * List of the reporter ions used for this quantification
+     */
     private ArrayList<ReporterIon> reporterIons;
+    /**
+     * The reporter class
+     */
     private Reporter parent;
+
+    /**
+     * The experiment conducted
+     */
     private MsExperiment experiment;
+    /**
+     * a ratio estimator
+     */
     private RatioEstimator ratioEstimator;
+    /**
+     * list of the indexes of the displayed lines
+     */
     private ArrayList<TableKey> tableIndex = new ArrayList<TableKey>();
+    /**
+     * The ignorer used
+     */
     private Ignorer ignorer;
-    // QC Panels
+
+
+    /**
+     * The jpanel encompassing the right-hand side chart panels
+     */
     private JPanel verticalChartPanel;
+    /**
+     * The protein chart panel
+     */
     private ProteinCharts proteinCharts;
+    /**
+     * The peptide chart panel
+     */
     private PeptideCharts peptideCharts;
+    /**
+     * The spectrum chart panel
+     */
     private SpectrumCharts spectrumCharts;
+    /**
+     * The protein score chart panel
+     */
     private ProteinScoreCharts proteinScoreCharts;
+    /**
+     * The peptide score chart panel
+     */
     private PeptideScoreCharts peptideScoreCharts;
+    /**
+     * The spectrum score chart panel
+     */
     private SpectrumScoreCharts spectrumScoreCharts;
+
+    /**
+     * pop-up used for the table
+     */
     private JPopupMenu tablePopUp;
 
     /**
-     * @TODO: JavaDoc missing
-     *
-     * @param parent
-     * @param quantification
-     * @param experiment
-     * @param ignorer
+     * Constructor
+     * @param parent            The reporter class
+     * @param quantification    The quantification under processing
+     * @param experiment        The experiment conducted
+     * @param ignorer           The ignorer to use
      */
     public ResultPanel(Reporter parent, ReporterIonQuantification quantification, MsExperiment experiment, Ignorer ignorer) {
         this.experiment = experiment;
@@ -166,7 +240,7 @@ public class ResultPanel extends javax.swing.JPanel {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Method which creates the table index
      */
     private void createTableIndex() {
         for (int i = 0; i < quantification.getProteinQuantification().size(); i++) {
@@ -440,20 +514,10 @@ public class ResultPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    /**
-     * Exists the program.
-     *
-     * @param evt
-     */
     private void exitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitButtonActionPerformed
         parent.close(0);
     }//GEN-LAST:event_exitButtonActionPerformed
 
-    /**
-     * @TODO: JavaDoc missing
-     *
-     * @param evt
-     */
     private void ratioResolutionTxtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ratioResolutionTxtActionPerformed
         if (validateInput()) {
             ignorer.setRatioMin(getRatioMin());
@@ -463,11 +527,6 @@ public class ResultPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_ratioResolutionTxtActionPerformed
 
-    /**
-     * @TODO: JavaDoc missing
-     *
-     * @param evt
-     */
     private void kTxtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_kTxtActionPerformed
         if (validateInput()) {
             ignorer.setRatioMin(getRatioMin());
@@ -477,11 +536,6 @@ public class ResultPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_kTxtActionPerformed
 
-    /**
-     * @TODO: JavaDoc missing
-     *
-     * @param evt
-     */
     private void resultTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_resultTableMouseClicked
         if (evt.getButton() == MouseEvent.BUTTON1) {
             tableLeftClicked();
@@ -491,11 +545,6 @@ public class ResultPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_resultTableMouseClicked
 
-    /**
-     * @TODO: JavaDoc missing
-     *
-     * @param evt
-     */
     private void ratioMaxTxtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ratioMaxTxtActionPerformed
         if (validateInput()) {
             ignorer.setRatioMin(getRatioMin());
@@ -505,11 +554,6 @@ public class ResultPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_ratioMaxTxtActionPerformed
 
-    /**
-     * @TODO: JavaDoc missing
-     *
-     * @param evt
-     */
     private void ratioMinTxtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ratioMinTxtActionPerformed
         if (validateInput()) {
             ignorer.setRatioMin(getRatioMin());
@@ -519,11 +563,6 @@ public class ResultPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_ratioMinTxtActionPerformed
 
-    /**
-     * @TODO: JavaDoc missing
-     *
-     * @param evt
-     */
     private void saveAsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAsButtonActionPerformed
 
         JFileChooser fileChooser = new JFileChooser(parent.getLastSelectedFolder());
@@ -538,12 +577,6 @@ public class ResultPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_saveAsButtonActionPerformed
 
-    /**
-     * Makes is possible to use the arrow keys to move between rows in
-     * the results table.
-     * 
-     * @param evt
-     */
     private void resultTableKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_resultTableKeyReleased
             tableLeftClicked();
     }//GEN-LAST:event_resultTableKeyReleased
@@ -573,7 +606,7 @@ public class ResultPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     /**
-     * @TODO: JavaDoc missing
+     * Method which estimates all protein ratios
      */
     private void estimateAllProteinRatios() {
         for (ProteinQuantification proteinQuantification : quantification.getProteinQuantification()) {
@@ -582,9 +615,9 @@ public class ResultPanel extends javax.swing.JPanel {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * getter for k
      *
-     * @return
+     * @return the input value for k
      */
     private double getK() {
         return new Double(kTxt.getText().trim());
@@ -651,26 +684,9 @@ public class ResultPanel extends javax.swing.JPanel {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * returns the separator for export to csv files
      *
-     * @return
-     */
-    private int getNLines() {
-        int nLines = 0;
-        for (ProteinQuantification proteinQuantification : quantification.getProteinQuantification()) {
-            nLines++;
-            for (PeptideQuantification peptideQuantification : proteinQuantification.getPeptideQuantification()) {
-                nLines++;
-                nLines += peptideQuantification.getSpectrumQuantification().size();
-            }
-        }
-        return nLines;
-    }
-
-    /**
-     * @TODO: JavaDoc missing
-     *
-     * @return
+     * @return the user selected separator
      */
     private String getSeparator() {
         String cmbResult = (String) separatorCmb.getSelectedItem();
@@ -686,7 +702,7 @@ public class ResultPanel extends javax.swing.JPanel {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * method used to ignore the selected row
      */
     private void ignore() {
         int row = resultTable.getSelectedRow();
@@ -717,7 +733,7 @@ public class ResultPanel extends javax.swing.JPanel {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * method used to account the selected row
      */
     private void account() {
         int row = resultTable.getSelectedRow();
@@ -748,7 +764,7 @@ public class ResultPanel extends javax.swing.JPanel {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * method called whenever the table is left-clicked
      */
     private void tableLeftClicked() {
         int row = resultTable.getSelectedRow();
@@ -943,9 +959,9 @@ public class ResultPanel extends javax.swing.JPanel {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * method used to expand a protein line
      *
-     * @param row
+     * @param row the selected row
      */
     private void expandProtein(int row) {
         TableKey tableKey = tableIndex.get(row);
@@ -957,9 +973,9 @@ public class ResultPanel extends javax.swing.JPanel {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Method used to expand a peptide line
      *
-     * @param row
+     * @param row the selected row
      */
     private void expandPeptide(int row) {
         TableKey tableKey = tableIndex.get(row);
@@ -971,9 +987,9 @@ public class ResultPanel extends javax.swing.JPanel {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * method used to reduce a protein line
      *
-     * @param row
+     * @param row the selected row
      */
     private void concatProtein(int row) {
         while (tableIndex.get(row + 1).lineType != TableKey.PROTEIN) {
@@ -986,9 +1002,9 @@ public class ResultPanel extends javax.swing.JPanel {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * method used to reduce a peptide line
      *
-     * @param row
+     * @param row the selected row
      */
     private void concatPeptide(int row) {
         while (tableIndex.get(row + 1).lineType != TableKey.PEPTIDE
@@ -1016,7 +1032,7 @@ public class ResultPanel extends javax.swing.JPanel {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Methods which sorts the table according to the protein column
      */
     private void sortProteins() {
         HashMap<String, ArrayList<TableKey>> tempMap = new HashMap<String, ArrayList<TableKey>>();
@@ -1040,7 +1056,7 @@ public class ResultPanel extends javax.swing.JPanel {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Method which sorts the table according to the number of peptides found per protein
      */
     private void sortProteinsNPeptides() {
         HashMap<Integer, ArrayList<TableKey>> tempMap = new HashMap<Integer, ArrayList<TableKey>>();
@@ -1064,7 +1080,7 @@ public class ResultPanel extends javax.swing.JPanel {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Method used to sort the table according to the peptide column
      */
     private void sortPeptides() {
         ArrayList<String> sequences = new ArrayList<String>();
@@ -1094,7 +1110,7 @@ public class ResultPanel extends javax.swing.JPanel {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Method used to sort the table according to the spectra column
      */
     private void sortSpectra() {
         ArrayList<String> titles = new ArrayList<String>();
@@ -1125,7 +1141,7 @@ public class ResultPanel extends javax.swing.JPanel {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Method used to sort the table according to the number of spectra per protein
      */
     private void sortProteinsNSpectra() {
         HashMap<Integer, ArrayList<TableKey>> tempMap = new HashMap<Integer, ArrayList<TableKey>>();
@@ -1149,7 +1165,7 @@ public class ResultPanel extends javax.swing.JPanel {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Method used to sort the table according to the number of spectra per peptide
      */
     private void sortPeptidesNSpectra() {
         ArrayList<Integer> nSpectra = new ArrayList<Integer>();
@@ -1179,9 +1195,9 @@ public class ResultPanel extends javax.swing.JPanel {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Method used to sort the table according to a ratio indexed by the reporter ion index
      *
-     * @param ion
+     * @param ion the reporter ion index
      */
     private void sortRatio(int ion) {
         HashMap<Double, ArrayList<TableKey>> tempMap = new HashMap<Double, ArrayList<TableKey>>();
@@ -1262,7 +1278,7 @@ public class ResultPanel extends javax.swing.JPanel {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Method used to sort the table according to the quality index
      */
     private void sortQuality() {
         ItraqScore score;
@@ -1343,7 +1359,7 @@ public class ResultPanel extends javax.swing.JPanel {
     }
 
     /**
-     * Sorts the results table according to the values in the selected column.
+     * Method called to sort the identifications
      */
     private void sort() {
         int column = resultTable.getSelectedColumn();
@@ -1375,7 +1391,7 @@ public class ResultPanel extends javax.swing.JPanel {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Table model for the result table
      */
     private class ResultTable extends DefaultTableModel {
 
@@ -1437,6 +1453,21 @@ public class ResultPanel extends javax.swing.JPanel {
                 } else if (column == 2) {
                     if (tableKey.lineType == TableKey.PROTEIN) {
                         return quantification.getProteinQuantification().get(tableKey.proteinIndex).getProteinMatch().getTheoreticProtein().getAccession();
+                    } else if (tableKey.lineType == TableKey.PEPTIDE) {
+                        Peptide peptide = quantification.getProteinQuantification().get(tableKey.proteinIndex).getPeptideQuantification().get(tableKey.peptideIndex).getPeptideMatch().getTheoreticPeptide();
+                        String accession = quantification.getProteinQuantification().get(tableKey.proteinIndex).getProteinMatch().getTheoreticProtein().getAccession();
+                        ArrayList<String> otherProteins = new ArrayList<String>();
+                        for (Protein protein : peptide.getParentProteins()) {
+                            if (!protein.getAccession().equals(accession)) {
+                                otherProteins.add(protein.getAccession());
+                            }
+                        }
+                        Collections.sort(otherProteins);
+                        String result = "";
+                        for (String name : otherProteins) {
+                            result+= name + " ";
+                        }
+                        return result;
                     } else {
                         return " ";
                     }
@@ -1543,18 +1574,46 @@ public class ResultPanel extends javax.swing.JPanel {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * The table key will be used to index a line
      */
     private class TableKey {
 
+        /**
+         * index for a protein line
+         */
         public static final int PROTEIN = 0;
+        /**
+         * index for a peptide line
+         */
         public static final int PEPTIDE = 1;
+        /**
+         * index for a spectrum line
+         */
         public static final int SPECTRUM = 2;
+        /**
+         * index of the considered protein
+         */
         public int proteinIndex;
+        /**
+         * index of the considered peptide
+         */
         public int peptideIndex;
+        /**
+         * index of the considered spectrum
+         */
         public int spectrumIndex;
+        /**
+         * type of the line as indexed by the static field
+         */
         public int lineType;
 
+        /**
+         * constructor for a table key
+         * @param lineType      type of the considered line
+         * @param proteinIndex  index of the corresponding protein
+         * @param peptideIndex  index of the corresponding peptide
+         * @param spectrumIndex index of the corresponding spectrum
+         */
         public TableKey(int lineType, int proteinIndex, int peptideIndex, int spectrumIndex) {
             this.proteinIndex = proteinIndex;
             this.peptideIndex = peptideIndex;
@@ -1564,14 +1623,23 @@ public class ResultPanel extends javax.swing.JPanel {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Table cell renderer for the result table
      */
     private class ReporterCellRenderer implements TableCellRenderer {
 
-        private JLabel label;
-
+        /**
+         * constructor for the cell renderer
+         * @param table         The table
+         * @param value         value of the table
+         * @param isSelected    boolean indicating whether the cell is selected
+         * @param hasFocus      boolean indicating whether the cell has focus
+         * @param row           row number
+         * @param column        column number
+         * @return the adapted JLabel
+         */
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-
+            
+            JLabel label;
             if (value instanceof JLabel) {
                 label = (JLabel) value;
                 label.setOpaque(true);
@@ -1623,6 +1691,12 @@ public class ResultPanel extends javax.swing.JPanel {
             return label;
         }
 
+        /**
+         * Sets the color of the cell
+         * @param tableKey  the corresponding line index
+         * @param label     the label
+         * @param selected  boolean indicating whether the cell is selected
+         */
         private void setColor(TableKey tableKey, JLabel label, boolean selected) {
             if (!selected) {
                 if (tableKey.lineType == TableKey.PROTEIN) {
@@ -1637,6 +1711,12 @@ public class ResultPanel extends javax.swing.JPanel {
             }
         }
 
+        /**
+         * Sets the font of the cell
+         * @param tableKey  the corresponding line index
+         * @param label     the label
+         * @param selected  boolean indicating whether the cell is selected
+         */
         private void setFont(TableKey tableKey, JLabel label, int column) {
             IgnoredRatios ignoredRatios = new IgnoredRatios();
             if (tableKey.lineType == TableKey.PROTEIN) {

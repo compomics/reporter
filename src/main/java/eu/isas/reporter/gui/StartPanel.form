@@ -120,8 +120,8 @@
                           </Group>
                           <EmptySpace type="separate" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="txtSpectraFileLocation" alignment="1" pref="581" max="32767" attributes="0"/>
-                              <Component id="txtIdFileLocation" alignment="1" pref="581" max="32767" attributes="0"/>
+                              <Component id="txtSpectraFileLocation" alignment="1" pref="577" max="32767" attributes="0"/>
+                              <Component id="txtIdFileLocation" alignment="1" pref="577" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" max="-2" attributes="0">
@@ -281,11 +281,11 @@
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="jScrollPane3" alignment="0" pref="909" max="32767" attributes="0"/>
+                              <Component id="jScrollPane3" alignment="0" pref="905" max="32767" attributes="0"/>
                               <Group type="102" alignment="0" attributes="0">
                                   <Component id="jLabel5" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace min="-2" pref="26" max="-2" attributes="0"/>
-                                  <Component id="comboMethod1" pref="799" max="32767" attributes="0"/>
+                                  <Component id="comboMethod1" pref="795" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
@@ -301,7 +301,7 @@
                               <Component id="comboMethod1" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace type="separate" max="-2" attributes="0"/>
-                          <Component id="jScrollPane3" pref="208" max="32767" attributes="0"/>
+                          <Component id="jScrollPane3" pref="199" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -365,9 +365,9 @@
                           </Group>
                           <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="sampleNameTxt" pref="801" max="32767" attributes="0"/>
-                              <Component id="txtProject" alignment="0" pref="801" max="32767" attributes="0"/>
-                              <Component id="replicateNumberTxt" alignment="1" pref="801" max="32767" attributes="0"/>
+                              <Component id="sampleNameTxt" pref="797" max="32767" attributes="0"/>
+                              <Component id="txtExperiment" alignment="0" pref="797" max="32767" attributes="0"/>
+                              <Component id="replicateNumberTxt" alignment="1" pref="797" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -378,7 +378,7 @@
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="3" attributes="0">
-                              <Component id="txtProject" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="txtExperiment" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
@@ -397,17 +397,17 @@
                 </DimensionLayout>
               </Layout>
               <SubComponents>
-                <Component class="javax.swing.JTextField" name="txtProject">
+                <Component class="javax.swing.JTextField" name="txtExperiment">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Project Name"/>
                   </Properties>
                   <Events>
-                    <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="txtProjectKeyReleased"/>
+                    <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="txtExperimentKeyReleased"/>
                   </Events>
                 </Component>
                 <Component class="javax.swing.JLabel" name="jLabel1">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Project Name:"/>
+                    <Property name="text" type="java.lang.String" value="Experiment Name:"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JLabel" name="jLabel24">
@@ -419,6 +419,9 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Sample Name"/>
                   </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="sampleNameTxtActionPerformed"/>
+                  </Events>
                 </Component>
                 <Component class="javax.swing.JLabel" name="jLabel25">
                   <Properties>
@@ -492,7 +495,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="jScrollPane1" pref="909" max="32767" attributes="0"/>
+                          <Component id="jScrollPane1" pref="905" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -547,7 +550,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="jScrollPane2" pref="909" max="32767" attributes="0"/>
+                          <Component id="jScrollPane2" pref="905" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -556,7 +559,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="jScrollPane2" pref="140" max="32767" attributes="0"/>
+                          <Component id="jScrollPane2" pref="128" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -601,7 +604,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="txtConfigurationFileLocation" pref="678" max="32767" attributes="0"/>
+                          <Component id="txtConfigurationFileLocation" pref="674" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="browseConfigButton" linkSize="3" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
@@ -686,7 +689,7 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="separate" max="-2" attributes="0"/>
-                          <Component id="comboMethod2" pref="807" max="32767" attributes="0"/>
+                          <Component id="comboMethod2" pref="803" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -779,7 +782,7 @@
                           <Component id="jLabel6" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="separate" max="-2" attributes="0"/>
                           <Component id="ionToleranceTxt" min="-2" pref="102" max="-2" attributes="0"/>
-                          <EmptySpace pref="655" max="32767" attributes="0"/>
+                          <EmptySpace pref="651" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1121,7 +1124,7 @@
                           </Group>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="jScrollPane5" pref="290" max="32767" attributes="0"/>
+                              <Component id="jScrollPane5" pref="286" max="32767" attributes="0"/>
                               <Component id="jLabel23" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>

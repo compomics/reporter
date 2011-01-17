@@ -4,8 +4,8 @@ import com.compomics.util.experiment.biology.ions.ReporterIon;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.PeptideQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.ProteinQuantification;
-import eu.isas.reporter.compomicsutilitiessettings.IgnoredRatios;
-import eu.isas.reporter.compomicsutilitiessettings.ItraqScore;
+import eu.isas.reporter.myparameters.IgnoredRatios;
+import eu.isas.reporter.myparameters.ItraqScore;
 import java.awt.Color;
 import java.util.ArrayList;
 import org.jfree.chart.ChartPanel;
@@ -18,22 +18,34 @@ import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.data.xy.DefaultIntervalXYDataset;
 
 /**
- * @TODO: JavaDoc missing
+ * This chart will display the peptide score (quality) distribution
  *
  * @author Marc Vaudel
  */
 public class PeptideScoreCharts {
 
+    /**
+     * The method resolution
+     */
     private final double resolution = 0.1;
+    /**
+     * The conducted quantification
+     */
     private ReporterIonQuantification quantification;
+    /**
+     * The jFree chart
+     */
     private RatioChart ratioCharts;
 
+    /**
+     * The background color
+     */
     private Color allPeptidesColor = Color.lightGray;
 
     /**
-     * @TODO: JavaDoc missing
+     * constructor
      *
-     * @param quantification
+     * @param quantification the quantification
      */
     public PeptideScoreCharts(ReporterIonQuantification quantification) {
         this.quantification = quantification;
@@ -57,7 +69,7 @@ public class PeptideScoreCharts {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Method which creates the ratio charts
      */
     private void createRatioCharts() {
 
@@ -138,21 +150,28 @@ public class PeptideScoreCharts {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Sets the peptide to display
      *
-     * @param peptideQuantification
+     * @param peptideQuantification the selected peptide quantification
      */
     public void setPeptide(PeptideQuantification peptideQuantification) {
         ratioCharts.setPeptide(peptideQuantification);
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * private class for the ratio chart
      */
     public class RatioChart {
 
+        /**
+         * The jFree plot
+         */
         private XYPlot currentPlot = new XYPlot();
 
+        /**
+         * Constructor
+         * @param backGroundValues  the background values
+         */
         public RatioChart(double[][] backGroundValues) {
 
             NumberAxis xAxis = new NumberAxis("Quality");
@@ -180,18 +199,18 @@ public class PeptideScoreCharts {
         }
 
         /**
-         * @TODO: JavaDoc missing
+         * returns the jFree plot
          *
-         * @return
+         * @return the jFree plot
          */
         public XYPlot getPlot() {
             return currentPlot;
         }
 
         /**
-         * @TODO: JavaDoc missing
+         * sets the peptide to display
          *
-         * @param peptideQuantification
+         * @param peptideQuantification the corresponding peptide quantification
          */
         public void setPeptide(PeptideQuantification peptideQuantification) {
             Double currentScore;

@@ -5,26 +5,54 @@ import com.compomics.util.experiment.identification.matches.ModificationMatch;
 import java.util.ArrayList;
 
 /**
- * @TODO: JavaDoc missing
+ * This class is used to filter out doubtful ratios.
  *
  * @author Marc Vaudel
  */
 public class Ignorer {
 
+    /**
+     * Boolean indicating whether miscleaved peptides should be ignored.
+     */
     private boolean ignoreMissedCleavages;
+    /**
+     * All peptides presenting a modification contained in this list will be ignored.
+     */
     private ArrayList<String> ignoredModifications = new ArrayList<String>();
+    /**
+     * minimal ratio to be considered
+     */
     private double ratioMin;
+    /**
+     * maximal ratio to be considered
+     */
     private double ratioMax;
 
+    /**
+     * Constructor
+     *
+     * @param ignoreMissedCleavages Boolean indicating whether miscleaved peptides should be ignored.
+     * @param ignoredPtms           All peptides presenting a modification contained in this list will be ignored.
+     */
     public Ignorer(boolean ignoreMissedCleavages, ArrayList<String> ignoredPtms) {
         this.ignoreMissedCleavages = ignoreMissedCleavages;
         this.ignoredModifications.addAll(ignoredPtms);
     }
 
+    /**
+     * Method indicating whether a ratio should be ignored
+     * @param ratio the examined ratio
+     * @return a boolean indicating whether the ratio should be ignored
+     */
     public boolean ignoreRatio(double ratio) {
         return ratio < ratioMin || ratio > ratioMax;
     }
 
+    /**
+     * Method indicating whether a peptide should be ignored
+     * @param peptide the examined peptide
+     * @return a boolean indicating whether the peptide should be ignored.
+     */
     public boolean ignorePeptide(Peptide peptide) {
         String sequence = peptide.getSequence();
         if (ignoreMissedCleavages && peptide.getNMissedCleavages() > 0) {
@@ -44,10 +72,18 @@ public class Ignorer {
         return false;
     }
 
+    /**
+     * sets the minimal ratio to be considered
+     * @param ratioMin minimal ratio to be considered
+     */
     public void setRatioMin(double ratioMin) {
         this.ratioMin = ratioMin;
     }
 
+    /**
+     * sets the maximal ratio to be considered
+     * @param ratioMax maximal ratio to be considered
+     */
     public void setRatioMax(double ratioMax) {
         this.ratioMax = ratioMax;
     }

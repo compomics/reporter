@@ -3,17 +3,17 @@ package eu.isas.reporter.calculation;
 import java.util.Arrays;
 
 /**
- * @TODO: JavaDoc missing
+ * This class provides basic statistical methods.
  *
  * @author Marc Vaudel
  */
 public class BasicStats {
 
     /**
-     * @TODO: JavaDoc missing
+     * Method to estimate the median
      *
-     * @param ratios
-     * @return
+     * @param ratios    array of double
+     * @return median of the input
      */
     public static double median(double[] ratios) {
         Arrays.sort(ratios);
@@ -29,10 +29,10 @@ public class BasicStats {
     }
 
     /**
-     * @TODO: JavaDoc missing
+     * Method estimating the median absolute deviation
      *
-     * @param ratios
-     * @return
+     * @param ratios array of doubles
+     * @return the mad of the input
      */
     public static double mad(double[] ratios) {
         double[] deviations = new double[ratios.length];
