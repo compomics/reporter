@@ -17,6 +17,7 @@ import com.compomics.util.experiment.io.identifications.IdfileReaderFactory;
 import com.compomics.util.experiment.io.massspectrometry.MgfReader;
 import com.compomics.util.experiment.massspectrometry.MSnSpectrum;
 import com.compomics.util.experiment.massspectrometry.Peak;
+import com.compomics.util.experiment.massspectrometry.Spectrum;
 import com.compomics.util.experiment.quantification.Ratio;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.PeptideQuantification;
@@ -290,7 +291,7 @@ public class ItraqCalculator {
                             for (String spectrumId : spectrumIds) {
                                 MSnSpectrum currentSpectrum = spectra.get(spectrumId);
                                 if (currentSpectrum == null) {
-                                    String fileName = spectrumMatch.getSpectrum().getFileName();
+                                    String fileName = Spectrum.getSpectrumFile(spectrumMatch.getSpectrumKey());
                                     boolean fileFound = false;
                                     for (File mgfFile : mgfFiles) {
                                         if (mgfFile.getName().equals(fileName)) {
@@ -301,7 +302,7 @@ public class ItraqCalculator {
                                         waitingDialog.appendReport(fileName + " not found.");
                                     }
                                     if (fileFound) {
-                                        waitingDialog.appendReport("Spectrum " + spectrumMatch.getSpectrum().getSpectrumTitle() + " not found in " + fileName + ".");
+                                        waitingDialog.appendReport("Spectrum " + Spectrum.getSpectrumTitle(spectrumMatch.getSpectrumKey()) + " not found in " + fileName + ".");
                                     }
                                 }
                                 SpectrumQuantification spectrumQuantification = new SpectrumQuantification(currentSpectrum);
@@ -363,13 +364,13 @@ public class ItraqCalculator {
          * @return the spectrum references of the corresponding spectra
          */
         private ArrayList<String> getSpectrumIds(SpectrumMatch spectrumMatch) {
-            String spectrumKey = spectrumMatch.getSpectrum().getFileName() + "_" + spectrumMatch.getSpectrum().getSpectrumTitle();
+            String spectrumKey = spectrumMatch.getSpectrumKey();
             ArrayList<String> result = new ArrayList<String>();
             if (linker.getIndex() == IdentificationQuantificationLinker.SPECTRUM_TITLE) {
                 result.add(spectrumKey);
             } else {
                 MSnSpectrum spectrum;
-                String fileName = spectrumMatch.getSpectrum().getFileName();
+                String fileName = Spectrum.getSpectrumFile(spectrumKey);
                 double rtTol = linker.getRtTolerance();
                 double mzTol = linker.getMzTolerance();
                 double mzRef = spectra.get(spectrumKey).getPrecursor().getMz();
