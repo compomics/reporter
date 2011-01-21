@@ -276,11 +276,9 @@
             <type>jar</type>
         </dependency>
 
-        <!-- not yet available in public Maven repos...
-             download here: http://www.ujmp.org -->
         <dependency>
             <groupId>org.ujmp</groupId>
-            <artifactId>ujmp</artifactId>
+            <artifactId>ujmp-complete</artifactId>
             <version>0.2.5</version>
         </dependency>
 
