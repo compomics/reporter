@@ -1402,7 +1402,7 @@ public class ResultPanel extends javax.swing.JPanel {
 
         @Override
         public int getColumnCount() {
-            return 5 + reporterIons.size();
+            return 6 + reporterIons.size();
         }
 
         @Override
