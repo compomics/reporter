@@ -166,6 +166,10 @@ public class ResultPanel extends javax.swing.JPanel {
         createTableIndex();
 
         initComponents();
+
+        // set the cell renderers
+        // @TODO: use JSparklines cell renderers
+
         parent.getMainFrame().setTitle(parent.getMainFrame().getTitle() + " - " + experiment.getReference());
 
         resultTable.setAutoCreateRowSorter(false);
@@ -280,6 +284,8 @@ public class ResultPanel extends javax.swing.JPanel {
         jLabel7 = new javax.swing.JLabel();
         separatorCmb = new javax.swing.JComboBox();
 
+        jTabbedPane1.setTabPlacement(javax.swing.JTabbedPane.RIGHT);
+
         exitButton.setText("Exit");
         exitButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -316,11 +322,11 @@ public class ResultPanel extends javax.swing.JPanel {
         chartPanel.setLayout(chartPanelLayout);
         chartPanelLayout.setHorizontalGroup(
             chartPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 537, Short.MAX_VALUE)
+            .add(0, 509, Short.MAX_VALUE)
         );
         chartPanelLayout.setVerticalGroup(
             chartPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 770, Short.MAX_VALUE)
+            .add(0, 793, Short.MAX_VALUE)
         );
 
         jSplitPane1.setRightComponent(chartPanel);
@@ -336,7 +342,7 @@ public class ResultPanel extends javax.swing.JPanel {
                         .add(saveAsButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 80, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(exitButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 84, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1043, Short.MAX_VALUE))
+                    .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 988, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -346,7 +352,7 @@ public class ResultPanel extends javax.swing.JPanel {
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 772, Short.MAX_VALUE)
+                .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 795, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(exitButton)
@@ -354,7 +360,7 @@ public class ResultPanel extends javax.swing.JPanel {
                 .addContainerGap())
         );
 
-        jTabbedPane1.addTab("Quantification Results", jPanel1);
+        jTabbedPane1.addTab("Results", jPanel1);
 
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Ratio Estimation"));
 
@@ -423,7 +429,7 @@ public class ResultPanel extends javax.swing.JPanel {
                 .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                     .add(ratioMinTxt)
                     .add(ratioMaxTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 65, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(526, Short.MAX_VALUE))
+                .addContainerGap(471, Short.MAX_VALUE))
         );
 
         jPanel3Layout.linkSize(new java.awt.Component[] {kTxt, ratioMaxTxt, ratioMinTxt, ratioResolutionTxt}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -467,7 +473,7 @@ public class ResultPanel extends javax.swing.JPanel {
                 .add(jLabel7)
                 .add(18, 18, 18)
                 .add(separatorCmb, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 86, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(780, Short.MAX_VALUE))
+                .addContainerGap(725, Short.MAX_VALUE))
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -497,10 +503,10 @@ public class ResultPanel extends javax.swing.JPanel {
                 .add(jPanel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(647, Short.MAX_VALUE))
+                .addContainerGap(670, Short.MAX_VALUE))
         );
 
-        jTabbedPane1.addTab("Quantification Settings", jPanel2);
+        jTabbedPane1.addTab("Settings", jPanel2);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
