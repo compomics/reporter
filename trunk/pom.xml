@@ -12,7 +12,7 @@
 
     <!-- Set the version number for the whole project -->
     <properties>
-        <version.number>1.0.5</version.number>
+        <version.number>1.1</version.number>
     </properties>
 
 
@@ -262,11 +262,10 @@
             <scope>build</scope>
         </dependency>
 
-        <!-- Needed for user interface look and feel. -->
         <dependency>
-            <groupId>com.jgoodies</groupId>
-            <artifactId>looks</artifactId>
-            <version>2.2.2</version>
+            <groupId>no.uib</groupId>
+            <artifactId>jsparklines</artifactId>
+            <version>0.5.6</version>
         </dependency>
 
         <dependency>

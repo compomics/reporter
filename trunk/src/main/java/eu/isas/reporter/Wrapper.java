@@ -1,8 +1,6 @@
 package eu.isas.reporter;
 
-import com.jgoodies.looks.plastic.PlasticLookAndFeel;
-import com.jgoodies.looks.plastic.PlasticXPLookAndFeel;
-import com.jgoodies.looks.plastic.theme.SkyKrupp;
+import com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel;
 import eu.isas.reporter.utils.Properties;
 import java.io.*;
 import javax.swing.JOptionPane;
@@ -40,8 +38,7 @@ public class Wrapper {
         jarFileName = jarFileName + new Properties().getVersion() + ".jar";
 
         try {
-            PlasticLookAndFeel.setPlasticTheme(new SkyKrupp());
-            UIManager.setLookAndFeel(new PlasticXPLookAndFeel());
+            UIManager.setLookAndFeel(new NimbusLookAndFeel());
         } catch (UnsupportedLookAndFeelException e) {
             // ignore exception
         }

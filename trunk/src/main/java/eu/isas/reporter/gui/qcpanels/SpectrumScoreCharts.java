@@ -14,6 +14,7 @@ import org.jfree.chart.axis.AxisLocation;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.labels.StandardXYToolTipGenerator;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.StandardXYBarPainter;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.data.xy.DefaultIntervalXYDataset;
 
@@ -23,6 +24,13 @@ import org.jfree.data.xy.DefaultIntervalXYDataset;
  * @author Marc Vaudel
  */
 public class SpectrumScoreCharts {
+
+    /**
+     * Removes the default 3D look and feel of the bars.
+     */
+    static {
+        XYBarRenderer.setDefaultBarPainter(new StandardXYBarPainter());
+    }
 
     /**
      * The resolution

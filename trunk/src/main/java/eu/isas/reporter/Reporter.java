@@ -3,9 +3,7 @@ package eu.isas.reporter;
 import eu.isas.reporter.calculation.ItraqCalculator;
 import com.compomics.util.experiment.MsExperiment;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
-import com.jgoodies.looks.plastic.PlasticLookAndFeel;
-import com.jgoodies.looks.plastic.PlasticXPLookAndFeel;
-import com.jgoodies.looks.plastic.theme.SkyKrupp;
+import com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel;
 import eu.isas.reporter.calculation.Ignorer;
 import eu.isas.reporter.gui.ResultPanel;
 import eu.isas.reporter.gui.StartPanel;
@@ -309,8 +307,7 @@ public class Reporter {
     private void setLookAndFeel() {
 
         try {
-            PlasticLookAndFeel.setPlasticTheme(new SkyKrupp());
-            UIManager.setLookAndFeel(new PlasticXPLookAndFeel());
+            UIManager.setLookAndFeel(new NimbusLookAndFeel());
             SwingUtilities.updateComponentTreeUI(mainFrame);
         } catch (UnsupportedLookAndFeelException e) {
             // ignore exception, i.e. use default look and feel
