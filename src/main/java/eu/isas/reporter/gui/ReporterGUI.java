@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 
 /*
  * ReporterGUI.java
@@ -13,6 +9,7 @@ package eu.isas.reporter.gui;
 import com.compomics.util.experiment.biology.ions.ReporterIon;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.ProteinQuantification;
+import com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel;
 import eu.isas.reporter.Reporter;
 import eu.isas.reporter.myparameters.ItraqScore;
 import eu.isas.reporter.myparameters.QuantificationPreferences;
@@ -29,7 +26,6 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 import javax.swing.table.DefaultTableModel;
 import org.ujmp.core.collections.ArrayIndexList;
 
@@ -312,6 +308,8 @@ public class ReporterGUI extends javax.swing.JFrame {
 
     /**
      * Method called when a change was made in the settings
+     *
+     * @param quantificationPreferences
      */
     public void updateResults(QuantificationPreferences quantificationPreferences) {
         parent.setQuantificationPreferences(quantificationPreferences);
