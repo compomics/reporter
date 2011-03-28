@@ -1,6 +1,7 @@
 package eu.isas.reporter.identifications;
 
 import com.compomics.util.experiment.identification.PeptideAssumption;
+import eu.isas.reporter.myparameters.QuantificationPreferences;
 import java.util.HashMap;
 
 /**
@@ -27,19 +28,11 @@ public class IdFilter {
      */
     private HashMap<Integer, Double> eValues;
 
-    /**
-     * constructor
-     *
-     * @param nAAmin    Minimal sequence size
-     * @param nAAmax    Maximal sequence size
-     * @param deltaMass Maximal mass deviation
-     * @param eValues   Maximal e-values
-     */
-    public IdFilter(double nAAmin, double nAAmax, double deltaMass, HashMap<Integer, Double> eValues) {
-        this.nAAmin = nAAmin;
-        this.nAAmax = nAAmax;
-        this.deltaMass = deltaMass;
-        this.eValues = eValues;
+    public IdFilter(QuantificationPreferences quantificationPreferences) {
+        this.nAAmin = quantificationPreferences.getnAAmin();
+        this.nAAmax = quantificationPreferences.getnAAmax();
+        this.deltaMass = quantificationPreferences.getPrecursorMassDeviation();
+        this.eValues = quantificationPreferences.getMaxEValues();
     }
 
     /**

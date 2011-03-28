@@ -1,50 +1,27 @@
 package eu.isas.reporter;
 
-import eu.isas.reporter.calculation.ItraqCalculator;
 import com.compomics.util.experiment.MsExperiment;
+import com.compomics.util.experiment.biology.Sample;
+import com.compomics.util.experiment.identification.IdentificationMethod;
+import com.compomics.util.experiment.quantification.QuantificationMethod;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
-import com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel;
-import eu.isas.reporter.calculation.Ignorer;
-import eu.isas.reporter.gui.ResultPanel;
-import eu.isas.reporter.gui.StartPanel;
+import com.compomics.util.experiment.quantification.reporterion.quantification.ProteinQuantification;
+import eu.isas.reporter.calculation.DataLoader;
+import eu.isas.reporter.calculation.RatioEstimator;
+import eu.isas.reporter.gui.ReporterGUI;
+import eu.isas.reporter.gui.WaitingDialog;
+import eu.isas.reporter.myparameters.QuantificationPreferences;
 import eu.isas.reporter.utils.Properties;
-import java.awt.Dimension;
-import java.awt.Toolkit;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
+import java.util.ArrayList;
+import javax.swing.SwingWorker;
 
 /**
- * @TODO: JavaDoc missing
+ * Reporter performs reporter ion based quantification on MS2 spectra
  *
  * @author Marc Vaudel
  */
 public class Reporter {
-
-    /**
-     * If set to true all messages will be sent to a log file.
-     */
-    private static boolean useLogFile = true;
-    /**
-     * The main frame.
-     */
-    private JFrame mainFrame;
-    /**
-     * The last folder opened by the user. Defaults to user.home.
-     */
-    private String lastSelectedFolder = "user.home";
-    /**
-     * The ignorer will be used to ignore ratios or identifications
-     */
-    private Ignorer ignorer;
 
     /**
      * Main method.
@@ -52,128 +29,37 @@ public class Reporter {
      * @param args String[] with the start-up arguments.
      */
     public static void main(String[] args) {
-        new Reporter();
+        new Reporter(new ReporterGUI());
     }
 
     /**
      * Reporter constructor.
      */
-    public Reporter() {
+    public Reporter(ReporterGUI reporterGUI) {
+        this.reporterGUI = reporterGUI;
         // check if a newer version of Reporter is available
         checkForNewVersion(new Properties().getVersion());
-
-        // set up the ErrorLog
-        setUpLogFile();
-
-        // Start the GUI
-        createandshowGUI();
     }
-
     /**
-     * Creates the GUI and adds the tabs to the frame. Then sets the size and
-     * location of the frame and makes it visible.
+     * The conducted experiment
      */
-    private void createandshowGUI() {
-
-        mainFrame = new JFrame("Reporter " + new Properties().getVersion());
-
-        mainFrame.addWindowListener(new WindowAdapter() {
-
-        /**
-             * Invoked when a window is in the process of being closed.
-             * The close operation can be overridden at this point.
-             */
-            @Override
-            public void windowClosing(WindowEvent e) {
-                close(0);
-            }
-        });
-
-        // sets the icon of the frame
-        mainFrame.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().
-                getResource("/icons/reporter.gif")));
-
-        // update the look and feel after adding the panels
-        setLookAndFeel();
-
-        // display the start panel
-        mainFrame.add(new StartPanel(this));
-
-        // set size and location
-        mainFrame.pack();
-        mainFrame.setResizable(false);
-        mainFrame.setLocationRelativeTo(null);
-        // Pack is the minimal size, so add 20 pixels in each dimension.
-        mainFrame.setSize(new Dimension(mainFrame.getSize().width + 20, mainFrame.getSize().height));
-        mainFrame.setVisible(true);
-    }
-
+    private MsExperiment experiment;
     /**
-     * Starts the processing
-     *
-     * @param calculator a reporter ratios calculator
-     * @param ignorer    an ignorer
+     * The sample analyzed
      */
-    public void startProcessing(ItraqCalculator calculator, Ignorer ignorer) {
-        this.ignorer = ignorer;
-        calculator.computeRatios();
-    }
-
+    private Sample sample;
     /**
-     * restarts reporter
+     * The replicate number
      */
-    public void restart() {
-        mainFrame.dispose();
-        createandshowGUI();
-    }
-
+    private int replicateNumber;
     /**
-     * Displays the results in a result panel
-     *
-     * @param quantification    The quantification achieved
-     * @param experiment        The experiment conducted
+     * The quantification method used
      */
-    public void displayResults(ReporterIonQuantification quantification, MsExperiment experiment) {
-
-        mainFrame.setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
-
-        mainFrame.dispose();
-        mainFrame = new JFrame("Reporter " + new Properties().getVersion());
-
-        mainFrame.setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
-
-        mainFrame.addWindowListener(new WindowAdapter() {
-
-            /**
-             * Invoked when a window is in the process of being closed.
-             * The close operation can be overridden at this point.
-             */
-            @Override
-            public void windowClosing(WindowEvent e) {
-                close(0);
-            }
-        });
-
-        // sets the icon of the frame
-        mainFrame.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().
-                getResource("/icons/reporter.gif")));
-
-        // update the look and feel after adding the panels
-        setLookAndFeel();
-
-        // display the start panel
-        mainFrame.add(new ResultPanel(this, quantification, experiment, ignorer));
-
-        // set size and location
-        mainFrame.pack();
-        //mainFrame.setResizable(false);
-        mainFrame.setLocationRelativeTo(null);
-        // Pack is the minimal size, so add 20 pixels in each dimension.
-        mainFrame.setSize(new Dimension(mainFrame.getSize().width + 20, mainFrame.getSize().height));
-        mainFrame.setVisible(true);
-
-        mainFrame.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-    }
+    private int quantificationMethodUsed;
+    /**
+     * The main GUI
+     */
+    private ReporterGUI reporterGUI;
 
     /**
      * Check if a newer version of reporter is available.
@@ -237,107 +123,181 @@ public class Reporter {
     }
 
     /**
-     * Set up the log file.
-     */
-    private void setUpLogFile() {
-
-        if (useLogFile && !getJarFilePath().equalsIgnoreCase(".")) {
-            try {
-                String path = getJarFilePath() + "/conf/reporterLog.txt";
-
-                File file = new File(path);
-                System.setOut(new java.io.PrintStream(new FileOutputStream(file, true)));
-                System.setErr(new java.io.PrintStream(new FileOutputStream(file, true)));
-
-                // creates a new log file if it does not exist
-                if (!file.exists()) {
-                    file.createNewFile();
-
-                    FileWriter w = new FileWriter(file);
-                    BufferedWriter bw = new BufferedWriter(w);
-
-                    bw.close();
-                    w.close();
-                }
-            } catch (Exception e) {
-                JOptionPane.showMessageDialog(
-                        null, "An error occured when trying to create the Reporter log file.",
-                        "Error Creating Log File", JOptionPane.ERROR_MESSAGE);
-                e.printStackTrace();
-            }
-        }
-    }
-
-    /**
-     * Returns the path to the jar file.
-     *
-     * @return the path to the jar file
-     */
-    private String getJarFilePath() {
-        String path = this.getClass().getResource("Reporter.class").getPath();
-
-        if (path.lastIndexOf("/Reporter-") != -1) {
-            path = path.substring(5, path.lastIndexOf("/Reporter-"));
-            path = path.replace("%20", " ");
-        } else {
-            path = ".";
-        }
-
-        return path;
-    }
-
-    /**
      * This method terminates the program.
      *
      * @param aStatus int with the completion status.
      */
     public void close(int aStatus) {
-        mainFrame.setVisible(false);
-        mainFrame.dispose();
         System.exit(aStatus);
+    }
+    /**
+     * The quantification preferences
+     */
+    private QuantificationPreferences quantificationPreferences = new QuantificationPreferences();
+
+    /**
+     * returns the quantification preferences
+     * @return the quantification preferences
+     */
+    public QuantificationPreferences getQuantificationPreferences() {
+        return quantificationPreferences;
     }
 
     /**
-     * Sets the look and feel of the SearchGUI.
-     * <p/>
-     * Note that the GUI has been created with the following look and feel
-     * in mind. If using a different look and feel you might need to tweak the GUI
-     * to get the best appearance.
+     * sets the quantification preferences
+     * @param quantificationPreferences the quantification preferences
      */
-    private void setLookAndFeel() {
+    public void setQuantificationPreferences(QuantificationPreferences quantificationPreferences) {
+        this.quantificationPreferences = quantificationPreferences;
+    }
 
-        try {
-            UIManager.setLookAndFeel(new NimbusLookAndFeel());
-            SwingUtilities.updateComponentTreeUI(mainFrame);
-        } catch (UnsupportedLookAndFeelException e) {
-            // ignore exception, i.e. use default look and feel
+    /**
+     * Returns the experiment conducted
+     * @return the experiment conducted
+     */
+    public MsExperiment getExperiment() {
+        return experiment;
+    }
+
+    /**
+     * Sets  the experiment conducted
+     * @param experiment the experiment conducted
+     */
+    public void setExperiment(MsExperiment experiment) {
+        this.experiment = experiment;
+    }
+
+    /**
+     * Returns the replicate number
+     * @return the replicate number
+     */
+    public int getReplicateNumber() {
+        return replicateNumber;
+    }
+
+    /**
+     * Sets the replicate number
+     * @param replicateNumber the replicate number
+     */
+    public void setReplicateNumber(int replicateNumber) {
+        this.replicateNumber = replicateNumber;
+    }
+
+    /**
+     * Returns the sample analyzed
+     * @return the sample analyzed
+     */
+    public Sample getSample() {
+        return sample;
+    }
+
+    /**
+     * Sets the sample analyzed
+     * @param sample the sample analyzed
+     */
+    public void setSample(Sample sample) {
+        this.sample = sample;
+    }
+
+    /**
+     * returns the quantification method used
+     * @return the quantification method used
+     */
+    public int getQuantificationMethodUsed() {
+        return quantificationMethodUsed;
+    }
+
+    /**
+     * sets the quantification method used
+     * @param quantificationMethodUsed the quantification method used
+     */
+    public void setQuantificationMethodUsed(int quantificationMethodUsed) {
+        this.quantificationMethodUsed = quantificationMethodUsed;
+    }
+
+    /**
+     * Loads identification and quantification information from files
+     * @param idFiles   the identification files
+     * @param mgfFiles  the quantification files
+     */
+    public void loadFiles(ArrayList<File> idFiles, ArrayList<File> mgfFiles) {
+        WaitingDialog waitingDialog = new WaitingDialog(reporterGUI, true, this);
+        DataImporter dataImporter = new DataImporter(waitingDialog, idFiles, mgfFiles);
+        dataImporter.execute();
+        waitingDialog.setVisible(true);
+    }
+
+    /**
+     * displays the results in the main gui
+     */
+    public void updateResults() {
+        RatiosCompilator ratiosCompilator = new RatiosCompilator();
+        ratiosCompilator.execute();
+        // @TODO add a progress bar? May be necessary for big experiments...
+    }
+
+    public ReporterIonQuantification getQuantification() {
+        return (ReporterIonQuantification) experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).getQuantification(quantificationMethodUsed);
+    }
+
+    /**
+     * worker used to compile ratios
+     */
+    private class RatiosCompilator extends SwingWorker {
+
+        @Override
+        protected Object doInBackground() throws Exception {
+            try {
+                ReporterIonQuantification quantification = getQuantification();
+                RatioEstimator ratioEstimator = new RatioEstimator(quantification.getReporterMethod(), quantification.getReferenceLabel(), quantificationPreferences);
+                for (ProteinQuantification proteinQuantification : quantification.getProteinQuantification().values()) {
+                    ratioEstimator.estimateRatios(proteinQuantification);
+                }
+                reporterGUI.displayResults(quantification);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return 0;
         }
     }
 
     /**
-     * returns the main frame
-     *
-     * @return the main frame
+     * worker used to process files
      */
-    public JFrame getMainFrame() {
-        return mainFrame;
-    }
+    private class DataImporter extends SwingWorker {
 
-    /**
-     * returns the last selected foleder
-     *
-     * @return the lastSelectedFolder
-     */
-    public String getLastSelectedFolder() {
-        return lastSelectedFolder;
-    }
+        /**
+         * The waiting dialog will provide feedback to the user
+         */
+        private WaitingDialog waitingDialog;
+        /**
+         * The identification files
+         */
+        private ArrayList<File> idFiles;
+        /**
+         * The mgf files
+         */
+        private ArrayList<File> mgfFiles;
 
-    /**
-     * Sets the last selected folder
-     *
-     * @param lastSelectedFolder the lastSelectedFolder to set
-     */
-    public void setLastSelectedFolder(String lastSelectedFolder) {
-        this.lastSelectedFolder = lastSelectedFolder;
+        /**
+         * Constructor
+         * @param waitingDialog The waiting dialog will provide feedback to the user
+         * @param idFiles       The identification files
+         * @param mgfFiles      The mgf files
+         */
+        public DataImporter(WaitingDialog waitingDialog, ArrayList<File> idFiles, ArrayList<File> mgfFiles) {
+            this.waitingDialog = waitingDialog;
+            this.idFiles = idFiles;
+            this.mgfFiles = mgfFiles;
+        }
+
+        @Override
+        protected Object doInBackground() throws Exception {
+            DataLoader dataLoader = new DataLoader(quantificationPreferences, waitingDialog, experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).getIdentification(IdentificationMethod.MS2_IDENTIFICATION));
+            dataLoader.loadIdentifications(idFiles);
+            dataLoader.loadQuantification((ReporterIonQuantification) experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).getQuantification(quantificationMethodUsed), mgfFiles);
+            waitingDialog.setRunFinished();
+            return 0;
+        }
     }
 }

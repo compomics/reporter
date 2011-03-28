@@ -1,6 +1,6 @@
 package eu.isas.reporter.gui;
 
-import eu.isas.reporter.calculation.ItraqCalculator;
+import eu.isas.reporter.Reporter;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -36,7 +36,7 @@ public class WaitingDialog extends javax.swing.JDialog {
     /**
      * The calculator processing the data
      */
-    private ItraqCalculator iTraqCalculator;
+    private Reporter reporter;
 
     /**
      * Constructor for the waiting dialog
@@ -44,14 +44,14 @@ public class WaitingDialog extends javax.swing.JDialog {
      * @param parent            The parent frame
      * @param modal             boolean indicating whether the dialog is modal
      * @param projectName       The experiment name
-     * @param iTraqCalculator   The calculator processing the data
+     * @param reporter   The calculator processing the data
      */
-    public WaitingDialog(java.awt.Frame parent, boolean modal, ItraqCalculator iTraqCalculator) {
+    public WaitingDialog(java.awt.Frame parent, boolean modal, Reporter reporter) {
         super(parent, modal);
-        this.iTraqCalculator = iTraqCalculator;
+        this.reporter = reporter;
         initComponents();
-        this.setTitle(this.getTitle() + " - " + iTraqCalculator.getExperiment().getReference());
-        reportArea.setText("Reporter Calculation Report:\n\n");
+        this.setTitle(this.getTitle() + " - " + reporter.getExperiment().getReference());
+        reportArea.setText("Reporter File Import:\n\n");
     }
 
     /**
@@ -64,7 +64,11 @@ public class WaitingDialog extends javax.swing.JDialog {
         progressBar.setValue(progressBar.getMaximum());
         progressBar.setStringPainted(true);
         progressBar.setString("Calculation Completed.");
-        closeButton.setText("Open");
+        if (runCancelled) {
+            closeButton.setText("Close");
+        } else {
+            closeButton.setText("Open");
+        }
         reportArea.append("\nTo view the results, click the Open button.");
         saveButton.setEnabled(true);
         runFinished = true;
@@ -201,10 +205,10 @@ public class WaitingDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void closeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeButtonActionPerformed
-        if (runFinished) {
-            iTraqCalculator.displayResults();
+        if (runCancelled) {
             this.dispose();
-        } else if (runCancelled) {
+        } else if (runFinished) {
+            reporter.updateResults();
             this.dispose();
         } else {
             runCancelled = true;

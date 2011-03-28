@@ -101,7 +101,7 @@ public class ProteinCharts {
         HashMap<Integer, Double> maxima = new HashMap<Integer, Double>();
 
         double ratio;
-        for (ProteinQuantification proteinQuantification : quantification.getProteinQuantification()) {
+        for (ProteinQuantification proteinQuantification : quantification.getProteinQuantification().values()) {
             for (int ion : proteinQuantification.getProteinRatios().keySet()) {
                 ratio = proteinQuantification.getProteinRatios().get(ion).getRatio();
                 if (!minima.containsKey(ion)) {
@@ -140,7 +140,7 @@ public class ProteinCharts {
             for (ReporterIon ion : ions) {
                 count.put(ion.getIndex(), 0);
             }
-            for (ProteinQuantification proteinQuantification : quantification.getProteinQuantification()) {
+            for (ProteinQuantification proteinQuantification : quantification.getProteinQuantification().values()) {
                 ignoredRatios = (IgnoredRatios) proteinQuantification.getUrParam(ignoredRatios);
                 for (int ion : proteinQuantification.getProteinRatios().keySet()) {
                     if (!ignoredRatios.isIgnored(ion)) {
@@ -258,7 +258,7 @@ public class ProteinCharts {
             IgnoredRatios ignoredRatios = new IgnoredRatios();
             nPeptides = 0;
 
-            for (PeptideQuantification peptideQuantification : proteinQuantification.getPeptideQuantification()) {
+            for (PeptideQuantification peptideQuantification : proteinQuantification.getPeptideQuantification().values()) {
                 ignoredRatios = (IgnoredRatios) peptideQuantification.getUrParam(ignoredRatios);
                 if (!ignoredRatios.isIgnored(ion)) {
                     if (peptideQuantification.getRatios().get(ion).getRatio() > ratioLimits.getLimits(ion)[0]
