@@ -40,6 +40,8 @@ public class ReporterGUI extends javax.swing.JFrame {
 
         // set up the ErrorLog
         setUpLogFile();
+        // update the look and feel after adding the panels
+        setLookAndFeel();
 
         initComponents();
 
@@ -53,6 +55,7 @@ public class ReporterGUI extends javax.swing.JFrame {
 
         setLocationRelativeTo(null);
         setVisible(true);
+
     }
 
     /** This method is called from within the constructor to
@@ -235,10 +238,6 @@ public class ReporterGUI extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-
-        // update the look and feel after adding the panels
-        setLookAndFeel();
-
         new ReporterGUI();
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
