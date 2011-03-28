@@ -2,6 +2,7 @@ package eu.isas.reporter.calculation;
 
 import com.compomics.util.experiment.biology.Peptide;
 import com.compomics.util.experiment.identification.matches.ModificationMatch;
+import eu.isas.reporter.myparameters.QuantificationPreferences;
 import java.util.ArrayList;
 
 /**
@@ -30,13 +31,13 @@ public class Ignorer {
 
     /**
      * Constructor
-     *
-     * @param ignoreMissedCleavages Boolean indicating whether miscleaved peptides should be ignored.
-     * @param ignoredPtms           All peptides presenting a modification contained in this list will be ignored.
+     * @param quantificationPreferences the quantification preferences
      */
-    public Ignorer(boolean ignoreMissedCleavages, ArrayList<String> ignoredPtms) {
-        this.ignoreMissedCleavages = ignoreMissedCleavages;
-        this.ignoredModifications.addAll(ignoredPtms);
+    public Ignorer(QuantificationPreferences quantificationPreferences) {
+        this.ratioMin = quantificationPreferences.getRatioMin();
+        this.ratioMax = quantificationPreferences.getRatioMax();
+        this.ignoreMissedCleavages = quantificationPreferences.isIgnoreMissedCleavages();
+        this.ignoredModifications.addAll(quantificationPreferences.getIgnoredPTM());
     }
 
     /**

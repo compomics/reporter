@@ -6,11 +6,12 @@ import com.compomics.util.experiment.identification.PeptideAssumption;
 import com.compomics.util.experiment.identification.advocates.SearchEngine;
 import com.compomics.util.experiment.identification.matches.ModificationMatch;
 import com.compomics.util.experiment.identification.matches.SpectrumMatch;
+import com.compomics.util.experiment.massspectrometry.MSnSpectrum;
 import com.compomics.util.experiment.massspectrometry.Peak;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.PeptideQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.ProteinQuantification;
-import com.compomics.util.experiment.quantification.reporterion.quantification.SpectrumQuantification;
+import com.compomics.util.experiment.quantification.reporterion.quantification.PsmQuantification;
 import eu.isas.reporter.myparameters.IgnoredRatios;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -112,15 +113,15 @@ public class ReporterExporter {
             String accession, sequence, variableModifications, spectrumFile, spectrumTitle, idFile, deltaMass, mascotEValue, omssaEValue, xTandemEValue, comment;
             SpectrumMatch match;
             PeptideAssumption assumption;
-            for (ProteinQuantification proteinQuantification : quantification.getProteinQuantification()) {
-                accession = proteinQuantification.getProteinMatch().getTheoreticProtein().getAccession();
+            for (ProteinQuantification proteinQuantification : quantification.getProteinQuantification().values()) {
+                accession = proteinQuantification.getProteinMatch().getKey();
                 pr++;
                 pe = 0;
                 s = 0;
                 if (pr == 20) {
                     int test = 0;
                 }
-                for (PeptideQuantification peptideQuantification : proteinQuantification.getPeptideQuantification()) {
+                for (PeptideQuantification peptideQuantification : proteinQuantification.getPeptideQuantification().values()) {
                     pe++;
                     s = 0;
                     sequence = peptideQuantification.getPeptideMatch().getTheoreticPeptide().getSequence();
@@ -130,10 +131,10 @@ public class ReporterExporter {
                             variableModifications += modification.getTheoreticPtm().getName() + " ";
                         }
                     }
-                    for (SpectrumQuantification spectrumQuantification : peptideQuantification.getSpectrumQuantification()) {
+                    for (PsmQuantification psmQuantification : peptideQuantification.getPsmQuantification().values()) {
                         s++;
-                        spectrumFile = spectrumQuantification.getSpectrum().getFileName();
-                        spectrumTitle = spectrumQuantification.getSpectrum().getSpectrumTitle();
+                        spectrumFile = MSnSpectrum.getSpectrumFile(psmQuantification.getKey());
+                        spectrumTitle = MSnSpectrum.getSpectrumTitle(psmQuantification.getKey());
                         match = peptideQuantification.getPeptideMatch().getSpectrumMatches().get(spectrumFile + "_" + spectrumTitle);
                         found = false;
                         seConflict = false;
@@ -165,7 +166,7 @@ public class ReporterExporter {
                         if (seConflict) {
                             comment += "Search engine conflict. ";
                         }
-                        ignoredRatios = (IgnoredRatios) spectrumQuantification.getUrParam(ignoredRatios);
+                        ignoredRatios = (IgnoredRatios) psmQuantification.getUrParam(ignoredRatios);
                         for (ReporterIon ion : ions) {
                             if (ignoredRatios.isIgnored(ion.getIndex())) {
                                 comment += ion.getIndex() + " ignored. ";
@@ -173,8 +174,8 @@ public class ReporterExporter {
                         }
                         content = accession + separator + sequence + separator + variableModifications + separator + spectrumTitle
                                 + separator + spectrumFile + separator + idFile + separator + deltaMass + separator + mascotEValue
-                                + separator + omssaEValue + separator + xTandemEValue + separator + getRatios(spectrumQuantification)
-                                + getIntensities(spectrumQuantification) + comment + "\n";
+                                + separator + omssaEValue + separator + xTandemEValue + separator + getRatios(psmQuantification)
+                                + getIntensities(psmQuantification) + comment + "\n";
                         spectraOutput.write(content);
                     }
                     comment = "";
@@ -184,7 +185,7 @@ public class ReporterExporter {
                             comment += ion.getIndex() + " ignored. ";
                         }
                     }
-                    content = accession + separator + sequence + separator + peptideQuantification.getSpectrumQuantification().size()
+                    content = accession + separator + sequence + separator + peptideQuantification.getPsmQuantification().size()
                             + separator + getRatios(peptideQuantification) + comment + "\n";
                     peptidesOutput.write(content);
                 }
@@ -269,7 +270,7 @@ public class ReporterExporter {
      * @param spectrumQuantification the selected spectrum quantification
      * @return  the corresponding ratios
      */
-    private String getRatios(SpectrumQuantification spectrumQuantification) {
+    private String getRatios(PsmQuantification spectrumQuantification) {
         String result = "";
         for (ReporterIon ion : ions) {
             result += spectrumQuantification.getRatios().get(ion.getIndex()).getRatio() + separator;
@@ -283,7 +284,7 @@ public class ReporterExporter {
      * @param spectrumQuantification the selected spectrum quantification
      * @return  the corresponding intensities
      */
-    private String getIntensities(SpectrumQuantification spectrumQuantification) {
+    private String getIntensities(PsmQuantification spectrumQuantification) {
         String result = "";
         for (ReporterIon ion : ions) {
             Peak peak = spectrumQuantification.getReporterMatches().get(ion.getIndex()).peak;

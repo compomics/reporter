@@ -47,10 +47,10 @@ public class ItraqScore implements UrParameter {
      *
      * @return the minimal score
      */
-    public Double getMinScore() {
-        Double score = null;
+    public double getMinScore() {
+        double score = 0;
         for (Double currentScore : scores.values()) {
-            if (score == null || currentScore < score) {
+            if (score == 0 || currentScore < score) {
                 score = currentScore;
             }
         }

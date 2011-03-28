@@ -3,7 +3,7 @@ package eu.isas.reporter.gui.qcpanels;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.PeptideQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.ProteinQuantification;
-import com.compomics.util.experiment.quantification.reporterion.quantification.SpectrumQuantification;
+import com.compomics.util.experiment.quantification.reporterion.quantification.PsmQuantification;
 import eu.isas.reporter.myparameters.IgnoredRatios;
 import eu.isas.reporter.myparameters.ItraqScore;
 import java.awt.Color;
@@ -84,9 +84,9 @@ public class SpectrumScoreCharts {
         Double score;
         ItraqScore itraqScore = new ItraqScore();
         IgnoredRatios ignoredRatios = new IgnoredRatios();
-        for (ProteinQuantification proteinQuantification : quantification.getProteinQuantification()) {
-            for (PeptideQuantification peptideQuantification : proteinQuantification.getPeptideQuantification()) {
-                for (SpectrumQuantification spectrumQuantification : peptideQuantification.getSpectrumQuantification()) {
+        for (ProteinQuantification proteinQuantification : quantification.getProteinQuantification().values()) {
+            for (PeptideQuantification peptideQuantification : proteinQuantification.getPeptideQuantification().values()) {
+                for (PsmQuantification spectrumQuantification : peptideQuantification.getPsmQuantification().values()) {
                     itraqScore = (ItraqScore) spectrumQuantification.getUrParam(itraqScore);
                     ignoredRatios = (IgnoredRatios) spectrumQuantification.getUrParam(ignoredRatios);
                     for (int ion : spectrumQuantification.getReporterMatches().keySet()) {
@@ -113,9 +113,9 @@ public class SpectrumScoreCharts {
         double binScore = minimum;
         while (binScore <= maximum) {
             count = 0;
-            for (ProteinQuantification proteinQuantification : quantification.getProteinQuantification()) {
-                for (PeptideQuantification peptideQuantification : proteinQuantification.getPeptideQuantification()) {
-                    for (SpectrumQuantification spectrumQuantification : peptideQuantification.getSpectrumQuantification()) {
+            for (ProteinQuantification proteinQuantification : quantification.getProteinQuantification().values()) {
+                for (PeptideQuantification peptideQuantification : proteinQuantification.getPeptideQuantification().values()) {
+                    for (PsmQuantification spectrumQuantification : peptideQuantification.getPsmQuantification().values()) {
                         itraqScore = (ItraqScore) spectrumQuantification.getUrParam(itraqScore);
                         ignoredRatios = (IgnoredRatios) spectrumQuantification.getUrParam(ignoredRatios);
                         for (int ion : spectrumQuantification.getReporterMatches().keySet()) {
@@ -162,7 +162,7 @@ public class SpectrumScoreCharts {
      * 
      * @param spectrumQuantification the spectrum quantification selected
      */
-    public void setSpectrum(SpectrumQuantification spectrumQuantification) {
+    public void setSpectrum(PsmQuantification spectrumQuantification) {
         ratioCharts.setSpectrum(spectrumQuantification);
     }
 
@@ -220,7 +220,7 @@ public class SpectrumScoreCharts {
          * 
          * @param spectrumQuantification a new spectrum quantification selected
          */
-        public void setSpectrum(SpectrumQuantification spectrumQuantification) {
+        public void setSpectrum(PsmQuantification spectrumQuantification) {
             Double currentScore;
             IgnoredRatios ignoredRatios = (IgnoredRatios) spectrumQuantification.getUrParam(new IgnoredRatios());
             ItraqScore itraqScore = (ItraqScore) spectrumQuantification.getUrParam(new ItraqScore());

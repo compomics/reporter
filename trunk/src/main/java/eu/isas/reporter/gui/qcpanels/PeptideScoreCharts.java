@@ -88,8 +88,8 @@ public class PeptideScoreCharts {
         Double score;
         ItraqScore itraqScore = new ItraqScore();
         IgnoredRatios ignoredRatios = new IgnoredRatios();
-        for (ProteinQuantification proteinQuantification : quantification.getProteinQuantification()) {
-            for (PeptideQuantification peptideQuantification : proteinQuantification.getPeptideQuantification()) {
+        for (ProteinQuantification proteinQuantification : quantification.getProteinQuantification().values()) {
+            for (PeptideQuantification peptideQuantification : proteinQuantification.getPeptideQuantification().values()) {
                 itraqScore = (ItraqScore) peptideQuantification.getUrParam(itraqScore);
                 ignoredRatios = (IgnoredRatios) peptideQuantification.getUrParam(ignoredRatios);
                 for (int ion : peptideQuantification.getRatios().keySet()) {
@@ -115,8 +115,8 @@ public class PeptideScoreCharts {
         double binScore = minimum;
         while (binScore <= maximum) {
             count = 0;
-            for (ProteinQuantification proteinQuantification : quantification.getProteinQuantification()) {
-                for (PeptideQuantification peptideQuantification : proteinQuantification.getPeptideQuantification()) {
+            for (ProteinQuantification proteinQuantification : quantification.getProteinQuantification().values()) {
+                for (PeptideQuantification peptideQuantification : proteinQuantification.getPeptideQuantification().values()) {
                     itraqScore = (ItraqScore) peptideQuantification.getUrParam(itraqScore);
                     ignoredRatios = (IgnoredRatios) peptideQuantification.getUrParam(ignoredRatios);
                     for (int ion : peptideQuantification.getRatios().keySet()) {

@@ -55,7 +55,7 @@ public class FdrCalculator {
      * returns the e-values thresholds corresponding to the given FDR limit
      * 
      * @param limit         FDR threshold
-     * @return  map of the e-value limits indexed by their search engines
+     * @return  map of the  e-value limits indexed by their search engines
      * @throws Exception    exception thrown when the best hit is a decoy hit
      */
     public HashMap<Integer, Double> getEvalueLimits(double limit) throws Exception {
@@ -65,7 +65,7 @@ public class FdrCalculator {
         }
         for (int searchEngine : eValues.keySet()) {
             double bestEValue = 100;
-            int nTarget = 0;
+            double nTarget = 0.0;
             int nDecoy = 0;
             Point point;
             for (double eValue : eValues.get(searchEngine)) {

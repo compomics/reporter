@@ -3,7 +3,7 @@ package eu.isas.reporter.gui.qcpanels;
 import com.compomics.util.experiment.biology.ions.ReporterIon;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.PeptideQuantification;
-import com.compomics.util.experiment.quantification.reporterion.quantification.SpectrumQuantification;
+import com.compomics.util.experiment.quantification.reporterion.quantification.PsmQuantification;
 import eu.isas.reporter.myparameters.IgnoredRatios;
 import eu.isas.reporter.myparameters.RatioLimits;
 import java.awt.Color;
@@ -123,7 +123,7 @@ public class SpectrumCharts {
         HashMap<Integer, Double> maxima = new HashMap<Integer, Double>();
 
         double ratio;
-        for (SpectrumQuantification spectrumQuantification : peptideQuantification.getSpectrumQuantification()) {
+        for (PsmQuantification spectrumQuantification : peptideQuantification.getPsmQuantification().values()) {
             ignoredRatios = (IgnoredRatios) spectrumQuantification.getUrParam(ignoredRatios);
             for (int ion : spectrumQuantification.getRatios().keySet()) {
                 if (!ignoredRatios.isIgnored(ion)) {
@@ -164,7 +164,7 @@ public class SpectrumCharts {
             for (ReporterIon ion : ions) {
                 count.put(ion.getIndex(), 0);
             }
-            for (SpectrumQuantification spectrumQuantification : peptideQuantification.getSpectrumQuantification()) {
+            for (PsmQuantification spectrumQuantification : peptideQuantification.getPsmQuantification().values()) {
                 ignoredRatios = (IgnoredRatios) spectrumQuantification.getUrParam(ignoredRatios);
                 for (int ion : spectrumQuantification.getRatios().keySet()) {
                     if (!ignoredRatios.isIgnored(ion)) {
@@ -217,7 +217,7 @@ public class SpectrumCharts {
      *
      * @param spectrumQuantification the selected spectrum quantification
      */
-    public void setSpectrum(SpectrumQuantification spectrumQuantification) {
+    public void setSpectrum(PsmQuantification spectrumQuantification) {
         for (int ion : ratioCharts.keySet()) {
             ratioCharts.get(ion).setSpectrum(spectrumQuantification, ion);
         }
@@ -296,7 +296,7 @@ public class SpectrumCharts {
             int nPeptides;
             IgnoredRatios ignoredRatios = new IgnoredRatios();
             nPeptides = 0;
-            for (SpectrumQuantification spectrumQuantification : peptideQuantification.getSpectrumQuantification()) {
+            for (PsmQuantification spectrumQuantification : peptideQuantification.getPsmQuantification().values()) {
                 ignoredRatios = (IgnoredRatios) spectrumQuantification.getUrParam(ignoredRatios);
                 if (!ignoredRatios.isIgnored(ion)) {
                     if (spectrumQuantification.getRatios().get(ion).getRatio() > ratioLimits.getLimits(ion)[0]
@@ -346,7 +346,7 @@ public class SpectrumCharts {
          * @param spectrumQuantification the selected spectrum quantification
          * @param ion                    the selected reporter ion
          */
-        public void setSpectrum(SpectrumQuantification spectrumQuantification, int ion) {
+        public void setSpectrum(PsmQuantification spectrumQuantification, int ion) {
 
             double[] ratio = {spectrumQuantification.getRatios().get(ion).getRatio()};
             double[] ratioBegin = {ratio[0] - resolution / 2};
