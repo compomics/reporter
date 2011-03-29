@@ -550,7 +550,7 @@ public class ReporterGUI extends javax.swing.JFrame {
      * @return the path to the jar file
      */
     private String getJarFilePath() {
-        String path = this.getClass().getResource("Reporter.class").getPath();
+        String path = this.getClass().getResource("ReporterGUI.class").getPath();
 
         if (path.lastIndexOf("/Reporter-") != -1) {
             path = path.substring(5, path.lastIndexOf("/Reporter-"));

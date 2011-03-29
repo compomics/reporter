@@ -51,12 +51,10 @@ public class RatioEstimator {
      * Ignore non validated hits
      */
     private boolean onlyValidated;
-
     /**
      * the deisotoper for PSM quantification
      */
     private Deisotoper deisotoper;
-
 
     /**
      * constructor
@@ -367,21 +365,17 @@ public class RatioEstimator {
         HashMap<Integer, Double> deisotopedInt = deisotoper.deisotope(reporterMatches);
         Double referenceInt = deisotopedInt.get(referenceLabel);
         double ratio;
-        if (referenceInt > 0 && !nullIntensities.contains(referenceLabel)) {
-            for (int label : deisotopedInt.keySet()) {
+        for (int label : deisotopedInt.keySet()) {
+            if (referenceInt > 0 && !nullIntensities.contains(referenceLabel)) {
                 ratio = deisotopedInt.get(label) / referenceInt;
-                psmQuantification.addRatio(label, new Ratio(referenceLabel, label, ratio));
-                if (ignorer.ignoreRatio(ratio)) {
-                    ignoredRatios.ignore(label);
-                }
+            } else if (label != referenceLabel) {
+                ratio = 9 * Math.pow(10, 99);
+            } else {
+                ratio = 0.0;
             }
-        } else {
-            for (int label : deisotopedInt.keySet()) {
-                if (label != referenceLabel) {
-                    psmQuantification.addRatio(label, new Ratio(referenceLabel, label, 9 * Math.pow(10, 99)));
-                } else {
-                    psmQuantification.addRatio(label, new Ratio(referenceLabel, label, 0));
-                }
+            psmQuantification.addRatio(label, new Ratio(referenceLabel, label, ratio));
+            if (ignorer.ignoreRatio(ratio)) {
+                ignoredRatios.ignore(label);
             }
         }
         if (ignoreNullIntensities) {
