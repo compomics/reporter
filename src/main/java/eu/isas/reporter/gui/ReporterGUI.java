@@ -11,6 +11,7 @@ import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuant
 import com.compomics.util.experiment.quantification.reporterion.quantification.ProteinQuantification;
 import com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel;
 import eu.isas.reporter.Reporter;
+import eu.isas.reporter.io.ReporterExporter;
 import eu.isas.reporter.myparameters.ItraqScore;
 import eu.isas.reporter.myparameters.QuantificationPreferences;
 import eu.isas.reporter.utils.Properties;
@@ -22,6 +23,7 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -181,6 +183,13 @@ public class ReporterGUI extends javax.swing.JFrame {
         saveMenu.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
         saveMenu.setText("Save");
         jMenu1.add(saveMenu);
+
+        exportMenu.setText("Export");
+        exportMenu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportMenuActionPerformed(evt);
+            }
+        });
         jMenu1.add(exportMenu);
 
         exitMenu.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, java.awt.event.InputEvent.ALT_MASK));
@@ -233,6 +242,18 @@ public class ReporterGUI extends javax.swing.JFrame {
     private void jMenuItem6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem6ActionPerformed
         new PreferencesDialog(this, parent.getQuantificationPreferences());
     }//GEN-LAST:event_jMenuItem6ActionPerformed
+
+    private void exportMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportMenuActionPerformed
+        JFileChooser fileChooser = new JFileChooser(getLastSelectedFolder());
+        fileChooser.setDialogTitle("Select Export Folder");
+        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+
+        int returnVal = fileChooser.showSaveDialog(this);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            ReporterExporter exporter = new ReporterExporter(parent.getExperiment(), "\t");
+            exporter.exportResults(quantification, fileChooser.getSelectedFile().getPath());
+        }
+    }//GEN-LAST:event_exportMenuActionPerformed
 
     /**
      * @param args the command line arguments
