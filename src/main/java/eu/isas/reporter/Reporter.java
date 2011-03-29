@@ -3,7 +3,6 @@ package eu.isas.reporter;
 import com.compomics.util.experiment.MsExperiment;
 import com.compomics.util.experiment.biology.Sample;
 import com.compomics.util.experiment.identification.IdentificationMethod;
-import com.compomics.util.experiment.quantification.QuantificationMethod;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.ProteinQuantification;
 import eu.isas.reporter.calculation.DataLoader;
