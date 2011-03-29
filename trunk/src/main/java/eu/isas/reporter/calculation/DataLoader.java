@@ -1,6 +1,7 @@
 package eu.isas.reporter.calculation;
 
 import com.compomics.util.Util;
+import com.compomics.util.experiment.biology.PTMFactory;
 import com.compomics.util.experiment.biology.ions.ReporterIon;
 import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.PeptideAssumption;
@@ -30,6 +31,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import javax.swing.JOptionPane;
 
 /**
  * This class will load information from spectra and identifications files.
@@ -55,19 +57,48 @@ public class DataLoader {
      */
     private QuantificationPreferences quantificationPreferences;
     /**
-     * The number of decimals to display for the e-values in the report.
+     * modification file
+     */
+    private final String MODIFICATIONS_FILE = "conf/reporter_mods.xml";
+    /**
+     * user modification file
+     */
+    private final String USER_MODIFICATIONS_FILE = "conf/reporter_usermods.xml";
+    /**
+     * The compomics PTM factory
+     */
+    private PTMFactory ptmFactory = PTMFactory.getInstance();
+    /**
+     * The identification
      */
     private Identification identification;
+    /**
+     * The number of decimals to display for the e-values in the report.
+     */
     private final int eValueDecimals = 6;
+    /**
+     * Map of all identified spectra
+     */
     private HashMap<String, ArrayList<String>> identifiedSpectra = new HashMap<String, ArrayList<String>>();
 
+    /**
+     * Constructor
+     * @param quantificationPreferences The quantification preferences
+     * @param waitingDialog             A waiting dialog to display feedback to the user
+     * @param identification            the identification
+     */
     public DataLoader(QuantificationPreferences quantificationPreferences, WaitingDialog waitingDialog, Identification identification) {
         this.identification = identification;
         this.quantificationPreferences = quantificationPreferences;
         this.waitingDialog = waitingDialog;
     }
 
+    /**
+     * Loads identifications from a file
+     * @param idFiles   the identification files
+     */
     public void loadIdentifications(ArrayList<File> idFiles) {
+        loadModifications();
         HashMap<Integer, HashSet<SpectrumMatch>> allSpectrumMatches = new HashMap<Integer, HashSet<SpectrumMatch>>();
         IdFilter idFilter = new IdFilter(quantificationPreferences);
         int nTotal = 0;
@@ -168,6 +199,11 @@ public class DataLoader {
         }
     }
 
+    /**
+     * Verifies that identifications were loaded and that all needed spectrum files are provided
+     * @param mgfFiles  The provided mgf files
+     * @return          true if we have all needed mgf files
+     */
     private boolean validateFiles(ArrayList<File> mgfFiles) {
         if (identifiedSpectra.isEmpty()) {
             waitingDialog.appendReport("No identification was retained, import will be cancelled.");
@@ -186,6 +222,24 @@ public class DataLoader {
             }
         }
         return true;
+    }
+
+    /**
+     * Loads the modifications from the modification file
+     */
+    private void loadModifications() {
+        try {
+            ptmFactory.importModifications(new File(MODIFICATIONS_FILE));
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "An error (" + e.getMessage() + ") occured when trying to load the modifications from " + MODIFICATIONS_FILE + ".",
+                    "Configuration import Error", JOptionPane.ERROR_MESSAGE);
+        }
+        try {
+            ptmFactory.importModifications(new File(USER_MODIFICATIONS_FILE));
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "An error (" + e.getMessage() + ") occured when trying to load the modifications from " + USER_MODIFICATIONS_FILE + ".",
+                    "Configuration import Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     /**
