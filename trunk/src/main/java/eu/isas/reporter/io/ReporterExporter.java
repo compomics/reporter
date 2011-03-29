@@ -4,6 +4,7 @@ import com.compomics.util.experiment.MsExperiment;
 import com.compomics.util.experiment.biology.ions.ReporterIon;
 import com.compomics.util.experiment.identification.PeptideAssumption;
 import com.compomics.util.experiment.identification.advocates.SearchEngine;
+import com.compomics.util.experiment.identification.matches.IonMatch;
 import com.compomics.util.experiment.identification.matches.ModificationMatch;
 import com.compomics.util.experiment.identification.matches.SpectrumMatch;
 import com.compomics.util.experiment.massspectrometry.MSnSpectrum;
@@ -135,7 +136,7 @@ public class ReporterExporter {
                         s++;
                         spectrumFile = MSnSpectrum.getSpectrumFile(psmQuantification.getKey());
                         spectrumTitle = MSnSpectrum.getSpectrumTitle(psmQuantification.getKey());
-                        match = peptideQuantification.getPeptideMatch().getSpectrumMatches().get(spectrumFile + "_" + spectrumTitle);
+                        match = peptideQuantification.getPeptideMatch().getSpectrumMatches().get(psmQuantification.getKey());
                         found = false;
                         seConflict = false;
                         idFile = "";
@@ -209,7 +210,7 @@ public class ReporterExporter {
         } catch (Exception e) {
             String report = pr + " " + pe + " " + s;
             JOptionPane.showMessageDialog(null, "Output Failed" + report, "Output Failed", JOptionPane.ERROR_MESSAGE);
-            return;
+            e.printStackTrace();
         }
     }
 
@@ -287,9 +288,9 @@ public class ReporterExporter {
     private String getIntensities(PsmQuantification spectrumQuantification) {
         String result = "";
         for (ReporterIon ion : ions) {
-            Peak peak = spectrumQuantification.getReporterMatches().get(ion.getIndex()).peak;
-            if (peak != null) {
-                result += peak.intensity + separator;
+            IonMatch match = spectrumQuantification.getReporterMatches().get(ion.getIndex());
+            if (match != null) {
+                result += match.peak.intensity + separator;
             } else {
                 result += 0 + separator;
             }
