@@ -64,7 +64,6 @@ public class PreferencesDialog extends javax.swing.JDialog {
 
         jPanel1 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
-        validatedCheck = new javax.swing.JCheckBox();
         miscleavageCheck = new javax.swing.JCheckBox();
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -72,7 +71,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
         addPTM = new javax.swing.JButton();
         removePTM = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
-        AllPTMs = new javax.swing.JList();
+        allPTMs = new javax.swing.JList();
         jLabel8 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         nullIntensitiesCheck = new javax.swing.JCheckBox();
@@ -92,8 +91,6 @@ public class PreferencesDialog extends javax.swing.JDialog {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Identifications Selection"));
-
-        validatedCheck.setText("Consider only validated identifications (peptide-shaker identifications only)");
 
         miscleavageCheck.setText("Ignore miscleaved peptides");
 
@@ -115,12 +112,12 @@ public class PreferencesDialog extends javax.swing.JDialog {
             }
         });
 
-        AllPTMs.setModel(new javax.swing.AbstractListModel() {
+        allPTMs.setModel(new javax.swing.AbstractListModel() {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
             public int getSize() { return strings.length; }
             public Object getElementAt(int i) { return strings[i]; }
         });
-        jScrollPane2.setViewportView(AllPTMs);
+        jScrollPane2.setViewportView(allPTMs);
 
         jLabel8.setText("Available PTMs:");
 
@@ -131,45 +128,42 @@ public class PreferencesDialog extends javax.swing.JDialog {
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(validatedCheck)
                     .addComponent(miscleavageCheck)
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel1)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 241, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(addPTM)
-                            .addComponent(removePTM))
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 241, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(addPTM)
+                                    .addComponent(removePTM)))
+                            .addComponent(jLabel1))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 265, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel8))))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(200, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(validatedCheck)
+                .addComponent(miscleavageCheck)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(miscleavageCheck)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jLabel1))
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
                     .addComponent(jLabel8))
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel2Layout.createSequentialGroup()
-                        .addGap(48, 48, 48)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(74, 74, 74)
                         .addComponent(addPTM)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(removePTM))
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel2Layout.createSequentialGroup()
+                    .addGroup(jPanel2Layout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 147, Short.MAX_VALUE)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 147, Short.MAX_VALUE))))
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 167, Short.MAX_VALUE)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 167, Short.MAX_VALUE))))
                 .addContainerGap())
         );
 
@@ -267,7 +261,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
                         .addComponent(okButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(cancelButton))
-                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, 793, Short.MAX_VALUE)
                     .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
         jPanel1Layout.setVerticalGroup(
@@ -296,7 +290,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(17, Short.MAX_VALUE))
         );
 
         pack();
@@ -327,7 +321,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
 
     private void addPTMActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addPTMActionPerformed
         int nSelected = selectedPTMs.getModel().getSize();
-        int nNew = AllPTMs.getSelectedIndices().length;
+        int nNew = allPTMs.getSelectedIndices().length;
         String[] fixedModifications = new String[nSelected + nNew];
         int cpt = 0;
         String name;
@@ -336,7 +330,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
             cpt++;
         }
         boolean found;
-        for (Object selection : AllPTMs.getSelectedValues()) {
+        for (Object selection : allPTMs.getSelectedValues()) {
             name = (String) selection;
             found = false;
             for (int i = 0; i < selectedPTMs.getModel().getSize(); i++) {
@@ -366,8 +360,8 @@ public class PreferencesDialog extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_okButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JList AllPTMs;
     private javax.swing.JButton addPTM;
+    private javax.swing.JList allPTMs;
     private javax.swing.JButton cancelButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -391,14 +385,12 @@ public class PreferencesDialog extends javax.swing.JDialog {
     private javax.swing.JButton removePTM;
     private javax.swing.JTextField resolutionTxt;
     private javax.swing.JList selectedPTMs;
-    private javax.swing.JCheckBox validatedCheck;
     // End of variables declaration//GEN-END:variables
 
     /**
      * Loads values from the quantificationPreferences
      */
     private void loadValues() {
-        validatedCheck.setSelected(quantificationPreferences.isOnlyValidated());
         miscleavageCheck.setSelected(quantificationPreferences.isIgnoreMissedCleavages());
         nullIntensitiesCheck.setSelected(quantificationPreferences.isIgnoreNullIntensities());
         kTxt.setText(quantificationPreferences.getK() + "");
@@ -418,7 +410,6 @@ public class PreferencesDialog extends javax.swing.JDialog {
      * Saves the values in the quantificationPreferences
      */
     private void saveValues() {
-        quantificationPreferences.setOnlyValidated(validatedCheck.isSelected());
         quantificationPreferences.setIgnoreMissedCleavages(miscleavageCheck.isSelected());
         quantificationPreferences.setIgnoreNullIntensities(nullIntensitiesCheck.isSelected());
         quantificationPreferences.setK(new Double(kTxt.getText()));
@@ -512,7 +503,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
         }
 
         Arrays.sort(allModificationsAsArray);
-        AllPTMs.setListData(allModificationsAsArray);
-        AllPTMs.setSelectedIndex(0);
+        allPTMs.setListData(allModificationsAsArray);
+        allPTMs.setSelectedIndex(0);
     }
 }

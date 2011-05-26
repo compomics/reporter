@@ -241,11 +241,6 @@ public class QuantificationPreferences implements UrParameter {
     private boolean ignoreMissedCleavages = false;
 
     /**
-     * boolean indicating whether all identifications should be used for quantification or only validated ones (peptide-shaker files only)
-     */
-    private boolean onlyValidated = true;
-
-    /**
      * double indicating the value of k for protein ratio inference
      */
     private double k = 1.4;
@@ -316,22 +311,6 @@ public class QuantificationPreferences implements UrParameter {
      */
     public void setK(double k) {
         this.k = k;
-    }
-
-    /**
-     * returns a boolean indicating whether only validated identifications should be accounted
-     * @return a boolean indicating whether only validated identifications should be accounted
-     */
-    public boolean isOnlyValidated() {
-        return onlyValidated;
-    }
-
-    /**
-     * indicates whether only validated identifications should be accounted
-     * @param onlyValidated a boolean indicating whether only validated identifications should be accounted
-     */
-    public void setOnlyValidated(boolean onlyValidated) {
-        this.onlyValidated = onlyValidated;
     }
 
     /**

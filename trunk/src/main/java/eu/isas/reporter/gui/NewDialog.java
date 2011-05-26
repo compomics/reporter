@@ -7,12 +7,12 @@ import com.compomics.util.experiment.biology.Sample;
 import com.compomics.util.experiment.identification.IdentificationMethod;
 import com.compomics.util.experiment.identification.advocates.SearchEngine;
 import com.compomics.util.experiment.identification.identifications.Ms2Identification;
+import com.compomics.util.experiment.io.ExperimentIO;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethodFactory;
 import com.compomics.util.gui.renderers.AlignedListCellRenderer;
 import eu.isas.reporter.Reporter;
-import eu.isas.reporter.io.UtilitiesInput;
 import eu.isas.reporter.myparameters.QuantificationPreferences;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -39,14 +39,6 @@ public class NewDialog extends javax.swing.JDialog {
      * File containing the various reporter methods
      */
     private final String METHODS_FILE = "conf/reporterMethods.xml";
-    /**
-     * modification file
-     */
-    private final String MODIFICATIONS_FILE = "conf/reporter_mods.xml";
-    /**
-     * user modification file
-     */
-    private final String USER_MODIFICATIONS_FILE = "conf/reporter_usermods.xml";
     /**
      * The compomics reporter methods factory
      */
@@ -91,6 +83,10 @@ public class NewDialog extends javax.swing.JDialog {
      * The quantification preferences
      */
     private QuantificationPreferences quantificationPreferences;
+    /**
+     * Compomics experiment saver and opener
+     */
+    private ExperimentIO experimentIO = new ExperimentIO();
 
     /**
      * constructor
@@ -1091,6 +1087,9 @@ public class NewDialog extends javax.swing.JDialog {
             txtIdFileLocation.setText(idFiles.size() + " file(s) selected.");
             if (idFiles.size() == 1 && idFiles.get(0).getName().endsWith(".cps")) {
                 importPeptideShakerFile(idFiles.get(0));
+                txtExperiment.setEditable(false);
+                sampleNameTxt.setEditable(false);
+                replicateNumberTxt.setEditable(false);
             } else {
                 txtExperiment.setEditable(true);
                 sampleNameTxt.setEditable(true);
@@ -1409,8 +1408,8 @@ public class NewDialog extends javax.swing.JDialog {
      * @param psFile a peptide shaker file
      */
     private void importPeptideShakerFile(File psFile) {
-        UtilitiesInput importer = new UtilitiesInput();
-        experiment = importer.importExperiment(psFile);
+        try {
+        experiment = experimentIO.loadExperiment(psFile);
         txtExperiment.setText(experiment.getReference());
         txtExperiment.setEditable(false);
 
@@ -1431,6 +1430,18 @@ public class NewDialog extends javax.swing.JDialog {
         }
         replicateNumberTxt.setText(replicateNumber + "");
         replicateNumberTxt.setEditable(false);
+        JOptionPane.showMessageDialog(this,
+                        "Experiment successfully loaded.",
+                        "Import completed", JOptionPane.WARNING_MESSAGE);
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this,
+                        "An error occured while reading " + psFile.getName() + ".",
+                        "Reading error", JOptionPane.WARNING_MESSAGE);
+        } catch (ClassNotFoundException e1) {
+            JOptionPane.showMessageDialog(this,
+                        "An error occured while importing " + psFile.getName() + ". Please verify that the version of Reporter you are using is compatible with the version of Peptide-Shaker which was used to generate the file.",
+                        "Import error", JOptionPane.WARNING_MESSAGE);
+        }
     }
 
     /**
@@ -1455,7 +1466,7 @@ public class NewDialog extends javax.swing.JDialog {
                         "Methods file not found", JOptionPane.WARNING_MESSAGE);
                 importMethodsError();
             } catch (XmlPullParserException e) {
-                JOptionPane.showMessageDialog(null,
+                JOptionPane.showMessageDialog(this,
                         "An error occured while parsing " + METHODS_FILE + " at line " + e.getLineNumber() + ".",
                         "Parsing error", JOptionPane.WARNING_MESSAGE);
                 importMethodsError();

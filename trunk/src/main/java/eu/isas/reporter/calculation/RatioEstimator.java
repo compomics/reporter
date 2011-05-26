@@ -48,10 +48,6 @@ public class RatioEstimator {
      */
     private boolean ignoreNullIntensities;
     /**
-     * Ignore non validated hits
-     */
-    private boolean onlyValidated;
-    /**
      * the deisotoper for PSM quantification
      */
     private Deisotoper deisotoper;
@@ -71,7 +67,6 @@ public class RatioEstimator {
         k = quantificationPreferences.getK();
         ignorer = new Ignorer(quantificationPreferences);
         ignoreNullIntensities = quantificationPreferences.isIgnoreNullIntensities();
-        onlyValidated = quantificationPreferences.isOnlyValidated();
     }
 
     /**
@@ -80,15 +75,6 @@ public class RatioEstimator {
      * @param proteinQuantification the processed protein quantification
      */
     public void estimateRatios(ProteinQuantification proteinQuantification) {
-        boolean validated = true;
-        try {
-            PSParameter psParameter = new PSParameter();
-            psParameter = (PSParameter) proteinQuantification.getProteinMatch().getUrParam(psParameter);
-            validated = psParameter.isValidated();
-        } catch (Exception e) {
-            // Not Peptide-shaker identification: ignore
-        }
-        if (validated || !onlyValidated) {
             IgnoredRatios ignoredRatios = new IgnoredRatios();
             HashMap<Integer, ArrayList<Double>> allRatios = new HashMap<Integer, ArrayList<Double>>();
             HashMap<Integer, Ratio> ratiosMap;
@@ -136,18 +122,19 @@ public class RatioEstimator {
                 proteinRatios.put(ion, new Ratio(referenceLabel, ion, ratio));
                 limits.addLimits(ion, ratio - window, ratio + window);
             }
-            proteinQuantification.setProteinRatios(proteinRatios);
             ignoredRatios = new IgnoredRatios();
             for (ReporterIon ion : reporterIons) {
                 if (!proteinRatios.containsKey(ion.getIndex())) {
                     ignoredRatios.ignore(ion.getIndex());
+                    proteinRatios.put(ion.getIndex(), new Ratio(referenceLabel, ion.getIndex(), Double.NaN));
                 }
             }
+            proteinQuantification.setProteinRatios(proteinRatios);
             proteinQuantification.addUrParam(ignoredRatios);
             proteinQuantification.addUrParam(scores);
             proteinQuantification.addUrParam(limits);
         }
-    }
+    
 
     /**
      * Returns the number of peptides supporting this protein ratio
@@ -227,24 +214,14 @@ public class RatioEstimator {
             peptideRatios.put(ion, new Ratio(referenceLabel, ion, ratio));
             ratioLimits.addLimits(ion, ratio - window, ratio + window);
         }
-        peptideQuantification.setPeptideRatios(peptideRatios);
         ignoredRatios = new IgnoredRatios();
-        boolean validated = true;
-        try {
-            PSParameter psParameter = new PSParameter();
-            psParameter = (PSParameter) peptideQuantification.getPeptideMatch().getUrParam(psParameter);
-            validated = psParameter.isValidated();
-        } catch (Exception e) {
-            // Not Peptide-shaker identification: ignore
-        }
-        for (ReporterIon reporterIon : reporterIons) {
-            if (onlyValidated && !validated
-                    || ignorer.ignorePeptide(peptideQuantification.getPeptideMatch().getTheoreticPeptide())
-                    || !peptideRatios.containsKey(reporterIon.getIndex())
-                    || ignorer.ignoreRatio(peptideRatios.get(reporterIon.getIndex()).getRatio())) {
-                ignoredRatios.ignore(reporterIon.getIndex());
+        for (ReporterIon possibleIon : reporterIons) {
+            if (!allRatios.keySet().contains(possibleIon.getIndex())) {
+                ignoredRatios.ignore(possibleIon.getIndex());
+                peptideRatios.put(possibleIon.getIndex(), new Ratio(referenceLabel, possibleIon.getIndex(), Double.NaN));
             }
         }
+        peptideQuantification.setPeptideRatios(peptideRatios);
         peptideQuantification.addUrParam(scores);
         peptideQuantification.addUrParam(ratioLimits);
         peptideQuantification.addUrParam(ignoredRatios);

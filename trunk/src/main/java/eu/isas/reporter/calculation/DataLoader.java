@@ -7,6 +7,7 @@ import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.PeptideAssumption;
 import com.compomics.util.experiment.identification.advocates.SearchEngine;
 import com.compomics.util.experiment.identification.matches.IonMatch;
+import com.compomics.util.experiment.identification.matches.PeptideMatch;
 import com.compomics.util.experiment.identification.matches.ProteinMatch;
 import com.compomics.util.experiment.identification.matches.SpectrumMatch;
 import com.compomics.util.experiment.io.identifications.IdfileReader;
@@ -15,6 +16,7 @@ import com.compomics.util.experiment.io.massspectrometry.MgfReader;
 import com.compomics.util.experiment.massspectrometry.Charge;
 import com.compomics.util.experiment.massspectrometry.MSnSpectrum;
 import com.compomics.util.experiment.massspectrometry.Peak;
+import com.compomics.util.experiment.massspectrometry.Spectrum;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.PeptideQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.ProteinQuantification;
@@ -186,11 +188,20 @@ public class DataLoader {
             }
             waitingDialog.appendReport(report);
             waitingDialog.appendReport("Building protein objects.");
-
             for (int searchEngine : allSpectrumMatches.keySet()) {
-                identification.addSpectrumMatch(allSpectrumMatches.get(searchEngine));
+                for (SpectrumMatch spectrumMatch : allSpectrumMatches.get(searchEngine)) {
+                    spectrumMatch.setBestAssumption(spectrumMatch.getFirstHit(searchEngine));
+                    identification.addSpectrumMatch(spectrumMatch);
+                }
+            }
+            for (ProteinMatch proteinMatch : identification.getProteinIdentification().values()) {
+                for (String key : proteinMatch.getTheoreticProteinsAccessions()) {
+                    proteinMatch.setMainMatch(proteinMatch.getTheoreticProtein(key));
+                    break;
+                }
             }
             waitingDialog.appendReport(identification.getProteinIdentification().size() + " proteins imported.");
+
         } catch (Exception e) {
             e.printStackTrace();
             waitingDialog.appendReport("An error occured while loading the identification Files:");
@@ -279,8 +290,7 @@ public class DataLoader {
         HashMap<String, MSnSpectrum> result = new HashMap<String, MSnSpectrum>();
         waitingDialog.appendReport("Importing spectra from " + mgfFile.getName());
         try {
-            ArrayList<MSnSpectrum> spectraTemp;
-            spectraTemp = reader.getSpectra(mgfFile);
+            ArrayList<MSnSpectrum> spectraTemp = reader.getSpectra(mgfFile);
             for (MSnSpectrum spectrum : spectraTemp) {
                 result.put(spectrum.getSpectrumKey(), spectrum);
             }
@@ -343,7 +353,6 @@ public class DataLoader {
                 waitingDialog.setRunCancelled();
                 return;
             }
-            PSParameter psParameter = new PSParameter();
             for (String fileName : identifiedSpectra.keySet()) {
                 HashMap<String, MSnSpectrum> spectrumMap = importSpectra(files.get(fileName));
                 if (waitingDialog.isRunCancelled()) {
@@ -355,7 +364,7 @@ public class DataLoader {
                     ArrayList<String> spectrumIds = getSpectrumIds(spectrumMatch, spectrumMap);
                     for (String spectrumId : spectrumIds) {
                         MSnSpectrum currentSpectrum = spectrumMap.get(spectrumId);
-                        PsmQuantification spectrumQuantification = new PsmQuantification(currentSpectrum);
+                        PsmQuantification spectrumQuantification = new PsmQuantification(spectrumId);
                         HashMap<ReporterIon, IonMatch> ionMatches = matchIons(currentSpectrum, quantification.getReporterMethod().getReporterIons());
                         for (ReporterIon ion : ionMatches.keySet()) {
                             spectrumQuantification.addIonMatch(ion.getIndex(), ionMatches.get(ion));
@@ -371,23 +380,22 @@ public class DataLoader {
                             }
                         }
                         if (reporterFound) {
-                            for (PeptideAssumption assumption : spectrumMatch.getAllAssumptions()) {
-                                String proteinKey = ProteinMatch.getProteinMatchKey(assumption.getPeptide());
-                                if (!quantification.getProteinQuantification().containsKey(proteinKey)) {
-                                    ProteinQuantification proteinQuantification;
-                                    proteinQuantification = new ProteinQuantification(identification.getProteinIdentification().get(proteinKey));
-                                    proteinQuantification.addUrParam(new IgnoredRatios());
-                                    quantification.addProteinQuantification(proteinQuantification);
-                                }
-                                ProteinQuantification proteinQuantification = quantification.getProteinQuantification(proteinKey);
-                                String peptideKey = assumption.getPeptide().getKey();
-                                if (!proteinQuantification.getPeptideQuantification().containsKey(peptideKey)) {
-                                    PeptideQuantification peptideQuantification = new PeptideQuantification(identification.getPeptideIdentification().get(peptideKey));
-                                    peptideQuantification.addUrParam(new IgnoredRatios());
-                                    proteinQuantification.addPeptideQuantification(peptideQuantification);
-                                }
-                                quantification.getProteinQuantification(proteinKey).getPeptideQuantification(peptideKey).addPsmQuantification(spectrumQuantification);
+                            PeptideAssumption assumption = spectrumMatch.getBestAssumption();
+                            String proteinKey = ProteinMatch.getProteinMatchKey(assumption.getPeptide());
+                            if (!quantification.getProteinQuantification().containsKey(proteinKey)) {
+                                ProteinQuantification proteinQuantification = new ProteinQuantification(proteinKey);
+                                proteinQuantification.addUrParam(new IgnoredRatios());
+                                quantification.addProteinQuantification(proteinQuantification);
                             }
+                            ProteinQuantification proteinQuantification = quantification.getProteinQuantification(proteinKey);
+                            String peptideKey = assumption.getPeptide().getKey();
+                            if (!proteinQuantification.getPeptideQuantification().containsKey(peptideKey)) {
+                                PeptideQuantification peptideQuantification = new PeptideQuantification(peptideKey);
+                                peptideQuantification.addUrParam(new IgnoredRatios());
+                                proteinQuantification.addPeptideQuantification(peptideQuantification);
+                            }
+                            quantification.getProteinQuantification(proteinKey).getPeptideQuantification(peptideKey).addPsmQuantification(spectrumQuantification);
+
                         }
                         if (waitingDialog.isRunCancelled()) {
                             waitingDialog.setRunCancelled();
@@ -395,6 +403,90 @@ public class DataLoader {
                         }
                     }
 
+                }
+            }
+            waitingDialog.appendReport("Spectrum import completed.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            waitingDialog.appendReport("An error occured while calculating ratios:");
+            waitingDialog.appendReport(e.getLocalizedMessage());
+            waitingDialog.setRunCancelled();
+        }
+    }
+
+    public void processPeptideShakerInput(ReporterIonQuantification quantification, ArrayList<File> mgfFiles) {
+        ArrayList<String> files = new ArrayList<String>();
+        PSParameter psParameter = new PSParameter();
+        String fileName, spectrumKey;
+        for (SpectrumMatch spectrumMatch : identification.getSpectrumIdentification().values()) {
+            psParameter = (PSParameter) spectrumMatch.getUrParam(psParameter);
+            if (psParameter.isValidated()) {
+                fileName = Spectrum.getSpectrumFile(spectrumMatch.getKey());
+                if (!files.contains(fileName)) {
+                    files.add(fileName);
+                }
+            }
+        }
+        waitingDialog.appendReport("Spectrum import.");
+        boolean found;
+        for (String file : files) {
+            found = false;
+            for (File mgf : mgfFiles) {
+                if (mgf.getName().equals(file)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                waitingDialog.appendReport("Could not find " + file + ". Import will be cancelled.");
+                waitingDialog.setRunCancelled();
+                return;
+            }
+        }
+        try {
+            HashMap<String, HashMap<String, MSnSpectrum>> spectrumMap = new HashMap<String, HashMap<String, MSnSpectrum>>();
+            for (File mgfFile : mgfFiles) {
+                if (files.contains(mgfFile.getName())) {
+                    spectrumMap.put(mgfFile.getName(), importSpectra(mgfFile));
+                }
+                if (waitingDialog.isRunCancelled()) {
+                    waitingDialog.setRunCancelled();
+                    return;
+                }
+            }
+            MSnSpectrum currentSpectrum;
+            for (ProteinMatch proteinMatch : identification.getProteinIdentification().values()) {
+                psParameter = (PSParameter) proteinMatch.getUrParam(psParameter);
+                if (psParameter.isValidated()) {
+                    ProteinQuantification proteinQuantification = new ProteinQuantification(proteinMatch.getKey());
+                    proteinQuantification.addUrParam(new IgnoredRatios());
+                    quantification.addProteinQuantification(proteinQuantification);
+                    for (PeptideMatch peptideMatch : proteinMatch.getPeptideMatches().values()) {
+                        psParameter = (PSParameter) peptideMatch.getUrParam(psParameter);
+                        if (psParameter.isValidated()) {
+                            PeptideQuantification peptideQuantification = new PeptideQuantification(peptideMatch.getKey());
+                            peptideQuantification.addUrParam(new IgnoredRatios());
+                            proteinQuantification.addPeptideQuantification(peptideQuantification);
+                            for (SpectrumMatch spectrumMatch : peptideMatch.getSpectrumMatches().values()) {
+                                psParameter = (PSParameter) spectrumMatch.getUrParam(psParameter);
+                                if (psParameter.isValidated() && spectrumMatch.getBestAssumption().getPeptide().isSameAs(peptideMatch.getTheoreticPeptide())) {
+                                    spectrumKey = spectrumMatch.getKey();
+                                    PsmQuantification spectrumQuantification = new PsmQuantification(spectrumKey);
+                                    peptideQuantification.addPsmQuantification(spectrumQuantification);
+                                    fileName = Spectrum.getSpectrumFile(spectrumKey);
+                                    currentSpectrum = spectrumMap.get(fileName).get(spectrumKey);
+                                    HashMap<ReporterIon, IonMatch> ionMatches = matchIons(currentSpectrum, quantification.getReporterMethod().getReporterIons());
+                                    for (ReporterIon ion : ionMatches.keySet()) {
+                                        spectrumQuantification.addIonMatch(ion.getIndex(), ionMatches.get(ion));
+                                    }
+                                    if (waitingDialog.isRunCancelled()) {
+                                        waitingDialog.setRunCancelled();
+                                        return;
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
             waitingDialog.appendReport("Spectrum import completed.");
