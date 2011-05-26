@@ -2,13 +2,15 @@ package eu.isas.reporter.io;
 
 import com.compomics.util.experiment.MsExperiment;
 import com.compomics.util.experiment.biology.ions.ReporterIon;
+import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.PeptideAssumption;
 import com.compomics.util.experiment.identification.advocates.SearchEngine;
 import com.compomics.util.experiment.identification.matches.IonMatch;
 import com.compomics.util.experiment.identification.matches.ModificationMatch;
+import com.compomics.util.experiment.identification.matches.PeptideMatch;
+import com.compomics.util.experiment.identification.matches.ProteinMatch;
 import com.compomics.util.experiment.identification.matches.SpectrumMatch;
 import com.compomics.util.experiment.massspectrometry.MSnSpectrum;
-import com.compomics.util.experiment.massspectrometry.Peak;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.PeptideQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.ProteinQuantification;
@@ -73,9 +75,10 @@ public class ReporterExporter {
      * Exports the quantification results into csv files
      *
      * @param quantification    The quantification achieved
+     * @param identification    The corresponding identification
      * @param location          The folder where to save the files
      */
-    public void exportResults(ReporterIonQuantification quantification, String location) {
+    public void exportResults(ReporterIonQuantification quantification, Identification identification, String location) {
 
         ions = quantification.getReporterMethod().getReporterIons();
         reference = quantification.getReferenceLabel();
@@ -106,28 +109,28 @@ public class ReporterExporter {
             spectraOutput.write(content);
             content = "Protein" + separator + "Sequence" + separator + "number of Spectra" + separator + getRatiosLabels(quantification) + "Comment" + "\n";
             peptidesOutput.write(content);
-            content = "Protein" + separator + "Number of Peptides" + separator + "Number of Spectra" + separator + getRatiosLabels(quantification) + "Comment" + "\n";
+            content = "Protein" + separator + "Other proteins" + separator + "Number of Peptides" + separator + "Number of Spectra" + separator + getRatiosLabels(quantification) + "Comment" + "\n";
             proteinsOutput.write(content);
 
             IgnoredRatios ignoredRatios = new IgnoredRatios();
             boolean seConflict, found;
-            String accession, sequence, variableModifications, spectrumFile, spectrumTitle, idFile, deltaMass, mascotEValue, omssaEValue, xTandemEValue, comment;
+            String sequence, variableModifications, spectrumFile, spectrumTitle, idFile, deltaMass, mascotEValue, omssaEValue, xTandemEValue, comment;
             SpectrumMatch match;
             PeptideAssumption assumption;
+            ProteinMatch proteinMatch;
+            PeptideMatch peptideMatch;
             for (ProteinQuantification proteinQuantification : quantification.getProteinQuantification().values()) {
-                accession = proteinQuantification.getProteinMatch().getKey();
+                proteinMatch = identification.getProteinIdentification().get(proteinQuantification.getKey());
                 pr++;
                 pe = 0;
                 s = 0;
-                if (pr == 20) {
-                    int test = 0;
-                }
                 for (PeptideQuantification peptideQuantification : proteinQuantification.getPeptideQuantification().values()) {
                     pe++;
                     s = 0;
-                    sequence = peptideQuantification.getPeptideMatch().getTheoreticPeptide().getSequence();
+                    peptideMatch = proteinMatch.getPeptideMatches().get(peptideQuantification.getKey());
+                    sequence = peptideMatch.getTheoreticPeptide().getSequence();
                     variableModifications = "";
-                    for (ModificationMatch modification : peptideQuantification.getPeptideMatch().getTheoreticPeptide().getModificationMatches()) {
+                    for (ModificationMatch modification : peptideMatch.getTheoreticPeptide().getModificationMatches()) {
                         if (modification.isVariable()) {
                             variableModifications += modification.getTheoreticPtm().getName() + " ";
                         }
@@ -136,7 +139,7 @@ public class ReporterExporter {
                         s++;
                         spectrumFile = MSnSpectrum.getSpectrumFile(psmQuantification.getKey());
                         spectrumTitle = MSnSpectrum.getSpectrumTitle(psmQuantification.getKey());
-                        match = peptideQuantification.getPeptideMatch().getSpectrumMatches().get(psmQuantification.getKey());
+                        match = peptideMatch.getSpectrumMatches().get(psmQuantification.getKey());
                         found = false;
                         seConflict = false;
                         idFile = "";
@@ -173,7 +176,7 @@ public class ReporterExporter {
                                 comment += ion.getIndex() + " ignored. ";
                             }
                         }
-                        content = accession + separator + sequence + separator + variableModifications + separator + spectrumTitle
+                        content = proteinMatch.getKey() + separator + sequence + separator + variableModifications + separator + spectrumTitle
                                 + separator + spectrumFile + separator + idFile + separator + deltaMass + separator + mascotEValue
                                 + separator + omssaEValue + separator + xTandemEValue + separator + getRatios(psmQuantification)
                                 + getIntensities(psmQuantification) + comment + "\n";
@@ -186,7 +189,7 @@ public class ReporterExporter {
                             comment += ion.getIndex() + " ignored. ";
                         }
                     }
-                    content = accession + separator + sequence + separator + peptideQuantification.getPsmQuantification().size()
+                    content = proteinMatch.getKey() + separator + sequence + separator + peptideQuantification.getPsmQuantification().size()
                             + separator + getRatios(peptideQuantification) + comment + "\n";
                     peptidesOutput.write(content);
                 }
@@ -197,8 +200,14 @@ public class ReporterExporter {
                         comment += ion.getIndex() + " ignored. ";
                     }
                 }
-                content = accession + separator + proteinQuantification.getPeptideQuantification().size() + separator
-                        + proteinQuantification.getProteinMatch().getSpectrumCount() + separator + getRatios(proteinQuantification) + comment + "\n";
+                String otherProteins = "";
+                for (String protein : proteinMatch.getTheoreticProteinsAccessions()) {
+                    if (!protein.equals(proteinMatch.getMainMatch().getAccession())) {
+                        otherProteins += protein + " ";
+                    }
+                }
+                content = proteinMatch.getMainMatch().getAccession() + separator + otherProteins + separator + proteinQuantification.getPeptideQuantification().size() + separator
+                        + proteinMatch.getSpectrumCount() + separator + getRatios(proteinQuantification) + comment + "\n";
                 proteinsOutput.write(content);
             }
 

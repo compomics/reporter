@@ -7,6 +7,8 @@
 package eu.isas.reporter.gui;
 
 import com.compomics.util.experiment.biology.ions.ReporterIon;
+import com.compomics.util.experiment.identification.Identification;
+import com.compomics.util.experiment.identification.matches.ProteinMatch;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.ProteinQuantification;
 import com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel;
@@ -251,7 +253,7 @@ public class ReporterGUI extends javax.swing.JFrame {
         int returnVal = fileChooser.showSaveDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             ReporterExporter exporter = new ReporterExporter(parent.getExperiment(), "\t");
-            exporter.exportResults(quantification, fileChooser.getSelectedFile().getPath());
+            exporter.exportResults(quantification, identification, fileChooser.getSelectedFile().getPath());
         }
     }//GEN-LAST:event_exportMenuActionPerformed
 
@@ -311,6 +313,10 @@ public class ReporterGUI extends javax.swing.JFrame {
      */
     private ReporterIonQuantification quantification;
     /**
+     * The corresponding identification
+     */
+    private Identification identification;
+    /**
      * The reporter ions used in the method
      */
     private ArrayList<ReporterIon> reporterIons = new ArrayIndexList<ReporterIon>();
@@ -318,9 +324,11 @@ public class ReporterGUI extends javax.swing.JFrame {
     /**
      * Displays results to the user
      * @param quantification    The quantification computed
+     * @param identification    The corresponding identification
      */
-    public void displayResults(ReporterIonQuantification quantification) {
+    public void displayResults(ReporterIonQuantification quantification, Identification identification) {
         this.quantification = quantification;
+        this.identification = identification;
         reporterIons = quantification.getReporterMethod().getReporterIons();
         updateProteinMap();
         repaintResultsTable();
@@ -387,7 +395,7 @@ public class ReporterGUI extends javax.swing.JFrame {
         /**
          * Number of columns without counting quantification results
          */
-        private static final int nC = 5;
+        private static final int nC = 6;
 
         @Override
         public int getRowCount() {
@@ -404,16 +412,18 @@ public class ReporterGUI extends javax.swing.JFrame {
             if (column == 1) {
                 return "Protein";
             } else if (column == 2) {
-                return "# Peptides";
+                return "Other protein(s)";
             } else if (column == 3) {
-                return "# Spectra";
+                return "# Peptides";
             } else if (column == 4) {
+                return "# Spectra";
+            } else if (column == 5) {
                 return "emPAI";
-            } else if (column > 4 && column < 4 + reporterIons.size()) {
-                int pos = column - 4;
+            } else if (column > nC-1 && column < nC-1 + reporterIons.size()) {
+                int pos = column - nC+1;
                 return quantification.getSample(reporterIons.get(pos).getIndex()).getReference() + "/"
                         + quantification.getSample(quantification.getReferenceLabel()).getReference();
-            } else if (column == 4 + reporterIons.size()) {
+            } else if (column == nC-1 + reporterIons.size()) {
                 return "Quality";
             } else {
                 return "";
@@ -424,26 +434,37 @@ public class ReporterGUI extends javax.swing.JFrame {
         public Object getValueAt(int row, int column) {
             try {
                 ProteinQuantification proteinQuantification = quantification.getProteinQuantification(proteinTableIndex.get(row));
+                ProteinMatch proteinMatch = identification.getProteinIdentification().get(proteinQuantification.getKey());
                 if (column == 0) {
                     return row + 1;
                 } else if (column == 1) {
-                    return proteinQuantification.getProteinMatch().getKey();
+                    return proteinMatch.getMainMatch().getAccession();
                 } else if (column == 2) {
-                    return proteinQuantification.getProteinMatch().getPeptideMatches().size();
+                    String result = "";
+                    String mainKey = proteinMatch.getMainMatch().getAccession();
+                    for (String key : proteinMatch.getTheoreticProteinsAccessions()) {
+                        if (!key.equals(mainKey)) {
+                            result += key + " ";
+                        }
+                    }
+                    return result;
                 } else if (column == 3) {
-                    return proteinQuantification.getProteinMatch().getSpectrumCount();
+                    return proteinMatch.getPeptideCount();
                 } else if (column == 4) {
+                    return proteinMatch.getSpectrumCount();
+                } else if (column == 5) {
                     return " ";
-                } else if (column > 4 && column < 4 + reporterIons.size()) {
-                    int pos = column - 4;
+                } else if (column > nC-1 && column < nC-1 + reporterIons.size()) {
+                    int pos = column - nC+1;
                     return proteinQuantification.getProteinRatios().get(reporterIons.get(pos).getIndex()).getRatio();
-                } else if (column == 4 + reporterIons.size()) {
+                } else if (column == nC-1 + reporterIons.size()) {
                     ItraqScore itraqScore = (ItraqScore) proteinQuantification.getUrParam(new ItraqScore());
                     return itraqScore.getMinScore();
                 } else {
                     return " ";
                 }
             } catch (Exception e) {
+                e.printStackTrace();
                 return null;
             }
         }

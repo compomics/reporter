@@ -2,6 +2,7 @@ package eu.isas.reporter;
 
 import com.compomics.util.experiment.MsExperiment;
 import com.compomics.util.experiment.biology.Sample;
+import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.IdentificationMethod;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.ProteinQuantification;
@@ -235,8 +236,16 @@ public class Reporter {
         // @TODO add a progress bar? May be necessary for big experiments...
     }
 
+    /**
+     * Returns the processed quantification
+     * @return the processed quantification
+     */
     public ReporterIonQuantification getQuantification() {
         return (ReporterIonQuantification) experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).getQuantification(quantificationMethodUsed);
+    }
+
+    public Identification getIdentification() {
+        return experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).getIdentification(IdentificationMethod.MS2_IDENTIFICATION);
     }
 
     /**
@@ -252,7 +261,7 @@ public class Reporter {
                 for (ProteinQuantification proteinQuantification : quantification.getProteinQuantification().values()) {
                     ratioEstimator.estimateRatios(proteinQuantification);
                 }
-                reporterGUI.displayResults(quantification);
+                reporterGUI.displayResults(quantification, getIdentification());
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -293,8 +302,12 @@ public class Reporter {
         @Override
         protected Object doInBackground() throws Exception {
             DataLoader dataLoader = new DataLoader(quantificationPreferences, waitingDialog, experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).getIdentification(IdentificationMethod.MS2_IDENTIFICATION));
-            dataLoader.loadIdentifications(idFiles);
-            dataLoader.loadQuantification((ReporterIonQuantification) experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).getQuantification(quantificationMethodUsed), mgfFiles);
+            if (idFiles.size() > 1 || !idFiles.get(0).getName().endsWith(".cps")) {
+                dataLoader.loadIdentifications(idFiles);
+                dataLoader.loadQuantification(getQuantification(), mgfFiles);
+            } else {
+                dataLoader.processPeptideShakerInput(getQuantification(), mgfFiles);
+            }
             waitingDialog.setRunFinished();
             return 0;
         }
