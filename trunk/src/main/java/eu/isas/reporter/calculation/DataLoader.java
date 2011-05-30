@@ -471,17 +471,20 @@ public class DataLoader {
                                 psParameter = (PSParameter) spectrumMatch.getUrParam(psParameter);
                                 if (psParameter.isValidated() && spectrumMatch.getBestAssumption().getPeptide().isSameAs(peptideMatch.getTheoreticPeptide())) {
                                     spectrumKey = spectrumMatch.getKey();
-                                    PsmQuantification spectrumQuantification = new PsmQuantification(spectrumKey);
-                                    peptideQuantification.addPsmQuantification(spectrumQuantification);
                                     fileName = Spectrum.getSpectrumFile(spectrumKey);
-                                    currentSpectrum = spectrumMap.get(fileName).get(spectrumKey);
-                                    HashMap<ReporterIon, IonMatch> ionMatches = matchIons(currentSpectrum, quantification.getReporterMethod().getReporterIons());
-                                    for (ReporterIon ion : ionMatches.keySet()) {
-                                        spectrumQuantification.addIonMatch(ion.getIndex(), ionMatches.get(ion));
-                                    }
-                                    if (waitingDialog.isRunCancelled()) {
-                                        waitingDialog.setRunCancelled();
-                                        return;
+                                    ArrayList<String> spectrumIds = getSpectrumIds(spectrumMatch, spectrumMap.get(fileName));
+                                    for (String spectrumId : spectrumIds) {
+                                        currentSpectrum = spectrumMap.get(fileName).get(spectrumId);
+                                        PsmQuantification spectrumQuantification = new PsmQuantification(spectrumId);
+                                        peptideQuantification.addPsmQuantification(spectrumQuantification);
+                                        HashMap<ReporterIon, IonMatch> ionMatches = matchIons(currentSpectrum, quantification.getReporterMethod().getReporterIons());
+                                        for (ReporterIon ion : ionMatches.keySet()) {
+                                            spectrumQuantification.addIonMatch(ion.getIndex(), ionMatches.get(ion));
+                                        }
+                                        if (waitingDialog.isRunCancelled()) {
+                                            waitingDialog.setRunCancelled();
+                                            return;
+                                        }
                                     }
                                 }
                             }
