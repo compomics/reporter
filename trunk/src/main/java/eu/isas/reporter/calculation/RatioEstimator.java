@@ -2,12 +2,12 @@ package eu.isas.reporter.calculation;
 
 import com.compomics.util.experiment.biology.ions.ReporterIon;
 import com.compomics.util.experiment.identification.matches.IonMatch;
+import com.compomics.util.experiment.massspectrometry.Spectrum;
 import com.compomics.util.experiment.quantification.Ratio;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
 import com.compomics.util.experiment.quantification.reporterion.quantification.PeptideQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.ProteinQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.PsmQuantification;
-import eu.isas.peptideshaker.myparameters.PSParameter;
 import eu.isas.reporter.myparameters.IgnoredRatios;
 import eu.isas.reporter.myparameters.ItraqScore;
 import eu.isas.reporter.myparameters.QuantificationPreferences;
@@ -340,6 +340,11 @@ public class RatioEstimator {
         }
         psmQuantification.addUrParam(scores);
         HashMap<Integer, Double> deisotopedInt = deisotoper.deisotope(reporterMatches);
+        
+        // User dependant code, do not commit!
+        //String spectrumName = Spectrum.getSpectrumFile(psmQuantification.getKey());
+        //deisotopedInt = deisotoper.deisotopeSwitch(reporterMatches, spectrumName);
+
         Double referenceInt = deisotopedInt.get(referenceLabel);
         double ratio;
         for (int label : deisotopedInt.keySet()) {

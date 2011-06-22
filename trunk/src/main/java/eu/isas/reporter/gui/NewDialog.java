@@ -1437,10 +1437,12 @@ public class NewDialog extends javax.swing.JDialog {
             JOptionPane.showMessageDialog(this,
                         "An error occured while reading " + psFile.getName() + ".",
                         "Reading error", JOptionPane.WARNING_MESSAGE);
+            e.printStackTrace();
         } catch (ClassNotFoundException e1) {
             JOptionPane.showMessageDialog(this,
                         "An error occured while importing " + psFile.getName() + ". Please verify that the version of Reporter you are using is compatible with the version of Peptide-Shaker which was used to generate the file.",
                         "Import error", JOptionPane.WARNING_MESSAGE);
+            e1.printStackTrace();
         }
     }
 

@@ -37,6 +37,10 @@ public class WaitingDialog extends javax.swing.JDialog {
      * The calculator processing the data
      */
     private Reporter reporter;
+    /**
+     * The progress bar position
+     */
+    private int progress;
 
     /**
      * Constructor for the waiting dialog
@@ -104,6 +108,24 @@ public class WaitingDialog extends javax.swing.JDialog {
     public void setProgressbarText(String text) {
         progressBar.setStringPainted(true);
         progressBar.setString(text);
+    }
+
+    /**
+     * Sets the maximal value for the progress bar
+     * @param max the maximal value for the progress bar
+     */
+    public void setProgressBarMaximum(int max) {
+        progressBar.setIndeterminate(false);
+        progressBar.setMaximum(max);
+        progress = 0;
+        progressBar.setValue(progress);
+    }
+
+    /**
+     * Increments the progress bar position
+     */
+    public void incrementProgressBar() {
+        progressBar.setValue(++progress);
     }
 
     /** This method is called from within the constructor to

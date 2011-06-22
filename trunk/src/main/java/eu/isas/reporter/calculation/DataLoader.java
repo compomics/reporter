@@ -16,6 +16,7 @@ import com.compomics.util.experiment.io.massspectrometry.MgfReader;
 import com.compomics.util.experiment.massspectrometry.Charge;
 import com.compomics.util.experiment.massspectrometry.MSnSpectrum;
 import com.compomics.util.experiment.massspectrometry.Peak;
+import com.compomics.util.experiment.massspectrometry.Precursor;
 import com.compomics.util.experiment.massspectrometry.Spectrum;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.PeptideQuantification;
@@ -28,6 +29,10 @@ import eu.isas.reporter.identifications.IdFilter;
 import eu.isas.reporter.myparameters.IgnoredRatios;
 import eu.isas.reporter.myparameters.QuantificationPreferences;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -259,26 +264,23 @@ public class DataLoader {
      * @param spectrumMatch the inspected psm
      * @return the spectrum references of the corresponding spectra
      */
-    private ArrayList<String> getSpectrumIds(SpectrumMatch spectrumMatch, HashMap<String, MSnSpectrum> spectrumMap) {
+    private ArrayList<String> getSpectrumIds(SpectrumMatch spectrumMatch, HashMap<String, Precursor> precursorMap) {
         String spectrumKey = spectrumMatch.getKey();
         ArrayList<String> result = new ArrayList<String>();
         if (quantificationPreferences.isSameSpectra()) {
             result.add(spectrumKey);
         } else {
-            MSnSpectrum spectrum;
-            String fileName = MSnSpectrum.getSpectrumFile(spectrumKey);
             double rtTol = quantificationPreferences.getPrecursorRTTolerance();
             double mzTol = quantificationPreferences.getPrecursorMzTolerance();
-            double mzRef = spectrumMap.get(spectrumKey).getPrecursor().getMz();
-            double rtRef = spectrumMap.get(spectrumKey).getPrecursor().getRt();
+            double mzRef = precursorMap.get(spectrumKey).getMz();
+            double rtRef = precursorMap.get(spectrumKey).getRt();
             double errPpm;
-            for (String spectrumId : spectrumMap.keySet()) {
-                spectrum = spectrumMap.get(spectrumId);
-                if (fileName.equals(spectrum.getFileName())) {
-                    errPpm = Math.abs((mzRef - spectrum.getPrecursor().getMz()) / mzRef * 1000000);
-                    if (errPpm < mzTol && Math.abs(spectrum.getPrecursor().getRt() - rtRef) < rtTol) {
-                        result.add(spectrumId);
-                    }
+            Precursor precursor;
+            for (String spectrumId : precursorMap.keySet()) {
+                precursor = precursorMap.get(spectrumId);
+                errPpm = Math.abs((mzRef - precursor.getMz()) / mzRef * 1000000);
+                if (errPpm < mzTol && Math.abs(precursor.getRt() - rtRef) < rtTol) {
+                    result.add(spectrumId);
                 }
             }
         }
@@ -288,7 +290,6 @@ public class DataLoader {
     private HashMap<String, MSnSpectrum> importSpectra(File mgfFile) {
         MgfReader reader = new MgfReader();
         HashMap<String, MSnSpectrum> result = new HashMap<String, MSnSpectrum>();
-        waitingDialog.appendReport("Importing spectra from " + mgfFile.getName());
         try {
             ArrayList<MSnSpectrum> spectraTemp = reader.getSpectra(mgfFile);
             for (MSnSpectrum spectrum : spectraTemp) {
@@ -354,17 +355,22 @@ public class DataLoader {
                 return;
             }
             for (String fileName : identifiedSpectra.keySet()) {
+                waitingDialog.appendReport("Importing spectra from " + fileName);
                 HashMap<String, MSnSpectrum> spectrumMap = importSpectra(files.get(fileName));
+                HashMap<String, Precursor> precursorMap = new HashMap<String, Precursor>();
+                for (String spectrumId : spectrumMap.keySet()) {
+                    precursorMap.put(spectrumId, spectrumMap.get(spectrumId).getPrecursor());
+                }
                 if (waitingDialog.isRunCancelled()) {
                     waitingDialog.setRunCancelled();
                     return;
                 }
                 for (String matchKey : identifiedSpectra.get(fileName)) {
                     SpectrumMatch spectrumMatch = identification.getSpectrumIdentification().get(matchKey);
-                    ArrayList<String> spectrumIds = getSpectrumIds(spectrumMatch, spectrumMap);
+                    ArrayList<String> spectrumIds = getSpectrumIds(spectrumMatch, precursorMap);
                     for (String spectrumId : spectrumIds) {
                         MSnSpectrum currentSpectrum = spectrumMap.get(spectrumId);
-                        PsmQuantification spectrumQuantification = new PsmQuantification(spectrumId);
+                        PsmQuantification spectrumQuantification = new PsmQuantification(spectrumId, matchKey);
                         HashMap<ReporterIon, IonMatch> ionMatches = matchIons(currentSpectrum, quantification.getReporterMethod().getReporterIons());
                         for (ReporterIon ion : ionMatches.keySet()) {
                             spectrumQuantification.addIonMatch(ion.getIndex(), ionMatches.get(ion));
@@ -417,7 +423,7 @@ public class DataLoader {
     public void processPeptideShakerInput(ReporterIonQuantification quantification, ArrayList<File> mgfFiles) {
         ArrayList<String> files = new ArrayList<String>();
         PSParameter psParameter = new PSParameter();
-        String fileName, spectrumKey;
+        String fileName, previousName = "";
         for (SpectrumMatch spectrumMatch : identification.getSpectrumIdentification().values()) {
             psParameter = (PSParameter) spectrumMatch.getUrParam(psParameter);
             if (psParameter.isValidated()) {
@@ -427,7 +433,7 @@ public class DataLoader {
                 }
             }
         }
-        waitingDialog.appendReport("Spectrum import.");
+        waitingDialog.appendReport("Reporter intensities import.");
         boolean found;
         for (String file : files) {
             found = false;
@@ -444,18 +450,32 @@ public class DataLoader {
             }
         }
         try {
-            HashMap<String, HashMap<String, MSnSpectrum>> spectrumMap = new HashMap<String, HashMap<String, MSnSpectrum>>();
+            waitingDialog.setProgressBarMaximum(identification.getProteinIdentification().size() + mgfFiles.size());
+            HashMap<String, HashMap<String, HashMap<ReporterIon, IonMatch>>> spectrumMap = new HashMap<String, HashMap<String, HashMap<ReporterIon, IonMatch>>>();
+            HashMap<String, HashMap<String, Precursor>> precursorMap = new HashMap<String, HashMap<String, Precursor>>();
             for (File mgfFile : mgfFiles) {
-                if (files.contains(mgfFile.getName())) {
-                    spectrumMap.put(mgfFile.getName(), importSpectra(mgfFile));
+                waitingDialog.incrementProgressBar();
+                fileName = mgfFile.getName();
+                waitingDialog.appendReport("Importing " + fileName);
+                if (files.contains(fileName)) {
+                    spectrumMap.put(fileName, new HashMap<String, HashMap<ReporterIon, IonMatch>>());
+                    precursorMap.put(fileName, new HashMap<String, Precursor>());
+                    HashMap<String, MSnSpectrum> spectra = importSpectra(mgfFile);
+                    for (String spectrumKey : spectra.keySet()) {
+                        spectrumMap.get(fileName).put(spectrumKey, matchIons(spectra.get(spectrumKey), quantification.getReporterMethod().getReporterIons()));
+                        precursorMap.get(fileName).put(spectrumKey, spectra.get(spectrumKey).getPrecursor());
+
+                    }
                 }
                 if (waitingDialog.isRunCancelled()) {
                     waitingDialog.setRunCancelled();
                     return;
                 }
             }
-            MSnSpectrum currentSpectrum;
+            waitingDialog.appendReport("Linking identification to quantification.");
             for (ProteinMatch proteinMatch : identification.getProteinIdentification().values()) {
+                waitingDialog.incrementProgressBar();
+                waitingDialog.setProgressbarText("Importing " + proteinMatch.getKey());
                 psParameter = (PSParameter) proteinMatch.getUrParam(psParameter);
                 if (psParameter.isValidated()) {
                     ProteinQuantification proteinQuantification = new ProteinQuantification(proteinMatch.getKey());
@@ -468,16 +488,14 @@ public class DataLoader {
                             peptideQuantification.addUrParam(new IgnoredRatios());
                             proteinQuantification.addPeptideQuantification(peptideQuantification);
                             for (SpectrumMatch spectrumMatch : peptideMatch.getSpectrumMatches().values()) {
+                                fileName = Spectrum.getSpectrumFile(spectrumMatch.getKey());
                                 psParameter = (PSParameter) spectrumMatch.getUrParam(psParameter);
                                 if (psParameter.isValidated() && spectrumMatch.getBestAssumption().getPeptide().isSameAs(peptideMatch.getTheoreticPeptide())) {
-                                    spectrumKey = spectrumMatch.getKey();
-                                    fileName = Spectrum.getSpectrumFile(spectrumKey);
-                                    ArrayList<String> spectrumIds = getSpectrumIds(spectrumMatch, spectrumMap.get(fileName));
+                                    ArrayList<String> spectrumIds = getSpectrumIds(spectrumMatch, precursorMap.get(fileName));
                                     for (String spectrumId : spectrumIds) {
-                                        currentSpectrum = spectrumMap.get(fileName).get(spectrumId);
-                                        PsmQuantification spectrumQuantification = new PsmQuantification(spectrumId);
+                                        PsmQuantification spectrumQuantification = new PsmQuantification(spectrumId, spectrumMatch.getKey());
                                         peptideQuantification.addPsmQuantification(spectrumQuantification);
-                                        HashMap<ReporterIon, IonMatch> ionMatches = matchIons(currentSpectrum, quantification.getReporterMethod().getReporterIons());
+                                        HashMap<ReporterIon, IonMatch> ionMatches = spectrumMap.get(fileName).get(spectrumId);
                                         for (ReporterIon ion : ionMatches.keySet()) {
                                             spectrumQuantification.addIonMatch(ion.getIndex(), ionMatches.get(ion));
                                         }
@@ -492,7 +510,7 @@ public class DataLoader {
                     }
                 }
             }
-            waitingDialog.appendReport("Spectrum import completed.");
+            waitingDialog.appendReport("Import completed.");
         } catch (Exception e) {
             e.printStackTrace();
             waitingDialog.appendReport("An error occured while calculating ratios:");

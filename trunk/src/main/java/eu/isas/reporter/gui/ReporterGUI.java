@@ -11,7 +11,6 @@ import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.matches.ProteinMatch;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.ProteinQuantification;
-import com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel;
 import eu.isas.reporter.Reporter;
 import eu.isas.reporter.io.ReporterExporter;
 import eu.isas.reporter.myparameters.ItraqScore;
@@ -526,11 +525,6 @@ public class ReporterGUI extends javax.swing.JFrame {
      * to get the best appearance.
      */
     private static void setLookAndFeel() {
-        try {
-            UIManager.setLookAndFeel(new NimbusLookAndFeel());
-        } catch (UnsupportedLookAndFeelException e) {
-            // ignore exception, i.e. use default look and feel
-        }
     }
 
     /**
