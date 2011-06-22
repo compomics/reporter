@@ -1,6 +1,5 @@
 package eu.isas.reporter;
 
-import com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel;
 import eu.isas.reporter.utils.Properties;
 import java.io.*;
 import javax.swing.JOptionPane;
@@ -37,11 +36,6 @@ public class Wrapper {
         // get the version number set in the pom file
         jarFileName = jarFileName + new Properties().getVersion() + ".jar";
 
-        try {
-            UIManager.setLookAndFeel(new NimbusLookAndFeel());
-        } catch (UnsupportedLookAndFeelException e) {
-            // ignore exception
-        }
 
         try {
             launch();
