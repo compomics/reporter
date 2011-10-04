@@ -8,11 +8,15 @@ package eu.isas.reporter.gui;
 
 import com.compomics.util.experiment.biology.ions.ReporterIon;
 import com.compomics.util.experiment.identification.Identification;
+import com.compomics.util.experiment.identification.matches.PeptideMatch;
 import com.compomics.util.experiment.identification.matches.ProteinMatch;
+import com.compomics.util.experiment.identification.matches.SpectrumMatch;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.ProteinQuantification;
+import com.compomics.util.gui.dialogs.ProgressDialogX;
 import eu.isas.reporter.Reporter;
 import eu.isas.reporter.io.ReporterExporter;
+import eu.isas.reporter.myparameters.IdentificationDetails;
 import eu.isas.reporter.myparameters.ItraqScore;
 import eu.isas.reporter.myparameters.QuantificationPreferences;
 import eu.isas.reporter.utils.Properties;
@@ -75,11 +79,7 @@ public class ReporterGUI extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         proteinTable = new javax.swing.JTable();
         jPanel2 = new javax.swing.JPanel();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        peptideTable = new javax.swing.JTable();
         jPanel3 = new javax.swing.JPanel();
-        jScrollPane3 = new javax.swing.JScrollPane();
-        psmTable = new javax.swing.JTable();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         newMenu = new javax.swing.JMenuItem();
@@ -110,61 +110,31 @@ public class ReporterGUI extends javax.swing.JFrame {
 
         tabPanel.addTab("Proteins", jPanel1);
 
-        peptideTable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
-            new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
-            }
-        ));
-        jScrollPane2.setViewportView(peptideTable);
-
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 628, Short.MAX_VALUE)
+            .addGap(0, 628, Short.MAX_VALUE)
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 204, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(263, Short.MAX_VALUE))
+            .addGap(0, 467, Short.MAX_VALUE)
         );
 
-        tabPanel.addTab("Peptides from selected protein", jPanel2);
-
-        psmTable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
-            new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
-            }
-        ));
-        jScrollPane3.setViewportView(psmTable);
+        tabPanel.addTab("Peptides", jPanel2);
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 628, Short.MAX_VALUE)
+            .addGap(0, 628, Short.MAX_VALUE)
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(280, Short.MAX_VALUE))
+            .addGap(0, 467, Short.MAX_VALUE)
         );
 
-        tabPanel.addTab("PSMs from selected peptide", jPanel3);
+        tabPanel.addTab("PSMs", jPanel3);
 
         jMenu1.setText("File");
 
@@ -245,6 +215,8 @@ public class ReporterGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_jMenuItem6ActionPerformed
 
     private void exportMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportMenuActionPerformed
+        
+        
         JFileChooser fileChooser = new JFileChooser(getLastSelectedFolder());
         fileChooser.setDialogTitle("Select Export Folder");
         fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -252,7 +224,13 @@ public class ReporterGUI extends javax.swing.JFrame {
         int returnVal = fileChooser.showSaveDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             ReporterExporter exporter = new ReporterExporter(parent.getExperiment(), "\t");
-            exporter.exportResults(quantification, identification, fileChooser.getSelectedFile().getPath());
+            try {
+            exporter.exportResults(quantification, identification, fileChooser.getSelectedFile().getPath(), null);
+            JOptionPane.showMessageDialog(this, "Output complete.", "Output successful.", JOptionPane.INFORMATION_MESSAGE);
+            } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Output error.", "Output error, see log file.", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+            }
         }
     }//GEN-LAST:event_exportMenuActionPerformed
 
@@ -272,13 +250,9 @@ public class ReporterGUI extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JMenuItem newMenu;
     private javax.swing.JMenuItem openMenu;
-    private javax.swing.JTable peptideTable;
     private javax.swing.JTable proteinTable;
-    private javax.swing.JTable psmTable;
     private javax.swing.JMenu quantificationOptionsMenu;
     private javax.swing.JMenuItem saveMenu;
     private javax.swing.JTabbedPane tabPanel;
@@ -362,6 +336,7 @@ public class ReporterGUI extends javax.swing.JFrame {
      * Updates the maps for results display
      */
     private void updateProteinMap() {
+        try {
         // create the new protein table index ordered by quantification quality.
         proteinTableIndex = new ArrayList<String>();
         HashMap<Double, ArrayList<String>> proteinKeys = new HashMap<Double, ArrayList<String>>();
@@ -369,8 +344,8 @@ public class ReporterGUI extends javax.swing.JFrame {
         ProteinQuantification proteinQuantification;
         ItraqScore itraqScore = new ItraqScore();
         double score;
-        for (String proteinKey : quantification.getProteinQuantification().keySet()) {
-            proteinQuantification = quantification.getProteinQuantification(proteinKey);
+        for (String proteinKey : quantification.getProteinQuantification()) {
+            proteinQuantification = quantification.getProteinMatch(proteinKey);
             itraqScore = (ItraqScore) proteinQuantification.getUrParam(itraqScore);
             score = -itraqScore.getMinScore();
             if (!proteinKeys.containsKey(score)) {
@@ -383,7 +358,9 @@ public class ReporterGUI extends javax.swing.JFrame {
         for (double currentScore : scores) {
             proteinTableIndex.addAll(proteinKeys.get(currentScore));
         }
-        int debug = proteinTableIndex.size();
+        } catch (Exception e) {
+            parent.catchException(e);
+        }
     }
 
     /**
@@ -394,7 +371,7 @@ public class ReporterGUI extends javax.swing.JFrame {
         /**
          * Number of columns without counting quantification results
          */
-        private static final int nC = 6;
+        private static final int nC = 7;
 
         @Override
         public int getRowCount() {
@@ -415,8 +392,10 @@ public class ReporterGUI extends javax.swing.JFrame {
             } else if (column == 3) {
                 return "# Peptides";
             } else if (column == 4) {
-                return "# Spectra";
+                return "# Spectra identified";
             } else if (column == 5) {
+                return "# Spectra quantified";
+            } else if (column == 6) {
                 return "emPAI";
             } else if (column > nC-1 && column < nC-1 + reporterIons.size()) {
                 int pos = column - nC+1;
@@ -432,15 +411,15 @@ public class ReporterGUI extends javax.swing.JFrame {
         @Override
         public Object getValueAt(int row, int column) {
             try {
-                ProteinQuantification proteinQuantification = quantification.getProteinQuantification(proteinTableIndex.get(row));
-                ProteinMatch proteinMatch = identification.getProteinIdentification().get(proteinQuantification.getKey());
+                ProteinQuantification proteinQuantification = quantification.getProteinMatch(proteinTableIndex.get(row));
+                ProteinMatch proteinMatch = identification.getProteinMatch(proteinTableIndex.get(row));
                 if (column == 0) {
                     return row + 1;
                 } else if (column == 1) {
-                    return proteinMatch.getMainMatch().getAccession();
+                    return proteinMatch.getMainMatch();
                 } else if (column == 2) {
                     String result = "";
-                    String mainKey = proteinMatch.getMainMatch().getAccession();
+                    String mainKey = proteinMatch.getMainMatch();
                     for (String key : proteinMatch.getTheoreticProteinsAccessions()) {
                         if (!key.equals(mainKey)) {
                             result += key + " ";
@@ -448,14 +427,37 @@ public class ReporterGUI extends javax.swing.JFrame {
                     }
                     return result;
                 } else if (column == 3) {
-                    return proteinMatch.getPeptideCount();
+                    int nPeptides = 0;
+                    IdentificationDetails identificationDetails = new IdentificationDetails();
+                    for (String peptideKey : proteinMatch.getPeptideMatches()) {
+                        identificationDetails = (IdentificationDetails) identification.getMatchParameter(peptideKey, identificationDetails);
+                        if (identificationDetails.isValidated()) {
+                            nPeptides++;
+                        }
+                    }
+                    return nPeptides;
                 } else if (column == 4) {
-                    return proteinMatch.getSpectrumCount();
+                    int nSpectra = 0;
+                    IdentificationDetails identificationDetails = new IdentificationDetails();
+                    PeptideMatch peptideMatch;
+                    for (String peptideKey : proteinMatch.getPeptideMatches()) {
+                        peptideMatch = identification.getPeptideMatch(peptideKey);
+                        for (String psmKey : peptideMatch.getSpectrumMatches()) {
+                            identificationDetails = (IdentificationDetails) identification.getMatchParameter(psmKey, identificationDetails);
+                        if (identificationDetails.isValidated()) {
+                            nSpectra++;
+                        }
+                        }
+                        
+                    }
+                    return nSpectra;
                 } else if (column == 5) {
+                    return " ";
+                } else if (column == 6) {
                     return " ";
                 } else if (column > nC-1 && column < nC-1 + reporterIons.size()) {
                     int pos = column - nC+1;
-                    return proteinQuantification.getProteinRatios().get(reporterIons.get(pos).getIndex()).getRatio();
+                    return proteinQuantification.getRatios().get(reporterIons.get(pos).getIndex()).getRatio();
                 } else if (column == nC-1 + reporterIons.size()) {
                     ItraqScore itraqScore = (ItraqScore) proteinQuantification.getUrParam(new ItraqScore());
                     return itraqScore.getMinScore();
