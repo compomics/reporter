@@ -12,13 +12,17 @@ import java.util.HashMap;
 public class FdrCalculator {
 
     /**
-     * Map of all the target/decoy hits modeled as Point object (private class) indexed by their e-value and search engine (indexed by their compomics index)
+     * Map of all the target/decoy hits modeled as Point object (private class) indexed by their e-value
      */
-    private HashMap<Integer, HashMap<Double, Point>> hitMap = new HashMap<Integer, HashMap<Double, Point>>();
+    private HashMap<Double, Point> hitMap = new HashMap<Double, Point>();
     /**
-     * list of the e-values for each search engine
+     * list of the e-values
      */
-    private HashMap<Integer, ArrayList<Double>> eValues = new HashMap<Integer, ArrayList<Double>>();
+    private ArrayList<Double> eValues = new ArrayList<Double>();
+    /**
+     * the total number of target hits after processing
+     */
+    private int nTargetTotal;
 
     /**
      * constructor
@@ -30,59 +34,57 @@ public class FdrCalculator {
     /**
      * Adds a target/decoy hit to the data loaded
      * 
-     * @param searchEngine  The search engine being used
      * @param eValue        The e-value
      * @param decoy         boolean indicating whether the hit is a target (false) or a decoy (true) hit
      */
-    public void addHit(int searchEngine, double eValue, boolean decoy) {
-        if (hitMap.get(searchEngine)==null) {
-            hitMap.put(searchEngine, new HashMap<Double, Point>());
-            eValues.put(searchEngine, new ArrayList<Double>());
-        }
-        if (!eValues.get(searchEngine).contains(eValue)) {
-            eValues.get(searchEngine).add(eValue);
-            hitMap.get(searchEngine).put(eValue, new Point(decoy));
+    public void addHit(double eValue, boolean decoy) {
+        if (!eValues.contains(eValue)) {
+            eValues.add(eValue);
+            hitMap.put(eValue, new Point(decoy));
         } else {
             if (decoy) {
-                hitMap.get(searchEngine).get(eValue).nDecoy++;
+                hitMap.get(eValue).nDecoy++;
             } else {
-                hitMap.get(searchEngine).get(eValue).nTarget++;
+                hitMap.get(eValue).nTarget++;
             }
         }
     }
 
     /**
-     * returns the e-values thresholds corresponding to the given FDR limit
+     * returns the e-value threshold corresponding to the given FDR limit
      * 
-     * @param limit         FDR threshold
-     * @return  map of the  e-value limits indexed by their search engines
+     * @param threshold         FDR threshold
+     * @return              the e-value limit
      * @throws Exception    exception thrown when the best hit is a decoy hit
      */
-    public HashMap<Integer, Double> getEvalueLimits(double limit) throws Exception {
-        HashMap<Integer, Double> results = new HashMap<Integer, Double>();
-        for (int searchEngine : eValues.keySet()) {
-            Collections.sort(eValues.get(searchEngine));
-        }
-        for (int searchEngine : eValues.keySet()) {
-            double bestEValue = 100;
+    public Double getEvalueLimit(double threshold) throws IllegalArgumentException {
+            Collections.sort(eValues);
+            double bestEValue = eValues.get(eValues.size()-1);
             double nTarget = 0.0;
             int nDecoy = 0;
             Point point;
-            for (double eValue : eValues.get(searchEngine)) {
-                point = hitMap.get(searchEngine).get(eValue);
+            for (double eValue : eValues) {
+                point = hitMap.get(eValue);
                 nTarget += point.nTarget;
                 nDecoy += point.nDecoy;
                 try {
-                    if (nDecoy/nTarget < limit) {
+                    if (nDecoy/nTarget < threshold) {
                         bestEValue = eValue;
                     }
                 } catch (Exception e) {
-                    throw new Exception("The best hit is a decoy hit.");
+                    throw new IllegalArgumentException("The best hit is a decoy hit.");
                 }
             }
-            results.put(searchEngine, bestEValue);
-        }
-        return results;
+            nTargetTotal = (int) nTarget;
+        return bestEValue;
+    }
+    
+    /**
+     * Returns the total number of target hits at the last given threshold
+     * @return the total number of target hits at the last given threshold
+     */
+    public int getNTargetTotal() {
+        return nTargetTotal;
     }
 
     /**

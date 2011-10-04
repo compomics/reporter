@@ -4,6 +4,7 @@ import com.compomics.util.experiment.MsExperiment;
 import com.compomics.util.experiment.ProteomicAnalysis;
 import com.compomics.util.experiment.SampleAnalysisSet;
 import com.compomics.util.experiment.biology.Sample;
+import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.IdentificationMethod;
 import com.compomics.util.experiment.identification.advocates.SearchEngine;
 import com.compomics.util.experiment.identification.identifications.Ms2Identification;
@@ -139,6 +140,10 @@ public class NewDialog extends javax.swing.JDialog {
         sample = new Sample("sample");
         experiment.addAnalysisSet(sample, new SampleAnalysisSet(sample, new ProteomicAnalysis(replicateNumber)));
         experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).addIdentificationResults(IdentificationMethod.MS2_IDENTIFICATION, new Ms2Identification());
+        Identification identification = experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).getIdentification(IdentificationMethod.MS2_IDENTIFICATION);
+        identification.setInMemory(false);
+        identification.setAutomatedMemoryManagement(true);
+        identification.setSerializationDirectory(reporter.SERIALIZATION_DIRECTORY);
         isotopeCorrectionTable.getColumnModel().getColumn(0).setMaxWidth(50);
         pack();
         setVisible(true);
@@ -167,6 +172,11 @@ public class NewDialog extends javax.swing.JDialog {
         clearIdFilesJButton = new javax.swing.JButton();
         addSpectraFilesJButton = new javax.swing.JButton();
         editSpectraFilesJButton = new javax.swing.JButton();
+        jLabel10 = new javax.swing.JLabel();
+        jTextField1 = new javax.swing.JTextField();
+        addDbButton = new javax.swing.JButton();
+        clearDbButton = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
         exitButton1 = new javax.swing.JButton();
         startButton = new javax.swing.JButton();
         jPanel8 = new javax.swing.JPanel();
@@ -298,6 +308,18 @@ public class NewDialog extends javax.swing.JDialog {
             }
         });
 
+        jLabel10.setText("Database File:");
+
+        jTextField1.setEditable(false);
+        jTextField1.setText("Please select a file");
+
+        addDbButton.setText("Add");
+
+        clearDbButton.setText("Clear");
+
+        jButton1.setText("Edit");
+        jButton1.setEnabled(false);
+
         org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -306,27 +328,37 @@ public class NewDialog extends javax.swing.JDialog {
                 .addContainerGap()
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jPanel2Layout.createSequentialGroup()
-                        .add(jLabel2)
-                        .add(44, 44, 44)
-                        .add(txtSpectraFileLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 577, Short.MAX_VALUE))
-                    .add(jPanel2Layout.createSequentialGroup()
                         .add(jLabel3)
                         .add(18, 18, 18)
-                        .add(txtIdFileLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 577, Short.MAX_VALUE)))
+                        .add(txtIdFileLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 581, Short.MAX_VALUE))
+                    .add(jPanel2Layout.createSequentialGroup()
+                        .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jLabel2)
+                            .add(jLabel10))
+                        .add(40, 40, 40)
+                        .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jTextField1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 581, Short.MAX_VALUE)
+                            .add(txtSpectraFileLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 581, Short.MAX_VALUE))))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel2Layout.createSequentialGroup()
-                        .add(addSpectraFilesJButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 67, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(editSpectraFilesJButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 67, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(clearSpectraJButton))
                     .add(jPanel2Layout.createSequentialGroup()
                         .add(addIdFilesButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(editIdFilesJButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(clearIdFilesJButton)))
+                        .add(clearIdFilesJButton))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel2Layout.createSequentialGroup()
+                        .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, addDbButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 67, Short.MAX_VALUE)
+                            .add(addSpectraFilesJButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 67, Short.MAX_VALUE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(editSpectraFilesJButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 67, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(jButton1, 0, 0, Short.MAX_VALUE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                            .add(clearDbButton, 0, 0, Short.MAX_VALUE)
+                            .add(clearSpectraJButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                 .addContainerGap())
         );
 
@@ -349,6 +381,13 @@ public class NewDialog extends javax.swing.JDialog {
                     .add(clearSpectraJButton)
                     .add(editSpectraFilesJButton)
                     .add(addSpectraFilesJButton))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel10)
+                    .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(addDbButton)
+                    .add(clearDbButton)
+                    .add(jButton1))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -385,11 +424,11 @@ public class NewDialog extends javax.swing.JDialog {
             .add(jPanel8Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jPanel8Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 905, Short.MAX_VALUE)
+                    .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 909, Short.MAX_VALUE)
                     .add(jPanel8Layout.createSequentialGroup()
                         .add(jLabel5)
                         .add(26, 26, 26)
-                        .add(comboMethod1, 0, 795, Short.MAX_VALUE)))
+                        .add(comboMethod1, 0, 799, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel8Layout.setVerticalGroup(
@@ -400,7 +439,7 @@ public class NewDialog extends javax.swing.JDialog {
                     .add(jLabel5)
                     .add(comboMethod1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(18, 18, 18)
-                .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 165, Short.MAX_VALUE)
+                .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 130, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -440,9 +479,9 @@ public class NewDialog extends javax.swing.JDialog {
                     .add(jLabel25))
                 .add(20, 20, 20)
                 .add(jPanel13Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(sampleNameTxt, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 797, Short.MAX_VALUE)
-                    .add(txtExperiment, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 797, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, replicateNumberTxt, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 797, Short.MAX_VALUE))
+                    .add(sampleNameTxt, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 801, Short.MAX_VALUE)
+                    .add(txtExperiment, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 801, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, replicateNumberTxt, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 801, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel13Layout.setVerticalGroup(
@@ -470,13 +509,13 @@ public class NewDialog extends javax.swing.JDialog {
             .add(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel8, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(jPanel13, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(jPanel13, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
                         .add(startButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 57, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(exitButton1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 57, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .add(exitButton1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 57, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jPanel8, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -486,9 +525,9 @@ public class NewDialog extends javax.swing.JDialog {
                 .add(jPanel13, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(9, 9, 9)
-                .add(jPanel8, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(jPanel8, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(24, 24, 24)
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(exitButton1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(startButton))
@@ -509,7 +548,7 @@ public class NewDialog extends javax.swing.JDialog {
             jPanel5Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel5Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 905, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 909, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel5Layout.setVerticalGroup(
@@ -531,14 +570,14 @@ public class NewDialog extends javax.swing.JDialog {
             jPanel6Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel6Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 905, Short.MAX_VALUE)
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 909, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel6Layout.setVerticalGroup(
             jPanel6Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel6Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 94, Short.MAX_VALUE)
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 106, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -563,7 +602,7 @@ public class NewDialog extends javax.swing.JDialog {
             jPanel7Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel7Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(txtConfigurationFileLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 674, Short.MAX_VALUE)
+                .add(txtConfigurationFileLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 678, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(browseConfigButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -611,7 +650,7 @@ public class NewDialog extends javax.swing.JDialog {
                 .addContainerGap()
                 .add(jLabel4)
                 .add(18, 18, 18)
-                .add(comboMethod2, 0, 803, Short.MAX_VALUE)
+                .add(comboMethod2, 0, 807, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel14Layout.setVerticalGroup(
@@ -658,7 +697,7 @@ public class NewDialog extends javax.swing.JDialog {
 
         jPanel10.setBorder(javax.swing.BorderFactory.createTitledBorder("Spectrum Analysis"));
 
-        jLabel6.setText("Ion Selection Tolerance [m/z]:");
+        jLabel6.setText("Reporter Ion Selection Tolerance [m/z]:");
 
         ionToleranceTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
 
@@ -671,7 +710,7 @@ public class NewDialog extends javax.swing.JDialog {
                 .add(jLabel6)
                 .add(18, 18, 18)
                 .add(ionToleranceTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 102, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(651, Short.MAX_VALUE))
+                .addContainerGap(609, Short.MAX_VALUE))
         );
         jPanel10Layout.setVerticalGroup(
             jPanel10Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -900,14 +939,14 @@ public class NewDialog extends javax.swing.JDialog {
                                 .add(jLabel13)
                                 .add(18, 18, 18)
                                 .add(nAaMaxTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 121, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                        .addContainerGap(700, Short.MAX_VALUE))
+                        .addContainerGap(704, Short.MAX_VALUE))
                     .add(jPanel12Layout.createSequentialGroup()
                         .add(jLabel14)
                         .add(18, 18, 18)
                         .add(deltaMassTxt, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 121, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jLabel15)
-                        .add(676, 676, 676))))
+                        .add(680, 680, 680))))
         );
 
         jPanel12Layout.linkSize(new java.awt.Component[] {deltaMassTxt, nAaMaxTxt, nAaMinTxt}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -955,7 +994,7 @@ public class NewDialog extends javax.swing.JDialog {
                 .add(jPanel12, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel11, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 119, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 128, Short.MAX_VALUE)
                 .add(exitButton3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -1078,9 +1117,34 @@ public class NewDialog extends javax.swing.JDialog {
             }
             if (idFiles.size() > 1) {
                 for (File file : idFiles) {
+                    int fileType = -1;
                     if (file.getName().endsWith(".cps")) {
                         JOptionPane.showMessageDialog(this, "A PeptideShaker file must be imported alone.", "Wrong identification file.", JOptionPane.ERROR_MESSAGE);
                         idFiles = new ArrayList<File>();
+                    }
+                    if (file.getName().endsWith(".dat")) {
+                        if (fileType == -1) {
+                            fileType = 0;
+                        } else if (fileType == 1 || fileType == 2) {
+                            JOptionPane.showMessageDialog(this, "Reporter cannot handle multiple search engine results.\n We advise you to use Peptide-Shaker (peptide-shaker.googlecode.com) to process your indentifications.", "Wrong identification file.", JOptionPane.ERROR_MESSAGE);
+                            idFiles = new ArrayList<File>();
+                        }
+                    }
+                    if (file.getName().endsWith(".omx")) {
+                        if (fileType == -1) {
+                            fileType = 1;
+                        } else if (fileType == 0 || fileType == 2) {
+                            JOptionPane.showMessageDialog(this, "Reporter cannot handle multiple search engine results.\n We advise you to use Peptide-Shaker (peptide-shaker.googlecode.com) to process your indentifications.", "Wrong identification file.", JOptionPane.ERROR_MESSAGE);
+                            idFiles = new ArrayList<File>();
+                        }
+                    }
+                    if (file.getName().endsWith(".xml")) {
+                        if (fileType == -1) {
+                            fileType = 2;
+                        } else if (fileType == 0 || fileType == 1) {
+                            JOptionPane.showMessageDialog(this, "Reporter cannot handle multiple search engine results.\n We advise you to use Peptide-Shaker (peptide-shaker.googlecode.com) to process your indentifications.", "Wrong identification file.", JOptionPane.ERROR_MESSAGE);
+                            idFiles = new ArrayList<File>();
+                        }
                     }
                 }
             }
@@ -1208,9 +1272,11 @@ public class NewDialog extends javax.swing.JDialog {
         // TODO add your handling code here:
 }//GEN-LAST:event_mascotEvalueTxtActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton addDbButton;
     private javax.swing.JButton addIdFilesButton;
     private javax.swing.JButton addSpectraFilesJButton;
     private javax.swing.JButton browseConfigButton;
+    private javax.swing.JButton clearDbButton;
     private javax.swing.JButton clearIdFilesJButton;
     private javax.swing.JButton clearSpectraJButton;
     private javax.swing.JComboBox comboMethod1;
@@ -1224,7 +1290,9 @@ public class NewDialog extends javax.swing.JDialog {
     private javax.swing.JTextField fdrThresholdTxt;
     private javax.swing.JTextField ionToleranceTxt;
     private javax.swing.JTable isotopeCorrectionTable;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
@@ -1265,6 +1333,7 @@ public class NewDialog extends javax.swing.JDialog {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JTextField jTextField1;
     private javax.swing.JTextField mascotEvalueTxt;
     private javax.swing.JTextField mzTolTxt;
     private javax.swing.JTextField nAaMaxTxt;
@@ -1299,6 +1368,9 @@ public class NewDialog extends javax.swing.JDialog {
         }
         quantification.setMethod(selectedMethod);
         quantification.setReferenceLabel(selectedMethod.getReporterIons().get(reference).getIndex());
+        quantification.setInMemory(false);
+        quantification.setAutomatedMemoryManagement(true);
+        quantification.setSerializationDirectory(reporter.SERIALIZATION_DIRECTORY);
         return quantification;
     }
 
@@ -1369,7 +1441,7 @@ public class NewDialog extends javax.swing.JDialog {
         mascotEvalueTxt.setText(quantificationPreferences.getMaxEValue(SearchEngine.MASCOT) + "");
         omssaEvalueTxt.setText(quantificationPreferences.getMaxEValue(SearchEngine.OMSSA) + "");
         xTandemEvalueTxt.setText(quantificationPreferences.getMaxEValue(SearchEngine.XTANDEM) + "");
-        fdrThresholdTxt.setText(quantificationPreferences.getFdrThreshold()*100 + "");
+        fdrThresholdTxt.setText(quantificationPreferences.getFdrThreshold() * 100 + "");
         if (quantificationPreferences.isSameSpectra()) {
             sameSpectra.setSelected(true);
             precursorMatching.setSelected(false);
@@ -1409,39 +1481,39 @@ public class NewDialog extends javax.swing.JDialog {
      */
     private void importPeptideShakerFile(File psFile) {
         try {
-        experiment = experimentIO.loadExperiment(psFile);
-        txtExperiment.setText(experiment.getReference());
-        txtExperiment.setEditable(false);
+            experiment = experimentIO.loadExperiment(psFile);
+            txtExperiment.setText(experiment.getReference());
+            txtExperiment.setEditable(false);
 
-        ArrayList<Sample> samples = new ArrayList(experiment.getSamples().values());
-        if (samples.size() == 1) {
-            sample = samples.get(0);
-        } else {
-            // @TODO allow the user to chose the desired sample
-        }
-        sampleNameTxt.setText(sample.getReference());
-        sampleNameTxt.setEditable(false);
+            ArrayList<Sample> samples = new ArrayList(experiment.getSamples().values());
+            if (samples.size() == 1) {
+                sample = samples.get(0);
+            } else {
+                // @TODO allow the user to chose the desired sample
+            }
+            sampleNameTxt.setText(sample.getReference());
+            sampleNameTxt.setEditable(false);
 
-        ArrayList<Integer> replicates = new ArrayList(experiment.getAnalysisSet(sample).getReplicateNumberList());
-        if (replicates.size() == 1) {
-            replicateNumber = replicates.get(0);
-        } else {
-            // @TODO allow the user to chose the desired replicate
-        }
-        replicateNumberTxt.setText(replicateNumber + "");
-        replicateNumberTxt.setEditable(false);
-        JOptionPane.showMessageDialog(this,
-                        "Experiment successfully loaded.",
-                        "Import completed", JOptionPane.WARNING_MESSAGE);
+            ArrayList<Integer> replicates = new ArrayList(experiment.getAnalysisSet(sample).getReplicateNumberList());
+            if (replicates.size() == 1) {
+                replicateNumber = replicates.get(0);
+            } else {
+                // @TODO allow the user to chose the desired replicate
+            }
+            replicateNumberTxt.setText(replicateNumber + "");
+            replicateNumberTxt.setEditable(false);
+            JOptionPane.showMessageDialog(this,
+                    "Experiment successfully loaded.",
+                    "Import completed", JOptionPane.WARNING_MESSAGE);
         } catch (IOException e) {
             JOptionPane.showMessageDialog(this,
-                        "An error occured while reading " + psFile.getName() + ".",
-                        "Reading error", JOptionPane.WARNING_MESSAGE);
+                    "An error occured while reading " + psFile.getName() + ".",
+                    "Reading error", JOptionPane.WARNING_MESSAGE);
             e.printStackTrace();
         } catch (ClassNotFoundException e1) {
             JOptionPane.showMessageDialog(this,
-                        "An error occured while importing " + psFile.getName() + ". Please verify that the version of Reporter you are using is compatible with the version of Peptide-Shaker which was used to generate the file.",
-                        "Import error", JOptionPane.WARNING_MESSAGE);
+                    "An error occured while importing " + psFile.getName() + ". Please verify that the version of Reporter you are using is compatible with the version of Peptide-Shaker which was used to generate the file.",
+                    "Import error", JOptionPane.WARNING_MESSAGE);
             e1.printStackTrace();
         }
     }

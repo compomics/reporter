@@ -4,16 +4,22 @@ import com.compomics.util.experiment.MsExperiment;
 import com.compomics.util.experiment.biology.Sample;
 import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.IdentificationMethod;
+import com.compomics.util.experiment.massspectrometry.MSnSpectrum;
+import com.compomics.util.experiment.massspectrometry.Spectrum;
+import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
+import com.compomics.util.experiment.quantification.Quantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.ProteinQuantification;
-import eu.isas.reporter.calculation.DataLoader;
+import eu.isas.reporter.io.DataLoader;
 import eu.isas.reporter.calculation.RatioEstimator;
 import eu.isas.reporter.gui.ReporterGUI;
 import eu.isas.reporter.gui.WaitingDialog;
 import eu.isas.reporter.myparameters.QuantificationPreferences;
+import eu.isas.reporter.preferences.IdentificationPreferences;
 import eu.isas.reporter.utils.Properties;
 import java.io.File;
 import java.util.ArrayList;
+import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 
 /**
@@ -22,6 +28,19 @@ import javax.swing.SwingWorker;
  * @author Marc Vaudel
  */
 public class Reporter {
+
+    /**
+     * The spectrum factory
+     */
+    private SpectrumFactory spectrumFactory = SpectrumFactory.getInstance();
+    /**
+     * List of caught exceptions
+     */
+    private ArrayList<String> exceptionCaught = new ArrayList<String>();
+    /**
+     * The location of the folder used for serialization of matches
+     */
+    public final String SERIALIZATION_DIRECTORY = "matches";
 
     /**
      * Main method.
@@ -74,21 +93,21 @@ public class Reporter {
         "http://code.google.com/p/reporter/downloads/detail?name=reporter-" +
         currentVersion + ".zip");
         int respons = ((java.net.HttpURLConnection) downloadPage.openConnection()).getResponseCode();
-
+        
         // 404 means that the file no longer exists, which means that
         // the running version is no longer available for download,
         // which again means that a never version is available.
         if (respons == 404) {
         deprecatedOrDeleted = true;
         } else {
-
+        
         // also need to check if the available running version has been
         // deprecated (but not deleted)
         BufferedReader in = new BufferedReader(
         new InputStreamReader(downloadPage.openStream()));
-
+        
         String inputLine;
-
+        
         while ((inputLine = in.readLine()) != null && !deprecatedOrDeleted) {
         if (inputLine.lastIndexOf("Deprecated") != -1 &&
         inputLine.lastIndexOf("Deprecated Downloads") == -1 &&
@@ -96,10 +115,10 @@ public class Reporter {
         deprecatedOrDeleted = true;
         }
         }
-
+        
         in.close();
         }
-
+        
         // informs the user about an updated version of the converter, unless the user
         // is running a beta version
         if (deprecatedOrDeleted && currentVersion.lastIndexOf("beta") == -1) {
@@ -134,6 +153,10 @@ public class Reporter {
      * The quantification preferences
      */
     private QuantificationPreferences quantificationPreferences = new QuantificationPreferences();
+    /**
+     * The identification preferences
+     */
+    private IdentificationPreferences identificationPreferences = new IdentificationPreferences();
 
     /**
      * returns the quantification preferences
@@ -149,6 +172,22 @@ public class Reporter {
      */
     public void setQuantificationPreferences(QuantificationPreferences quantificationPreferences) {
         this.quantificationPreferences = quantificationPreferences;
+    }
+
+    /**
+     * returns the identification preferences
+     * @return the identification preferences
+     */
+    public IdentificationPreferences getIDentificationPreferences() {
+        return identificationPreferences;
+    }
+
+    /**
+     * sets the identification preferences
+     * @param identificationPreferences the identification preferences
+     */
+    public void setIdentificationPreferences(IdentificationPreferences identificationPreferences) {
+        this.identificationPreferences = identificationPreferences;
     }
 
     /**
@@ -257,15 +296,48 @@ public class Reporter {
         protected Object doInBackground() throws Exception {
             try {
                 ReporterIonQuantification quantification = getQuantification();
-                RatioEstimator ratioEstimator = new RatioEstimator(quantification.getReporterMethod(), quantification.getReferenceLabel(), quantificationPreferences);
-                for (ProteinQuantification proteinQuantification : quantification.getProteinQuantification().values()) {
-                    ratioEstimator.estimateRatios(proteinQuantification);
+                RatioEstimator ratioEstimator = new RatioEstimator(quantification, quantification.getReporterMethod(), quantification.getReferenceLabel(), quantificationPreferences, identificationPreferences);
+                ProteinQuantification proteinQuantification;
+                for (String proteinKey : quantification.getProteinQuantification()) {
+                    ratioEstimator.estimateProteinRatios(proteinKey);
                 }
                 reporterGUI.displayResults(quantification, getIdentification());
             } catch (Exception e) {
                 e.printStackTrace();
             }
             return 0;
+        }
+    }
+
+    /**
+     * Returns the desired spectrum
+     * @param spectrumKey   the key of the spectrum
+     * @return the desired spectrum
+     */
+    public MSnSpectrum getSpectrum(String spectrumKey) {
+        String spectrumFile = Spectrum.getSpectrumFile(spectrumKey);
+        String spectrumTitle = Spectrum.getSpectrumTitle(spectrumKey);
+        try {
+            return (MSnSpectrum) spectrumFactory.getSpectrum(spectrumFile, spectrumTitle);
+        } catch (Exception e) {
+            catchException(e);
+            return null;
+        }
+    }
+
+    /**
+     * Method called whenever an exception is caught
+     * @param e the exception caught
+     */
+    public void catchException(Exception e) {
+        e.printStackTrace();
+        if (!exceptionCaught.contains(e.getLocalizedMessage())) {
+            exceptionCaught.add(e.getLocalizedMessage());
+            JOptionPane.showMessageDialog(reporterGUI,
+                    "An error occured while reading "
+                    + e.getLocalizedMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -300,14 +372,35 @@ public class Reporter {
         }
 
         @Override
-        protected Object doInBackground() throws Exception {
-            DataLoader dataLoader = new DataLoader(quantificationPreferences, waitingDialog, experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).getIdentification(IdentificationMethod.MS2_IDENTIFICATION));
+        protected Object doInBackground() {
+            Identification identification = experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).getIdentification(IdentificationMethod.MS2_IDENTIFICATION);
+            Quantification quantification = getQuantification();
+            DataLoader dataLoader = new DataLoader(quantificationPreferences, waitingDialog, identification);
             if (idFiles.size() > 1 || !idFiles.get(0).getName().endsWith(".cps")) {
-                dataLoader.loadIdentifications(idFiles);
-                dataLoader.loadQuantification(getQuantification(), mgfFiles);
+                try {
+                    dataLoader.loadIdentifications(idFiles);
+                } catch (Exception e) {
+                    waitingDialog.appendReport("An error occured whlie loading " + idFiles.get(0).getName() + ".\n" + e.getLocalizedMessage());
+                    waitingDialog.setRunCancelled();
+                    return 1;
+                }
             } else {
-                dataLoader.processPeptideShakerInput(getQuantification(), mgfFiles);
+                try {
+                    dataLoader.loadIdentifications(idFiles.get(0));
+                } catch (Exception e) {
+                    waitingDialog.appendReport("An error occured whlie loading " + idFiles.get(0).getName() + ".\n" + e.getLocalizedMessage());
+                    waitingDialog.setRunCancelled();
+                    return 1;
+                }
             }
+            try {
+                quantification.buildPeptidesAndProteinQuantifications(identification);
+            } catch (Exception e) {
+                waitingDialog.appendReport("An error occured whlie building peptide and protein quantification objects.\n" + e.getLocalizedMessage());
+                waitingDialog.setRunCancelled();
+                return 1;
+            }
+            dataLoader.loadQuantification(getQuantification(), mgfFiles);
             waitingDialog.setRunFinished();
             return 0;
         }

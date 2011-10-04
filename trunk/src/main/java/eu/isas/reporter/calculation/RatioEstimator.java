@@ -3,6 +3,7 @@ package eu.isas.reporter.calculation;
 import com.compomics.util.experiment.biology.ions.ReporterIon;
 import com.compomics.util.experiment.identification.matches.IonMatch;
 import com.compomics.util.experiment.massspectrometry.Spectrum;
+import com.compomics.util.experiment.quantification.Quantification;
 import com.compomics.util.experiment.quantification.Ratio;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
 import com.compomics.util.experiment.quantification.reporterion.quantification.PeptideQuantification;
@@ -12,9 +13,11 @@ import eu.isas.reporter.myparameters.IgnoredRatios;
 import eu.isas.reporter.myparameters.ItraqScore;
 import eu.isas.reporter.myparameters.QuantificationPreferences;
 import eu.isas.reporter.myparameters.RatioLimits;
+import eu.isas.reporter.preferences.IdentificationPreferences;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import javax.naming.directory.SearchControls;
 
 /**
  * This class estimates ratios at the peptide and protein level
@@ -51,6 +54,10 @@ public class RatioEstimator {
      * the deisotoper for PSM quantification
      */
     private Deisotoper deisotoper;
+    /**
+     * the quantification
+     */
+    private Quantification quantification;
 
     /**
      * constructor
@@ -59,13 +66,14 @@ public class RatioEstimator {
      * @param k                 The k to be used for distribution width estimation
      * @param ignorer           The ignorer to be used
      */
-    public RatioEstimator(ReporterMethod method, int referenceLabel, QuantificationPreferences quantificationPreferences) {
+    public RatioEstimator(Quantification quantification, ReporterMethod method, int referenceLabel, QuantificationPreferences quantificationPreferences, IdentificationPreferences identificationPreferences) {
+        this.quantification = quantification;
         this.deisotoper = new Deisotoper(method);
         this.reporterIons = method.getReporterIons();
         this.referenceLabel = referenceLabel;
         resolution = quantificationPreferences.getRatioResolution();
         k = quantificationPreferences.getK();
-        ignorer = new Ignorer(quantificationPreferences);
+        ignorer = new Ignorer(quantificationPreferences, identificationPreferences);
         ignoreNullIntensities = quantificationPreferences.isIgnoreNullIntensities();
     }
 
@@ -74,12 +82,15 @@ public class RatioEstimator {
      *
      * @param proteinQuantification the processed protein quantification
      */
-    public void estimateRatios(ProteinQuantification proteinQuantification) {
+    public void estimateProteinRatios(String proteinKey) throws Exception {
+        ProteinQuantification proteinQuantification = quantification.getProteinMatch(proteinKey);
             IgnoredRatios ignoredRatios = new IgnoredRatios();
             HashMap<Integer, ArrayList<Double>> allRatios = new HashMap<Integer, ArrayList<Double>>();
             HashMap<Integer, Ratio> ratiosMap;
-            for (PeptideQuantification peptideQuantification : proteinQuantification.getPeptideQuantification().values()) {
-                estimateRatios(peptideQuantification);
+            PeptideQuantification peptideQuantification;
+            for (String peptideKey : proteinQuantification.getPeptideQuantification()) {
+                peptideQuantification = quantification.getPeptideMatch(peptideKey);
+                estimatePeptideRatios(peptideKey);
                 ignoredRatios = (IgnoredRatios) peptideQuantification.getUrParam(ignoredRatios);
                 ratiosMap = peptideQuantification.getRatios();
                 for (int ion : peptideQuantification.getRatios().keySet()) {
@@ -112,7 +123,7 @@ public class RatioEstimator {
                 } else {
                     window = resolution;
                 }
-                nPeptides = getNPeptides(ion, proteinQuantification, ratio, window);
+                nPeptides = getNPeptides(ion, proteinKey, ratio, window);
                 if (nPeptides > 0) {
                     relativeSpread = -(window) / (3 * ratio);
                     quality = Math.pow(10, relativeSpread);
@@ -129,7 +140,7 @@ public class RatioEstimator {
                     proteinRatios.put(ion.getIndex(), new Ratio(referenceLabel, ion.getIndex(), Double.NaN));
                 }
             }
-            proteinQuantification.setProteinRatios(proteinRatios);
+            proteinQuantification.setRatios(proteinRatios);
             proteinQuantification.addUrParam(ignoredRatios);
             proteinQuantification.addUrParam(scores);
             proteinQuantification.addUrParam(limits);
@@ -145,10 +156,13 @@ public class RatioEstimator {
      * @param window                    The window indicating the width of the peptide distribution
      * @return  the number of peptides in the window centered around the protein ratio
      */
-    private int getNPeptides(int ion, ProteinQuantification proteinQuantification, double ratio, double window) {
+    private int getNPeptides(int ion, String proteinKey, double ratio, double window) throws Exception {
         int nPeptides = 0;
         IgnoredRatios ignoredRatios = new IgnoredRatios();
-        for (PeptideQuantification peptideQuantification : proteinQuantification.getPeptideQuantification().values()) {
+        ProteinQuantification proteinQuantification = quantification.getProteinMatch(proteinKey);
+        PeptideQuantification peptideQuantification;
+        for (String peptideKey : proteinQuantification.getPeptideQuantification()) {
+            peptideQuantification = quantification.getPeptideMatch(peptideKey);
             ignoredRatios = (IgnoredRatios) peptideQuantification.getUrParam(ignoredRatios);
             if (!ignoredRatios.isIgnored(ion)) {
                 if (peptideQuantification.getRatios().get(ion).getRatio() < ratio + window
@@ -165,13 +179,17 @@ public class RatioEstimator {
      *
      * @param peptideQuantification the peptide quantification considered
      */
-    private void estimateRatios(PeptideQuantification peptideQuantification) {
+    private void estimatePeptideRatios(String peptideKey) throws Exception {
+        PeptideQuantification peptideQuantification = quantification.getPeptideMatch(peptideKey);
         IgnoredRatios ignoredRatios = new IgnoredRatios();
         HashMap<Integer, ArrayList<Double>> allRatios = new HashMap<Integer, ArrayList<Double>>();
         HashMap<Integer, Ratio> ratiosMap;
         double ratio;
-        for (PsmQuantification psmQuantification : peptideQuantification.getPsmQuantification().values()) {
-            estimateRatios(psmQuantification, deisotoper);
+        PsmQuantification psmQuantification;
+        for (String psmKey : peptideQuantification.getPsmQuantification()) {
+            for (String spectrumKey : quantification.getPsmIDentificationToQuantification().get(psmKey)) {
+                psmQuantification = quantification.getSpectrumMatch(spectrumKey);
+            estimateRatios(spectrumKey, deisotoper);
             ignoredRatios = (IgnoredRatios) psmQuantification.getUrParam(ignoredRatios);
             ratiosMap = psmQuantification.getRatios();
             for (int ion : ratiosMap.keySet()) {
@@ -182,6 +200,7 @@ public class RatioEstimator {
                     }
                     allRatios.get(ion).add(ratio);
                 }
+            }
             }
         }
         double[] ratios;
@@ -205,7 +224,7 @@ public class RatioEstimator {
             } else {
                 window = resolution;
             }
-            nSpectra = getNSpectra(ion, peptideQuantification, ratio, window);
+            nSpectra = getNSpectra(ion, peptideKey, ratio, window);
             if (nSpectra > 0) {
                 quality = Math.pow(10, -(window) / (3 * ratio));
                 score = (1 + quality / 2) * (nSpectra - 1);
@@ -221,7 +240,7 @@ public class RatioEstimator {
                 peptideRatios.put(possibleIon.getIndex(), new Ratio(referenceLabel, possibleIon.getIndex(), Double.NaN));
             }
         }
-        peptideQuantification.setPeptideRatios(peptideRatios);
+        peptideQuantification.setRatios(peptideRatios);
         peptideQuantification.addUrParam(scores);
         peptideQuantification.addUrParam(ratioLimits);
         peptideQuantification.addUrParam(ignoredRatios);
@@ -236,16 +255,21 @@ public class RatioEstimator {
      * @param window                    The window representing the width of psm ratios distribution
      * @return  the number of psm ratios comprised in the window centered around the peptide ratio
      */
-    private int getNSpectra(int ion, PeptideQuantification peptideQuantification, double ratio, double window) {
+    private int getNSpectra(int ion, String peptideKey, double ratio, double window) throws Exception {
         int nSpectra = 0;
         IgnoredRatios ignoredRatios = new IgnoredRatios();
-        for (PsmQuantification spectrumQuantification : peptideQuantification.getPsmQuantification().values()) {
+        PeptideQuantification peptideQuantification = quantification.getPeptideMatch(peptideKey);
+        PsmQuantification spectrumQuantification;
+        for (String psmKey : peptideQuantification.getPsmQuantification()) {
+            for (String spectrumKey : quantification.getPsmIDentificationToQuantification().get(psmKey)) {
+                spectrumQuantification = quantification.getSpectrumMatch(spectrumKey);
             ignoredRatios = (IgnoredRatios) spectrumQuantification.getUrParam(ignoredRatios);
             if (!ignoredRatios.isIgnored(ion)) {
                 if (spectrumQuantification.getRatios().get(ion).getRatio() < ratio + window
                         && spectrumQuantification.getRatios().get(ion).getRatio() > ratio - window) {
                     nSpectra++;
                 }
+            }
             }
         }
         return nSpectra;
@@ -326,8 +350,9 @@ public class RatioEstimator {
      *
      * @param psmQuantification the current spectrum quantification
      */
-    private void estimateRatios(PsmQuantification psmQuantification, Deisotoper deisotoper) {
+    private void estimateRatios(String spectrumKey, Deisotoper deisotoper) throws Exception {
         IgnoredRatios ignoredRatios = new IgnoredRatios();
+        PsmQuantification psmQuantification = quantification.getSpectrumMatch(spectrumKey);
         HashMap<Integer, IonMatch> reporterMatches = psmQuantification.getReporterMatches();
         ArrayList<Integer> nullIntensities = new ArrayList<Integer>();
         ItraqScore scores = new ItraqScore();

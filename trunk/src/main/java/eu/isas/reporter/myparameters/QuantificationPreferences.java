@@ -396,6 +396,6 @@ public class QuantificationPreferences implements UrParameter {
 
     @Override
     public int getIndex() {
-        return 3;
+        return 0;
     }
 }

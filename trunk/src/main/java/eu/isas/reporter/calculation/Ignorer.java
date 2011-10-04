@@ -1,8 +1,10 @@
 package eu.isas.reporter.calculation;
 
+import com.compomics.util.experiment.biology.Enzyme;
 import com.compomics.util.experiment.biology.Peptide;
 import com.compomics.util.experiment.identification.matches.ModificationMatch;
 import eu.isas.reporter.myparameters.QuantificationPreferences;
+import eu.isas.reporter.preferences.IdentificationPreferences;
 import java.util.ArrayList;
 
 /**
@@ -28,16 +30,21 @@ public class Ignorer {
      * maximal ratio to be considered
      */
     private double ratioMax;
+    /**
+     * The enzyme used
+     */
+    private Enzyme enzymeUsed;
 
     /**
      * Constructor
      * @param quantificationPreferences the quantification preferences
      */
-    public Ignorer(QuantificationPreferences quantificationPreferences) {
+    public Ignorer(QuantificationPreferences quantificationPreferences, IdentificationPreferences searchPreferences) {
         this.ratioMin = quantificationPreferences.getRatioMin();
         this.ratioMax = quantificationPreferences.getRatioMax();
         this.ignoreMissedCleavages = quantificationPreferences.isIgnoreMissedCleavages();
         this.ignoredModifications.addAll(quantificationPreferences.getIgnoredPTM());
+        this.enzymeUsed = searchPreferences.getEnzyme();
     }
 
     /**
@@ -55,14 +62,13 @@ public class Ignorer {
      * @return a boolean indicating whether the peptide should be ignored.
      */
     public boolean ignorePeptide(Peptide peptide) {
-        String sequence = peptide.getSequence();
-        if (ignoreMissedCleavages && peptide.getNMissedCleavages() > 0) {
+        if (ignoreMissedCleavages && peptide.getNMissedCleavages(enzymeUsed) > 0) {
             return true;
         }
         ArrayList<String> foundMods = new ArrayList<String>();
         for (ModificationMatch mod : peptide.getModificationMatches()) {
             if (mod.isVariable()) {
-                foundMods.add(mod.getTheoreticPtm().getName().toLowerCase());
+                foundMods.add(mod.getTheoreticPtm().toLowerCase());
             }
         }
         for (String forbiddenPtm : ignoredModifications) {
