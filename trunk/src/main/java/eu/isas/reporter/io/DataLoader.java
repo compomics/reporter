@@ -403,6 +403,8 @@ public class DataLoader {
                 return;
             }
             importSpectra(mgfFiles);
+            waitingDialog.appendReport("PSM quantification.");
+            waitingDialog.setProgressBarMaximum(identifiedSpectra.size());
             for (String matchKey : identifiedSpectra) {
                 if (waitingDialog.isRunCancelled()) {
                     waitingDialog.setRunCancelled();
@@ -420,6 +422,7 @@ public class DataLoader {
                         return;
                     }
                 }
+                waitingDialog.incrementProgressBar();
             }
             waitingDialog.appendReport("PSM quantification completed.");
         } catch (Exception e) {
