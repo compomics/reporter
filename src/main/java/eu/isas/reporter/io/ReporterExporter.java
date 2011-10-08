@@ -20,6 +20,7 @@ import com.compomics.util.experiment.quantification.reporterion.quantification.P
 import com.compomics.util.experiment.quantification.reporterion.quantification.ProteinQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.PsmQuantification;
 import com.compomics.util.gui.dialogs.ProgressDialogX;
+import eu.isas.reporter.myparameters.IdentificationDetails;
 import eu.isas.reporter.myparameters.IgnoredRatios;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -103,14 +104,15 @@ public class ReporterExporter {
         Writer spectraOutput = new BufferedWriter(new FileWriter(spectraFile));
         String content = "Protein" + separator + "Sequence" + separator + "Variable Modifications" + separator + "Spectrum File" + separator + "Identification Spectrum" + separator + "Quantification spectrum" + separator
                 + "Identification File" + separator + "Mass Error" + separator + "Mascot E-Value" + separator
-                + "OMSSA E-Value" + separator + "X!Tandem E-Value" + separator + getRatiosLabels(quantification) + separator + getIntensitiesLabels() + "\n";
+                + "OMSSA E-Value" + separator + "X!Tandem E-Value" + separator + "Validated" + separator + "Decoy" + separator + getRatiosLabels(quantification) + separator + getIntensitiesLabels() + "\n";
         spectraOutput.write(content);
         SpectrumMatch spectrumMatch;
         Peptide peptide;
-        boolean first;
+        boolean first, decoy;
         HashMap<String, ArrayList<Integer>> modificationMap;
         String identificationSpectrum, quantificationSpectrum, spectrumFile, idFile;
         PsmQuantification psmQuantification;
+        IdentificationDetails identificationDetails = new IdentificationDetails();
         for (String psmKey : quantification.getPsmIDentificationToQuantification().keySet()) {
             spectrumMatch = identification.getSpectrumMatch(psmKey);
             spectrumFile = Spectrum.getSpectrumFile(psmKey);
@@ -132,6 +134,7 @@ public class ReporterExporter {
                 quantificationSpectrum = Spectrum.getSpectrumTitle(spectrumKey);
                 content = "";
                 first = true;
+                decoy = false;
                 for (String protein : peptide.getParentProteins()) {
                     if (!first) {
                         content += ", ";
@@ -139,15 +142,20 @@ public class ReporterExporter {
                         first = false;
                     }
                     content += protein;
+                    if (ProteinMatch.isDecoy(protein)) {
+                        decoy = true;
+                    }
                 }
                 content += separator;
                 content += peptide.getSequence() + separator;
                 modificationMap = new HashMap<String, ArrayList<Integer>>();
                 for (ModificationMatch modMatch : peptide.getModificationMatches()) {
-                    if (!modificationMap.containsKey(modMatch.getTheoreticPtm())) {
-                        modificationMap.put(modMatch.getTheoreticPtm(), new ArrayList<Integer>());
+                    if (modMatch.isVariable()) {
+                        if (!modificationMap.containsKey(modMatch.getTheoreticPtm())) {
+                            modificationMap.put(modMatch.getTheoreticPtm(), new ArrayList<Integer>());
+                        }
+                        modificationMap.get(modMatch.getTheoreticPtm()).add(modMatch.getModificationSite());
                     }
-                    modificationMap.get(modMatch.getTheoreticPtm()).add(modMatch.getModificationSite());
                 }
                 first = true;
                 for (String mod : modificationMap.keySet()) {
@@ -191,6 +199,18 @@ public class ReporterExporter {
                 }
                 content += separator;
 
+                identificationDetails = (IdentificationDetails) identification.getMatchParameter(psmKey, identificationDetails);
+                if (identificationDetails.isValidated()) {
+                    content += "1" + separator;
+                } else {
+                    content += "0" + separator;
+                }
+                if (decoy) {
+                    content += "1" + separator;
+                } else {
+                    content += "0" + separator;
+                }
+
                 psmQuantification = quantification.getSpectrumMatch(spectrumKey);
                 content += getRatios(psmQuantification);
                 content += getIntensities(psmQuantification);
@@ -201,7 +221,7 @@ public class ReporterExporter {
         spectraOutput.close();
 
         Writer peptidesOutput = new BufferedWriter(new FileWriter(peptidesFile));
-        content = "Protein(s)" + separator + "Sequence" + separator + "Variable Modification(s)" + separator + "number of Spectra" + separator + getRatiosLabels(quantification) + "\n";
+        content = "Protein(s)" + separator + "Sequence" + separator + "Variable Modification(s)" + separator + "number of Spectra" + separator + "Validated" + separator + "Decoy" + separator + getRatiosLabels(quantification) + "\n";
         peptidesOutput.write(content);
         PeptideMatch peptideMatch;
         PeptideQuantification peptideQuantification;
@@ -210,6 +230,7 @@ public class ReporterExporter {
             peptide = peptideMatch.getTheoreticPeptide();
             content = "";
             first = true;
+            decoy = false;
             for (String protein : peptide.getParentProteins()) {
                 if (!first) {
                     content += ", ";
@@ -217,16 +238,21 @@ public class ReporterExporter {
                     first = false;
                 }
                 content += protein;
+                if (ProteinMatch.isDecoy(protein)) {
+                    decoy = true;
+                }
             }
             content += separator;
             content += peptide.getSequence() + separator;
 
             modificationMap = new HashMap<String, ArrayList<Integer>>();
             for (ModificationMatch modMatch : peptide.getModificationMatches()) {
-                if (!modificationMap.containsKey(modMatch.getTheoreticPtm())) {
-                    modificationMap.put(modMatch.getTheoreticPtm(), new ArrayList<Integer>());
+                if (modMatch.isVariable()) {
+                    if (!modificationMap.containsKey(modMatch.getTheoreticPtm())) {
+                        modificationMap.put(modMatch.getTheoreticPtm(), new ArrayList<Integer>());
+                    }
+                    modificationMap.get(modMatch.getTheoreticPtm()).add(modMatch.getModificationSite());
                 }
-                modificationMap.get(modMatch.getTheoreticPtm()).add(modMatch.getModificationSite());
             }
             first = true;
             for (String mod : modificationMap.keySet()) {
@@ -250,6 +276,19 @@ public class ReporterExporter {
             content += separator;
             peptideQuantification = quantification.getPeptideMatch(peptideKey);
             content += peptideQuantification.getPsmQuantification().size() + separator;
+
+            identificationDetails = (IdentificationDetails) identification.getMatchParameter(peptideKey, identificationDetails);
+            if (identificationDetails.isValidated()) {
+                content += "1" + separator;
+            } else {
+                content += "0" + separator;
+            }
+            if (decoy) {
+                content += "1" + separator;
+            } else {
+                content += "0" + separator;
+            }
+
             content += getRatios(peptideQuantification) + separator;
             content += "\n";
             peptidesOutput.write(content);
@@ -257,7 +296,7 @@ public class ReporterExporter {
         peptidesOutput.close();
 
         Writer proteinsOutput = new BufferedWriter(new FileWriter(proteinsFile));
-        content = "possible protein(s)" + separator + "Number of identified Peptides" + separator + "Number of quantified peptides" + separator + getRatiosLabels(quantification) + "\n";
+        content = "possible protein(s)" + separator + "Number of identified Peptides" + separator + "Number of quantified peptides" + separator + "Validated" + separator + "Decoy" + separator + getRatiosLabels(quantification) + "\n";
         proteinsOutput.write(content);
         ProteinMatch proteinMatch;
         ProteinQuantification proteinQuantification;
@@ -265,6 +304,7 @@ public class ReporterExporter {
             proteinMatch = identification.getProteinMatch(proteinKey);
             content = "";
             first = true;
+            decoy = false;
             for (String protein : ProteinMatch.getAccessions(proteinKey)) {
                 if (!first) {
                     content += ", ";
@@ -272,15 +312,31 @@ public class ReporterExporter {
                     first = false;
                 }
                 content += protein;
+                if (ProteinMatch.isDecoy(protein)) {
+                    decoy = true;
+                }
             }
             content += separator;
             content += proteinMatch.getPeptideMatches().size() + separator;
-            
+
             proteinQuantification = quantification.getProteinMatch(proteinKey);
             content += proteinQuantification.getPeptideQuantification().size() + separator;
+
+            identificationDetails = (IdentificationDetails) identification.getMatchParameter(proteinKey, identificationDetails);
+            if (identificationDetails.isValidated()) {
+                content += "1" + separator;
+            } else {
+                content += "0" + separator;
+            }
+            if (decoy) {
+                content += "1" + separator;
+            } else {
+                content += "0" + separator;
+            }
+
             content += getRatios(proteinQuantification);
             content += "\n";
-            
+
             proteinsOutput.write(content);
         }
         proteinsOutput.close();
