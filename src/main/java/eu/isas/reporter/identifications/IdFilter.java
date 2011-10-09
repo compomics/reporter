@@ -43,7 +43,10 @@ public class IdFilter {
      */
     public boolean validate(PeptideAssumption identification) {
         int sequenceLength = identification.getPeptide().getSequence().length();
-        return identification.getDeltaMass() < deltaMass
+        
+        // @TODO: should delta mass always be in ppm?? 
+        
+        return identification.getDeltaMass(true) < deltaMass
                 && identification.getEValue() < eValues.get(identification.getAdvocate())
                 && sequenceLength > nAAmin
                 && sequenceLength < nAAmax;

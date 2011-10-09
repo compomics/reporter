@@ -2,18 +2,14 @@ package eu.isas.reporter.io;
 
 import com.compomics.util.experiment.MsExperiment;
 import com.compomics.util.experiment.biology.Peptide;
-import com.compomics.util.experiment.biology.Protein;
 import com.compomics.util.experiment.biology.ions.ReporterIon;
 import com.compomics.util.experiment.identification.Advocate;
 import com.compomics.util.experiment.identification.Identification;
-import com.compomics.util.experiment.identification.PeptideAssumption;
-import com.compomics.util.experiment.identification.advocates.SearchEngine;
 import com.compomics.util.experiment.identification.matches.IonMatch;
 import com.compomics.util.experiment.identification.matches.ModificationMatch;
 import com.compomics.util.experiment.identification.matches.PeptideMatch;
 import com.compomics.util.experiment.identification.matches.ProteinMatch;
 import com.compomics.util.experiment.identification.matches.SpectrumMatch;
-import com.compomics.util.experiment.massspectrometry.MSnSpectrum;
 import com.compomics.util.experiment.massspectrometry.Spectrum;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.PeptideQuantification;
@@ -21,11 +17,9 @@ import com.compomics.util.experiment.quantification.reporterion.quantification.P
 import com.compomics.util.experiment.quantification.reporterion.quantification.PsmQuantification;
 import com.compomics.util.gui.dialogs.ProgressDialogX;
 import eu.isas.reporter.myparameters.IdentificationDetails;
-import eu.isas.reporter.myparameters.IgnoredRatios;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -84,6 +78,8 @@ public class ReporterExporter {
      * @param quantification    The quantification achieved
      * @param identification    The corresponding identification
      * @param location          The folder where to save the files
+     * @param progressDialog
+     * @throws Exception  
      */
     public void exportResults(ReporterIonQuantification quantification, Identification identification, String location, ProgressDialogX progressDialog) throws Exception {
 
@@ -181,7 +177,7 @@ public class ReporterExporter {
                 content += identificationSpectrum + separator;
                 content += quantificationSpectrum + separator;
                 content += idFile + separator;
-                content += spectrumMatch.getBestAssumption().getDeltaMass() + separator;
+                content += spectrumMatch.getBestAssumption().getDeltaMass(true) + separator; // @TODO: should delta mass always be in ppm??
 
                 if (spectrumMatch.getFirstHit(Advocate.MASCOT) != null
                         && spectrumMatch.getFirstHit(Advocate.MASCOT).getPeptide().isSameAs(peptide)) {
