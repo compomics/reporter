@@ -1,5 +1,6 @@
 package eu.isas.reporter;
 
+import com.compomics.util.examples.BareBonesBrowserLaunch;
 import com.compomics.util.experiment.MsExperiment;
 import com.compomics.util.experiment.biology.Sample;
 import com.compomics.util.experiment.identification.Identification;
@@ -9,36 +10,41 @@ import com.compomics.util.experiment.massspectrometry.Spectrum;
 import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
 import com.compomics.util.experiment.quantification.Quantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
-import com.compomics.util.experiment.quantification.reporterion.quantification.ProteinQuantification;
 import eu.isas.reporter.io.DataLoader;
 import eu.isas.reporter.calculation.RatioEstimator;
 import eu.isas.reporter.gui.ReporterGUI;
 import eu.isas.reporter.gui.WaitingDialog;
 import eu.isas.reporter.myparameters.QuantificationPreferences;
 import eu.isas.reporter.preferences.IdentificationPreferences;
-import eu.isas.reporter.utils.Properties;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 
 /**
- * Reporter performs reporter ion based quantification on MS2 spectra
+ * Reporter performs reporter ion based quantification on MS2 spectra.
  *
  * @author Marc Vaudel
+ * @author Harald Barsnes
  */
 public class Reporter {
 
     /**
-     * The spectrum factory
+     * The spectrum factory.
      */
     private SpectrumFactory spectrumFactory = SpectrumFactory.getInstance();
     /**
-     * List of caught exceptions
+     * List of caught exceptions.
      */
     private ArrayList<String> exceptionCaught = new ArrayList<String>();
     /**
-     * The location of the folder used for serialization of matches
+     * The location of the folder used for serialization of matches.
      */
     public final String SERIALIZATION_DIRECTORY = "matches";
 
@@ -53,92 +59,109 @@ public class Reporter {
 
     /**
      * Reporter constructor.
+     * 
+     * @param reporterGUI referenec to the Reporter GUI
      */
     public Reporter(ReporterGUI reporterGUI) {
         this.reporterGUI = reporterGUI;
         // check if a newer version of Reporter is available
-        checkForNewVersion(new Properties().getVersion());
+        //checkForNewVersion(new Properties().getVersion()); // @TODO: re-add later!
     }
     /**
-     * The conducted experiment
+     * The conducted experiment.
      */
     private MsExperiment experiment;
     /**
-     * The sample analyzed
+     * The sample analyzed.
      */
     private Sample sample;
     /**
-     * The replicate number
+     * The replicate number.
      */
     private int replicateNumber;
     /**
-     * The quantification method used
+     * The quantification method used.
      */
     private int quantificationMethodUsed;
     /**
-     * The main GUI
+     * The main GUI.
      */
     private ReporterGUI reporterGUI;
+     /**
+     * The quantification preferences.
+     */
+    private QuantificationPreferences quantificationPreferences = new QuantificationPreferences();
+    /**
+     * The identification preferences
+     */
+    private IdentificationPreferences identificationPreferences = new IdentificationPreferences();
 
     /**
      * Check if a newer version of reporter is available.
      *
-     * @param currentVersion the version number of the currently running reporter
+     * @param currentVersion the version number of the currently running
+     * reporter
      */
     private static void checkForNewVersion(String currentVersion) {
-        /*
+
         try {
-        boolean deprecatedOrDeleted = false;
-        URL downloadPage = new URL(
-        "http://code.google.com/p/reporter/downloads/detail?name=reporter-" +
-        currentVersion + ".zip");
-        int respons = ((java.net.HttpURLConnection) downloadPage.openConnection()).getResponseCode();
-        
-        // 404 means that the file no longer exists, which means that
-        // the running version is no longer available for download,
-        // which again means that a never version is available.
-        if (respons == 404) {
-        deprecatedOrDeleted = true;
-        } else {
-        
-        // also need to check if the available running version has been
-        // deprecated (but not deleted)
-        BufferedReader in = new BufferedReader(
-        new InputStreamReader(downloadPage.openStream()));
-        
-        String inputLine;
-        
-        while ((inputLine = in.readLine()) != null && !deprecatedOrDeleted) {
-        if (inputLine.lastIndexOf("Deprecated") != -1 &&
-        inputLine.lastIndexOf("Deprecated Downloads") == -1 &&
-        inputLine.lastIndexOf("Deprecated downloads") == -1) {
-        deprecatedOrDeleted = true;
-        }
-        }
-        
-        in.close();
-        }
-        
-        // informs the user about an updated version of the converter, unless the user
-        // is running a beta version
-        if (deprecatedOrDeleted && currentVersion.lastIndexOf("beta") == -1) {
-        int option = JOptionPane.showConfirmDialog(null,
-        "A newer version of reporter is available.\n" +
-        "Do you want to upgrade?",
-        "Upgrade Available",
-        JOptionPane.YES_NO_CANCEL_OPTION);
-        if (option == JOptionPane.YES_OPTION) {
-        BareBonesBrowserLaunch.openURL("http://reporter.googlecode.com/");
-        System.exit(0);
-        } else if (option == JOptionPane.CANCEL_OPTION) {
-        System.exit(0);
-        }
-        }
+            boolean deprecatedOrDeleted = false;
+            URL downloadPage = new URL(
+                    "http://code.google.com/p/reporter/downloads/detail?name=Reporter-"
+                    + currentVersion + ".zip");
+
+            if ((java.net.HttpURLConnection) downloadPage.openConnection() != null) {
+
+                int respons = ((java.net.HttpURLConnection) downloadPage.openConnection()).getResponseCode();
+
+                // 404 means that the file no longer exists, which means that
+                // the running version is no longer available for download,
+                // which again means that a never version is available.
+                if (respons == 404) {
+                    deprecatedOrDeleted = true;
+                } else {
+
+                    // also need to check if the available running version has been
+                    // deprecated (but not deleted)
+                    BufferedReader in = new BufferedReader(
+                            new InputStreamReader(downloadPage.openStream()));
+
+                    String inputLine;
+
+                    while ((inputLine = in.readLine()) != null && !deprecatedOrDeleted) {
+                        if (inputLine.lastIndexOf("Deprecated") != -1
+                                && inputLine.lastIndexOf("Deprecated Downloads") == -1
+                                && inputLine.lastIndexOf("Deprecated downloads") == -1) {
+                            deprecatedOrDeleted = true;
+                        }
+                    }
+
+                    in.close();
+                }
+
+                // informs the user about an updated version of the tool, unless the user
+                // is running a beta version
+                if (deprecatedOrDeleted && currentVersion.lastIndexOf("beta") == -1) {
+                    int option = JOptionPane.showConfirmDialog(null,
+                            "A newer version of Reporter is available.\n"
+                            + "Do you want to upgrade?",
+                            "Upgrade Available",
+                            JOptionPane.YES_NO_CANCEL_OPTION);
+                    if (option == JOptionPane.YES_OPTION) {
+                        BareBonesBrowserLaunch.openURL("http://reporter.googlecode.com/");
+                        System.exit(0);
+                    } else if (option == JOptionPane.CANCEL_OPTION) {
+                        System.exit(0);
+                    }
+                }
+            }
+        } catch (UnknownHostException e) {
+            // ignore exception
         } catch (MalformedURLException e) {
-        e.printStackTrace();
+            e.printStackTrace();
         } catch (IOException e) {
-        e.printStackTrace();
-        }*/
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -149,17 +172,10 @@ public class Reporter {
     public void close(int aStatus) {
         System.exit(aStatus);
     }
+   
     /**
-     * The quantification preferences
-     */
-    private QuantificationPreferences quantificationPreferences = new QuantificationPreferences();
-    /**
-     * The identification preferences
-     */
-    private IdentificationPreferences identificationPreferences = new IdentificationPreferences();
-
-    /**
-     * returns the quantification preferences
+     * Returns the quantification preferences.
+     *
      * @return the quantification preferences
      */
     public QuantificationPreferences getQuantificationPreferences() {
@@ -167,7 +183,8 @@ public class Reporter {
     }
 
     /**
-     * sets the quantification preferences
+     * Sets the quantification preferences.
+     *
      * @param quantificationPreferences the quantification preferences
      */
     public void setQuantificationPreferences(QuantificationPreferences quantificationPreferences) {
@@ -175,7 +192,8 @@ public class Reporter {
     }
 
     /**
-     * returns the identification preferences
+     * Returns the identification preferences.
+     *
      * @return the identification preferences
      */
     public IdentificationPreferences getIDentificationPreferences() {
@@ -183,7 +201,8 @@ public class Reporter {
     }
 
     /**
-     * sets the identification preferences
+     * Sets the identification preferences.
+     *
      * @param identificationPreferences the identification preferences
      */
     public void setIdentificationPreferences(IdentificationPreferences identificationPreferences) {
@@ -191,7 +210,8 @@ public class Reporter {
     }
 
     /**
-     * Returns the experiment conducted
+     * Returns the experiment conducted.
+     *
      * @return the experiment conducted
      */
     public MsExperiment getExperiment() {
@@ -199,7 +219,8 @@ public class Reporter {
     }
 
     /**
-     * Sets  the experiment conducted
+     * Sets the experiment conducted.
+     *
      * @param experiment the experiment conducted
      */
     public void setExperiment(MsExperiment experiment) {
@@ -207,7 +228,8 @@ public class Reporter {
     }
 
     /**
-     * Returns the replicate number
+     * Returns the replicate number.
+     *
      * @return the replicate number
      */
     public int getReplicateNumber() {
@@ -215,7 +237,8 @@ public class Reporter {
     }
 
     /**
-     * Sets the replicate number
+     * Sets the replicate number.
+     *
      * @param replicateNumber the replicate number
      */
     public void setReplicateNumber(int replicateNumber) {
@@ -223,7 +246,8 @@ public class Reporter {
     }
 
     /**
-     * Returns the sample analyzed
+     * Returns the sample analyzed.
+     *
      * @return the sample analyzed
      */
     public Sample getSample() {
@@ -231,7 +255,8 @@ public class Reporter {
     }
 
     /**
-     * Sets the sample analyzed
+     * Sets the sample analyzed.
+     *
      * @param sample the sample analyzed
      */
     public void setSample(Sample sample) {
@@ -239,7 +264,8 @@ public class Reporter {
     }
 
     /**
-     * returns the quantification method used
+     * Returns the quantification method used.
+     *
      * @return the quantification method used
      */
     public int getQuantificationMethodUsed() {
@@ -247,7 +273,8 @@ public class Reporter {
     }
 
     /**
-     * sets the quantification method used
+     * Sets the quantification method used.
+     *
      * @param quantificationMethodUsed the quantification method used
      */
     public void setQuantificationMethodUsed(int quantificationMethodUsed) {
@@ -255,9 +282,10 @@ public class Reporter {
     }
 
     /**
-     * Loads identification and quantification information from files
-     * @param idFiles   the identification files
-     * @param mgfFiles  the quantification files
+     * Loads identification and quantification information from files.
+     *
+     * @param idFiles the identification files
+     * @param mgfFiles the quantification files
      */
     public void loadFiles(ArrayList<File> idFiles, ArrayList<File> mgfFiles) {
         WaitingDialog waitingDialog = new WaitingDialog(reporterGUI, true, this);
@@ -267,7 +295,7 @@ public class Reporter {
     }
 
     /**
-     * displays the results in the main gui
+     * Displays the results in the main gui.
      */
     public void updateResults() {
         RatiosCompilator ratiosCompilator = new RatiosCompilator();
@@ -276,7 +304,8 @@ public class Reporter {
     }
 
     /**
-     * Returns the processed quantification
+     * Returns the processed quantification.
+     *
      * @return the processed quantification
      */
     public ReporterIonQuantification getQuantification() {
@@ -288,7 +317,7 @@ public class Reporter {
     }
 
     /**
-     * worker used to compile ratios
+     * Worker used to compile ratios.
      */
     private class RatiosCompilator extends SwingWorker {
 
@@ -296,8 +325,9 @@ public class Reporter {
         protected Object doInBackground() throws Exception {
             try {
                 ReporterIonQuantification quantification = getQuantification();
-                RatioEstimator ratioEstimator = new RatioEstimator(quantification, quantification.getReporterMethod(), quantification.getReferenceLabel(), quantificationPreferences, identificationPreferences);
-                ProteinQuantification proteinQuantification;
+                RatioEstimator ratioEstimator = new RatioEstimator(quantification, quantification.getReporterMethod(), 
+                        quantification.getReferenceLabel(), quantificationPreferences, identificationPreferences);
+                //ProteinQuantification proteinQuantification;
                 for (String proteinKey : quantification.getProteinQuantification()) {
                     ratioEstimator.estimateProteinRatios(proteinKey);
                 }
@@ -310,8 +340,9 @@ public class Reporter {
     }
 
     /**
-     * Returns the desired spectrum
-     * @param spectrumKey   the key of the spectrum
+     * Returns the desired spectrum.
+     *
+     * @param spectrumKey the key of the spectrum
      * @return the desired spectrum
      */
     public MSnSpectrum getSpectrum(String spectrumKey) {
@@ -326,7 +357,8 @@ public class Reporter {
     }
 
     /**
-     * Method called whenever an exception is caught
+     * Method called whenever an exception is caught.
+     *
      * @param e the exception caught
      */
     public void catchException(Exception e) {
@@ -342,28 +374,30 @@ public class Reporter {
     }
 
     /**
-     * worker used to process files
+     * Worker used to process files.
      */
     private class DataImporter extends SwingWorker {
 
         /**
-         * The waiting dialog will provide feedback to the user
+         * The waiting dialog will provide feedback to the user.
          */
         private WaitingDialog waitingDialog;
         /**
-         * The identification files
+         * The identification files.
          */
         private ArrayList<File> idFiles;
         /**
-         * The mgf files
+         * The mgf files.
          */
         private ArrayList<File> mgfFiles;
 
         /**
-         * Constructor
-         * @param waitingDialog The waiting dialog will provide feedback to the user
-         * @param idFiles       The identification files
-         * @param mgfFiles      The mgf files
+         * Constructor.
+         *
+         * @param waitingDialog The waiting dialog will provide feedback to the
+         * user
+         * @param idFiles The identification files
+         * @param mgfFiles The mgf files
          */
         public DataImporter(WaitingDialog waitingDialog, ArrayList<File> idFiles, ArrayList<File> mgfFiles) {
             this.waitingDialog = waitingDialog;
@@ -376,6 +410,7 @@ public class Reporter {
             Identification identification = experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).getIdentification(IdentificationMethod.MS2_IDENTIFICATION);
             Quantification quantification = getQuantification();
             DataLoader dataLoader = new DataLoader(quantificationPreferences, waitingDialog, identification);
+            
             if (idFiles.size() > 1 || !idFiles.get(0).getName().endsWith(".cps")) {
                 try {
                     dataLoader.loadIdentifications(idFiles);
@@ -393,6 +428,7 @@ public class Reporter {
                     return 1;
                 }
             }
+            
             try {
                 quantification.buildPeptidesAndProteinQuantifications(identification);
             } catch (Exception e) {
@@ -400,6 +436,7 @@ public class Reporter {
                 waitingDialog.setRunCancelled();
                 return 1;
             }
+            
             dataLoader.loadQuantification(getQuantification(), mgfFiles);
             waitingDialog.setRunFinished();
             return 0;

@@ -12,7 +12,7 @@
 
     <!-- Set the version number for the whole project -->
     <properties>
-        <version.number>1.2.0</version.number>
+        <version.number>1.3.0</version.number>
     </properties>
 
 
@@ -87,15 +87,16 @@
                         <manifest>
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                             <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-                            <mainClass>eu.isas.reporter.Wrapper</mainClass>
+                            <mainClass>eu.isas.reporter.ReporterWrapper</mainClass>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib</classpathPrefix>
                         </manifest>
                     </archive>
-                    <outputDirectory>${project.build.directory}/${project.artifactId}-${project.version}
+                    <outputDirectory>${project.build.directory}/${project.name}-${project.version}
                     </outputDirectory>
                 </configuration>
             </plugin>
+            
 
             <!-- Dependency plugin -->
             <plugin>
@@ -109,7 +110,7 @@
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/${project.artifactId}-${project.version}/lib
+                            <outputDirectory>${project.build.directory}/${project.name}-${project.version}/lib
                             </outputDirectory>
                             <overWriteReleases>true</overWriteReleases>
                             <overWriteSnapshots>true</overWriteSnapshots>
@@ -141,16 +142,16 @@
                             </resources>
                         </configuration>
                     </execution>
-
+                    
                     <!-- Copy the resources -->
                     <execution>
-                        <id>copy-resources</id>
+                        <id>copy-package-resources</id>
                         <phase>package</phase>
                         <goals>
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/${project.artifactId}-${project.version}/
+                            <outputDirectory>${project.build.directory}/${project.name}-${project.version}/
                             </outputDirectory>
                             <resources>
                                 <resource>
@@ -159,30 +160,6 @@
                                         <include>conf/</include>
                                         <include>LICENSE-2.0.txt</include>
                                     </includes>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!-- Resources plugin - classes -->
-            <plugin>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>2.3</version>
-                <executions>
-                    <execution>
-                        <id>copy-resources</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/${project.artifactId}-${project.version}
-                            </outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>src/main/resources/</directory>
                                 </resource>
                             </resources>
                         </configuration>
@@ -367,6 +344,14 @@
             <groupId>uk.ac.ebi.jmzml</groupId>
             <artifactId>jmzml</artifactId>
             <version>1.6.5</version>
+        </dependency>
+        
+        <!-- use for adding desktop shortcuts -->
+        <dependency>
+            <groupId>net.jimmc</groupId>
+            <artifactId>jshortcut</artifactId>
+            <version>0.4-oberzalek</version>
+            <type>jar</type>
         </dependency>
     </dependencies>
 

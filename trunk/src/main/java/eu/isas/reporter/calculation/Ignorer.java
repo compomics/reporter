@@ -19,25 +19,28 @@ public class Ignorer {
      */
     private boolean ignoreMissedCleavages;
     /**
-     * All peptides presenting a modification contained in this list will be ignored.
+     * All peptides presenting a modification contained in this list will be
+     * ignored.
      */
     private ArrayList<String> ignoredModifications = new ArrayList<String>();
     /**
-     * minimal ratio to be considered
+     * minimal ratio to be considered.
      */
     private double ratioMin;
     /**
-     * maximal ratio to be considered
+     * maximal ratio to be considered.
      */
     private double ratioMax;
     /**
-     * The enzyme used
+     * The enzyme used.
      */
     private Enzyme enzymeUsed;
 
     /**
-     * Constructor
+     * Constructor.
+     *
      * @param quantificationPreferences the quantification preferences
+     * @param searchPreferences the search preferences 
      */
     public Ignorer(QuantificationPreferences quantificationPreferences, IdentificationPreferences searchPreferences) {
         this.ratioMin = quantificationPreferences.getRatioMin();
@@ -48,7 +51,8 @@ public class Ignorer {
     }
 
     /**
-     * Method indicating whether a ratio should be ignored
+     * Method indicating whether a ratio should be ignored.
+     *
      * @param ratio the examined ratio
      * @return a boolean indicating whether the ratio should be ignored
      */
@@ -57,7 +61,8 @@ public class Ignorer {
     }
 
     /**
-     * Method indicating whether a peptide should be ignored
+     * Method indicating whether a peptide should be ignored.
+     *
      * @param peptide the examined peptide
      * @return a boolean indicating whether the peptide should be ignored.
      */
@@ -80,7 +85,8 @@ public class Ignorer {
     }
 
     /**
-     * sets the minimal ratio to be considered
+     * Sets the minimal ratio to be considered.
+     *
      * @param ratioMin minimal ratio to be considered
      */
     public void setRatioMin(double ratioMin) {
@@ -88,7 +94,8 @@ public class Ignorer {
     }
 
     /**
-     * sets the maximal ratio to be considered
+     * Sets the maximal ratio to be considered.
+     *
      * @param ratioMax maximal ratio to be considered
      */
     public void setRatioMax(double ratioMax) {

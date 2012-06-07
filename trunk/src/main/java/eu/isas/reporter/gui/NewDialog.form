@@ -1,4 +1,4 @@
-<?xml version="1.1" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JDialogFormInfo">
   <NonVisualComponents>
@@ -36,7 +36,7 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="jTabbedPane1" alignment="0" pref="966" max="32767" attributes="0"/>
+          <Component id="jTabbedPane1" alignment="0" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -146,8 +146,8 @@
                               </Group>
                               <Group type="102" alignment="1" attributes="0">
                                   <Group type="103" groupAlignment="1" attributes="0">
-                                      <Component id="addDbButton" alignment="0" pref="67" max="32767" attributes="0"/>
-                                      <Component id="addSpectraFilesJButton" linkSize="1" alignment="1" pref="67" max="32767" attributes="0"/>
+                                      <Component id="addDbButton" alignment="0" max="32767" attributes="0"/>
+                                      <Component id="addSpectraFilesJButton" linkSize="1" alignment="1" max="32767" attributes="0"/>
                                   </Group>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
@@ -156,7 +156,7 @@
                                   </Group>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                                      <Component id="clearDbButton" min="0" pref="0" max="32767" attributes="1"/>
+                                      <Component id="clearDbButton" min="0" pref="67" max="32767" attributes="1"/>
                                       <Component id="clearSpectraJButton" linkSize="1" alignment="1" max="32767" attributes="1"/>
                                   </Group>
                               </Group>
@@ -798,7 +798,7 @@
                           <Component id="jPanel12" alignment="0" max="32767" attributes="2"/>
                           <Component id="jPanel10" alignment="0" max="32767" attributes="2"/>
                           <Component id="exitButton3" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="jPanel11" alignment="1" pref="941" max="32767" attributes="2"/>
+                          <Component id="jPanel11" alignment="1" max="32767" attributes="2"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -897,7 +897,7 @@
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" max="-2" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Component id="jLabel9" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -1167,7 +1167,7 @@
                 </DimensionLayout>
                 <DimensionLayout dim="1">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" max="-2" attributes="0">
+                      <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="3" attributes="0">
                               <Component id="jLabel12" alignment="3" min="-2" max="-2" attributes="0"/>

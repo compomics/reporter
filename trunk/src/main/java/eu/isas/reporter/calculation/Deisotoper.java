@@ -16,17 +16,16 @@ import org.ujmp.core.doublematrix.calculation.general.decomposition.Ginv;
 public class Deisotoper {
 
     /**
-     * The correction matrix (see PMID: 19953549)
+     * The correction matrix (see PMID: 19953549).
      */
     private double[][] correctionMatrix;
-
     /**
-     * the reporter method used
+     * the reporter method used.
      */
     private ReporterMethod method;
 
     /**
-     * constructor
+     * Constructor.
      *
      * @param method the reporter method used
      */
@@ -36,24 +35,26 @@ public class Deisotoper {
     }
 
     /**
-     * Method which estimates the correction factors matrix
+     * Method which estimates the correction factors matrix.
      */
     private void estimateCorrectionMatrix() {
+        
         ArrayList<CorrectionFactor> correctionFactors = method.getCorrectionFactors();
         ArrayList<ReporterIon> reporterIons = method.getReporterIons();
         int dimension = correctionFactors.size();
         double[][] coefficients = new double[dimension][dimension];
-        for (int i = 0 ; i < dimension ; i++) {
-            for (int j = 0 ; j < dimension ; j++) {
+        
+        for (int i = 0; i < dimension; i++) {
+            for (int j = 0; j < dimension; j++) {
                 if (reporterIons.get(i).getIndex() - correctionFactors.get(j).getIonId() == -2) {
                     coefficients[i][j] = correctionFactors.get(j).getMinus2() / 100.0;
                 } else if (reporterIons.get(i).getIndex() - correctionFactors.get(j).getIonId() == -1) {
                     coefficients[i][j] = correctionFactors.get(j).getMinus1() / 100.0;
                 } else if (reporterIons.get(i).getIndex() - correctionFactors.get(j).getIonId() == 0) {
-                    coefficients[i][j] = 1 -correctionFactors.get(j).getMinus2() / 100.0
-                            -correctionFactors.get(j).getMinus1() / 100.0
-                            -correctionFactors.get(j).getPlus1() / 100.0
-                            -correctionFactors.get(j).getPlus2() / 100.0;
+                    coefficients[i][j] = 1 - correctionFactors.get(j).getMinus2() / 100.0
+                            - correctionFactors.get(j).getMinus1() / 100.0
+                            - correctionFactors.get(j).getPlus1() / 100.0
+                            - correctionFactors.get(j).getPlus2() / 100.0;
                 } else if (reporterIons.get(i).getIndex() - correctionFactors.get(j).getIonId() == 1) {
                     coefficients[i][j] = correctionFactors.get(j).getPlus1() / 100.0;
                 } else if (reporterIons.get(i).getIndex() - correctionFactors.get(j).getIonId() == 2) {
@@ -67,26 +68,29 @@ public class Deisotoper {
     }
 
     /**
-     * this method returns deisotoped intensities
+     * This method returns deisotoped intensities.
      *
      * @param ionMatches the ion matches to deisotope
      * @return a map of the deisotoped intensities (ion index -> intensity)
      */
     public HashMap<Integer, Double> deisotope(HashMap<Integer, IonMatch> ionMatches) {
+        
         ArrayList<ReporterIon> reporterIons = method.getReporterIons();
         double[] intensities = new double[reporterIons.size()];
-        for (int i = 0 ; i < reporterIons.size() ; i++) {
+        
+        for (int i = 0; i < reporterIons.size(); i++) {
             if (ionMatches.get(reporterIons.get(i).getIndex()) != null) {
                 if (ionMatches.get(reporterIons.get(i).getIndex()).peak != null) {
-                intensities[i] = ionMatches.get(reporterIons.get(i).getIndex()).peak.intensity;
+                    intensities[i] = ionMatches.get(reporterIons.get(i).getIndex()).peak.intensity;
                 }
             }
         }
-        double resultInt;
+        
         HashMap<Integer, Double> result = new HashMap<Integer, Double>();
-        for(int i = 0 ; i < correctionMatrix.length ; i++) {
-            resultInt = 0;
-            for(int j=0 ; j < intensities.length ; j++) {
+        
+        for (int i = 0; i < correctionMatrix.length; i++) {
+            double resultInt = 0;
+            for (int j = 0; j < intensities.length; j++) {
                 resultInt += intensities[j] * correctionMatrix[i][j];
             }
             if (resultInt < 0) {
@@ -98,11 +102,17 @@ public class Deisotoper {
     }
 
     /**
-     * user dependant code! Do not commit!
+     * User dependant code! Do not commit!
+     * 
+     * @param ionMatches
+     * @param spectrumName
+     * @return  
      */
     public HashMap<Integer, Double> deisotopeSwitch(HashMap<Integer, IonMatch> ionMatches, String spectrumName) {
 
-ArrayList<String> cofradicCys = new ArrayList<String>();
+        // @TODO: i guess this code should not be in svn then..?
+        
+        ArrayList<String> cofradicCys = new ArrayList<String>();
         cofradicCys.add("orbitrap001989.mgf");
         cofradicCys.add("orbitrap001990.mgf");
         cofradicCys.add("orbitrap001991.mgf");
@@ -127,7 +137,7 @@ ArrayList<String> cofradicCys = new ArrayList<String>();
         cofradicCys.add("QstarE04577 (recalibrated).mgf");
         cofradicCys.add("QstarE04579 (recalibrated).mgf");
         cofradicCys.add("QstarE04580 (recalibrated).mgf");
-ArrayList<String> cofradicMet = new ArrayList<String>();
+        ArrayList<String> cofradicMet = new ArrayList<String>();
         cofradicMet.add("orbitrap001979.mgf");
         cofradicMet.add("orbitrap001980.mgf");
         cofradicMet.add("orbitrap001981.mgf");
@@ -146,7 +156,7 @@ ArrayList<String> cofradicMet = new ArrayList<String>();
         cofradicMet.add("QstarE04506.mgf");
         cofradicMet.add("QstarE04508.mgf");
         cofradicMet.add("QstarE04510.mgf");
-ArrayList<String> hilic = new ArrayList<String>();
+        ArrayList<String> hilic = new ArrayList<String>();
         hilic.add("orbitrap001935.mgf");
         hilic.add("orbitrap001936.mgf");
         hilic.add("orbitrap001937.mgf");
@@ -220,7 +230,7 @@ ArrayList<String> hilic = new ArrayList<String>();
         hilic.add("QstarE04613 (recalibrated).mgf");
         hilic.add("QstarE04614 (recalibrated).mgf");
         hilic.add("QstarE04616 (recalibrated).mgf");
-ArrayList<String> ief = new ArrayList<String>();
+        ArrayList<String> ief = new ArrayList<String>();
         ief.add("orbitrap001756.mgf");
         ief.add("orbitrap001757.mgf");
         ief.add("orbitrap001758.mgf");
@@ -286,7 +296,7 @@ ArrayList<String> ief = new ArrayList<String>();
         ief.add("QstarE04667.mgf");
         ief.add("QstarE04669.mgf");
         ief.add("QstarE04670.mgf");
-ArrayList<String> scx = new ArrayList<String>();
+        ArrayList<String> scx = new ArrayList<String>();
         scx.add("orbitrap001887.mgf");
         scx.add("orbitrap001888.mgf");
         scx.add("orbitrap001889.mgf");
@@ -362,27 +372,27 @@ ArrayList<String> scx = new ArrayList<String>();
         scx.add("QstarE04484.mgf");
         scx.add("QstarE04486 (recalibrated) (recalibrated).mgf");
         scx.add("QstarE04492.mgf");
-HashMap<Integer, Integer> scxMap = new HashMap<Integer, Integer>();
+        HashMap<Integer, Integer> scxMap = new HashMap<Integer, Integer>();
         scxMap.put(114, 114);
         scxMap.put(115, 115);
         scxMap.put(116, 116);
         scxMap.put(117, 117);
-HashMap<Integer, Integer> iefMap = new HashMap<Integer, Integer>();
+        HashMap<Integer, Integer> iefMap = new HashMap<Integer, Integer>();
         iefMap.put(114, 117);
         iefMap.put(115, 114);
         iefMap.put(116, 115);
         iefMap.put(117, 116);
-HashMap<Integer, Integer> cofradicMetMap = new HashMap<Integer, Integer>();
+        HashMap<Integer, Integer> cofradicMetMap = new HashMap<Integer, Integer>();
         cofradicMetMap.put(114, 116);
         cofradicMetMap.put(115, 117);
         cofradicMetMap.put(116, 114);
         cofradicMetMap.put(117, 115);
-HashMap<Integer, Integer>  hilicMap = new HashMap<Integer, Integer>();
+        HashMap<Integer, Integer> hilicMap = new HashMap<Integer, Integer>();
         hilicMap.put(114, 117);
         hilicMap.put(115, 114);
         hilicMap.put(116, 115);
         hilicMap.put(117, 116);
-HashMap<Integer, Integer> cofradicCysMap = new HashMap<Integer, Integer>();
+        HashMap<Integer, Integer> cofradicCysMap = new HashMap<Integer, Integer>();
         cofradicCysMap.put(114, 117);
         cofradicCysMap.put(115, 114);
         cofradicCysMap.put(116, 115);
@@ -390,16 +400,18 @@ HashMap<Integer, Integer> cofradicCysMap = new HashMap<Integer, Integer>();
 
         ArrayList<ReporterIon> reporterIons = method.getReporterIons();
         double[] intensities = new double[reporterIons.size()];
-        for (int i = 0 ; i < reporterIons.size() ; i++) {
+        
+        for (int i = 0; i < reporterIons.size(); i++) {
             if (ionMatches.get(reporterIons.get(i).getIndex()) != null) {
                 if (ionMatches.get(reporterIons.get(i).getIndex()).peak != null) {
-                intensities[i] = ionMatches.get(reporterIons.get(i).getIndex()).peak.intensity;
+                    intensities[i] = ionMatches.get(reporterIons.get(i).getIndex()).peak.intensity;
                 }
             }
         }
-        double resultInt;
+        
         HashMap<Integer, Double> result = new HashMap<Integer, Double>();
         HashMap<Integer, Integer> switchMap = new HashMap<Integer, Integer>();
+        
         if (cofradicCys.contains(spectrumName)) {
             switchMap = cofradicCysMap;
         } else if (cofradicMet.contains(spectrumName)) {
@@ -411,9 +423,10 @@ HashMap<Integer, Integer> cofradicCysMap = new HashMap<Integer, Integer>();
         } else if (hilic.contains(spectrumName)) {
             switchMap = hilicMap;
         }
-        for(int i = 0 ; i < correctionMatrix.length ; i++) {
-            resultInt = 0;
-            for(int j=0 ; j < intensities.length ; j++) {
+        
+        for (int i = 0; i < correctionMatrix.length; i++) {
+            double resultInt = 0;
+            for (int j = 0; j < intensities.length; j++) {
                 resultInt += intensities[j] * correctionMatrix[i][j];
             }
             if (resultInt < 0) {
@@ -421,6 +434,7 @@ HashMap<Integer, Integer> cofradicCysMap = new HashMap<Integer, Integer>();
             }
             result.put(switchMap.get(reporterIons.get(i).getIndex()), resultInt);
         }
+        
         return result;
     }
 }

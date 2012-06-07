@@ -4,25 +4,24 @@ import com.compomics.util.experiment.biology.NeutralLoss;
 import com.compomics.util.experiment.biology.Peptide;
 import com.compomics.util.experiment.biology.ions.PeptideFragmentIon.PeptideFragmentIonType;
 import com.compomics.util.experiment.identification.SpectrumAnnotator;
-import com.compomics.util.experiment.personalization.UrParameter;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * this class contains the spectrum annotation preferences
+ * This class contains the spectrum annotation preferences.
  *
- * @author marc
+ * @author Marc Vaudel
  */
 public class AnnotationPreferences implements Serializable {
 
     /**
-     * If true, the automatic y-axis zoom excludes background peaks. False 
+     * If true, the automatic y-axis zoom excludes background peaks. False
      * includes all peaks in the auto zoom.
      */
     private boolean yAxisZoomExcludesBackgroundPeaks = true;
     /**
-     * If true, the ion table is shown as an intensity versionm, false displays 
+     * If true, the ion table is shown as an intensity versionm, false displays
      * the standard Mascot version.
      */
     private boolean intensityIonTable = true;
@@ -31,33 +30,34 @@ public class AnnotationPreferences implements Serializable {
      */
     private boolean showBars = false;
     /**
-     * If true, all peaks are shown, false displays the annotated peaks, and 
-     * the non-annotated in the background.
+     * If true, all peaks are shown, false displays the annotated peaks, and the
+     * non-annotated in the background.
      */
     private boolean showAllPeaks = false;
     /**
-     * The intensity limit used when only the most intense peaks are to be 
+     * The intensity limit used when only the most intense peaks are to be
      * annotated.
      */
     private double intensityLimit = 0.75;
     /**
-     * Shall PeptideShaker use automatic annotation
+     * Shall PeptideShaker use automatic annotation.
      */
     private boolean automaticAnnotation;
     /**
-     * The types of ions to annotate
+     * The types of ions to annotate.
      */
     private ArrayList<PeptideFragmentIonType> ionTypes = new ArrayList<PeptideFragmentIonType>();
     /**
-     * The neutral losses searched for
+     * The neutral losses searched for.
      */
     private HashMap<NeutralLoss, Integer> neutralLosses = new HashMap<NeutralLoss, Integer>();
     /**
-     * Shall neutral losses be only considered for ions containing amino acids of interest?
+     * Shall neutral losses be only considered for ions containing amino acids
+     * of interest?
      */
     private boolean neutralLossesSequenceDependant;
     /**
-     * the maximal fragment charge to be searched for
+     * The maximal fragment charge to be searched for.
      */
     private ArrayList<Integer> selectedCharges = new ArrayList<Integer>();
     /**
@@ -65,29 +65,30 @@ public class AnnotationPreferences implements Serializable {
      */
     private double fragmentIonAccuracy;
     /**
-     * The currently inspected peptide
+     * The currently inspected peptide.
      */
     private Peptide currentPeptide;
     /**
-     * The charge of the currently inspected precursor
+     * The charge of the currently inspected precursor.
      */
     private int currentPrecursorCharge = 0;
     /**
-     * The m/z tolerance for reporter ions
+     * The m/z tolerance for reporter ions.
      */
     private double reporterIonsMZTolerance;
 
     /**
-     * Constructor
+     * Constructor.
      */
     public AnnotationPreferences() {
     }
 
     /**
-     * Sets the annotation settings for the current peptide and precursor charge.
-     * 
+     * Sets the annotation settings for the current peptide and precursor
+     * charge.
+     *
      * @param currentPeptide
-     * @param currentPrecursorCharge  
+     * @param currentPrecursorCharge
      * @param newSpectrum
      */
     public void setCurrentSettings(Peptide currentPeptide, int currentPrecursorCharge, boolean newSpectrum) {
@@ -103,7 +104,7 @@ public class AnnotationPreferences implements Serializable {
     }
 
     /**
-     * Updates the neutral losses and charge annotation settings
+     * Updates the neutral losses and charge annotation settings.
      */
     public void resetAutomaticAnnotation() {
 
@@ -116,59 +117,72 @@ public class AnnotationPreferences implements Serializable {
     }
 
     /**
-     * Returns whether neutral losses are considered only for amino acids of interest or not.
-     * 
-     * @return a boolean indicating whether neutral losses are considered only for amino acids of interest or not.
+     * Returns whether neutral losses are considered only for amino acids of
+     * interest or not.
+     *
+     * @return a boolean indicating whether neutral losses are considered only
+     * for amino acids of interest or not.
      */
     public boolean areNeutralLossesSequenceDependant() {
         return neutralLossesSequenceDependant;
     }
 
+    /**
+     * Sets whether neutral losses are considered only for amino acids of
+     * interest or not.
+     * 
+     * @param neutralLossesSequenceDependant 
+     */
     public void setNeutralLossesSequenceDependant(boolean neutralLossesSequenceDependant) {
         this.neutralLossesSequenceDependant = neutralLossesSequenceDependant;
     }
 
     /**
-     * Returns the fragment ion charges considered for the desired precursor charge
-     * 
-     * @return the fragment ion charges considered 
+     * Returns the fragment ion charges considered for the desired precursor
+     * charge.
+     *
+     * @return the fragment ion charges considered
      */
     public ArrayList<Integer> getValidatedCharges() {
         return selectedCharges;
     }
 
     /**
-     * Clears the selected charges
+     * Clears the selected charges.
      */
     public void clearCharges() {
         selectedCharges.clear();
     }
 
     /**
-     * Add a charge to take into account when annotating the spectrum
-     * @param selectedCharge a charge to take into account when annotating the spectrum
+     * Add a charge to take into account when annotating the spectrum.
+     *
+     * @param selectedCharge a charge to take into account when annotating the
+     * spectrum
      */
     public void addSelectedCharge(int selectedCharge) {
         selectedCharges.add(selectedCharge);
     }
 
     /**
-     * clears the considered neutral losses
+     * Clears the considered neutral losses.
      */
     public void clearNeutralLosses() {
         neutralLosses.clear();
     }
 
     /**
-     * returns the considered neutral losses
-     * @return the considered neutral losses 
+     * Returns the considered neutral losses.
+     *
+     * @return the considered neutral losses
      */
     public HashMap<NeutralLoss, Integer> getNeutralLosses() {
         return neutralLosses;
     }
 
     /**
-     * adds a neutral loss
+     * Adds a neutral loss.
+     *
      * @param neutralLoss a new neutral loss
      */
     public void addNeutralLoss(NeutralLoss neutralLoss) {
@@ -176,22 +190,24 @@ public class AnnotationPreferences implements Serializable {
     }
 
     /**
-     * returns the type of ions annotated
-     * @return the type of ions annotated 
+     * Returns the type of ions annotated.
+     *
+     * @return the type of ions annotated
      */
     public ArrayList<PeptideFragmentIonType> getIonTypes() {
         return ionTypes;
     }
 
     /**
-     * Clears the ion types annotated
+     * Clears the ion types annotated.
      */
     public void clearIonTypes() {
         ionTypes.clear();
     }
 
     /**
-     * Adds a new ion type to annotate
+     * Adds a new ion type to annotate.
+     *
      * @param ionType a new ion type to annotate
      */
     public void addIonType(PeptideFragmentIonType ionType) {
@@ -200,8 +216,9 @@ public class AnnotationPreferences implements Serializable {
 
     /**
      * Sets whether the default PeptideShaker annotation should be used.
-     * 
-     * @param automaticAnnotation a boolean indicating whether the default PeptideShaker annotation should be used
+     *
+     * @param automaticAnnotation a boolean indicating whether the default
+     * PeptideShaker annotation should be used
      */
     public void useAutomaticAnnotation(boolean automaticAnnotation) {
         this.automaticAnnotation = automaticAnnotation;
@@ -213,8 +230,9 @@ public class AnnotationPreferences implements Serializable {
 
     /**
      * Returns whether PeptideShaker should automatically set the annotations.
-     * 
-     * @return a boolean indicating whether PeptideShaker should automatically set the annotations
+     *
+     * @return a boolean indicating whether PeptideShaker should automatically
+     * set the annotations
      */
     public boolean useAutomaticAnnotation() {
         return automaticAnnotation;
@@ -222,7 +240,7 @@ public class AnnotationPreferences implements Serializable {
 
     /**
      * Returns the fragment ion accuracy.
-     * 
+     *
      * @return the fragment ion accuracy
      */
     public double getFragmentIonAccuracy() {
@@ -231,7 +249,7 @@ public class AnnotationPreferences implements Serializable {
 
     /**
      * Sets the fragment ion accuracy.
-     * 
+     *
      * @param fragmentIonAccuracy the fragment ion accuracy
      */
     public void setFragmentIonAccuracy(double fragmentIonAccuracy) {
@@ -239,7 +257,8 @@ public class AnnotationPreferences implements Serializable {
     }
 
     /**
-     * Returns the current precursor charge
+     * Returns the current precursor charge.
+     *
      * @return the current precursor charge
      */
     public int getCurrentPrecursorCharge() {
@@ -247,10 +266,10 @@ public class AnnotationPreferences implements Serializable {
     }
 
     /**
-     * Returns the intensity limit. [0.0 - 1.0], where 1.0 means that all peaks 
-     * are considered for annotations, while 0.3 means that only the 30% most 
+     * Returns the intensity limit. [0.0 - 1.0], where 1.0 means that all peaks
+     * are considered for annotations, while 0.3 means that only the 30% most
      * intense peaks are considered for annotations.
-     * 
+     *
      * @return the intensityLimit
      */
     public double getAnnotationIntensityLimit() {
@@ -258,10 +277,10 @@ public class AnnotationPreferences implements Serializable {
     }
 
     /**
-     * Sets the annotation level. [0.0 - 1.0], where 1.0 means that all peaks 
-     * are considered for annotations, while 0.3 means that only the 30% most 
+     * Sets the annotation level. [0.0 - 1.0], where 1.0 means that all peaks
+     * are considered for annotations, while 0.3 means that only the 30% most
      * intense peaks are considered for annotations.
-     * 
+     *
      * @param intensityLimit the intensityLimit to set
      */
     public void setAnnotationLevel(double intensityLimit) {
@@ -269,9 +288,9 @@ public class AnnotationPreferences implements Serializable {
     }
 
     /**
-     * If true, all peaks are shown, false displays the annotated peaks, and 
-     * the non-annotated in the background.
-     * 
+     * If true, all peaks are shown, false displays the annotated peaks, and the
+     * non-annotated in the background.
+     *
      * @return true if all peaks are to be shown
      */
     public boolean showAllPeaks() {
@@ -280,8 +299,8 @@ public class AnnotationPreferences implements Serializable {
 
     /**
      * Set if all peaks or just the annotated ones are to be shown.
-     * 
-     * @param showAllPeaks 
+     *
+     * @param showAllPeaks
      */
     public void setShowAllPeaks(boolean showAllPeaks) {
         this.showAllPeaks = showAllPeaks;
@@ -289,7 +308,7 @@ public class AnnotationPreferences implements Serializable {
 
     /**
      * If true, bars are shown in the bubble plot highlighting the ions.
-     * 
+     *
      * @return true if bars are to be shown in the bubble plot
      */
     public boolean showBars() {
@@ -298,19 +317,19 @@ public class AnnotationPreferences implements Serializable {
 
     /**
      * Set if the bars in the bubble plot are to be shown or not
-     * 
-     * @param showBars 
+     *
+     * @param showBars
      */
     public void setShowBars(boolean showBars) {
         this.showBars = showBars;
     }
 
     /**
-     * If true, the ion table is shown as an intensity versionm, false displays 
+     * If true, the ion table is shown as an intensity versionm, false displays
      * the standard Mascot version.
-     * 
-     * @return if true, the ion table is shown as an intensity versionm, false displays 
-     *         the standard Mascot version
+     *
+     * @return if true, the ion table is shown as an intensity versionm, false
+     * displays the standard Mascot version
      */
     public boolean useIntensityIonTable() {
         return intensityIonTable;
@@ -318,17 +337,17 @@ public class AnnotationPreferences implements Serializable {
 
     /**
      * Set if the intensity or m/z ion table should be shown.
-     * 
-     * @param intensityIonTable 
+     *
+     * @param intensityIonTable
      */
     public void setIntensityIonTable(boolean intensityIonTable) {
         this.intensityIonTable = intensityIonTable;
     }
 
     /**
-     * Returns true if the automatic y-axis zoom excludes background peaks. False 
-     * if includes all peaks.
-     * 
+     * Returns true if the automatic y-axis zoom excludes background peaks.
+     * False if includes all peaks.
+     *
      * @return true if the automatic y-axis zoom excludes background peaks
      */
     public boolean yAxisZoomExcludesBackgroundPeaks() {
@@ -337,7 +356,7 @@ public class AnnotationPreferences implements Serializable {
 
     /**
      * Set if the automatic y-axis zoom only considers the anotated peaks.
-     * 
+     *
      * @param yAxisZoomExcludesBackgroundPeaks
      */
     public void setYAxisZoomExcludesBackgroundPeaks(boolean yAxisZoomExcludesBackgroundPeaks) {
@@ -345,15 +364,17 @@ public class AnnotationPreferences implements Serializable {
     }
 
     /**
-     * Returns the m/z tolerance for reporter ions
-     * @return the m/z tolerance for reporter ions 
+     * Returns the m/z tolerance for reporter ions.
+     *
+     * @return the m/z tolerance for reporter ions
      */
     public double getReporterIonsMZTolerance() {
         return reporterIonsMZTolerance;
     }
 
     /**
-     * Sets the m/z tolerance for reporter ions
+     * Sets the m/z tolerance for reporter ions.
+     *
      * @param reporterIonsMZTolerance the m/z tolerance for reporter ions
      */
     public void setReporterIonsMZTolerance(double reporterIonsMZTolerance) {

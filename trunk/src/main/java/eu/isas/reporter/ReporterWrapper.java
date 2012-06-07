@@ -1,41 +1,38 @@
 package eu.isas.reporter;
 
+import com.compomics.util.gui.UtilitiesGUIDefaults;
 import eu.isas.reporter.utils.Properties;
 import java.io.*;
 import javax.swing.JOptionPane;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 
 /**
  * A wrapper class used to start the jar file with parameters. The parameters
  * are read from the JavaOptions file in the Properties folder.
  *
- * @author  Harald Barsnes
- *
- * Created October 2005
- * Revised December 2008
+ * @author Harald Barsnes
  */
-public class Wrapper {
+public class ReporterWrapper {
 
     /**
      * If set to true debug output will be written to the screen.
      */
     private boolean debug = false;
     /**
-     * The name of the jar file. Must be equal to the name
-     * given in the pom file.
+     * The name of the jar file. Must be equal to the name given in the pom
+     * file.
      */
     private String jarFileName = "Reporter-";
 
     /**
-     * Starts the launcher by calling the launch method. Use this as the
-     * main class in the jar file.
+     * Starts the launcher by calling the launch method. Use this as the main
+     * class in the jar file.
      */
-    public Wrapper() {
+    public ReporterWrapper() {
 
         // get the version number set in the pom file
         jarFileName = jarFileName + new Properties().getVersion() + ".jar";
 
+        UtilitiesGUIDefaults.setLookAndFeel();
 
         try {
             launch();
@@ -51,11 +48,11 @@ public class Wrapper {
      */
     private void launch() throws Exception {
 
-        String temp = "", cmdLine, path;
-
-        path = this.getClass().getResource("Reporter.class").getPath();
+        String path = this.getClass().getResource("Reporter.class").getPath();
         path = path.substring(5, path.indexOf(jarFileName));
         path = path.replace("%20", " ");
+        path = path.replace("%5b", "[");
+        path = path.replace("%5d", "]");
 
         File javaOptions = new File(path + "conf/JavaOptions.txt");
 
@@ -85,13 +82,13 @@ public class Wrapper {
                 ex.printStackTrace();
             }
         } else {
-            options = "-Xms128M -Xmx768M";
+            options = "-Xms128M -Xmx1024M";
         }
 
         File tempFile = new File(path);
 
-        String javaHome = System.getProperty("java.home") + File.separator +
-                "bin" + File.separator;
+        String javaHome = System.getProperty("java.home") + File.separator
+                + "bin" + File.separator;
 
         String quote = "";
 
@@ -99,13 +96,52 @@ public class Wrapper {
             quote = "\"";
         }
 
-        cmdLine = javaHome + "java " + options + " -cp "
+        if (debug) {
+            JOptionPane.showMessageDialog(null, "original java.home: " + javaHome);
+        }
+
+        // try to force the use of 64 bit Java if available
+        if (javaHome.lastIndexOf(" (x86)") != -1) {
+
+            // Java 32 bit home looks like this:    C:\Program Files (x86)\Java\jre6\bin\javaw.exe
+            // Java 64 bit home looks like this:    C:\Program Files\Java\jre6\bin\javaw.exe
+
+            String tempJavaHome = javaHome.replaceAll(" \\(x86\\)", "");
+
+            if (debug) {
+                JOptionPane.showMessageDialog(null, "temp java.home: " + tempJavaHome);
+            }
+
+            if (new File(tempJavaHome).exists()) {
+                javaHome = tempJavaHome;
+            }
+        }
+
+        if (debug) {
+            JOptionPane.showMessageDialog(null, "new java.home: " + javaHome);
+        }
+
+        // get the splash 
+        String splashPath = path + "conf/reporter-splash.png";
+
+        // set the correct slashes for the splash path
+        if (System.getProperty("os.name").lastIndexOf("Windows") != -1) {
+            splashPath = splashPath.replace("/", "\\");
+
+            // remove the initial '\' at the start of the line 
+            if (splashPath.startsWith("\\") && !splashPath.startsWith("\\\\")) {
+                splashPath = splashPath.substring(1);
+            }
+        }
+
+        String cmdLine = javaHome + "java -splash:" + quote + splashPath + quote + " " + options + " -cp "
                 + quote + new File(tempFile, jarFileName).getAbsolutePath() + quote
-                + " eu.isas.reporter.Reporter";
+                + " eu.isas.reporter.Reporter";    
 
         if (debug) {
             System.out.println(cmdLine);
         }
+
 
         try {
             Process p = Runtime.getRuntime().exec(cmdLine);
@@ -115,7 +151,7 @@ public class Wrapper {
             BufferedReader br = new BufferedReader(isr);
             String line = null;
 
-            temp += "<ERROR>\n\n";
+            String temp = "<ERROR>\n\n";
 
             if (debug) {
                 System.out.println("<ERROR>");
@@ -151,21 +187,16 @@ public class Wrapper {
 
             if (error) {
 
-                javax.swing.JOptionPane.showMessageDialog(null,
-                        "Failed to start Reporter.\n\n" +
-                        "Make sure that Reporter is installed in a path not containing\n" +
-                        "special characters. On Linux it has to be run from a path without spaces.\n\n" +
-                        "The upper memory limit used may be too high for your computer to handle.\n" +
-                        "Try reducing it and see if this helps.\n\n" +
-                        "For more details see:\n" +
-                        "conf/reporter.log\n\n",
-                        "Reporter - Startup Failed", JOptionPane.OK_OPTION);
-
-                File logFile = new File("conf", "reporter.log");
-
-                FileWriter f = new FileWriter(logFile);
-                f.write(temp);
+                File logFile = new File("conf", "Reporter.log");
+                FileWriter f = new FileWriter(logFile, true);
+                f.write("\n\n" + temp + "\n\n");
                 f.close();
+
+                javax.swing.JOptionPane.showMessageDialog(null,
+                        "Failed to start Reporter.\n\n"
+                        + "Inspect the log file for details: conf/Reporter.log.\n\n"
+                        + "Then go to Troubleshooting at http://reporter.googlecode.com.",
+                        "Reporter - Startup Failed", JOptionPane.ERROR_MESSAGE);
 
                 System.exit(0);
             }
@@ -176,13 +207,12 @@ public class Wrapper {
     }
 
     /**
-     * Starts the launcher by calling the launch method. Use this as the
-     * main class in the jar file.
+     * Starts the launcher by calling the launch method. Use this as the main
+     * class in the jar file.
      *
      * @param args
      */
     public static void main(String[] args) {
-        new Wrapper();
+        new ReporterWrapper();
     }
 }
-

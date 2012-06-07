@@ -4,28 +4,27 @@ import com.compomics.util.experiment.personalization.UrParameter;
 import java.util.HashMap;
 
 /**
- * This class contains the different reporter scores
+ * This class contains the different reporter scores.
  *
  * @author Marc Vaudel
  */
 public class ItraqScore implements UrParameter {
 
     /**
-     * the reporter scores indexed by the reporter ion index
+     * The reporter scores indexed by the reporter ion index.
      */
     private HashMap<Integer, Double> scores = new HashMap<Integer, Double>();
 
     /**
-     * constructor
+     * Constructor.
      */
     public ItraqScore() {
-
     }
 
     /**
-     * adds a score
+     * Adds a score.
      *
-     * @param ion   the reporter ion index
+     * @param ion the reporter ion index
      * @param score the corresponding score
      */
     public void addScore(int ion, double score) {
@@ -33,7 +32,7 @@ public class ItraqScore implements UrParameter {
     }
 
     /**
-     * returns the score corresponding to the selected ion
+     * Returns the score corresponding to the selected ion.
      *
      * @param ion the reporter ion
      * @return the corresponding score
@@ -43,7 +42,7 @@ public class ItraqScore implements UrParameter {
     }
 
     /**
-     * returns the minimal score
+     * Returns the minimal score.
      *
      * @return the minimal score
      */

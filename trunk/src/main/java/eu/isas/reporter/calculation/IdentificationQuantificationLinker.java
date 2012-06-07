@@ -1,39 +1,39 @@
 package eu.isas.reporter.calculation;
 
 /**
- * This class links identifications with quantification results
+ * This class links identifications with quantification results.
  *
  * @author Marc Vaudel
  */
 public class IdentificationQuantificationLinker {
 
     /**
-     * index of the linking by spectrum title (fastest method)
+     * Index of the linking by spectrum title (fastest method).
      */
     public static final int SPECTRUM_TITLE = 0;
     /**
-     * index of the linking by precursor matching (used for combination of fragmentation techniques)
+     * Index of the linking by precursor matching (used for combination of
+     * fragmentation techniques).
      */
     public static final int PRECURSOR = 1;
-
     /**
-     * method used by the linker (see static fields)
+     * Method used by the linker (see static fields).
      */
     private int index;
-
     /**
-     * mz Tolerance used for precursor matching
+     * mz tolerance used for precursor matching.
      */
     private double mzTolerance;
     /**
-     * rt tolerance used for precursor matching
+     * Retention time tolerance used for precursor matching.
      */
     private double rtTolerance;
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param index the method used for spectrum to identification matching (see static fields)
+     * @param index the method used for spectrum to identification matching (see
+     * static fields)
      */
     public IdentificationQuantificationLinker(int index) {
         this.index = index;

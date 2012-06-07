@@ -8,73 +8,110 @@ import java.util.HashMap;
 import org.ujmp.core.collections.ArrayIndexList;
 
 /**
- * This class contains the quantification options set by the user
- * @TODO user preferences should be loaded and saved automatically
+ * This class contains the quantification options set by the user.
  *
- * @author Marc
+ * @TODO: user preferences should be loaded and saved automatically
+ *
+ * @author Marc Vaudel
+ * @author Harald Barsnes
  */
 public class QuantificationPreferences implements UrParameter {
 
+    /////////////////////
+    // Import parameters
+    /////////////////////
+    /*
+     * Tolerance for reporter ion matching.
+     */
+    private double ReporterIonsMzTolerance = 0.01;
+    /**
+     * Minimal number of amino acids allowed for a peptide (identification files
+     * import only).
+     */
+    private int nAAmin = 8;
+    /**
+     * Maximal number of amino acids allowed for a peptide (identification files
+     * import only).
+     */
+    private int nAAmax = 20;
+    /**
+     * Maximal precursor mass deviation allowed for a PSM (identification files
+     * import only).
+     */
+    private double precursorMassDeviation = 10;
+    /**
+     * Maximal e-value allowed for a PSM indexed by the search engine compomics
+     * index (identification files import only).
+     */
+    private HashMap<Integer, Double> maxEValues = new HashMap<Integer, Double>();
+    /**
+     * Maximal estimated FDR allowed for a search engine PSM set (identification
+     * files import only).
+     */
+    private double fdrThreshold = 0.01;
+    /**
+     * Quantification and identification are conducted on the same spectra
+     * (identification files import only).
+     */
+    private boolean sameSpectra = true;
+    /**
+     * Precursor mz tolerance used to link quantification to identifications in
+     * case these are not recorded on the same spectra. (identification files
+     * import only)
+     */
+    private double precursorMzTolerance = 1;
+    /**
+     * Precursor RT tolerance used to link quantification to identifications in
+     * case these are not recorded on the same spectra. (identification files
+     * import only)
+     */
+    private double precursorRTTolerance = 10;
+    //////////////////////////
+    //  Processing parameters
+    //////////////////////////
+    /**
+     * Boolean indicating whether spectra presenting null intensities should be
+     * ignored.
+     */
+    private boolean ignoreNullIntensities = true;
+    /**
+     * Boolean indicating whether peptides presenting missed cleavages should be
+     * ignored.
+     */
+    private boolean ignoreMissedCleavages = false;
+    /**
+     * Double indicating the value of k for protein ratio inference.
+     */
+    private double k = 1.4;
+    /**
+     * Rheoretic minimal ratio.
+     */
+    private double ratioMin = 0.01;
+    /**
+     * Theoretic maximal ratio.
+     */
+    private double ratioMax = 100;
+    /**
+     * Ratio resolution.
+     */
+    private double ratioResolution = 0.01;
+    /**
+     * List of PTM. Peptides presenting these ptms will be ignored.
+     */
+    private ArrayList<PTM> ignoredPTM = new ArrayList<PTM>();
 
     /**
-     * constructor
+     * Constructor.
      */
     public QuantificationPreferences() {
         maxEValues.put(SearchEngine.MASCOT, 10.0);
         maxEValues.put(SearchEngine.OMSSA, 10.0);
         maxEValues.put(SearchEngine.XTANDEM, 10.0);
     }
-    
-        /**
-        * Import parameters
-        */
-    /**
-     * tolerance for reporter ion matching
-     */
-    private double ReporterIonsMzTolerance = 0.01;
-    /**
-     * Minimal number of amino acids allowed for a peptide
-     * (identification files import only)
-     */
-    private int nAAmin = 8;
-    /**
-     * Maximal number of amino acids allowed for a peptide
-     * (identification files import only)
-     */
-    private int nAAmax = 20;
-    /**
-     * Maximal precursor mass deviation allowed for a PSM
-     * (identification files import only)
-     */
-    private double precursorMassDeviation = 10;
-    /**
-     * Maximal e-value allowed for a PSM indexed by the search engine compomics index
-     * (identification files import only)
-     */
-    private HashMap<Integer, Double> maxEValues = new HashMap<Integer, Double>();
-    /**
-     * Maximal estimated FDR allowed for a search engine PSM set
-     * (identification files import only)
-     */
-    private double fdrThreshold = 0.01;
-    /**
-     * Quantification and identification are conducted on the same spectra
-     * (identification files import only)
-     */
-    private boolean sameSpectra = true;
-    /**
-     * Precursor mz tolerance used to link quantification to identifications in case these are not recorded on the same spectra.
-     * (identification files import only)
-     */
-    private double precursorMzTolerance = 1;
-    /**
-     * Precursor RT tolerance used to link quantification to identifications in case these are not recorded on the same spectra.
-     * (identification files import only)
-     */
-    private double precursorRTTolerance = 10;
 
     /**
-     * returns the tolerance used to match reporter ions
+     * Returns the tolerance used to match reporter ions.
+     *
      * @return the tolerance used to match reporter ions
      */
     public double getReporterIonsMzTolerance() {
@@ -82,7 +119,8 @@ public class QuantificationPreferences implements UrParameter {
     }
 
     /**
-     * sets the tolerance used to match reporter ions
+     * Sets the tolerance used to match reporter ions.
+     *
      * @param ReporterIonsMzTolerance the tolerance used to match reporter ions
      */
     public void setReporterIonsMzTolerance(double ReporterIonsMzTolerance) {
@@ -90,14 +128,17 @@ public class QuantificationPreferences implements UrParameter {
     }
 
     /**
-     * returns the FDR threshold to use
+     * Returns the FDR threshold to use.
+     *
      * @return the FDR threshold to use
      */
     public double getFdrThreshold() {
         return fdrThreshold;
     }
+
     /**
-     * Sets the FDR threshold to use
+     * Sets the FDR threshold to use.
+     *
      * @param fdrThreshold the FDR threshold to use
      */
     public void setFdrThreshold(double fdrThreshold) {
@@ -105,7 +146,8 @@ public class QuantificationPreferences implements UrParameter {
     }
 
     /**
-     * Returns the maximal e-value allowed for a given search engine
+     * Returns the maximal e-value allowed for a given search engine.
+     *
      * @param searchEngineIndex the compomics search engine index
      * @return the maximum e-value allowed
      */
@@ -114,16 +156,18 @@ public class QuantificationPreferences implements UrParameter {
     }
 
     /**
-     * Sets the maximal e-value allowed for a search engine
+     * Sets the maximal e-value allowed for a search engine.
+     *
      * @param searchEngineIndex the compomics search engine index
-     * @param mascotMaxEValue   the corresponding e-value limit
+     * @param mascotMaxEValue the corresponding e-value limit
      */
     public void setMaxEValue(int searchEngineIndex, double mascotMaxEValue) {
         maxEValues.put(searchEngineIndex, mascotMaxEValue);
     }
 
     /**
-     * Returns the maximal number of amino-acids allowed for a PSM peptide
+     * Returns the maximal number of amino-acids allowed for a PSM peptide.
+     *
      * @return the maximal number of amino-acids allowed for a PSM peptide
      */
     public int getnAAmax() {
@@ -131,7 +175,8 @@ public class QuantificationPreferences implements UrParameter {
     }
 
     /**
-     * Sets the maximal number of amino-acids allowed for a PSM peptide
+     * Sets the maximal number of amino-acids allowed for a PSM peptide.
+     *
      * @param nAAmax the maximal number of amino-acids allowed for a PSM peptide
      */
     public void setnAAmax(int nAAmax) {
@@ -139,7 +184,8 @@ public class QuantificationPreferences implements UrParameter {
     }
 
     /**
-     * Returns the minimal number of amino-acids allowed for a PSM peptide
+     * Returns the minimal number of amino-acids allowed for a PSM peptide.
+     *
      * @return the minimal number of amino-acids allowed for a PSM peptide
      */
     public int getnAAmin() {
@@ -147,7 +193,8 @@ public class QuantificationPreferences implements UrParameter {
     }
 
     /**
-     * Sets the minimal number of amino-acids allowed for a PSM peptide
+     * Sets the minimal number of amino-acids allowed for a PSM peptide.
+     *
      * @param nAAmin the minimal number of amino-acids allowed for a PSM peptide
      */
     public void setnAAmin(int nAAmin) {
@@ -155,7 +202,8 @@ public class QuantificationPreferences implements UrParameter {
     }
 
     /**
-     * Returns the maximal precursor mass deviation allowed for a PSM
+     * Returns the maximal precursor mass deviation allowed for a PSM.
+     *
      * @return the maximal precursor mass deviation allowed for a PSM
      */
     public double getPrecursorMassDeviation() {
@@ -163,55 +211,73 @@ public class QuantificationPreferences implements UrParameter {
     }
 
     /**
-     * Sets the maximal precursor mass deviation allowed for a PSM
-     * @param precursorMassDeviation the maximal precursor mass deviation allowed for a PSM
+     * Sets the maximal precursor mass deviation allowed for a PSM.
+     *
+     * @param precursorMassDeviation the maximal precursor mass deviation
+     * allowed for a PSM
      */
     public void setPrecursorMassDeviation(double precursorMassDeviation) {
         this.precursorMassDeviation = precursorMassDeviation;
     }
 
     /**
-     * returns the precursor m/Z tolerance used to match quantification spectra to identification spectra
-     * @return the precursor m/Z tolerance used to match quantification spectra to identification spectra
+     * Returns the precursor m/Z tolerance used to match quantification spectra
+     * to identification spectra.
+     *
+     * @return the precursor m/Z tolerance used to match quantification spectra
+     * to identification spectra
      */
     public double getPrecursorMzTolerance() {
         return precursorMzTolerance;
     }
 
     /**
-     * sets the precursor m/z tolerance used to match quantification spectra to identification spectra
-     * @param precursorMzTolerance the precursor m/z tolerance used to match quantification spectra to identification spectra
+     * Sets the precursor m/z tolerance used to match quantification spectra to
+     * identification spectra.
+     *
+     * @param precursorMzTolerance the precursor m/z tolerance used to match
+     * quantification spectra to identification spectra
      */
     public void setPrecursorMzTolerance(double precursorMzTolerance) {
         this.precursorMzTolerance = precursorMzTolerance;
     }
 
     /**
-     * Returns the precursor RT tolerance used to match quantification spectra to identification spectra
-     * @return the precursor RT tolerance used to match quantification spectra to identification spectra
+     * Returns the precursor RT tolerance used to match quantification spectra
+     * to identification spectra.
+     *
+     * @return the precursor RT tolerance used to match quantification spectra
+     * to identification spectra
      */
     public double getPrecursorRTTolerance() {
         return precursorRTTolerance;
     }
 
     /**
-     * Sets the precursor RT tolerance used to match quantification spectra to identification spectra
-     * @param precursorRTTolerance the precursor RT tolerance used to match quantification spectra to identification spectra
+     * Sets the precursor RT tolerance used to match quantification spectra to
+     * identification spectra.
+     *
+     * @param precursorRTTolerance the precursor RT tolerance used to match
+     * quantification spectra to identification spectra
      */
     public void setPrecursorRTTolerance(double precursorRTTolerance) {
         this.precursorRTTolerance = precursorRTTolerance;
     }
 
     /**
-     * Returns a boolean indicating whether identification and quantification are performed on the same spectra
-     * @return a boolean indicating whether identification and quantification are performed on the same spectra
+     * Returns a boolean indicating whether identification and quantification
+     * are performed on the same spectra.
+     *
+     * @return a boolean indicating whether identification and quantification
+     * are performed on the same spectra
      */
     public boolean isSameSpectra() {
         return sameSpectra;
     }
 
     /**
-     * Returns the max e-values map
+     * Returns the max e-values map.
+     *
      * @return the max e-values map
      */
     public HashMap<Integer, Double> getMaxEValues() {
@@ -219,70 +285,40 @@ public class QuantificationPreferences implements UrParameter {
     }
 
     /**
-     * Sets whether identification and quantification are performed on the same spectra
-     * @param sameSpectra whether identification and quantification are performed on the same spectra
+     * Sets whether identification and quantification are performed on the same
+     * spectra.
+     *
+     * @param sameSpectra whether identification and quantification are
+     * performed on the same spectra
      */
     public void setSameSpectra(boolean sameSpectra) {
         this.sameSpectra = sameSpectra;
     }
 
-
-        /**
-         * Processing parameters
-         */
     /**
-     * boolean indicating whether spectra presenting null intensities should be ignored
-     */
-    private boolean ignoreNullIntensities = true;
-
-    /**
-     * boolean indicating whether peptides presenting missed cleavages should be ignored
-     */
-    private boolean ignoreMissedCleavages = false;
-
-    /**
-     * double indicating the value of k for protein ratio inference
-     */
-    private double k = 1.4;
-
-    /**
-     * theoretic minimal ratio
-     */
-    private double ratioMin = 0.01;
-
-    /**
-     * Theoretic maximal ratio
-     */
-    private double ratioMax = 100;
-
-    /**
-     * Ratio resolution
-     */
-    private double ratioResolution = 0.01;
-
-    /**
-     * List of PTM. Peptides presenting these ptms will be ignored
-     */
-    private ArrayList<PTM> ignoredPTM = new ArrayList<PTM>();
-
-    /**
-     * returns a boolean indicating whether miscleaved peptides should be ignored
-     * @return a boolean indicating whether miscleaved peptides should be ignored
+     * Returns a boolean indicating whether miscleaved peptides should be
+     * ignored.
+     *
+     * @return a boolean indicating whether miscleaved peptides should be
+     * ignored
      */
     public boolean isIgnoreMissedCleavages() {
         return ignoreMissedCleavages;
     }
 
     /**
-     * sets whether miscleaved peptides should be ignored
-     * @param ignoreMissedCleavages a boolean indicating whether miscleaved peptides should be ignored
+     * Sets whether miscleaved peptides should be ignored.
+     *
+     * @param ignoreMissedCleavages a boolean indicating whether miscleaved
+     * peptides should be ignored
      */
     public void setIgnoreMissedCleavages(boolean ignoreMissedCleavages) {
         this.ignoreMissedCleavages = ignoreMissedCleavages;
     }
 
     /**
-     * returns a boolean indicating whether null intensities should be ignored
+     * Returns a boolean indicating whether null intensities should be ignored.
+     *
      * @return a boolean indicating whether null intensities should be ignored
      */
     public boolean isIgnoreNullIntensities() {
@@ -290,15 +326,18 @@ public class QuantificationPreferences implements UrParameter {
     }
 
     /**
-     * sets whether null intensities should be ignored
-     * @param ignoreNullIntensities  a boolean indicating whether null intensities should be ignored
+     * Sets whether null intensities should be ignored.
+     *
+     * @param ignoreNullIntensities a boolean indicating whether null
+     * intensities should be ignored
      */
     public void setIgnoreNullIntensities(boolean ignoreNullIntensities) {
         this.ignoreNullIntensities = ignoreNullIntensities;
     }
 
     /**
-     * returns the k used for peptide and protein ratio inference
+     * Returns the k used for peptide and protein ratio inference.
+     *
      * @return the k used for peptide and protein ratio inference
      */
     public double getK() {
@@ -306,7 +345,8 @@ public class QuantificationPreferences implements UrParameter {
     }
 
     /**
-     * sets the k used for peptide and protein ratio inference
+     * Sets the k used for peptide and protein ratio inference.
+     *
      * @param k the k used for peptide and protein ratio inference
      */
     public void setK(double k) {
@@ -314,7 +354,8 @@ public class QuantificationPreferences implements UrParameter {
     }
 
     /**
-     * Returns the maximal ratio expected
+     * Returns the maximal ratio expected.
+     *
      * @return the maximal ratio expected
      */
     public double getRatioMax() {
@@ -322,7 +363,8 @@ public class QuantificationPreferences implements UrParameter {
     }
 
     /**
-     * sets the maximal ratio expected
+     * Sets the maximal ratio expected.
+     *
      * @param ratioMax the maximal ratio expected
      */
     public void setRatioMax(double ratioMax) {
@@ -330,7 +372,8 @@ public class QuantificationPreferences implements UrParameter {
     }
 
     /**
-     * returns the minimal ratio expected
+     * Returns the minimal ratio expected.
+     *
      * @return the minimal ratio expected
      */
     public double getRatioMin() {
@@ -338,7 +381,8 @@ public class QuantificationPreferences implements UrParameter {
     }
 
     /**
-     * sets the minimal ratio expected
+     * Sets the minimal ratio expected.
+     *
      * @param ratioMin the minimal ratio expected
      */
     public void setRatioMin(double ratioMin) {
@@ -346,7 +390,8 @@ public class QuantificationPreferences implements UrParameter {
     }
 
     /**
-     * Returns the ratio resolution
+     * Returns the ratio resolution.
+     *
      * @return the ratio resolution
      */
     public double getRatioResolution() {
@@ -354,7 +399,8 @@ public class QuantificationPreferences implements UrParameter {
     }
 
     /**
-     * Sets  the ratio resolution
+     * Sets the ratio resolution.
+     *
      * @param ratioResolution the ratio resolution
      */
     public void setRatioResolution(double ratioResolution) {
@@ -362,7 +408,8 @@ public class QuantificationPreferences implements UrParameter {
     }
 
     /**
-     * Returns the list of PTMs to ignore
+     * Returns the list of PTMs to ignore.
+     *
      * @return the list of PTMs to ignore
      */
     public ArrayList<String> getIgnoredPTM() {
@@ -374,7 +421,8 @@ public class QuantificationPreferences implements UrParameter {
     }
 
     /**
-     * Adds a PTM to ignore
+     * Adds a PTM to ignore.
+     *
      * @param ignoredPTM a PTM to ignore
      */
     public void addIgnoredPTM(PTM ignoredPTM) {
@@ -382,12 +430,11 @@ public class QuantificationPreferences implements UrParameter {
     }
 
     /**
-     * Empty the list of ignored PTMs
+     * Empty the list of ignored PTMs.
      */
     public void emptyPTMList() {
         ignoredPTM = new ArrayList<PTM>();
     }
-
 
     @Override
     public String getFamilyName() {

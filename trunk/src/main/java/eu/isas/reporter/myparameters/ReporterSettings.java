@@ -1,25 +1,27 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package eu.isas.reporter.myparameters;
 
 import eu.isas.reporter.preferences.AnnotationPreferences;
 import eu.isas.reporter.preferences.ProjectDetails;
 
 /**
- * This class contains the reporter settings for this project
+ * This class contains the reporter settings for this project.
  *
- * @author marc
+ * @author Marc Vaudel
  */
 public class ReporterSettings {
-    
+
+    /**
+     * The annotation preferences. 
+     */
     private AnnotationPreferences annotationPreferences;
-    
+    /**
+     * The proejct details.
+     */
     private ProjectDetails projectDetails;
-    
+
+    /**
+     * Constructor.
+     */
     public ReporterSettings() {
-        
     }
-    
 }

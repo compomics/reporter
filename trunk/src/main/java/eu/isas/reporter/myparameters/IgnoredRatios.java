@@ -4,26 +4,25 @@ import com.compomics.util.experiment.personalization.UrParameter;
 import java.util.HashMap;
 
 /**
- * This class will be used to flag ignored ratios
+ * This class will be used to flag ignored ratios.
  *
  * @author Marc Vaudel
  */
 public class IgnoredRatios implements UrParameter {
 
     /**
-     * List of ignored ratios
+     * List of ignored ratios.
      */
     private HashMap<Integer, Boolean> ignoredRatios = new HashMap<Integer, Boolean>();
 
     /**
-     * Constructor
+     * Constructor.
      */
     public IgnoredRatios() {
-
     }
 
     /**
-     * Method used to ignore a specific ratio
+     * Method used to ignore a specific ratio.
      *
      * @param reporterIon the reporter ion on which the calculation was done
      */
@@ -32,7 +31,7 @@ public class IgnoredRatios implements UrParameter {
     }
 
     /**
-     * Method used to account a specific ratio
+     * Method used to account a specific ratio.
      *
      * @param reporterIon the reporter ion on which the calculation was done
      */
@@ -41,7 +40,8 @@ public class IgnoredRatios implements UrParameter {
     }
 
     /**
-     * Method indicating whether a reporter ion should be ignored for the calculation
+     * Method indicating whether a reporter ion should be ignored for the
+     * calculation.
      *
      * @param reporterIon the reporter ion of interest
      * @return a boolean indicating whether the ratio should be ignored
