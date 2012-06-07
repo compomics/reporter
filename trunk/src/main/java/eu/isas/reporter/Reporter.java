@@ -16,6 +16,7 @@ import eu.isas.reporter.gui.ReporterGUI;
 import eu.isas.reporter.gui.WaitingDialog;
 import eu.isas.reporter.myparameters.QuantificationPreferences;
 import eu.isas.reporter.preferences.IdentificationPreferences;
+import java.awt.Toolkit;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -288,9 +289,14 @@ public class Reporter {
      * @param mgfFiles the quantification files
      */
     public void loadFiles(ArrayList<File> idFiles, ArrayList<File> mgfFiles) {
+        
+        // change the peptide shaker icon to a "waiting version"
+        reporterGUI.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")));
+        
         WaitingDialog waitingDialog = new WaitingDialog(reporterGUI, true, this);
         DataImporter dataImporter = new DataImporter(waitingDialog, idFiles, mgfFiles);
         dataImporter.execute();
+        waitingDialog.setLocationRelativeTo(reporterGUI);
         waitingDialog.setVisible(true);
     }
 

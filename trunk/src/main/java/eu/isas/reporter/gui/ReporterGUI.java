@@ -102,6 +102,9 @@ public class ReporterGUI extends javax.swing.JFrame {
         }
 
         initComponents();
+        
+        // make sure that the scroll panes are see-through
+        proteinTableJScrollPane.getViewport().setOpaque(false);
 
         // set the title of the frame and add the icon
         setTitle("Reporter " + new Properties().getVersion());
@@ -115,7 +118,7 @@ public class ReporterGUI extends javax.swing.JFrame {
     }
 
     /**
-     * Displays results to the user
+     * Displays results to the user.
      *
      * @param quantification The quantification computed
      * @param identification The corresponding identification
@@ -129,7 +132,7 @@ public class ReporterGUI extends javax.swing.JFrame {
     }
 
     /**
-     * Method called when a change was made in the settings
+     * Method called when a change was made in the settings.
      *
      * @param quantificationPreferences
      */
@@ -154,7 +157,7 @@ public class ReporterGUI extends javax.swing.JFrame {
     }
 
     /**
-     * Updates the maps for results display
+     * Updates the maps for results display.
      */
     private void updateProteinMap() {
         try {
@@ -193,99 +196,166 @@ public class ReporterGUI extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        backgroundPanel = new javax.swing.JPanel();
+        resultsPanel = new javax.swing.JPanel();
         tabPanel = new javax.swing.JTabbedPane();
-        jPanel1 = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
+        proteinPanel = new javax.swing.JPanel();
+        proteinTableJScrollPane = new javax.swing.JScrollPane();
         proteinTable = new javax.swing.JTable();
-        jPanel2 = new javax.swing.JPanel();
-        jPanel3 = new javax.swing.JPanel();
-        jMenuBar1 = new javax.swing.JMenuBar();
-        jMenu1 = new javax.swing.JMenu();
-        newMenu = new javax.swing.JMenuItem();
-        openMenu = new javax.swing.JMenuItem();
-        saveMenu = new javax.swing.JMenuItem();
-        exportMenu = new javax.swing.JMenuItem();
-        exitMenu = new javax.swing.JMenuItem();
+        peptidePanel = new javax.swing.JPanel();
+        psmPanel = new javax.swing.JPanel();
+        menuBar = new javax.swing.JMenuBar();
+        fileMenu = new javax.swing.JMenu();
+        newMenuItem = new javax.swing.JMenuItem();
+        jSeparator1 = new javax.swing.JPopupMenu.Separator();
+        openMenuItem = new javax.swing.JMenuItem();
+        jSeparator2 = new javax.swing.JPopupMenu.Separator();
+        saveMenuItem = new javax.swing.JMenuItem();
+        exportMenuItem = new javax.swing.JMenuItem();
+        jSeparator3 = new javax.swing.JPopupMenu.Separator();
+        exitMenuItem = new javax.swing.JMenuItem();
         quantificationOptionsMenu = new javax.swing.JMenu();
-        jMenuItem6 = new javax.swing.JMenuItem();
+        quantificationOptionsMenuItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
+        backgroundPanel.setBackground(new java.awt.Color(255, 255, 255));
+
+        resultsPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Results"));
+        resultsPanel.setOpaque(false);
+
+        proteinPanel.setOpaque(false);
+
+        proteinTableJScrollPane.setOpaque(false);
+
         proteinTable.setModel(new ProteinTable());
-        jScrollPane1.setViewportView(proteinTable);
+        proteinTable.setOpaque(false);
+        proteinTableJScrollPane.setViewportView(proteinTable);
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 628, Short.MAX_VALUE)
+        javax.swing.GroupLayout proteinPanelLayout = new javax.swing.GroupLayout(proteinPanel);
+        proteinPanel.setLayout(proteinPanelLayout);
+        proteinPanelLayout.setHorizontalGroup(
+            proteinPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(proteinTableJScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 684, Short.MAX_VALUE)
         );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 467, Short.MAX_VALUE)
-        );
-
-        tabPanel.addTab("Proteins", jPanel1);
-
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 628, Short.MAX_VALUE)
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 467, Short.MAX_VALUE)
+        proteinPanelLayout.setVerticalGroup(
+            proteinPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(proteinTableJScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 519, Short.MAX_VALUE)
         );
 
-        tabPanel.addTab("Peptides", jPanel2);
+        tabPanel.addTab("Proteins", proteinPanel);
 
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 628, Short.MAX_VALUE)
+        peptidePanel.setOpaque(false);
+
+        javax.swing.GroupLayout peptidePanelLayout = new javax.swing.GroupLayout(peptidePanel);
+        peptidePanel.setLayout(peptidePanelLayout);
+        peptidePanelLayout.setHorizontalGroup(
+            peptidePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 684, Short.MAX_VALUE)
         );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 467, Short.MAX_VALUE)
+        peptidePanelLayout.setVerticalGroup(
+            peptidePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 519, Short.MAX_VALUE)
         );
 
-        tabPanel.addTab("PSMs", jPanel3);
+        tabPanel.addTab("Peptides", peptidePanel);
 
-        jMenu1.setText("File");
+        psmPanel.setOpaque(false);
 
-        newMenu.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
-        newMenu.setText("New");
-        newMenu.addActionListener(new java.awt.event.ActionListener() {
+        javax.swing.GroupLayout psmPanelLayout = new javax.swing.GroupLayout(psmPanel);
+        psmPanel.setLayout(psmPanelLayout);
+        psmPanelLayout.setHorizontalGroup(
+            psmPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 684, Short.MAX_VALUE)
+        );
+        psmPanelLayout.setVerticalGroup(
+            psmPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 519, Short.MAX_VALUE)
+        );
+
+        tabPanel.addTab("PSMs", psmPanel);
+
+        javax.swing.GroupLayout resultsPanelLayout = new javax.swing.GroupLayout(resultsPanel);
+        resultsPanel.setLayout(resultsPanelLayout);
+        resultsPanelLayout.setHorizontalGroup(
+            resultsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(resultsPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(tabPanel)
+                .addContainerGap())
+        );
+        resultsPanelLayout.setVerticalGroup(
+            resultsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(resultsPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(tabPanel)
+                .addContainerGap())
+        );
+
+        javax.swing.GroupLayout backgroundPanelLayout = new javax.swing.GroupLayout(backgroundPanel);
+        backgroundPanel.setLayout(backgroundPanelLayout);
+        backgroundPanelLayout.setHorizontalGroup(
+            backgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(backgroundPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(resultsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        backgroundPanelLayout.setVerticalGroup(
+            backgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(backgroundPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(resultsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        fileMenu.setMnemonic('F');
+        fileMenu.setText("File");
+
+        newMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
+        newMenuItem.setMnemonic('N');
+        newMenuItem.setText("New");
+        newMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                newMenuActionPerformed(evt);
+                newMenuItemActionPerformed(evt);
             }
         });
-        jMenu1.add(newMenu);
+        fileMenu.add(newMenuItem);
+        fileMenu.add(jSeparator1);
 
-        openMenu.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
-        openMenu.setText("Open");
-        jMenu1.add(openMenu);
+        openMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
+        openMenuItem.setMnemonic('O');
+        openMenuItem.setText("Open");
+        fileMenu.add(openMenuItem);
+        fileMenu.add(jSeparator2);
 
-        saveMenu.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
-        saveMenu.setText("Save");
-        jMenu1.add(saveMenu);
+        saveMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
+        saveMenuItem.setMnemonic('S');
+        saveMenuItem.setText("Save");
+        fileMenu.add(saveMenuItem);
 
-        exportMenu.setText("Export");
-        exportMenu.addActionListener(new java.awt.event.ActionListener() {
+        exportMenuItem.setMnemonic('E');
+        exportMenuItem.setText("Export");
+        exportMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                exportMenuActionPerformed(evt);
+                exportMenuItemActionPerformed(evt);
             }
         });
-        jMenu1.add(exportMenu);
+        fileMenu.add(exportMenuItem);
+        fileMenu.add(jSeparator3);
 
-        exitMenu.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, java.awt.event.InputEvent.ALT_MASK));
-        exitMenu.setText("Exit");
-        jMenu1.add(exitMenu);
+        exitMenuItem.setMnemonic('x');
+        exitMenuItem.setText("Exit");
+        exitMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exitMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(exitMenuItem);
 
-        jMenuBar1.add(jMenu1);
+        menuBar.add(fileMenu);
 
+        quantificationOptionsMenu.setMnemonic('E');
         quantificationOptionsMenu.setText("Edit");
         quantificationOptionsMenu.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -293,45 +363,46 @@ public class ReporterGUI extends javax.swing.JFrame {
             }
         });
 
-        jMenuItem6.setText("Quantification Options");
-        jMenuItem6.addActionListener(new java.awt.event.ActionListener() {
+        quantificationOptionsMenuItem.setMnemonic('Q');
+        quantificationOptionsMenuItem.setText("Quantification Preferences");
+        quantificationOptionsMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem6ActionPerformed(evt);
+                quantificationOptionsMenuItemActionPerformed(evt);
             }
         });
-        quantificationOptionsMenu.add(jMenuItem6);
+        quantificationOptionsMenu.add(quantificationOptionsMenuItem);
 
-        jMenuBar1.add(quantificationOptionsMenu);
+        menuBar.add(quantificationOptionsMenu);
 
-        setJMenuBar(jMenuBar1);
+        setJMenuBar(menuBar);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(tabPanel)
+            .addComponent(backgroundPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(tabPanel)
+            .addComponent(backgroundPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void newMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newMenuActionPerformed
+    private void newMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newMenuItemActionPerformed
         new NewDialog(this, parent);
-    }//GEN-LAST:event_newMenuActionPerformed
+    }//GEN-LAST:event_newMenuItemActionPerformed
 
     private void quantificationOptionsMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quantificationOptionsMenuActionPerformed
         new PreferencesDialog(this, parent.getQuantificationPreferences());
     }//GEN-LAST:event_quantificationOptionsMenuActionPerformed
 
-    private void jMenuItem6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem6ActionPerformed
+    private void quantificationOptionsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quantificationOptionsMenuItemActionPerformed
         new PreferencesDialog(this, parent.getQuantificationPreferences());
-    }//GEN-LAST:event_jMenuItem6ActionPerformed
+    }//GEN-LAST:event_quantificationOptionsMenuItemActionPerformed
 
-    private void exportMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportMenuActionPerformed
+    private void exportMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportMenuItemActionPerformed
 
 
         JFileChooser fileChooser = new JFileChooser(getLastSelectedFolder());
@@ -349,7 +420,11 @@ public class ReporterGUI extends javax.swing.JFrame {
                 e.printStackTrace();
             }
         }
-    }//GEN-LAST:event_exportMenuActionPerformed
+    }//GEN-LAST:event_exportMenuItemActionPerformed
+
+    private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMenuItemActionPerformed
+        System.exit(0);
+    }//GEN-LAST:event_exitMenuItemActionPerformed
 
     /**
      * @param args the command line arguments
@@ -358,20 +433,25 @@ public class ReporterGUI extends javax.swing.JFrame {
         new ReporterGUI();
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JMenuItem exitMenu;
-    private javax.swing.JMenuItem exportMenu;
-    private javax.swing.JMenu jMenu1;
-    private javax.swing.JMenuBar jMenuBar1;
-    private javax.swing.JMenuItem jMenuItem6;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JMenuItem newMenu;
-    private javax.swing.JMenuItem openMenu;
+    private javax.swing.JPanel backgroundPanel;
+    private javax.swing.JMenuItem exitMenuItem;
+    private javax.swing.JMenuItem exportMenuItem;
+    private javax.swing.JMenu fileMenu;
+    private javax.swing.JPopupMenu.Separator jSeparator1;
+    private javax.swing.JPopupMenu.Separator jSeparator2;
+    private javax.swing.JPopupMenu.Separator jSeparator3;
+    private javax.swing.JMenuBar menuBar;
+    private javax.swing.JMenuItem newMenuItem;
+    private javax.swing.JMenuItem openMenuItem;
+    private javax.swing.JPanel peptidePanel;
+    private javax.swing.JPanel proteinPanel;
     private javax.swing.JTable proteinTable;
+    private javax.swing.JScrollPane proteinTableJScrollPane;
+    private javax.swing.JPanel psmPanel;
     private javax.swing.JMenu quantificationOptionsMenu;
-    private javax.swing.JMenuItem saveMenu;
+    private javax.swing.JMenuItem quantificationOptionsMenuItem;
+    private javax.swing.JPanel resultsPanel;
+    private javax.swing.JMenuItem saveMenuItem;
     private javax.swing.JTabbedPane tabPanel;
     // End of variables declaration//GEN-END:variables
 
