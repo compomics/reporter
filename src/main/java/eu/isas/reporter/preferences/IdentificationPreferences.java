@@ -1,9 +1,4 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package eu.isas.reporter.preferences;
-
 
 import com.compomics.util.experiment.biology.Enzyme;
 import com.compomics.util.experiment.biology.ions.PeptideFragmentIon.PeptideFragmentIonType;
@@ -12,85 +7,88 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
- * This class stores the settings used for the search
+ * This class stores the settings used for the search.
  *
- * @author marc
+ * @author Marc Vaudel
  */
-public class IdentificationPreferences  implements Serializable {
+public class IdentificationPreferences implements Serializable {
 
     /**
-     * static index for a precursor tolerance unit in ppm
+     * Static index for a precursor tolerance unit in ppm.
      */
     public static final int PPM = 0;
     /**
-     * static index for a precursor tolerance unit in Da
+     * Static index for a precursor tolerance unit in Da.
      */
     public static final int DA = 1;
     /**
-     * The ms2 ion tolerance
+     * The ms2 ion tolerance.
      */
     private double fragmentIonMZTolerance = 0.5;
     /**
-     * The expected modifications. Modified peptides will be grouped and displayed according to this classification.
+     * The expected modifications. Modified peptides will be grouped and
+     * displayed according to this classification.
      */
     private ModificationPreferences modificationProfile = new ModificationPreferences();
     /**
-     * The enzyme used for digestion
+     * The enzyme used for digestion.
      */
     private Enzyme enzyme;
     /**
-     * The allowed number of missed cleavages
+     * The allowed number of missed cleavages.
      */
     private int nMissedCleavages;
     /**
-     * The sequence database file used for identification
+     * The sequence database file used for identification.
      */
     private File fastaFile;
     /**
-     * The searchGUI file loaded
+     * The searchGUI file loaded.
      */
     private File parametersFile;
     /**
-     * The list of spectrum files
+     * The list of spectrum files.
      */
     private ArrayList<String> spectrumFiles = new ArrayList<String>();
     /**
-     * The first kind of ions searched for (typically a, b or c)
+     * The first kind of ions searched for (typically a, b or c).
      */
     private PeptideFragmentIonType ionSearched1;
     /**
-     * The second kind of ions searched for (typically x, y or z)
+     * The second kind of ions searched for (typically x, y or z).
      */
     private PeptideFragmentIonType ionSearched2;
     /**
-     * Convenience Array for ion type selection
+     * Convenience Array for ion type selection.
      */
     private String[] ions = {"a", "b", "c", "x", "y", "z"};
     /**
-     * The precursor tolerance unit
+     * The precursor tolerance unit.
      */
     private int precursorToleranceUnit;
     /**
-     * The precursor tolerance
+     * The precursor tolerance.
      */
     private double precursorTolerance;
 
     /**
-     * Constructor
+     * Constructor.
      */
     public IdentificationPreferences() {
     }
 
     /**
-     * Returns a list containing the path of all spectrum files
-     * @return a list containing the path of all spectrum files 
+     * Returns a list containing the path of all spectrum files.
+     *
+     * @return a list containing the path of all spectrum files
      */
     public ArrayList<String> getSpectrumFiles() {
         return spectrumFiles;
     }
-    
+
     /**
-     * Sets a new list of spectrum files
+     * Sets a new list of spectrum files.
+     *
      * @param spectrumFiles the new list of spectrum files
      */
     public void setSpectrumFiles(ArrayList<String> spectrumFiles) {
@@ -98,7 +96,8 @@ public class IdentificationPreferences  implements Serializable {
     }
 
     /**
-     * Adds a spectrum file to the list
+     * Adds a spectrum file to the list.
+     *
      * @param spectrumFile a spectrum file
      */
     public void addSpectrumFile(String spectrumFile) {
@@ -106,14 +105,15 @@ public class IdentificationPreferences  implements Serializable {
     }
 
     /**
-     * Clears the list of spectrum files
+     * Clears the list of spectrum files.
      */
     public void clearSpectrumFilesList() {
         spectrumFiles = new ArrayList<String>();
     }
 
     /**
-     * Returns the modification profile of the project
+     * Returns the modification profile of the project.
+     *
      * @return the modification profile of the project
      */
     public ModificationPreferences getModificationProfile() {
@@ -121,15 +121,17 @@ public class IdentificationPreferences  implements Serializable {
     }
 
     /**
-     * sets the modification profile of the project
-     * @param modificationProfile  The modification profile
+     * sets the modification profile of the project.
+     *
+     * @param modificationProfile The modification profile
      */
     public void setModificationProfile(ModificationPreferences modificationProfile) {
         this.modificationProfile = modificationProfile;
     }
-    
+
     /**
-     * Returns the ms2 ion m/z tolerance
+     * Returns the ms2 ion m/z tolerance.
+     *
      * @return the ms2 ion m/z tolerance
      */
     public double getFragmentIonAccuracy() {
@@ -137,7 +139,8 @@ public class IdentificationPreferences  implements Serializable {
     }
 
     /**
-     * Sets the fragment ion m/z tolerance
+     * Sets the fragment ion m/z tolerance.
+     *
      * @param fragmentIonMZTolerance
      */
     public void setFragmentIonAccuracy(double fragmentIonMZTolerance) {
@@ -145,7 +148,8 @@ public class IdentificationPreferences  implements Serializable {
     }
 
     /**
-     * Returns the enzyme used for digestion
+     * Returns the enzyme used for digestion.
+     *
      * @return the enzyme used for digestion
      */
     public Enzyme getEnzyme() {
@@ -153,7 +157,8 @@ public class IdentificationPreferences  implements Serializable {
     }
 
     /**
-     * Sets the enzyme used for digestion
+     * Sets the enzyme used for digestion.
+     *
      * @param enzyme the enzyme used for digestion
      */
     public void setEnzyme(Enzyme enzyme) {
@@ -161,7 +166,8 @@ public class IdentificationPreferences  implements Serializable {
     }
 
     /**
-     * Returns the parameters file loaded
+     * Returns the parameters file loaded.
+     *
      * @return the parameters file loaded
      */
     public File getParametersFile() {
@@ -169,7 +175,8 @@ public class IdentificationPreferences  implements Serializable {
     }
 
     /**
-     * Sets the parameter file loaded
+     * Sets the parameter file loaded.
+     *
      * @param parametersFile the parameter file loaded
      */
     public void setParametersFile(File parametersFile) {
@@ -177,7 +184,8 @@ public class IdentificationPreferences  implements Serializable {
     }
 
     /**
-     * Returns the sequence database file used for identification
+     * Returns the sequence database file used for identification.
+     *
      * @return the sequence database file used for identification
      */
     public File getFastaFile() {
@@ -185,15 +193,17 @@ public class IdentificationPreferences  implements Serializable {
     }
 
     /**
-     * Sets the sequence database file used for identification
-     * @param fastaFile  the sequence database file used for identification
+     * Sets the sequence database file used for identification.
+     *
+     * @param fastaFile the sequence database file used for identification
      */
     public void setFastaFile(File fastaFile) {
         this.fastaFile = fastaFile;
     }
 
     /**
-     * Returns the allowed number of missed cleavages
+     * Returns the allowed number of missed cleavages.
+     *
      * @return the allowed number of missed cleavages
      */
     public int getnMissedCleavages() {
@@ -201,15 +211,17 @@ public class IdentificationPreferences  implements Serializable {
     }
 
     /**
-     * Sets the allowed number of missed cleavages
-     * @param nMissedCleavages  the allowed number of missed cleavages
+     * Sets the allowed number of missed cleavages.
+     *
+     * @param nMissedCleavages the allowed number of missed cleavages
      */
     public void setnMissedCleavages(int nMissedCleavages) {
         this.nMissedCleavages = nMissedCleavages;
     }
 
     /**
-     * Getter for the first kind of ion searched
+     * Getter for the first kind of ion searched.
+     *
      * @return the first kind of ion searched
      */
     public PeptideFragmentIonType getIonSearched1() {
@@ -217,8 +229,9 @@ public class IdentificationPreferences  implements Serializable {
     }
 
     /**
-     * Setter for the first kind of ion searched
-     * @param ionSearched1 the first kind of ion searched 
+     * Setter for the first kind of ion searched.
+     *
+     * @param ionSearched1 the first kind of ion searched
      */
     public void setIonSearched1(String ionSearched1) {
         if (ionSearched1.equals("a")) {
@@ -237,7 +250,8 @@ public class IdentificationPreferences  implements Serializable {
     }
 
     /**
-     * Getter for the second kind of ion searched
+     * Getter for the second kind of ion searched.
+     *
      * @return the second kind of ion searched
      */
     public PeptideFragmentIonType getIonSearched2() {
@@ -245,8 +259,9 @@ public class IdentificationPreferences  implements Serializable {
     }
 
     /**
-     * Setter for the second kind of ion searched
-     * @param ionSearched1 the second kind of ion searched 
+     * Setter for the second kind of ion searched.
+     *
+     * @param ionSearched2 the second kind of ion searched
      */
     public void setIonSearched2(String ionSearched2) {
         if (ionSearched2.equals("a")) {
@@ -265,7 +280,8 @@ public class IdentificationPreferences  implements Serializable {
     }
 
     /**
-     * Getter for the list of ion symbols used
+     * Getter for the list of ion symbols used.
+     *
      * @return the list of ion symbols used
      */
     public String[] getIons() {
@@ -273,15 +289,17 @@ public class IdentificationPreferences  implements Serializable {
     }
 
     /**
-     * Returns the precursor tolerance
-     * @return the precursor tolerance 
+     * Returns the precursor tolerance.
+     *
+     * @return the precursor tolerance
      */
     public double getPrecursorAccuracy() {
         return precursorTolerance;
     }
 
     /**
-     * Sets the precursor tolerance
+     * Sets the precursor tolerance.
+     *
      * @param precursorTolerance the precursor tolerance
      */
     public void setPrecursorAccuracy(double precursorTolerance) {
@@ -289,16 +307,18 @@ public class IdentificationPreferences  implements Serializable {
     }
 
     /**
-     * Returns the precursor tolerance unit as defined in the static fields
-     * @return the precursor tolerance unit 
+     * Returns the precursor tolerance unit as defined in the static fields.
+     *
+     * @return the precursor tolerance unit
      */
     public int getPrecursorAccuracyUnit() {
         return precursorToleranceUnit;
     }
 
     /**
-     * Setts the precursor tolerance unit as defined in the static fields
-     * @param precursorToleranceUnit the precursor tolerance unit 
+     * Sets the precursor tolerance unit as defined in the static fields.
+     *
+     * @param precursorToleranceUnit the precursor tolerance unit
      */
     public void setPrecursorAccuracyUnit(int precursorToleranceUnit) {
         this.precursorToleranceUnit = precursorToleranceUnit;

@@ -10,9 +10,9 @@ import java.util.Arrays;
 public class BasicStats {
 
     /**
-     * Method to estimate the median
+     * Method to estimate the median.
      *
-     * @param ratios    array of double
+     * @param ratios array of double
      * @return median of the input
      */
     public static double median(double[] ratios) {
@@ -29,7 +29,7 @@ public class BasicStats {
     }
 
     /**
-     * Method estimating the median absolute deviation
+     * Method estimating the median absolute deviation.
      *
      * @param ratios array of doubles
      * @return the mad of the input
