@@ -707,9 +707,6 @@ public class ReporterGUI extends javax.swing.JFrame {
 
             String iconFileLocation = jarFilePath + "\\conf\\reporter.ico";
             String jarFileLocation = jarFilePath + "\\Reporter-" + new Properties().getVersion() + ".jar";
-            
-            JOptionPane.showMessageDialog(null, "iconFileLocation: " + iconFileLocation, "iconFileLocation", JOptionPane.INFORMATION_MESSAGE);
-            JOptionPane.showMessageDialog(null, "jarFileLocation: " + jarFileLocation, "jarFileLocation", JOptionPane.INFORMATION_MESSAGE);
 
             try {
                 JShellLink link = new JShellLink();
