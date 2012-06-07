@@ -1,5 +1,6 @@
 package eu.isas.reporter.gui;
 
+import com.compomics.util.examples.BareBonesBrowserLaunch;
 import com.compomics.util.experiment.biology.PTM;
 import com.compomics.util.experiment.biology.PTMFactory;
 import eu.isas.reporter.myparameters.QuantificationPreferences;
@@ -56,6 +57,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
         loadModifications();
         loadValues();
         updateModificationList();
+        setLocationRelativeTo(reporterGui);
         setVisible(true);
     }
 
@@ -68,18 +70,18 @@ public class PreferencesDialog extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jPanel1 = new javax.swing.JPanel();
-        jPanel2 = new javax.swing.JPanel();
+        backgroundPanel = new javax.swing.JPanel();
+        idSelectionPanel = new javax.swing.JPanel();
         miscleavageCheck = new javax.swing.JCheckBox();
         jLabel1 = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
+        selectedPtmsScrollPane = new javax.swing.JScrollPane();
         selectedPTMs = new javax.swing.JList();
-        addPTM = new javax.swing.JButton();
-        removePTM = new javax.swing.JButton();
-        jScrollPane2 = new javax.swing.JScrollPane();
+        allPtmsScrollPane = new javax.swing.JScrollPane();
         allPTMs = new javax.swing.JList();
         jLabel8 = new javax.swing.JLabel();
-        jPanel3 = new javax.swing.JPanel();
+        addModifications = new javax.swing.JButton();
+        removeModification = new javax.swing.JButton();
+        ratioEstimationsPanel = new javax.swing.JPanel();
         nullIntensitiesCheck = new javax.swing.JCheckBox();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
@@ -91,148 +93,189 @@ public class PreferencesDialog extends javax.swing.JDialog {
         kTxt = new javax.swing.JTextField();
         resolutionTxt = new javax.swing.JTextField();
         cancelButton = new javax.swing.JButton();
+        helpLabel = new javax.swing.JLabel();
+        helpLinkLabel = new javax.swing.JLabel();
         okButton = new javax.swing.JButton();
-        jLabel7 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Quantification Preferences");
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Identifications Selection"));
+        backgroundPanel.setBackground(new java.awt.Color(230, 230, 230));
+
+        idSelectionPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Identifications Selection"));
+        idSelectionPanel.setOpaque(false);
 
         miscleavageCheck.setText("Ignore miscleaved peptides");
+        miscleavageCheck.setIconTextGap(10);
+        miscleavageCheck.setOpaque(false);
 
+        jLabel1.setFont(jLabel1.getFont().deriveFont((jLabel1.getFont().getStyle() | java.awt.Font.ITALIC)));
         jLabel1.setText("Ignore peptides presenting the following PTMS:");
 
-        jScrollPane1.setViewportView(selectedPTMs);
-
-        addPTM.setText("<<");
-        addPTM.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addPTMActionPerformed(evt);
-            }
-        });
-
-        removePTM.setText(">>");
-        removePTM.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                removePTMActionPerformed(evt);
-            }
-        });
+        selectedPtmsScrollPane.setViewportView(selectedPTMs);
 
         allPTMs.setModel(new javax.swing.AbstractListModel() {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
             public int getSize() { return strings.length; }
             public Object getElementAt(int i) { return strings[i]; }
         });
-        jScrollPane2.setViewportView(allPTMs);
+        allPtmsScrollPane.setViewportView(allPTMs);
 
+        jLabel8.setFont(jLabel8.getFont().deriveFont((jLabel8.getFont().getStyle() | java.awt.Font.ITALIC)));
         jLabel8.setText("Available PTMs:");
 
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
+        addModifications.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/arrowUp_grey.png"))); // NOI18N
+        addModifications.setText("Add");
+        addModifications.setToolTipText("Add to list of expected modifications");
+        addModifications.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        addModifications.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/arrowUp.png"))); // NOI18N
+        addModifications.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addModificationsActionPerformed(evt);
+            }
+        });
+
+        removeModification.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/arrowDown_grey.png"))); // NOI18N
+        removeModification.setText("Remove");
+        removeModification.setToolTipText("Remove from list of selected modifications");
+        removeModification.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        removeModification.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/arrowDown.png"))); // NOI18N
+        removeModification.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeModificationActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout idSelectionPanelLayout = new javax.swing.GroupLayout(idSelectionPanel);
+        idSelectionPanel.setLayout(idSelectionPanelLayout);
+        idSelectionPanelLayout.setHorizontalGroup(
+            idSelectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(idSelectionPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(miscleavageCheck)
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel2Layout.createSequentialGroup()
-                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 241, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(idSelectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(idSelectionPanelLayout.createSequentialGroup()
+                        .addComponent(jLabel8)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(idSelectionPanelLayout.createSequentialGroup()
+                        .addGroup(idSelectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, idSelectionPanelLayout.createSequentialGroup()
+                                .addGap(0, 0, Short.MAX_VALUE)
+                                .addComponent(addModifications, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(addPTM)
-                                    .addComponent(removePTM)))
+                                .addComponent(removeModification, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(miscleavageCheck)
+                            .addComponent(allPtmsScrollPane)
+                            .addComponent(selectedPtmsScrollPane)
                             .addComponent(jLabel1))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 265, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel8))))
-                .addContainerGap(200, Short.MAX_VALUE))
+                        .addContainerGap())))
         );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
+
+        idSelectionPanelLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {addModifications, removeModification});
+
+        idSelectionPanelLayout.setVerticalGroup(
+            idSelectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(idSelectionPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(miscleavageCheck)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(jLabel8))
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGap(74, 74, 74)
-                        .addComponent(addPTM)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(removePTM))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 167, Short.MAX_VALUE)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 167, Short.MAX_VALUE))))
+                .addGap(23, 23, 23)
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(selectedPtmsScrollPane)
+                .addGroup(idSelectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(idSelectionPanelLayout.createSequentialGroup()
+                        .addGap(36, 36, 36)
+                        .addComponent(jLabel8))
+                    .addGroup(idSelectionPanelLayout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(idSelectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(removeModification, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(addModifications, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(allPtmsScrollPane)
                 .addContainerGap())
         );
 
-        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Ratio estimation options"));
+        ratioEstimationsPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Ratio Estimation"));
+        ratioEstimationsPanel.setOpaque(false);
 
         nullIntensitiesCheck.setText("Ignore null intensities");
+        nullIntensitiesCheck.setIconTextGap(10);
+        nullIntensitiesCheck.setOpaque(false);
 
-        jLabel2.setText("Minimal ratio:");
+        jLabel2.setText("Minimum Ratio:");
 
-        jLabel3.setText("Maximal ratio:");
+        jLabel3.setText("Maximum Ratio:");
+
+        ratioMaxTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+
+        ratioMinTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
 
         jLabel4.setText("Resolution:");
 
-        jLabel5.setText("Window width:");
+        jLabel5.setText("Window Width:");
 
-        jLabel6.setText("*MAD");
+        jLabel6.setText("* MAD");
 
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
+        kTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+
+        resolutionTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+
+        javax.swing.GroupLayout ratioEstimationsPanelLayout = new javax.swing.GroupLayout(ratioEstimationsPanel);
+        ratioEstimationsPanel.setLayout(ratioEstimationsPanelLayout);
+        ratioEstimationsPanelLayout.setHorizontalGroup(
+            ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(ratioEstimationsPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(nullIntensitiesCheck)
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel3)
-                            .addComponent(jLabel2))
-                        .addGap(18, 18, 18)
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(ratioMinTxt)
-                            .addComponent(ratioMaxTxt, javax.swing.GroupLayout.DEFAULT_SIZE, 140, Short.MAX_VALUE))
-                        .addGap(104, 104, 104)
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel5)
-                            .addComponent(jLabel4))
+                    .addGroup(ratioEstimationsPanelLayout.createSequentialGroup()
+                        .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel2)
+                            .addComponent(jLabel3))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addGroup(jPanel3Layout.createSequentialGroup()
-                                .addComponent(kTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(ratioMaxTxt, javax.swing.GroupLayout.DEFAULT_SIZE, 167, Short.MAX_VALUE)
+                            .addComponent(ratioMinTxt))
+                        .addGap(18, 18, 18)
+                        .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel4, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel5, javax.swing.GroupLayout.Alignment.TRAILING))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(ratioEstimationsPanelLayout.createSequentialGroup()
+                                .addComponent(kTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jLabel6))
-                            .addComponent(resolutionTxt)))))
+                            .addComponent(resolutionTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 167, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
+
+        ratioEstimationsPanelLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {jLabel2, jLabel3, jLabel4, jLabel5});
+
+        ratioEstimationsPanelLayout.setVerticalGroup(
+            ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(ratioEstimationsPanelLayout.createSequentialGroup()
                 .addContainerGap()
+                .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(ratioEstimationsPanelLayout.createSequentialGroup()
+                        .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel2)
+                            .addComponent(ratioMinTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(ratioMaxTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel3)))
+                    .addGroup(ratioEstimationsPanelLayout.createSequentialGroup()
+                        .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(resolutionTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel4))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel6)
+                            .addComponent(kTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel5))))
+                .addGap(18, 18, 18)
                 .addComponent(nullIntensitiesCheck)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2)
-                    .addComponent(ratioMinTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(resolutionTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel4))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel3)
-                    .addComponent(ratioMaxTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel6)
-                    .addComponent(kTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel5))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -243,89 +286,117 @@ public class PreferencesDialog extends javax.swing.JDialog {
             }
         });
 
+        helpLabel.setFont(helpLabel.getFont().deriveFont((helpLabel.getFont().getStyle() | java.awt.Font.ITALIC)));
+        helpLabel.setText("For ratio estimation help see:");
+
+        helpLinkLabel.setText("<html> <a href=\\\"dummy_link\">Burkhart et al.  (2011) [ PMID: 21328540]</a></html>");
+        helpLinkLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                helpLinkLabelMouseClicked(evt);
+            }
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                helpLinkLabelMouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                helpLinkLabelMouseExited(evt);
+            }
+        });
+
         okButton.setText("OK");
-        okButton.setPreferredSize(new java.awt.Dimension(65, 23));
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
             }
         });
 
-        jLabel7.setFont(new java.awt.Font("Tahoma", 2, 11));
-        jLabel7.setText("For help on ratio estimation details see PMID: 21328540");
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
+        javax.swing.GroupLayout backgroundPanelLayout = new javax.swing.GroupLayout(backgroundPanel);
+        backgroundPanel.setLayout(backgroundPanelLayout);
+        backgroundPanelLayout.setHorizontalGroup(
+            backgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(backgroundPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addComponent(jLabel7)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(okButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(backgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(backgroundPanelLayout.createSequentialGroup()
+                        .addGap(10, 10, 10)
+                        .addComponent(helpLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(helpLinkLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 66, Short.MAX_VALUE)
+                        .addComponent(okButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(cancelButton))
-                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, 793, Short.MAX_VALUE)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addComponent(idSelectionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(ratioEstimationsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+
+        backgroundPanelLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {cancelButton, okButton});
+
+        backgroundPanelLayout.setVerticalGroup(
+            backgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(backgroundPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(idSelectionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(ratioEstimationsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel7)
+                .addGroup(backgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(helpLabel)
+                    .addComponent(helpLinkLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(cancelButton)
-                    .addComponent(okButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(40, Short.MAX_VALUE))
+                    .addComponent(okButton))
+                .addContainerGap())
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addComponent(backgroundPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(17, Short.MAX_VALUE))
+            .addComponent(backgroundPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void removePTMActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removePTMActionPerformed
-        int nSelected = selectedPTMs.getModel().getSize();
-        int nToRemove = selectedPTMs.getSelectedIndices().length;
-        String[] variableModifications = new String[nSelected - nToRemove];
-        int cpt = 0;
-        boolean found;
-        for (int i = 0; i < selectedPTMs.getModel().getSize(); i++) {
-            found = false;
-            for (Object selection : selectedPTMs.getSelectedValues()) {
-                if (((String) selectedPTMs.getModel().getElementAt(i)).equals((String) selection)) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                variableModifications[cpt] = (String) selectedPTMs.getModel().getElementAt(i);
-                cpt++;
-            }
-        }
-        selectedPTMs.setListData(variableModifications);
-        updateModificationList();
-    }//GEN-LAST:event_removePTMActionPerformed
+    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+        dispose();
+    }//GEN-LAST:event_cancelButtonActionPerformed
 
-    private void addPTMActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addPTMActionPerformed
+    /**
+     * Changes the cursor to the hand cursor when over the help link.
+     *
+     * @param evt
+     */
+    private void helpLinkLabelMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_helpLinkLabelMouseEntered
+        this.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+    }//GEN-LAST:event_helpLinkLabelMouseEntered
+
+    /**
+     * Changes the cursor back to the default cursor when leaving the help link.
+     *
+     * @param evt
+     */
+    private void helpLinkLabelMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_helpLinkLabelMouseExited
+        this.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+    }//GEN-LAST:event_helpLinkLabelMouseExited
+
+    /**
+     * Opens the help link in the web browser.
+     *
+     * @param evt
+     */
+    private void helpLinkLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_helpLinkLabelMouseClicked
+        this.setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
+        BareBonesBrowserLaunch.openURL("http://onlinelibrary.wiley.com/doi/10.1002/pmic.201000711/abstract");
+        this.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+    }//GEN-LAST:event_helpLinkLabelMouseClicked
+
+    private void addModificationsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addModificationsActionPerformed
+
         int nSelected = selectedPTMs.getModel().getSize();
         int nNew = allPTMs.getSelectedIndices().length;
         String[] fixedModifications = new String[nSelected + nNew];
@@ -352,11 +423,31 @@ public class PreferencesDialog extends javax.swing.JDialog {
         }
         selectedPTMs.setListData(fixedModifications);
         updateModificationList();
-    }//GEN-LAST:event_addPTMActionPerformed
+    }//GEN-LAST:event_addModificationsActionPerformed
 
-    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
-        dispose();
-    }//GEN-LAST:event_cancelButtonActionPerformed
+    private void removeModificationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeModificationActionPerformed
+
+        int nSelected = selectedPTMs.getModel().getSize();
+        int nToRemove = selectedPTMs.getSelectedIndices().length;
+        String[] variableModifications = new String[nSelected - nToRemove];
+        int cpt = 0;
+        boolean found;
+        for (int i = 0; i < selectedPTMs.getModel().getSize(); i++) {
+            found = false;
+            for (Object selection : selectedPTMs.getSelectedValues()) {
+                if (((String) selectedPTMs.getModel().getElementAt(i)).equals((String) selection)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                variableModifications[cpt] = (String) selectedPTMs.getModel().getElementAt(i);
+                cpt++;
+            }
+        }
+        selectedPTMs.setListData(variableModifications);
+        updateModificationList();
+    }//GEN-LAST:event_removeModificationActionPerformed
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
         if (validateInput()) {
@@ -365,32 +456,34 @@ public class PreferencesDialog extends javax.swing.JDialog {
             dispose();
         }
     }//GEN-LAST:event_okButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton addPTM;
+    private javax.swing.JButton addModifications;
     private javax.swing.JList allPTMs;
+    private javax.swing.JScrollPane allPtmsScrollPane;
+    private javax.swing.JPanel backgroundPanel;
     private javax.swing.JButton cancelButton;
+    private javax.swing.JLabel helpLabel;
+    private javax.swing.JLabel helpLinkLabel;
+    private javax.swing.JPanel idSelectionPanel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextField kTxt;
     private javax.swing.JCheckBox miscleavageCheck;
     private javax.swing.JCheckBox nullIntensitiesCheck;
     private javax.swing.JButton okButton;
+    private javax.swing.JPanel ratioEstimationsPanel;
     private javax.swing.JTextField ratioMaxTxt;
     private javax.swing.JTextField ratioMinTxt;
-    private javax.swing.JButton removePTM;
+    private javax.swing.JButton removeModification;
     private javax.swing.JTextField resolutionTxt;
     private javax.swing.JList selectedPTMs;
+    private javax.swing.JScrollPane selectedPtmsScrollPane;
     // End of variables declaration//GEN-END:variables
 
     /**
