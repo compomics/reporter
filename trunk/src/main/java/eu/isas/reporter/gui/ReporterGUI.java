@@ -9,7 +9,6 @@ import com.compomics.util.experiment.quantification.reporterion.quantification.P
 import com.compomics.util.gui.UtilitiesGUIDefaults;
 import eu.isas.reporter.Reporter;
 import eu.isas.reporter.io.ReporterExporter;
-import eu.isas.reporter.myparameters.IdentificationDetails;
 import eu.isas.reporter.myparameters.ItraqScore;
 import eu.isas.reporter.myparameters.QuantificationPreferences;
 import eu.isas.reporter.utils.Properties;
@@ -391,7 +390,11 @@ public class ReporterGUI extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void newMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newMenuItemActionPerformed
+        try {
         new NewDialog(this, parent);
+        } catch (Exception e) {
+            parent.catchException(e);
+        }
     }//GEN-LAST:event_newMenuItemActionPerformed
 
     private void quantificationOptionsMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quantificationOptionsMenuActionPerformed
@@ -520,28 +523,9 @@ public class ReporterGUI extends javax.swing.JFrame {
                     return result;
                 } else if (column == 3) {
                     int nPeptides = 0;
-                    IdentificationDetails identificationDetails = new IdentificationDetails();
-                    for (String peptideKey : proteinMatch.getPeptideMatches()) {
-                        identificationDetails = (IdentificationDetails) identification.getMatchParameter(peptideKey, identificationDetails);
-                        if (identificationDetails.isValidated()) {
-                            nPeptides++;
-                        }
-                    }
                     return nPeptides;
                 } else if (column == 4) {
                     int nSpectra = 0;
-                    IdentificationDetails identificationDetails = new IdentificationDetails();
-                    PeptideMatch peptideMatch;
-                    for (String peptideKey : proteinMatch.getPeptideMatches()) {
-                        peptideMatch = identification.getPeptideMatch(peptideKey);
-                        for (String psmKey : peptideMatch.getSpectrumMatches()) {
-                            identificationDetails = (IdentificationDetails) identification.getMatchParameter(psmKey, identificationDetails);
-                            if (identificationDetails.isValidated()) {
-                                nSpectra++;
-                            }
-                        }
-
-                    }
                     return nSpectra;
                 } else if (column == 5) {
                     return " ";

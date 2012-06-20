@@ -2,6 +2,8 @@ package eu.isas.reporter;
 
 import com.compomics.util.examples.BareBonesBrowserLaunch;
 import com.compomics.util.experiment.MsExperiment;
+import com.compomics.util.experiment.biology.Enzyme;
+import com.compomics.util.experiment.biology.PTMFactory;
 import com.compomics.util.experiment.biology.Sample;
 import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.IdentificationMethod;
@@ -10,12 +12,12 @@ import com.compomics.util.experiment.massspectrometry.Spectrum;
 import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
 import com.compomics.util.experiment.quantification.Quantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
+import com.compomics.util.gui.waiting.waitinghandlers.WaitingDialog;
+import eu.isas.peptideshaker.myparameters.PSSettings;
 import eu.isas.reporter.io.DataLoader;
 import eu.isas.reporter.calculation.RatioEstimator;
 import eu.isas.reporter.gui.ReporterGUI;
-import eu.isas.reporter.gui.WaitingDialog;
 import eu.isas.reporter.myparameters.QuantificationPreferences;
-import eu.isas.reporter.preferences.IdentificationPreferences;
 import java.awt.Toolkit;
 import java.io.BufferedReader;
 import java.io.File;
@@ -41,13 +43,33 @@ public class Reporter {
      */
     private SpectrumFactory spectrumFactory = SpectrumFactory.getInstance();
     /**
+     * The compomics PTM factory.
+     */
+    private PTMFactory ptmFactory = PTMFactory.getInstance();
+    /**
      * List of caught exceptions.
      */
     private ArrayList<String> exceptionCaught = new ArrayList<String>();
     /**
      * The location of the folder used for serialization of matches.
      */
-    public final String SERIALIZATION_DIRECTORY = "matches";
+    public static final String SERIALIZATION_DIRECTORY = "resources/matches";
+    /**
+     * Modification file.
+     */
+    private final String MODIFICATIONS_FILE = "conf/reporter_mods.xml";
+    /**
+     * User modification file.
+     */
+    private final String USER_MODIFICATIONS_FILE = "conf/reporter_usermods.xml";
+    /**
+     * The name of the reporter experiment
+     */
+    public static final String experimentObjectName = "experiment";
+    /**
+     * The PeptideShaker settings
+     */
+    private PSSettings psSettings;
 
     /**
      * Main method.
@@ -60,42 +82,35 @@ public class Reporter {
 
     /**
      * Reporter constructor.
-     * 
+     *
      * @param reporterGUI referenec to the Reporter GUI
      */
     public Reporter(ReporterGUI reporterGUI) {
         this.reporterGUI = reporterGUI;
         // check if a newer version of Reporter is available
         //checkForNewVersion(new Properties().getVersion()); // @TODO: re-add later!
+        loadModifications();
     }
     /**
      * The conducted experiment.
      */
-    private MsExperiment experiment;
+    private MsExperiment experiment = null;
     /**
      * The sample analyzed.
      */
-    private Sample sample;
+    private Sample sample = null;
     /**
      * The replicate number.
      */
     private int replicateNumber;
     /**
-     * The quantification method used.
-     */
-    private int quantificationMethodUsed;
-    /**
      * The main GUI.
      */
     private ReporterGUI reporterGUI;
-     /**
+    /**
      * The quantification preferences.
      */
     private QuantificationPreferences quantificationPreferences = new QuantificationPreferences();
-    /**
-     * The identification preferences
-     */
-    private IdentificationPreferences identificationPreferences = new IdentificationPreferences();
 
     /**
      * Check if a newer version of reporter is available.
@@ -173,7 +188,7 @@ public class Reporter {
     public void close(int aStatus) {
         System.exit(aStatus);
     }
-   
+
     /**
      * Returns the quantification preferences.
      *
@@ -190,24 +205,6 @@ public class Reporter {
      */
     public void setQuantificationPreferences(QuantificationPreferences quantificationPreferences) {
         this.quantificationPreferences = quantificationPreferences;
-    }
-
-    /**
-     * Returns the identification preferences.
-     *
-     * @return the identification preferences
-     */
-    public IdentificationPreferences getIDentificationPreferences() {
-        return identificationPreferences;
-    }
-
-    /**
-     * Sets the identification preferences.
-     *
-     * @param identificationPreferences the identification preferences
-     */
-    public void setIdentificationPreferences(IdentificationPreferences identificationPreferences) {
-        this.identificationPreferences = identificationPreferences;
     }
 
     /**
@@ -265,36 +262,17 @@ public class Reporter {
     }
 
     /**
-     * Returns the quantification method used.
-     *
-     * @return the quantification method used
-     */
-    public int getQuantificationMethodUsed() {
-        return quantificationMethodUsed;
-    }
-
-    /**
-     * Sets the quantification method used.
-     *
-     * @param quantificationMethodUsed the quantification method used
-     */
-    public void setQuantificationMethodUsed(int quantificationMethodUsed) {
-        this.quantificationMethodUsed = quantificationMethodUsed;
-    }
-
-    /**
      * Loads identification and quantification information from files.
      *
-     * @param idFiles the identification files
      * @param mgfFiles the quantification files
      */
-    public void loadFiles(ArrayList<File> idFiles, ArrayList<File> mgfFiles) {
-        
-        // change the peptide shaker icon to a "waiting version"
+    public void loadFiles(ArrayList<File> mgfFiles) {
+
+        // change the reporter icon to a "waiting version"
         reporterGUI.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")));
-        
-        WaitingDialog waitingDialog = new WaitingDialog(reporterGUI, true, this);
-        DataImporter dataImporter = new DataImporter(waitingDialog, idFiles, mgfFiles);
+
+        WaitingDialog waitingDialog = new WaitingDialog(reporterGUI, null, null, false, null, true); //@TODO: put images and tips
+        DataImporter dataImporter = new DataImporter(waitingDialog, mgfFiles);
         dataImporter.execute();
         waitingDialog.setLocationRelativeTo(reporterGUI);
         waitingDialog.setVisible(true);
@@ -315,11 +293,34 @@ public class Reporter {
      * @return the processed quantification
      */
     public ReporterIonQuantification getQuantification() {
-        return (ReporterIonQuantification) experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).getQuantification(quantificationMethodUsed);
+        return (ReporterIonQuantification) experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).getQuantification(Quantification.QuantificationMethod.REPORTER_IONS);
     }
 
+    /**
+     * Returns the identification. Null if none loaded.
+     * @return the identification
+     */
     public Identification getIdentification() {
-        return experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).getIdentification(IdentificationMethod.MS2_IDENTIFICATION);
+        if (experiment != null && sample != null && experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber) != null) {
+            return experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).getIdentification(IdentificationMethod.MS2_IDENTIFICATION);
+        }
+        return null;
+    }
+    
+    /**
+     * Returns the PeptideShaker settings
+     * @return the PeptideShaker settings
+     */
+    public PSSettings getPSSettings() {
+        return psSettings;
+    }
+    
+    /**
+     * Sets the PeptideShaker settings
+     * @param psSettings the peptide shaker settings
+     */
+    public void setPSSettings(PSSettings psSettings) {
+        this.psSettings = psSettings;
     }
 
     /**
@@ -330,9 +331,10 @@ public class Reporter {
         @Override
         protected Object doInBackground() throws Exception {
             try {
+                Enzyme enzyme = psSettings.getSearchParameters().getEnzyme();
                 ReporterIonQuantification quantification = getQuantification();
-                RatioEstimator ratioEstimator = new RatioEstimator(quantification, quantification.getReporterMethod(), 
-                        quantification.getReferenceLabel(), quantificationPreferences, identificationPreferences);
+                RatioEstimator ratioEstimator = new RatioEstimator(quantification, quantification.getReporterMethod(),
+                        quantification.getReferenceLabel(), quantificationPreferences, enzyme);
                 //ProteinQuantification proteinQuantification;
                 for (String proteinKey : quantification.getProteinQuantification()) {
                     ratioEstimator.estimateProteinRatios(proteinKey);
@@ -380,6 +382,25 @@ public class Reporter {
     }
 
     /**
+     * Loads the modifications from the modification file.
+     */
+    private void loadModifications() {
+        
+        try {
+            ptmFactory.importModifications(new File(MODIFICATIONS_FILE), false);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "An error (" + e.getMessage() + ") occured when trying to load the modifications from " + MODIFICATIONS_FILE + ".",
+                    "Configuration import Error", JOptionPane.ERROR_MESSAGE);
+        }
+        try {
+            ptmFactory.importModifications(new File(USER_MODIFICATIONS_FILE), true);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "An error (" + e.getMessage() + ") occured when trying to load the modifications from " + USER_MODIFICATIONS_FILE + ".",
+                    "Configuration import Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    /**
      * Worker used to process files.
      */
     private class DataImporter extends SwingWorker {
@@ -405,9 +426,8 @@ public class Reporter {
          * @param idFiles The identification files
          * @param mgfFiles The mgf files
          */
-        public DataImporter(WaitingDialog waitingDialog, ArrayList<File> idFiles, ArrayList<File> mgfFiles) {
+        public DataImporter(WaitingDialog waitingDialog, ArrayList<File> mgfFiles) {
             this.waitingDialog = waitingDialog;
-            this.idFiles = idFiles;
             this.mgfFiles = mgfFiles;
         }
 
@@ -416,33 +436,15 @@ public class Reporter {
             Identification identification = experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).getIdentification(IdentificationMethod.MS2_IDENTIFICATION);
             Quantification quantification = getQuantification();
             DataLoader dataLoader = new DataLoader(quantificationPreferences, waitingDialog, identification);
-            
-            if (idFiles.size() > 1 || !idFiles.get(0).getName().endsWith(".cps")) {
-                try {
-                    dataLoader.loadIdentifications(idFiles);
-                } catch (Exception e) {
-                    waitingDialog.appendReport("An error occured whlie loading " + idFiles.get(0).getName() + ".\n" + e.getLocalizedMessage());
-                    waitingDialog.setRunCancelled();
-                    return 1;
-                }
-            } else {
-                try {
-                    dataLoader.loadIdentifications(idFiles.get(0));
-                } catch (Exception e) {
-                    waitingDialog.appendReport("An error occured whlie loading " + idFiles.get(0).getName() + ".\n" + e.getLocalizedMessage());
-                    waitingDialog.setRunCancelled();
-                    return 1;
-                }
-            }
-            
+
             try {
                 quantification.buildPeptidesAndProteinQuantifications(identification);
             } catch (Exception e) {
                 waitingDialog.appendReport("An error occured whlie building peptide and protein quantification objects.\n" + e.getLocalizedMessage());
-                waitingDialog.setRunCancelled();
+                waitingDialog.setRunCanceled();
                 return 1;
             }
-            
+
             dataLoader.loadQuantification(getQuantification(), mgfFiles);
             waitingDialog.setRunFinished();
             return 0;

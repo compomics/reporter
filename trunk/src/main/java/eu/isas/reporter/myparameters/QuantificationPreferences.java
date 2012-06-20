@@ -1,10 +1,8 @@
 package eu.isas.reporter.myparameters;
 
 import com.compomics.util.experiment.biology.PTM;
-import com.compomics.util.experiment.identification.advocates.SearchEngine;
 import com.compomics.util.experiment.personalization.UrParameter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import org.ujmp.core.collections.ArrayIndexList;
 
 /**
@@ -24,31 +22,6 @@ public class QuantificationPreferences implements UrParameter {
      * Tolerance for reporter ion matching.
      */
     private double ReporterIonsMzTolerance = 0.01;
-    /**
-     * Minimal number of amino acids allowed for a peptide (identification files
-     * import only).
-     */
-    private int nAAmin = 8;
-    /**
-     * Maximal number of amino acids allowed for a peptide (identification files
-     * import only).
-     */
-    private int nAAmax = 20;
-    /**
-     * Maximal precursor mass deviation allowed for a PSM (identification files
-     * import only).
-     */
-    private double precursorMassDeviation = 10;
-    /**
-     * Maximal e-value allowed for a PSM indexed by the search engine compomics
-     * index (identification files import only).
-     */
-    private HashMap<Integer, Double> maxEValues = new HashMap<Integer, Double>();
-    /**
-     * Maximal estimated FDR allowed for a search engine PSM set (identification
-     * files import only).
-     */
-    private double fdrThreshold = 0.01;
     /**
      * Quantification and identification are conducted on the same spectra
      * (identification files import only).
@@ -104,9 +77,6 @@ public class QuantificationPreferences implements UrParameter {
      * Constructor.
      */
     public QuantificationPreferences() {
-        maxEValues.put(SearchEngine.MASCOT, 10.0);
-        maxEValues.put(SearchEngine.OMSSA, 10.0);
-        maxEValues.put(SearchEngine.XTANDEM, 10.0);
     }
 
     /**
@@ -125,99 +95,6 @@ public class QuantificationPreferences implements UrParameter {
      */
     public void setReporterIonsMzTolerance(double ReporterIonsMzTolerance) {
         this.ReporterIonsMzTolerance = ReporterIonsMzTolerance;
-    }
-
-    /**
-     * Returns the FDR threshold to use.
-     *
-     * @return the FDR threshold to use
-     */
-    public double getFdrThreshold() {
-        return fdrThreshold;
-    }
-
-    /**
-     * Sets the FDR threshold to use.
-     *
-     * @param fdrThreshold the FDR threshold to use
-     */
-    public void setFdrThreshold(double fdrThreshold) {
-        this.fdrThreshold = fdrThreshold;
-    }
-
-    /**
-     * Returns the maximal e-value allowed for a given search engine.
-     *
-     * @param searchEngineIndex the compomics search engine index
-     * @return the maximum e-value allowed
-     */
-    public double getMaxEValue(int searchEngineIndex) {
-        return maxEValues.get(searchEngineIndex);
-    }
-
-    /**
-     * Sets the maximal e-value allowed for a search engine.
-     *
-     * @param searchEngineIndex the compomics search engine index
-     * @param mascotMaxEValue the corresponding e-value limit
-     */
-    public void setMaxEValue(int searchEngineIndex, double mascotMaxEValue) {
-        maxEValues.put(searchEngineIndex, mascotMaxEValue);
-    }
-
-    /**
-     * Returns the maximal number of amino-acids allowed for a PSM peptide.
-     *
-     * @return the maximal number of amino-acids allowed for a PSM peptide
-     */
-    public int getnAAmax() {
-        return nAAmax;
-    }
-
-    /**
-     * Sets the maximal number of amino-acids allowed for a PSM peptide.
-     *
-     * @param nAAmax the maximal number of amino-acids allowed for a PSM peptide
-     */
-    public void setnAAmax(int nAAmax) {
-        this.nAAmax = nAAmax;
-    }
-
-    /**
-     * Returns the minimal number of amino-acids allowed for a PSM peptide.
-     *
-     * @return the minimal number of amino-acids allowed for a PSM peptide
-     */
-    public int getnAAmin() {
-        return nAAmin;
-    }
-
-    /**
-     * Sets the minimal number of amino-acids allowed for a PSM peptide.
-     *
-     * @param nAAmin the minimal number of amino-acids allowed for a PSM peptide
-     */
-    public void setnAAmin(int nAAmin) {
-        this.nAAmin = nAAmin;
-    }
-
-    /**
-     * Returns the maximal precursor mass deviation allowed for a PSM.
-     *
-     * @return the maximal precursor mass deviation allowed for a PSM
-     */
-    public double getPrecursorMassDeviation() {
-        return precursorMassDeviation;
-    }
-
-    /**
-     * Sets the maximal precursor mass deviation allowed for a PSM.
-     *
-     * @param precursorMassDeviation the maximal precursor mass deviation
-     * allowed for a PSM
-     */
-    public void setPrecursorMassDeviation(double precursorMassDeviation) {
-        this.precursorMassDeviation = precursorMassDeviation;
     }
 
     /**
@@ -273,15 +150,6 @@ public class QuantificationPreferences implements UrParameter {
      */
     public boolean isSameSpectra() {
         return sameSpectra;
-    }
-
-    /**
-     * Returns the max e-values map.
-     *
-     * @return the max e-values map
-     */
-    public HashMap<Integer, Double> getMaxEValues() {
-        return maxEValues;
     }
 
     /**

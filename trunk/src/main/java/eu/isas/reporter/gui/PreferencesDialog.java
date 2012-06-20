@@ -452,7 +452,6 @@ public class PreferencesDialog extends javax.swing.JDialog {
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
         if (validateInput()) {
             saveValues();
-            reporterGui.updateResults(quantificationPreferences);
             dispose();
         }
     }//GEN-LAST:event_okButtonActionPerformed
@@ -557,19 +556,16 @@ public class PreferencesDialog extends javax.swing.JDialog {
      */
     private void loadModifications() {
         try {
-            ptmFactory.importModifications(new File(MODIFICATIONS_FILE));
+            ptmFactory.importModifications(new File(MODIFICATIONS_FILE), false);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "An error (" + e.getMessage() + ") occured when trying to load the modifications from " + MODIFICATIONS_FILE + ".",
                     "Configuration import Error", JOptionPane.ERROR_MESSAGE);
         }
         try {
-            ptmFactory.importModifications(new File(USER_MODIFICATIONS_FILE));
+            ptmFactory.importModifications(new File(USER_MODIFICATIONS_FILE), true);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "An error (" + e.getMessage() + ") occured when trying to load the modifications from " + USER_MODIFICATIONS_FILE + ".",
                     "Configuration import Error", JOptionPane.ERROR_MESSAGE);
-        }
-        for (PTM ptm : ptmFactory.getPtmMap().values()) {
-            ptms.put(ptm.getName().toLowerCase(), ptm);
         }
     }
 

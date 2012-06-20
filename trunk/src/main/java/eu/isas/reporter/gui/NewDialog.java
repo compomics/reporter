@@ -1,29 +1,43 @@
 package eu.isas.reporter.gui;
 
+import com.compomics.util.Util;
 import com.compomics.util.experiment.MsExperiment;
 import com.compomics.util.experiment.ProteomicAnalysis;
 import com.compomics.util.experiment.SampleAnalysisSet;
 import com.compomics.util.experiment.biology.Sample;
 import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.IdentificationMethod;
+import com.compomics.util.experiment.identification.SequenceFactory;
 import com.compomics.util.experiment.identification.advocates.SearchEngine;
 import com.compomics.util.experiment.identification.identifications.Ms2Identification;
 import com.compomics.util.experiment.io.ExperimentIO;
+import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
+import com.compomics.util.experiment.quantification.Quantification;
+import com.compomics.util.experiment.quantification.Quantification.QuantificationMethod;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethodFactory;
+import com.compomics.util.gui.dialogs.SampleSelection;
 import com.compomics.util.gui.renderers.AlignedListCellRenderer;
+import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
+import eu.isas.peptideshaker.PeptideShaker;
+import eu.isas.peptideshaker.fileimport.IdFilter;
+import eu.isas.peptideshaker.myparameters.PSSettings;
 import eu.isas.reporter.Reporter;
 import eu.isas.reporter.myparameters.QuantificationPreferences;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
 import no.uib.jsparklines.extra.TrueFalseIconRenderer;
+import org.apache.commons.compress.archivers.ArchiveEntry;
+import org.apache.commons.compress.archivers.ArchiveInputStream;
+import org.apache.commons.compress.archivers.ArchiveStreamFactory;
 import org.xmlpull.v1.XmlPullParserException;
 
 /**
@@ -68,13 +82,13 @@ public class NewDialog extends javax.swing.JDialog {
      */
     private int replicateNumber;
     /**
+     * The currently loaded PeptideShaker file
+     */
+    private File currentPSFile;
+    /**
      * The mgf files loaded.
      */
     private ArrayList<File> mgfFiles = new ArrayList<File>();
-    /**
-     * The identification files loaded.
-     */
-    private ArrayList<File> idFiles = new ArrayList<File>();
     /**
      * Reporter will take care of the calculation.
      */
@@ -84,15 +98,19 @@ public class NewDialog extends javax.swing.JDialog {
      */
     private QuantificationPreferences quantificationPreferences;
     /**
-     * Compomics experiment saver and opener.
+     * A simple progress dialog.
      */
-    private ExperimentIO experimentIO = new ExperimentIO();
+    private ProgressDialogX progressDialog;
+    /**
+     * The spectrum factory.
+     */
+    private SpectrumFactory spectrumFactory = SpectrumFactory.getInstance(100);
 
     /**
      * Constructor.
      *
      * @param reporterGui the reporter class
-     * @param reporter  
+     * @param reporter
      */
     public NewDialog(ReporterGUI reporterGui, Reporter reporter) {
         super(reporterGui, true);
@@ -101,12 +119,12 @@ public class NewDialog extends javax.swing.JDialog {
         this.reporter = reporter;
 
         initComponents();
-        
+
         // make sure that the scroll panes are see-through
         sampleAssignmentJScrollPane.getViewport().setOpaque(false);
         reporterIonsConfigJScrollPane.getViewport().setOpaque(false);
         isotopeCorrectionJScrollPane.getViewport().setOpaque(false);
-        
+
         // set the table properties
         setTableProperties();
 
@@ -114,8 +132,10 @@ public class NewDialog extends javax.swing.JDialog {
 
         sameSpectra.setSelected(true);
 
+        if (selectedMethod != null) {
         comboMethod2.setSelectedItem(methodsFactory.getMethodsNames()[0]);
         comboMethod1.setSelectedItem(methodsFactory.getMethodsNames()[0]);
+        }
 
         // centrally align the comboboxes
         comboMethod1.setRenderer(new AlignedListCellRenderer(SwingConstants.CENTER));
@@ -143,21 +163,12 @@ public class NewDialog extends javax.swing.JDialog {
 
         txtConfigurationFileLocation.setText(METHODS_FILE);
 
-        // blank experiment by default, will be overwritten if a compomics project is loaded
-        experiment = new MsExperiment("Project Name");
-        sample = new Sample("sample");
-        experiment.addAnalysisSet(sample, new SampleAnalysisSet(sample, new ProteomicAnalysis(replicateNumber)));
-        experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).addIdentificationResults(IdentificationMethod.MS2_IDENTIFICATION, new Ms2Identification());
-        Identification identification = experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).getIdentification(IdentificationMethod.MS2_IDENTIFICATION);
-        identification.setInMemory(false);
-        identification.setAutomatedMemoryManagement(true);
-        identification.setSerializationDirectory(reporter.SERIALIZATION_DIRECTORY);
         isotopeCorrectionTable.getColumnModel().getColumn(0).setMaxWidth(50);
         pack();
         setLocationRelativeTo(reporterGui);
         setVisible(true);
     }
-    
+
     /**
      * Set up the properties of the tables.
      */
@@ -166,7 +177,7 @@ public class NewDialog extends javax.swing.JDialog {
                 new ImageIcon(this.getClass().getResource("/icons/selected_green.png")),
                 null,
                 "Reference", null));
-        
+
         sampleAssignmentTable.getColumn("Ref").setMaxWidth(40);
         sampleAssignmentTable.getColumn("Ref").setMinWidth(40);
     }
@@ -185,7 +196,7 @@ public class NewDialog extends javax.swing.JDialog {
         tabbedPane = new javax.swing.JTabbedPane();
         processingPanel = new javax.swing.JPanel();
         projectPanel = new javax.swing.JPanel();
-        txtExperiment = new javax.swing.JTextField();
+        experimentTxt = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         jLabel24 = new javax.swing.JLabel();
         sampleNameTxt = new javax.swing.JTextField();
@@ -194,16 +205,13 @@ public class NewDialog extends javax.swing.JDialog {
         fileSelectiontPanel = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         txtSpectraFileLocation = new javax.swing.JTextField();
-        clearSpectraJButton = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();
         txtIdFileLocation = new javax.swing.JTextField();
         addIdFilesButton = new javax.swing.JButton();
-        clearIdFilesJButton = new javax.swing.JButton();
         addSpectraFilesJButton = new javax.swing.JButton();
         jLabel10 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
+        fastaTxt = new javax.swing.JTextField();
         addDbButton = new javax.swing.JButton();
-        clearDbButton = new javax.swing.JButton();
         samplePanel = new javax.swing.JPanel();
         sampleAssignmentJScrollPane = new javax.swing.JScrollPane();
         sampleAssignmentTable = new javax.swing.JTable();
@@ -228,34 +236,19 @@ public class NewDialog extends javax.swing.JDialog {
         spectrumAnalysisPanel = new javax.swing.JPanel();
         jLabel6 = new javax.swing.JLabel();
         ionToleranceTxt = new javax.swing.JTextField();
-        idenificationAnalysisPanel = new javax.swing.JPanel();
-        jLabel7 = new javax.swing.JLabel();
-        fdrThresholdTxt = new javax.swing.JTextField();
-        jLabel8 = new javax.swing.JLabel();
-        jLabel9 = new javax.swing.JLabel();
-        jLabel16 = new javax.swing.JLabel();
-        mascotEvalueTxt = new javax.swing.JTextField();
-        jLabel17 = new javax.swing.JLabel();
-        omssaEvalueTxt = new javax.swing.JTextField();
-        jLabel18 = new javax.swing.JLabel();
-        xTandemEvalueTxt = new javax.swing.JTextField();
         jLabel11 = new javax.swing.JLabel();
         sameSpectra = new javax.swing.JRadioButton();
         precursorMatching = new javax.swing.JRadioButton();
         jLabel19 = new javax.swing.JLabel();
         jLabel20 = new javax.swing.JLabel();
+        rtTolTxt = new javax.swing.JTextField();
         mzTolTxt = new javax.swing.JTextField();
         jLabel21 = new javax.swing.JLabel();
-        rtTolTxt = new javax.swing.JTextField();
         jLabel22 = new javax.swing.JLabel();
-        identificationPreprocessingPanel = new javax.swing.JPanel();
-        jLabel12 = new javax.swing.JLabel();
-        nAaMinTxt = new javax.swing.JTextField();
-        jLabel13 = new javax.swing.JLabel();
-        nAaMaxTxt = new javax.swing.JTextField();
-        jLabel14 = new javax.swing.JLabel();
-        deltaMassTxt = new javax.swing.JTextField();
-        jLabel15 = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
+        jLabel7 = new javax.swing.JLabel();
+        editPreferencesButton = new javax.swing.JButton();
+        quantificationPreferencesTxt = new javax.swing.JTextField();
         startButton = new javax.swing.JButton();
         exitJButton = new javax.swing.JButton();
 
@@ -278,14 +271,14 @@ public class NewDialog extends javax.swing.JDialog {
         processingPanel.setOpaque(false);
         processingPanel.setPreferredSize(new java.awt.Dimension(800, 600));
 
-        projectPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Project"));
+        projectPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Project Details"));
         projectPanel.setOpaque(false);
 
-        txtExperiment.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        txtExperiment.setText("Project Name");
-        txtExperiment.addKeyListener(new java.awt.event.KeyAdapter() {
+        experimentTxt.setEditable(false);
+        experimentTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        experimentTxt.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
-                txtExperimentKeyReleased(evt);
+                experimentTxtKeyReleased(evt);
             }
         });
 
@@ -293,8 +286,8 @@ public class NewDialog extends javax.swing.JDialog {
 
         jLabel24.setText("Sample Name");
 
+        sampleNameTxt.setEditable(false);
         sampleNameTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        sampleNameTxt.setText("Sample Name");
         sampleNameTxt.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 sampleNameTxtActionPerformed(evt);
@@ -303,8 +296,8 @@ public class NewDialog extends javax.swing.JDialog {
 
         jLabel25.setText("Replicate");
 
+        replicateNumberTxt.setEditable(false);
         replicateNumberTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        replicateNumberTxt.setText("0");
 
         org.jdesktop.layout.GroupLayout projectPanelLayout = new org.jdesktop.layout.GroupLayout(projectPanel);
         projectPanel.setLayout(projectPanelLayout);
@@ -318,7 +311,7 @@ public class NewDialog extends javax.swing.JDialog {
                 .add(20, 20, 20)
                 .add(projectPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(sampleNameTxt)
-                    .add(txtExperiment))
+                    .add(experimentTxt))
                 .add(26, 26, 26)
                 .add(jLabel25)
                 .add(18, 18, 18)
@@ -330,7 +323,7 @@ public class NewDialog extends javax.swing.JDialog {
             .add(projectPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(projectPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(txtExperiment, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(experimentTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel1))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(projectPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
@@ -348,20 +341,12 @@ public class NewDialog extends javax.swing.JDialog {
 
         txtSpectraFileLocation.setEditable(false);
         txtSpectraFileLocation.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        txtSpectraFileLocation.setText("Please select file(s)");
 
-        clearSpectraJButton.setText("Clear");
-        clearSpectraJButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                clearSpectraJButtonActionPerformed(evt);
-            }
-        });
-
-        jLabel3.setText("Identification File(s)");
+        jLabel3.setText("PeptideShaker project:");
 
         txtIdFileLocation.setEditable(false);
         txtIdFileLocation.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        txtIdFileLocation.setText("Please select file(s)");
+        txtIdFileLocation.setText("Please select a file");
 
         addIdFilesButton.setText("Browse");
         addIdFilesButton.addActionListener(new java.awt.event.ActionListener() {
@@ -370,14 +355,7 @@ public class NewDialog extends javax.swing.JDialog {
             }
         });
 
-        clearIdFilesJButton.setText("Clear");
-        clearIdFilesJButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                clearIdFilesJButtonActionPerformed(evt);
-            }
-        });
-
-        addSpectraFilesJButton.setText("Browse");
+        addSpectraFilesJButton.setText("Add");
         addSpectraFilesJButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addSpectraFilesJButtonActionPerformed(evt);
@@ -386,13 +364,10 @@ public class NewDialog extends javax.swing.JDialog {
 
         jLabel10.setText("Database File (FASTA)");
 
-        jTextField1.setEditable(false);
-        jTextField1.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        jTextField1.setText("Please select a file");
+        fastaTxt.setEditable(false);
+        fastaTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
 
         addDbButton.setText("Browse");
-
-        clearDbButton.setText("Clear");
 
         org.jdesktop.layout.GroupLayout fileSelectiontPanelLayout = new org.jdesktop.layout.GroupLayout(fileSelectiontPanel);
         fileSelectiontPanel.setLayout(fileSelectiontPanelLayout);
@@ -408,28 +383,20 @@ public class NewDialog extends javax.swing.JDialog {
                         .add(18, 18, 18)
                         .add(fileSelectiontPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(txtSpectraFileLocation)
-                            .add(jTextField1)))
+                            .add(fastaTxt)))
                     .add(fileSelectiontPanelLayout.createSequentialGroup()
                         .add(jLabel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 120, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .add(18, 18, 18)
                         .add(txtIdFileLocation)))
-                .add(18, 18, 18)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(fileSelectiontPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, addSpectraFilesJButton)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, addIdFilesButton)
                     .add(addDbButton))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(fileSelectiontPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(fileSelectiontPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                        .add(org.jdesktop.layout.GroupLayout.TRAILING, fileSelectiontPanelLayout.createSequentialGroup()
-                            .add(clearIdFilesJButton)
-                            .add(1, 1, 1))
-                        .add(org.jdesktop.layout.GroupLayout.TRAILING, clearSpectraJButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 67, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(clearDbButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 68, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 
-        fileSelectiontPanelLayout.linkSize(new java.awt.Component[] {addDbButton, addIdFilesButton, addSpectraFilesJButton, clearDbButton, clearIdFilesJButton, clearSpectraJButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+        fileSelectiontPanelLayout.linkSize(new java.awt.Component[] {addDbButton, addIdFilesButton, addSpectraFilesJButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
 
         fileSelectiontPanelLayout.setVerticalGroup(
             fileSelectiontPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -438,20 +405,17 @@ public class NewDialog extends javax.swing.JDialog {
                 .add(fileSelectiontPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel3)
                     .add(txtIdFileLocation, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(addIdFilesButton)
-                    .add(clearIdFilesJButton))
+                    .add(addIdFilesButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(fileSelectiontPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel2)
                     .add(txtSpectraFileLocation, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(clearSpectraJButton)
                     .add(addSpectraFilesJButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(fileSelectiontPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel10)
-                    .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(addDbButton)
-                    .add(clearDbButton))
+                    .add(fastaTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(addDbButton))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -488,7 +452,7 @@ public class NewDialog extends javax.swing.JDialog {
                     .add(jLabel5)
                     .add(comboMethod1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(18, 18, 18)
-                .add(sampleAssignmentJScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 214, Short.MAX_VALUE)
+                .add(sampleAssignmentJScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 211, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -508,11 +472,11 @@ public class NewDialog extends javax.swing.JDialog {
             processingPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(processingPanelLayout.createSequentialGroup()
                 .addContainerGap()
+                .add(fileSelectiontPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 9, Short.MAX_VALUE)
                 .add(projectPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(fileSelectiontPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(samplePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(samplePanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -681,60 +645,6 @@ public class NewDialog extends javax.swing.JDialog {
 
         ionToleranceTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
 
-        org.jdesktop.layout.GroupLayout spectrumAnalysisPanelLayout = new org.jdesktop.layout.GroupLayout(spectrumAnalysisPanel);
-        spectrumAnalysisPanel.setLayout(spectrumAnalysisPanelLayout);
-        spectrumAnalysisPanelLayout.setHorizontalGroup(
-            spectrumAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(spectrumAnalysisPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(jLabel6)
-                .add(18, 18, 18)
-                .add(ionToleranceTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 102, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        spectrumAnalysisPanelLayout.setVerticalGroup(
-            spectrumAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(spectrumAnalysisPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(spectrumAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel6)
-                    .add(ionToleranceTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        idenificationAnalysisPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Identification Analysis"));
-        idenificationAnalysisPanel.setOpaque(false);
-
-        jLabel7.setText("FDR Threshold");
-
-        fdrThresholdTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        fdrThresholdTxt.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                fdrThresholdTxtActionPerformed(evt);
-            }
-        });
-
-        jLabel8.setText("%");
-
-        jLabel9.setText("Maximum E-values");
-
-        jLabel16.setText("Mascot");
-
-        mascotEvalueTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        mascotEvalueTxt.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                mascotEvalueTxtActionPerformed(evt);
-            }
-        });
-
-        jLabel17.setText("OMSSA");
-
-        omssaEvalueTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-
-        jLabel18.setText("X!Tandem");
-
-        xTandemEvalueTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-
         jLabel11.setText("Link to Quantification");
 
         sameSpectra.setText("Same Spectra");
@@ -759,193 +669,112 @@ public class NewDialog extends javax.swing.JDialog {
 
         jLabel20.setText("RT tolerance");
 
-        jLabel21.setText("ppm");
-
         rtTolTxt.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 rtTolTxtActionPerformed(evt);
             }
         });
 
+        jLabel21.setText("m/z");
+
         jLabel22.setText("s");
 
-        org.jdesktop.layout.GroupLayout idenificationAnalysisPanelLayout = new org.jdesktop.layout.GroupLayout(idenificationAnalysisPanel);
-        idenificationAnalysisPanel.setLayout(idenificationAnalysisPanelLayout);
-        idenificationAnalysisPanelLayout.setHorizontalGroup(
-            idenificationAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(idenificationAnalysisPanelLayout.createSequentialGroup()
+        org.jdesktop.layout.GroupLayout spectrumAnalysisPanelLayout = new org.jdesktop.layout.GroupLayout(spectrumAnalysisPanel);
+        spectrumAnalysisPanel.setLayout(spectrumAnalysisPanelLayout);
+        spectrumAnalysisPanelLayout.setHorizontalGroup(
+            spectrumAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(spectrumAnalysisPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(idenificationAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel9)
-                    .add(idenificationAnalysisPanelLayout.createSequentialGroup()
-                        .add(idenificationAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jLabel7)
-                            .add(idenificationAnalysisPanelLayout.createSequentialGroup()
-                                .add(10, 10, 10)
-                                .add(idenificationAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(jLabel18)
-                                    .add(jLabel17)
-                                    .add(jLabel16))))
-                        .add(18, 18, 18)
-                        .add(idenificationAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, fdrThresholdTxt)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, mascotEvalueTxt, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 124, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, omssaEvalueTxt)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, xTandemEvalueTxt))))
-                .add(idenificationAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(idenificationAnalysisPanelLayout.createSequentialGroup()
+                .add(jLabel6)
+                .add(18, 18, 18)
+                .add(ionToleranceTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 102, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 128, Short.MAX_VALUE)
+                .add(spectrumAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                    .add(jLabel11)
+                    .add(spectrumAnalysisPanelLayout.createSequentialGroup()
+                        .add(10, 10, 10)
+                        .add(spectrumAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(precursorMatching)
+                            .add(sameSpectra)
+                            .add(spectrumAnalysisPanelLayout.createSequentialGroup()
+                                .add(19, 19, 19)
+                                .add(spectrumAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(jLabel19)
+                                    .add(jLabel20))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                                .add(spectrumAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                                    .add(rtTolTxt)
+                                    .add(mzTolTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 106, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jLabel8))
-                    .add(idenificationAnalysisPanelLayout.createSequentialGroup()
-                        .add(169, 169, 169)
-                        .add(idenificationAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                            .add(jLabel11)
-                            .add(idenificationAnalysisPanelLayout.createSequentialGroup()
-                                .add(10, 10, 10)
-                                .add(idenificationAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(precursorMatching)
-                                    .add(sameSpectra)
-                                    .add(idenificationAnalysisPanelLayout.createSequentialGroup()
-                                        .add(19, 19, 19)
-                                        .add(idenificationAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                            .add(jLabel19)
-                                            .add(jLabel20))
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                        .add(idenificationAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                                            .add(rtTolTxt)
-                                            .add(mzTolTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 106, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(idenificationAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(jLabel22)
-                                    .add(jLabel21))))))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .add(spectrumAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jLabel22)
+                            .add(jLabel21))))
+                .add(123, 123, 123))
         );
-
-        idenificationAnalysisPanelLayout.linkSize(new java.awt.Component[] {fdrThresholdTxt, mascotEvalueTxt, omssaEvalueTxt, xTandemEvalueTxt}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
-
-        idenificationAnalysisPanelLayout.setVerticalGroup(
-            idenificationAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(idenificationAnalysisPanelLayout.createSequentialGroup()
+        spectrumAnalysisPanelLayout.setVerticalGroup(
+            spectrumAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(spectrumAnalysisPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(idenificationAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(idenificationAnalysisPanelLayout.createSequentialGroup()
+                .add(spectrumAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(spectrumAnalysisPanelLayout.createSequentialGroup()
                         .add(jLabel11)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(sameSpectra)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(precursorMatching)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(idenificationAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(spectrumAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                             .add(jLabel19)
                             .add(mzTolTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(jLabel21))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(idenificationAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(spectrumAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                             .add(rtTolTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(jLabel20)
                             .add(jLabel22)))
-                    .add(idenificationAnalysisPanelLayout.createSequentialGroup()
-                        .add(jLabel9)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(idenificationAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(jLabel16)
-                            .add(mascotEvalueTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(idenificationAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(jLabel17)
-                            .add(omssaEvalueTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(idenificationAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(jLabel18)
-                            .add(xTandemEvalueTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .add(18, 18, 18)
-                        .add(idenificationAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(jLabel7)
-                            .add(fdrThresholdTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(jLabel8))))
-                .addContainerGap(168, Short.MAX_VALUE))
+                    .add(spectrumAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(jLabel6)
+                        .add(ionToleranceTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        identificationPreprocessingPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Identification Pre-Processing"));
-        identificationPreprocessingPanel.setOpaque(false);
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Quantification Options"));
+        jPanel1.setOpaque(false);
 
-        jLabel12.setText("nAA min");
+        jLabel7.setText("Quantification Preferences:");
 
-        nAaMinTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        nAaMinTxt.addActionListener(new java.awt.event.ActionListener() {
+        editPreferencesButton.setText("Edit");
+        editPreferencesButton.setPreferredSize(new java.awt.Dimension(57, 23));
+        editPreferencesButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                nAaMinTxtActionPerformed(evt);
+                editPreferencesButtonActionPerformed(evt);
             }
         });
 
-        jLabel13.setText("nAA max");
+        quantificationPreferencesTxt.setEditable(false);
 
-        nAaMaxTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        nAaMaxTxt.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                nAaMaxTxtActionPerformed(evt);
-            }
-        });
-
-        jLabel14.setText("Mass Deviation");
-
-        deltaMassTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        deltaMassTxt.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                deltaMassTxtActionPerformed(evt);
-            }
-        });
-
-        jLabel15.setText("ppm");
-
-        org.jdesktop.layout.GroupLayout identificationPreprocessingPanelLayout = new org.jdesktop.layout.GroupLayout(identificationPreprocessingPanel);
-        identificationPreprocessingPanel.setLayout(identificationPreprocessingPanelLayout);
-        identificationPreprocessingPanelLayout.setHorizontalGroup(
-            identificationPreprocessingPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(identificationPreprocessingPanelLayout.createSequentialGroup()
+        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(identificationPreprocessingPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(identificationPreprocessingPanelLayout.createSequentialGroup()
-                        .add(identificationPreprocessingPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(identificationPreprocessingPanelLayout.createSequentialGroup()
-                                .add(jLabel12)
-                                .add(18, 18, 18)
-                                .add(nAaMinTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                            .add(identificationPreprocessingPanelLayout.createSequentialGroup()
-                                .add(jLabel13)
-                                .add(18, 18, 18)
-                                .add(nAaMaxTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 121, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                        .addContainerGap())
-                    .add(identificationPreprocessingPanelLayout.createSequentialGroup()
-                        .add(jLabel14)
-                        .add(18, 18, 18)
-                        .add(deltaMassTxt)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(jLabel15)
-                        .add(674, 674, 674))))
-        );
-
-        identificationPreprocessingPanelLayout.linkSize(new java.awt.Component[] {deltaMassTxt, nAaMaxTxt, nAaMinTxt}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
-
-        identificationPreprocessingPanelLayout.linkSize(new java.awt.Component[] {jLabel12, jLabel13, jLabel14}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
-
-        identificationPreprocessingPanelLayout.setVerticalGroup(
-            identificationPreprocessingPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(identificationPreprocessingPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(identificationPreprocessingPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel12)
-                    .add(nAaMinTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(identificationPreprocessingPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel13)
-                    .add(nAaMaxTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(identificationPreprocessingPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel14)
-                    .add(deltaMassTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel15))
+                .add(jLabel7)
+                .add(18, 18, 18)
+                .add(quantificationPreferencesTxt)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(editPreferencesButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel7)
+                    .add(editPreferencesButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(quantificationPreferencesTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         org.jdesktop.layout.GroupLayout advancedParamsPanelLayout = new org.jdesktop.layout.GroupLayout(advancedParamsPanel);
@@ -955,9 +784,8 @@ public class NewDialog extends javax.swing.JDialog {
             .add(advancedParamsPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(advancedParamsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(idenificationAnalysisPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(identificationPreprocessingPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 810, Short.MAX_VALUE)
-                    .add(spectrumAnalysisPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(spectrumAnalysisPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         advancedParamsPanelLayout.setVerticalGroup(
@@ -965,16 +793,15 @@ public class NewDialog extends javax.swing.JDialog {
             .add(advancedParamsPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(spectrumAnalysisPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(identificationPreprocessingPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(idenificationAnalysisPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(307, Short.MAX_VALUE))
         );
 
         tabbedPane.addTab("Advanced Parameters", advancedParamsPanel);
 
         startButton.setText("Load");
+        startButton.setPreferredSize(new java.awt.Dimension(57, 23));
         startButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 startButtonActionPerformed(evt);
@@ -982,6 +809,7 @@ public class NewDialog extends javax.swing.JDialog {
         });
 
         exitJButton.setText("Exit");
+        exitJButton.setPreferredSize(new java.awt.Dimension(57, 23));
         exitJButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exitJButtonActionPerformed(evt);
@@ -999,7 +827,7 @@ public class NewDialog extends javax.swing.JDialog {
                         .add(0, 0, Short.MAX_VALUE)
                         .add(startButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 57, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(exitJButton))
+                        .add(exitJButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(tabbedPane))
                 .addContainerGap())
         );
@@ -1013,8 +841,8 @@ public class NewDialog extends javax.swing.JDialog {
                 .add(tabbedPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 588, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(backgroundPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(startButton)
-                    .add(exitJButton))
+                    .add(startButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(exitJButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 
@@ -1022,11 +850,11 @@ public class NewDialog extends javax.swing.JDialog {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(backgroundPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 855, Short.MAX_VALUE)
+            .add(backgroundPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(backgroundPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 639, Short.MAX_VALUE)
+            .add(backgroundPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -1059,115 +887,35 @@ public class NewDialog extends javax.swing.JDialog {
         }
 }//GEN-LAST:event_browseConfigButtonActionPerformed
 
-    private void clearSpectraJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearSpectraJButtonActionPerformed
-        mgfFiles = new ArrayList<File>();
-        txtSpectraFileLocation.setText("Please select file(s)");
-    }//GEN-LAST:event_clearSpectraJButtonActionPerformed
-
     private void addIdFilesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addIdFilesButtonActionPerformed
 
         JFileChooser fileChooser = new JFileChooser(reporterGui.getLastSelectedFolder());
         fileChooser.setDialogTitle("Select Identification File(s)");
-        fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-        fileChooser.setMultiSelectionEnabled(true);
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        fileChooser.setMultiSelectionEnabled(false);
 
         FileFilter filter = new FileFilter() {
 
             public boolean accept(File myFile) {
-                return myFile.getName().endsWith("dat")
-                        || myFile.getName().endsWith("omx")
-                        || myFile.getName().endsWith("xml")
-                        || myFile.getName().endsWith("cps") // compomics peptide shaker files
+                return myFile.getName().endsWith("cps")
                         || myFile.isDirectory();
             }
 
             public String getDescription() {
-                return "Supported formats: Mascot (.dat), OMSSA (.omx), X!Tandem (.xml)";
+                return "Supported formats: PeptideShaker (.cps)";
             }
         };
 
         fileChooser.setFileFilter(filter);
 
-        int returnVal = fileChooser.showDialog(this.getParent(), "Add");
+        int returnVal = fileChooser.showDialog(this.getParent(), "OK");
 
         if (returnVal == JFileChooser.APPROVE_OPTION) {
-            for (File newFile : fileChooser.getSelectedFiles()) {
-                if (newFile.isDirectory()) {
-                    File[] tempFiles = newFile.listFiles();
-                    for (File file : tempFiles) {
-                        if (file.getName().endsWith("dat")
-                                || file.getName().endsWith("omx")
-                                || file.getName().endsWith("xml")
-                                || file.getName().endsWith("cps")) {
-                            if (!idFiles.contains(file)) {
-                                idFiles.add(file);
-                            }
-                        }
-                    }
-                } else {
-                    if (newFile.getName().endsWith("dat")
-                            || newFile.getName().endsWith("omx")
-                            || newFile.getName().endsWith("xml")
-                            || newFile.getName().endsWith("cps")) {
-                        if (!idFiles.contains(newFile)) {
-                            idFiles.add(newFile);
-                        }
-                    }
-                }
-
-                reporterGui.setLastSelectedFolder(newFile.getPath());
-            }
-            if (idFiles.size() > 1) {
-                for (File file : idFiles) {
-                    int fileType = -1;
-                    if (file.getName().endsWith(".cps")) {
-                        JOptionPane.showMessageDialog(this, "A PeptideShaker file must be imported alone.", "Wrong identification file.", JOptionPane.ERROR_MESSAGE);
-                        idFiles = new ArrayList<File>();
-                    }
-                    if (file.getName().endsWith(".dat")) {
-                        if (fileType == -1) {
-                            fileType = 0;
-                        } else if (fileType == 1 || fileType == 2) {
-                            JOptionPane.showMessageDialog(this, "Reporter cannot handle multiple search engine results.\n We advise you to use Peptide-Shaker (peptide-shaker.googlecode.com) to process your indentifications.", "Wrong identification file.", JOptionPane.ERROR_MESSAGE);
-                            idFiles = new ArrayList<File>();
-                        }
-                    }
-                    if (file.getName().endsWith(".omx")) {
-                        if (fileType == -1) {
-                            fileType = 1;
-                        } else if (fileType == 0 || fileType == 2) {
-                            JOptionPane.showMessageDialog(this, "Reporter cannot handle multiple search engine results.\n We advise you to use Peptide-Shaker (peptide-shaker.googlecode.com) to process your indentifications.", "Wrong identification file.", JOptionPane.ERROR_MESSAGE);
-                            idFiles = new ArrayList<File>();
-                        }
-                    }
-                    if (file.getName().endsWith(".xml")) {
-                        if (fileType == -1) {
-                            fileType = 2;
-                        } else if (fileType == 0 || fileType == 1) {
-                            JOptionPane.showMessageDialog(this, "Reporter cannot handle multiple search engine results.\n We advise you to use Peptide-Shaker (peptide-shaker.googlecode.com) to process your indentifications.", "Wrong identification file.", JOptionPane.ERROR_MESSAGE);
-                            idFiles = new ArrayList<File>();
-                        }
-                    }
-                }
-            }
-            txtIdFileLocation.setText(idFiles.size() + " file(s) selected.");
-            if (idFiles.size() == 1 && idFiles.get(0).getName().endsWith(".cps")) {
-                importPeptideShakerFile(idFiles.get(0));
-                txtExperiment.setEditable(false);
-                sampleNameTxt.setEditable(false);
-                replicateNumberTxt.setEditable(false);
-            } else {
-                txtExperiment.setEditable(true);
-                sampleNameTxt.setEditable(true);
-                replicateNumberTxt.setEditable(true);
-            }
+            File newFile = fileChooser.getSelectedFile();
+            reporterGui.setLastSelectedFolder(newFile.getPath());
+            importPeptideShakerFile(newFile);
         }
     }//GEN-LAST:event_addIdFilesButtonActionPerformed
-
-    private void clearIdFilesJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearIdFilesJButtonActionPerformed
-        idFiles = new ArrayList<File>();
-        txtIdFileLocation.setText("Please select file(s)");
-    }//GEN-LAST:event_clearIdFilesJButtonActionPerformed
 
     private void startButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startButtonActionPerformed
         if (validateInput()) {
@@ -1177,27 +925,10 @@ public class NewDialog extends javax.swing.JDialog {
             reporter.setExperiment(experiment);
             reporter.setSample(sample);
             reporter.setReplicateNumber(replicateNumber);
-            reporter.setQuantificationMethodUsed(reporterIonQuantification.getMethodUsed());
-            reporter.loadFiles(idFiles, mgfFiles);
+            reporter.loadFiles(mgfFiles);
             dispose();
         }
     }//GEN-LAST:event_startButtonActionPerformed
-
-    private void fdrThresholdTxtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fdrThresholdTxtActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_fdrThresholdTxtActionPerformed
-
-    private void nAaMinTxtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nAaMinTxtActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_nAaMinTxtActionPerformed
-
-    private void nAaMaxTxtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nAaMaxTxtActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_nAaMaxTxtActionPerformed
-
-    private void deltaMassTxtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deltaMassTxtActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_deltaMassTxtActionPerformed
 
     private void sameSpectraActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sameSpectraActionPerformed
         precursorMatching.setSelected(!sameSpectra.isSelected());
@@ -1256,9 +987,9 @@ public class NewDialog extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_addSpectraFilesJButtonActionPerformed
 
-    private void txtExperimentKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtExperimentKeyReleased
-        experiment.setReference(txtExperiment.getText().trim());
-    }//GEN-LAST:event_txtExperimentKeyReleased
+    private void experimentTxtKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_experimentTxtKeyReleased
+        experiment.setReference(experimentTxt.getText().trim());
+    }//GEN-LAST:event_experimentTxtKeyReleased
 
     private void sampleNameTxtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sampleNameTxtActionPerformed
     }//GEN-LAST:event_sampleNameTxtActionPerformed
@@ -1267,13 +998,13 @@ public class NewDialog extends javax.swing.JDialog {
         // TODO add your handling code here:
     }//GEN-LAST:event_rtTolTxtActionPerformed
 
-    private void mascotEvalueTxtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mascotEvalueTxtActionPerformed
-        // TODO add your handling code here:
-}//GEN-LAST:event_mascotEvalueTxtActionPerformed
-
     private void exitJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitJButtonActionPerformed
         this.dispose();
     }//GEN-LAST:event_exitJButtonActionPerformed
+
+    private void editPreferencesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editPreferencesButtonActionPerformed
+        new PreferencesDialog(reporterGui, quantificationPreferences);
+    }//GEN-LAST:event_editPreferencesButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addDbButton;
@@ -1282,19 +1013,15 @@ public class NewDialog extends javax.swing.JDialog {
     private javax.swing.JPanel advancedParamsPanel;
     private javax.swing.JPanel backgroundPanel;
     private javax.swing.JButton browseConfigButton;
-    private javax.swing.JButton clearDbButton;
-    private javax.swing.JButton clearIdFilesJButton;
-    private javax.swing.JButton clearSpectraJButton;
     private javax.swing.JComboBox comboMethod1;
     private javax.swing.JComboBox comboMethod2;
     private javax.swing.JPanel configFilePanel;
     private javax.swing.JPanel configPanel;
-    private javax.swing.JTextField deltaMassTxt;
+    private javax.swing.JButton editPreferencesButton;
     private javax.swing.JButton exitJButton;
-    private javax.swing.JTextField fdrThresholdTxt;
+    private javax.swing.JTextField experimentTxt;
+    private javax.swing.JTextField fastaTxt;
     private javax.swing.JPanel fileSelectiontPanel;
-    private javax.swing.JPanel idenificationAnalysisPanel;
-    private javax.swing.JPanel identificationPreprocessingPanel;
     private javax.swing.JTextField ionToleranceTxt;
     private javax.swing.JScrollPane isotopeCorrectionJScrollPane;
     private javax.swing.JPanel isotopeCorrectionPanel;
@@ -1302,13 +1029,6 @@ public class NewDialog extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
-    private javax.swing.JLabel jLabel12;
-    private javax.swing.JLabel jLabel13;
-    private javax.swing.JLabel jLabel14;
-    private javax.swing.JLabel jLabel15;
-    private javax.swing.JLabel jLabel16;
-    private javax.swing.JLabel jLabel17;
-    private javax.swing.JLabel jLabel18;
     private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel20;
@@ -1321,19 +1041,14 @@ public class NewDialog extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
-    private javax.swing.JLabel jLabel9;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel3;
-    private javax.swing.JTextField jTextField1;
-    private javax.swing.JTextField mascotEvalueTxt;
     private javax.swing.JPanel methodPanel;
     private javax.swing.JTextField mzTolTxt;
-    private javax.swing.JTextField nAaMaxTxt;
-    private javax.swing.JTextField nAaMinTxt;
-    private javax.swing.JTextField omssaEvalueTxt;
     private javax.swing.JRadioButton precursorMatching;
     private javax.swing.JPanel processingPanel;
     private javax.swing.JPanel projectPanel;
+    private javax.swing.JTextField quantificationPreferencesTxt;
     private javax.swing.JTextField replicateNumberTxt;
     private javax.swing.JTable reporterIonConfigurationTable;
     private javax.swing.JScrollPane reporterIonsConfigJScrollPane;
@@ -1350,10 +1065,8 @@ public class NewDialog extends javax.swing.JDialog {
     private javax.swing.JButton startButton;
     private javax.swing.JTabbedPane tabbedPane;
     private javax.swing.JTextField txtConfigurationFileLocation;
-    private javax.swing.JTextField txtExperiment;
     private javax.swing.JTextField txtIdFileLocation;
     private javax.swing.JTextField txtSpectraFileLocation;
-    private javax.swing.JTextField xTandemEvalueTxt;
     // End of variables declaration//GEN-END:variables
 
     /**
@@ -1362,7 +1075,7 @@ public class NewDialog extends javax.swing.JDialog {
      * @return the quantification method selected
      */
     private ReporterIonQuantification getReporterIonQuantification() {
-        ReporterIonQuantification quantification = new ReporterIonQuantification(selectedMethod.getMethodIndex());
+        ReporterIonQuantification quantification = new ReporterIonQuantification(QuantificationMethod.REPORTER_IONS);
         for (int row = 0; row < sampleAssignmentTable.getRowCount(); row++) {
             quantification.assignSample(selectedMethod.getReporterIons().get(row).getIndex(), new Sample((String) sampleAssignmentTable.getValueAt(row, 1)));
         }
@@ -1385,11 +1098,11 @@ public class NewDialog extends javax.swing.JDialog {
             importMethods();
         }
         for (ReporterMethod method : methodsFactory.getMethods()) {
-            if (method.getMethodName().equals(methodName)) {
+            if (method.getName().equals(methodName)) {
                 return method;
             }
         }
-        return methodsFactory.getMethods().get(0);
+        return null;
     }
 
     /**
@@ -1399,10 +1112,10 @@ public class NewDialog extends javax.swing.JDialog {
     private void refresh() {
         reference = 0;
 
-        comboMethod1.setSelectedItem(selectedMethod.getMethodName());
-        comboMethod2.setSelectedItem(selectedMethod.getMethodName());
+        comboMethod1.setSelectedItem(selectedMethod.getName());
+        comboMethod2.setSelectedItem(selectedMethod.getName());
         sampleAssignmentTable.setModel(new AssignementTableModel());
-        
+
         setTableProperties();
 
         SwingUtilities.invokeLater(new Runnable() {
@@ -1437,13 +1150,6 @@ public class NewDialog extends javax.swing.JDialog {
     private void loadPreferences() {
         quantificationPreferences = reporter.getQuantificationPreferences();
         ionToleranceTxt.setText(quantificationPreferences.getReporterIonsMzTolerance() + "");
-        nAaMinTxt.setText(quantificationPreferences.getnAAmin() + "");
-        nAaMaxTxt.setText(quantificationPreferences.getnAAmax() + "");
-        deltaMassTxt.setText(quantificationPreferences.getPrecursorMassDeviation() + "");
-        mascotEvalueTxt.setText(quantificationPreferences.getMaxEValue(SearchEngine.MASCOT) + "");
-        omssaEvalueTxt.setText(quantificationPreferences.getMaxEValue(SearchEngine.OMSSA) + "");
-        xTandemEvalueTxt.setText(quantificationPreferences.getMaxEValue(SearchEngine.XTANDEM) + "");
-        fdrThresholdTxt.setText(quantificationPreferences.getFdrThreshold() * 100 + "");
         if (quantificationPreferences.isSameSpectra()) {
             sameSpectra.setSelected(true);
             precursorMatching.setSelected(false);
@@ -1460,14 +1166,6 @@ public class NewDialog extends javax.swing.JDialog {
      */
     private void savePreferences() {
         quantificationPreferences.setReporterIonsMzTolerance(new Double(ionToleranceTxt.getText()));
-        quantificationPreferences.setnAAmin(new Integer(nAaMinTxt.getText()));
-        quantificationPreferences.setnAAmax(new Integer(nAaMaxTxt.getText()));
-        quantificationPreferences.setPrecursorMassDeviation(new Double(deltaMassTxt.getText()));
-        quantificationPreferences.setMaxEValue(SearchEngine.MASCOT, new Double(mascotEvalueTxt.getText()));
-        quantificationPreferences.setMaxEValue(SearchEngine.OMSSA, new Double(omssaEvalueTxt.getText()));
-        quantificationPreferences.setMaxEValue(SearchEngine.XTANDEM, new Double(xTandemEvalueTxt.getText()));
-        double threshold = new Double(fdrThresholdTxt.getText()) / 100;
-        quantificationPreferences.setFdrThreshold(threshold);
         if (sameSpectra.isSelected()) {
             quantificationPreferences.setSameSpectra(true);
         } else {
@@ -1483,46 +1181,402 @@ public class NewDialog extends javax.swing.JDialog {
      * @param psFile a peptide shaker file
      */
     private void importPeptideShakerFile(File psFile) {
-        try {
-            experiment = experimentIO.loadExperiment(psFile);
-            txtExperiment.setText(experiment.getReference());
-            txtExperiment.setEditable(false);
+        currentPSFile = psFile;
 
-            ArrayList<Sample> samples = new ArrayList(experiment.getSamples().values());
-            if (samples.size() == 1) {
-                sample = samples.get(0);
-            } else {
-                // @TODO allow the user to chose the desired sample
-            }
-            sampleNameTxt.setText(sample.getReference());
-            sampleNameTxt.setEditable(false);
+        progressDialog = new ProgressDialogX(this, true);
+        progressDialog.setIndeterminate(true);
+        progressDialog.setTitle("Importing Project. Please Wait...");
 
-            ArrayList<Integer> replicates = new ArrayList(experiment.getAnalysisSet(sample).getReplicateNumberList());
-            if (replicates.size() == 1) {
-                replicateNumber = replicates.get(0);
-            } else {
-                // @TODO allow the user to chose the desired replicate
+
+        new Thread(new Runnable() {
+
+            public void run() {
+                try {
+                    progressDialog.setVisible(true);
+                } catch (IndexOutOfBoundsException e) {
+                    // ignore
+                }
             }
-            replicateNumberTxt.setText(replicateNumber + "");
-            replicateNumberTxt.setEditable(false);
-            JOptionPane.showMessageDialog(this,
-                    "Experiment successfully loaded.",
-                    "Import completed", JOptionPane.WARNING_MESSAGE);
-        } catch (IOException e) {
-            JOptionPane.showMessageDialog(this,
-                    "An error occured while reading " + psFile.getName() + ".",
-                    "Reading error", JOptionPane.WARNING_MESSAGE);
-            e.printStackTrace();
-        } catch (ClassNotFoundException e1) {
-            JOptionPane.showMessageDialog(this,
-                    "An error occured while importing " + psFile.getName() + ". Please verify that the version of Reporter you are using is compatible with the version of Peptide-Shaker which was used to generate the file.",
-                    "Import error", JOptionPane.WARNING_MESSAGE);
-            e1.printStackTrace();
-        }
+        }, "ProgressDialog").start();
+
+        new Thread("ImportThread") {
+
+            @Override
+            public void run() {
+
+                try {
+                    // reset enzymes, ptms and preferences. Close any open connection to an identification database
+                    if (reporter.getIdentification() != null) {
+                        reporter.getIdentification().close();
+                    }
+
+                    File experimentFile = new File(Reporter.SERIALIZATION_DIRECTORY, Reporter.experimentObjectName);
+                    File destinationFile, destinationFolder, matchFolder = new File(Reporter.SERIALIZATION_DIRECTORY);
+                    for (File file : matchFolder.listFiles()) {
+                        if (file.isDirectory()) {
+                            Util.deleteDir(file);
+                        } else {
+                            file.delete();
+                        }
+                    }
+
+                    final int BUFFER = 2048;
+                    byte data[] = new byte[BUFFER];
+                    FileInputStream fi = new FileInputStream(currentPSFile);
+                    BufferedInputStream bis = new BufferedInputStream(fi, BUFFER);
+                    ArchiveInputStream tarInput = new ArchiveStreamFactory().createArchiveInputStream(bis);
+                    ArchiveEntry archiveEntry;
+                    progressDialog.setMaxProgressValue(100);
+                    progressDialog.setValue(0);
+                    progressDialog.setIndeterminate(false);
+                    int progress;
+                    long fileLength = currentPSFile.length();
+                    while ((archiveEntry = tarInput.getNextEntry()) != null) {
+                        destinationFile = new File(archiveEntry.getName());
+                        destinationFolder = destinationFile.getParentFile();
+                        if (!destinationFolder.exists()) {
+                            destinationFolder.mkdirs();
+                        }
+                        FileOutputStream fos = new FileOutputStream(destinationFile);
+                        BufferedOutputStream bos = new BufferedOutputStream(fos);
+                        int count;
+                        while ((count = tarInput.read(data, 0, BUFFER)) != -1 && !progressDialog.isRunCanceled()) {
+                            bos.write(data, 0, count);
+                        }
+                        bos.close();
+                        fos.close();
+                        progress = (int) (100 * tarInput.getBytesRead() / fileLength);
+                        progressDialog.setValue(progress);
+                        if (progressDialog.isRunCanceled()) {
+                            progressDialog.dispose();
+                            return;
+                        }
+                    }
+                    progressDialog.setIndeterminate(true);
+                    fi.close();
+                    bis.close();
+                    fi.close();
+
+                    experiment = ExperimentIO.loadExperiment(experimentFile);
+
+                    Sample tempSample = null;
+
+                    PSSettings psSettings = new PSSettings();
+                    psSettings = (PSSettings) experiment.getUrParam(psSettings);
+                    reporter.setPSSettings(psSettings);
+//                    setAnnotationPreferences(experimentSettings.getAnnotationPreferences());
+//                    setSpectrumCountingPreferences(experimentSettings.getSpectrumCountingPreferences());
+//                    setProjectDetails(experimentSettings.getProjectDetails());
+//                    setSearchParameters(experimentSettings.getSearchParameters());
+//                    setProcessingPreferences(experimentSettings.getProcessingPreferences());
+//                    setFilterPreferences(experimentSettings.getFilterPreferences());
+//                    setDisplayPreferences(experimentSettings.getDisplayPreferences());
+//                    setMetrics(experimentSettings.getMetrics());
+
+                    PeptideShaker.setPeptideShakerPTMs(psSettings.getSearchParameters());
+
+                    if (progressDialog.isRunCanceled()) {
+                        progressDialog.dispose();
+                        return;
+                    }
+
+                    progressDialog.setTitle("Loading FASTA File. Please Wait...");
+
+                    try {
+                        File providedFastaLocation = psSettings.getSearchParameters().getFastaFile();
+                        String fileName = providedFastaLocation.getName();
+                        File projectFolder = currentPSFile.getParentFile();
+                        File dataFolder = new File(projectFolder, "data");
+
+                        // try to locate the FASTA file
+                        if (providedFastaLocation.exists()) {
+                            SequenceFactory.getInstance().loadFastaFile(providedFastaLocation);
+                            fastaTxt.setText(fileName);
+                        } else if (new File(projectFolder, fileName).exists()) {
+                            SequenceFactory.getInstance().loadFastaFile(new File(projectFolder, fileName));
+                            psSettings.getSearchParameters().setFastaFile(new File(projectFolder, fileName));
+                            fastaTxt.setText(fileName);
+                        } else if (new File(dataFolder, fileName).exists()) {
+                            SequenceFactory.getInstance().loadFastaFile(new File(dataFolder, fileName));
+                            psSettings.getSearchParameters().setFastaFile(new File(dataFolder, fileName));
+                            fastaTxt.setText(fileName);
+                        } else {
+                            JOptionPane.showMessageDialog(NewDialog.this,
+                                    psSettings.getSearchParameters().getFastaFile() + " could not be found."
+                                    + "\n\nPlease select the FASTA file manually.",
+                                    "File Input Error", JOptionPane.ERROR_MESSAGE);
+                            fastaTxt.setText("Please Select Fasta File(s)");
+                        }
+                    } catch (Exception e) {
+                        JOptionPane.showMessageDialog(NewDialog.this,
+                                "An error occured while reading:\n" + psSettings.getSearchParameters().getFastaFile() + "."
+                                + "\n\nPlease select the FASTA file manually.",
+                                "File Input Error", JOptionPane.ERROR_MESSAGE);
+                        fastaTxt.setText("Please Select Fasta File(s)");
+                    }
+
+                    if (progressDialog.isRunCanceled()) {
+                        progressDialog.dispose();
+                        return;
+                    }
+
+                    ArrayList<String> names = new ArrayList<String>();
+                    ArrayList<String> missing = new ArrayList<String>();
+                    ArrayList<String> spectrumFiles = psSettings.getSearchParameters().getSpectrumFiles();
+                    ArrayList<File> mgfFiles = new ArrayList<File>();
+
+                    progressDialog.setTitle("Locating Spectrum Files. Please Wait...");
+                    progressDialog.setIndeterminate(false);
+                    progressDialog.setMaxProgressValue(spectrumFiles.size() + 1);
+                    progressDialog.increaseProgressValue();
+
+                    try {
+                        for (String filePath : spectrumFiles) {
+
+                            progressDialog.increaseProgressValue();
+
+                            File newFile, providedSpectrumLocation = new File(filePath);
+                            String fileName = providedSpectrumLocation.getName();
+                            File projectFolder = currentPSFile.getParentFile();
+                            File dataFolder = new File(projectFolder, "data");
+
+                            // try to locate the spectrum file
+                            if (providedSpectrumLocation.exists() && !names.contains(providedSpectrumLocation.getName())) {
+                                names.add(providedSpectrumLocation.getName());
+                                mgfFiles.add(providedSpectrumLocation);
+                            } else if (new File(projectFolder, fileName).exists() && !names.contains(new File(projectFolder, fileName).getName())) {
+                                newFile = new File(projectFolder, fileName);
+                                names.add(newFile.getName());
+                                mgfFiles.add(newFile);
+                            } else if (new File(dataFolder, fileName).exists() && !names.contains(new File(dataFolder, fileName).getName())) {
+                                newFile = new File(dataFolder, fileName);
+                                names.add(newFile.getName());
+                                mgfFiles.add(newFile);
+                            } else {
+                                missing.add(providedSpectrumLocation.getName());
+                            }
+                        }
+                        if (!missing.isEmpty()) {
+                            if (missing.size() <= 3) {
+                                String report = "";
+                                int cpt = 0;
+                                Collections.sort(missing);
+                                for (String name : missing) {
+                                    if (cpt > 0) {
+                                        if (cpt == missing.size() - 1) {
+                                            report += " and ";
+                                        } else {
+                                            report += ", ";
+                                        }
+                                    }
+                                    cpt++;
+                                    report += name;
+                                }
+                                if (cpt == 1) {
+                                    report += " was";
+                                } else {
+                                    report += " were";
+                                }
+                                report += " not found. Please import ";
+                                if (cpt == 1) {
+                                    report += "it";
+                                } else {
+                                    report += "them";
+                                }
+                                report += " manually."; // Dare you say I don't make efforts for user friendliness!
+                                JOptionPane.showMessageDialog(NewDialog.this,
+                                        report,
+                                        "File(s) missing", JOptionPane.ERROR_MESSAGE);
+                            } else if (names.isEmpty()) {
+                                JOptionPane.showMessageDialog(NewDialog.this,
+                                        "The mgf files could not be located, please import them manually.",
+                                        "File(s) missing", JOptionPane.ERROR_MESSAGE);
+                            } else {
+                                JOptionPane.showMessageDialog(NewDialog.this,
+                                        missing.size() + " mgf files could not be located, please import them manually.",
+                                        "File(s) missing", JOptionPane.ERROR_MESSAGE);
+                            }
+                        }
+                    } catch (Exception e) {
+                        JOptionPane.showMessageDialog(NewDialog.this,
+                                "An error occured while looking for the spectrum files. Please locate the files manually.",
+                                "File Input Error", JOptionPane.ERROR_MESSAGE);
+                    }
+
+
+                    int cpt = 1;
+                    progressDialog.setTitle("Importing Spectrum Files. Please Wait...");
+                    progressDialog.setIndeterminate(true);
+
+                    ArrayList<File> error = processSpectrumFiles(mgfFiles, progressDialog);
+
+                    if (!error.isEmpty()) {
+                        String report = "An error occurred while importing ";
+                        if (error.size() <= 3) {
+                            cpt = 0;
+                            Collections.sort(error);
+                            for (File errorFile : error) {
+                                if (cpt > 0) {
+                                    if (cpt == error.size() - 1) {
+                                        report += " and ";
+                                    } else {
+                                        report += ", ";
+                                    }
+                                }
+                                String fileName = errorFile.getName();
+                                cpt++;
+                                report += fileName;
+                            }
+                        } else {
+                            report += error.size() + " mgf files";
+                        }
+                        if (error.size() > 1) {
+                            report += ". Please import them manually.";
+                        } else {
+                            report += ". Please import it manually.";
+                        }
+                        JOptionPane.showMessageDialog(NewDialog.this,
+                                report,
+                                "File Input Error", JOptionPane.ERROR_MESSAGE);
+                    }
+
+                    if (!missing.isEmpty() || !error.isEmpty()) {
+                        txtSpectraFileLocation.setText("Please select the mgf file(s).");
+                    } else {
+                        String report = "";
+                        if (names.size() <= 3) {
+                            cpt = 0;
+                            Collections.sort(names);
+                            for (String name : names) {
+                                if (cpt > 0) {
+                                    if (cpt == names.size() - 1) {
+                                        report += " and ";
+                                    } else {
+                                        report += ", ";
+                                    }
+                                }
+                                cpt++;
+                                report += name;
+                            }
+                            report += " selected.";
+                        } else {
+                            report += names.size() + " files selected.";
+                        }
+                        txtSpectraFileLocation.setText(report);
+                    }
+
+                    if (progressDialog.isRunCanceled()) {
+                        progressDialog.dispose();
+                        return;
+                    }
+
+                    progressDialog.setIndeterminate(true);
+
+                    if (progressDialog.isRunCanceled()) {
+                        progressDialog.dispose();
+                        return;
+                    }
+
+                    ArrayList<Sample> samples = new ArrayList(experiment.getSamples().values());
+
+                    if (samples.size() == 1) {
+                        tempSample = samples.get(0);
+                    } else {
+                        String[] sampleNames = new String[samples.size()];
+                        for (int i = 0; i < sampleNames.length; i++) {
+                            sampleNames[i] = samples.get(i).getReference();
+                        }
+                        SampleSelection sampleSelection = new SampleSelection(null, true, sampleNames, "sample");
+                        sampleSelection.setVisible(true);
+                        String choice = sampleSelection.getChoice();
+                        for (Sample sampleTemp : samples) {
+                            if (sampleTemp.getReference().equals(choice)) {
+                                tempSample = sampleTemp;
+                                break;
+                            }
+                        }
+                    }
+
+                    sample = tempSample;
+
+                    if (progressDialog.isRunCanceled()) {
+                        progressDialog.dispose();
+                        return;
+                    }
+
+                    ArrayList<Integer> replicates = new ArrayList(experiment.getAnalysisSet(tempSample).getReplicateNumberList());
+
+                    int tempReplicate;
+
+                    if (replicates.size() == 1) {
+                        tempReplicate = replicates.get(0);
+                    } else {
+                        String[] replicateNames = new String[replicates.size()];
+                        for (int i = 0; i < replicateNames.length; i++) {
+                            replicateNames[i] = samples.get(i).getReference();
+                        }
+                        SampleSelection sampleSelection = new SampleSelection(null, true, replicateNames, "replicate");
+                        sampleSelection.setVisible(true);
+                        Integer choice = new Integer(sampleSelection.getChoice());
+                        tempReplicate = choice;
+                    }
+
+                    replicateNumber = tempReplicate;
+
+                    if (progressDialog.isRunCanceled()) {
+                        progressDialog.dispose();
+                        return;
+                    }
+
+                    experimentTxt.setText(experiment.getReference());
+                    sampleNameTxt.setText(sample.getReference());
+                    replicateNumberTxt.setText(replicateNumber + "");
+                    txtIdFileLocation.setText(currentPSFile.getName());
+                    
+                    Identification identification = experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).getIdentification(IdentificationMethod.MS2_IDENTIFICATION);
+                    identification.establishConnection();
+
+                    progressDialog.dispose();
+
+                } catch (OutOfMemoryError error) {
+                    System.out.println("Ran out of memory! (runtime.maxMemory(): " + Runtime.getRuntime().maxMemory() + ")");
+                    Runtime.getRuntime().gc();
+                    JOptionPane.showMessageDialog(null,
+                            "The task used up all the available memory and had to be stopped.\n"
+                            + "Memory boundaries are set in ../resources/conf/JavaOptions.txt.",
+                            "Out Of Memory Error",
+                            JOptionPane.ERROR_MESSAGE);
+
+                    progressDialog.dispose();
+
+                    error.printStackTrace();
+                } catch (EOFException e) {
+
+                    progressDialog.dispose();
+
+                    JOptionPane.showMessageDialog(NewDialog.this,
+                            "An error occured while reading:\n" + currentPSFile + ".\n\n"
+                            + "The file is corrupted and cannot be opened anymore.",
+                            "File Input Error", JOptionPane.ERROR_MESSAGE);
+                    e.printStackTrace();
+                } catch (Exception e) {
+
+                    progressDialog.dispose();
+
+                    JOptionPane.showMessageDialog(NewDialog.this,
+                            "An error occured while reading:\n" + currentPSFile + ".\n\n"
+                            + "Please verify that the compomics-utilities version used to create\n"
+                            + "the file is compatible with your version of PeptideShaker.",
+                            "File Input Error", JOptionPane.ERROR_MESSAGE);
+                    e.printStackTrace();
+                }
+            }
+        }.start();
     }
 
     /**
-     * Method called whenever an error was encountered while loading the methods.
+     * Method called whenever an error was encountered while loading the
+     * methods.
      */
     private void importMethodsError() {
         JOptionPane.showMessageDialog(this, "\"" + METHODS_FILE + "\" could not be found, please select a method file.", "No Spectra File Selected", JOptionPane.ERROR_MESSAGE);
@@ -1558,61 +1612,11 @@ public class NewDialog extends javax.swing.JDialog {
      * @return true if the input can be processed
      */
     private boolean validateInput() {
-        if (mgfFiles.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "please select a spectrum file.", "No Spectra File Selected", JOptionPane.ERROR_MESSAGE);
-            return false;
-        }
-        if (idFiles.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "please select an identification file.", "No Identification File Selected", JOptionPane.ERROR_MESSAGE);
-            return false;
-        }
         double test;
         try {
             test = new Double(ionToleranceTxt.getText().trim());
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Wrong Ion Tolerance.", "Please input a number for the ion tolerance.", JOptionPane.ERROR_MESSAGE);
-            return false;
-        }
-        try {
-            test = new Double(fdrThresholdTxt.getText().trim());
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Wrong FDR Threshold.", "Please input a number for the fdr threshold.", JOptionPane.ERROR_MESSAGE);
-            return false;
-        }
-        try {
-            test = new Double(mascotEvalueTxt.getText().trim());
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Wrong Mascot Threshold.", "Please input a number for the Mascot threshold.", JOptionPane.ERROR_MESSAGE);
-            return false;
-        }
-        try {
-            test = new Double(omssaEvalueTxt.getText().trim());
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Wrong OMSSA Threshold.", "Please input a number for the OMSSA threshold.", JOptionPane.ERROR_MESSAGE);
-            return false;
-        }
-        try {
-            test = new Double(xTandemEvalueTxt.getText().trim());
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Wrong X!Tandem Threshold.", "Please input a number for the X!Tandem threshold.", JOptionPane.ERROR_MESSAGE);
-            return false;
-        }
-        try {
-            test = new Double(deltaMassTxt.getText().trim());
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Wrong mass deviation limit.", "Please input a number for the mass deviation limit.", JOptionPane.ERROR_MESSAGE);
-            return false;
-        }
-        try {
-            test = new Double(nAaMinTxt.getText().trim());
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Wrong nAA min.", "Please input a number for minimal amount of amino acid.", JOptionPane.ERROR_MESSAGE);
-            return false;
-        }
-        try {
-            test = new Double(nAaMinTxt.getText().trim());
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Wrong nAA max.", "Please input a number for maximal amount of amino acid.", JOptionPane.ERROR_MESSAGE);
             return false;
         }
         if (precursorMatching.isSelected()) {
@@ -1639,23 +1643,76 @@ public class NewDialog extends javax.swing.JDialog {
     }
 
     /**
-     * Sets the identification files to process.
-     *
-     * @param files the identification files to process
-     */
-    public void setIdFiles(ArrayList<File> files) {
-        idFiles = files;
-        txtIdFileLocation.setText(idFiles.size() + " file(s) selected.");
-    }
-
-    /**
      * Sets the spectra files to process.
      *
      * @param files the spectra files to process
      */
-    public void setSpectraFiles(ArrayList<File> files) {
-        mgfFiles = files;
-        txtSpectraFileLocation.setText(mgfFiles.size() + " file(s) selected.");
+    public void addSpectrumFiles(ArrayList<File> files) {
+        progressDialog = new ProgressDialogX(this, true);
+        progressDialog.setIndeterminate(true);
+        progressDialog.setTitle("Importing Spectra. Please Wait...");
+        final ArrayList<File> newMgfFiles = files;
+
+        new Thread(new Runnable() {
+
+            public void run() {
+                try {
+                    progressDialog.setVisible(true);
+                } catch (IndexOutOfBoundsException e) {
+                    // ignore
+                }
+            }
+        }, "ProgressDialog").start();
+
+        new Thread("ImportThread") {
+
+            @Override
+            public void run() {
+                ArrayList<File> error = processSpectrumFiles(newMgfFiles, progressDialog);
+                String report = "An error occurred while importing ";
+                if (error.size() == 1) {
+                    report += error.get(0).getName() + ".";
+                } else if (error.size() == newMgfFiles.size()) {
+                    report += "the mgf files.";
+                } else {
+                    report += error.size() + " mgf files of the " + newMgfFiles.size() + " selected.";
+                }
+                JOptionPane.showMessageDialog(NewDialog.this,
+                        report,
+                        "File Input Error", JOptionPane.ERROR_MESSAGE);
+                txtSpectraFileLocation.setText(mgfFiles.size() + " file(s) selected.");
+            }
+        }.start();
+    }
+
+    /**
+     * Imports a list of spectrum files and returns a list containing any
+     * problematic file
+     *
+     * @param spectrumFiles list of spectrum files to process
+     * @param progressDialog process dialog displaying progress
+     * @return a list of files which could not be processed
+     */
+    private ArrayList<File> processSpectrumFiles(ArrayList<File> spectrumFiles, ProgressDialogX progressDialog) {
+        ArrayList<File> error = new ArrayList<File>();
+        int cpt = 0;
+        for (File mgfFile : spectrumFiles) {
+
+            if (progressDialog.isRunCanceled()) {
+                progressDialog.dispose();
+                return null;
+            }
+
+            progressDialog.setTitle("Importing Spectrum Files (" + cpt++ + "/" + spectrumFiles.size() + "). Please Wait...");
+
+            try {
+                spectrumFactory.addSpectra(mgfFile, progressDialog);
+                mgfFiles.add(mgfFile);
+            } catch (Exception e) {
+                error.add(mgfFile);
+            }
+        }
+        return error;
     }
 
     /**
@@ -1683,6 +1740,9 @@ public class NewDialog extends javax.swing.JDialog {
 
         @Override
         public int getRowCount() {
+            if (selectedMethod == null) {
+                return 0;
+            }
             return selectedMethod.getReporterIons().size();
         }
 
@@ -1751,6 +1811,9 @@ public class NewDialog extends javax.swing.JDialog {
 
         @Override
         public int getRowCount() {
+            if (selectedMethod==null) {
+                return 0;
+            }
             return selectedMethod.getReporterIons().size();
         }
 
@@ -1777,7 +1840,7 @@ public class NewDialog extends javax.swing.JDialog {
                 case 0:
                     return selectedMethod.getReporterIons().get(row).getName();
                 case 1:
-                    return selectedMethod.getReporterIons().get(row).theoreticMass;
+                    return selectedMethod.getReporterIons().get(row).getTheoreticMass();
                 default:
                     return "";
             }
@@ -1800,6 +1863,9 @@ public class NewDialog extends javax.swing.JDialog {
 
         @Override
         public int getRowCount() {
+            if (selectedMethod == null) {
+                return 0;
+            }
             return selectedMethod.getCorrectionFactors().size();
         }
 
