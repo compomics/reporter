@@ -4,22 +4,18 @@
 		<reporterIonList>
 			<reporterIon>
 				<name> iTRAQ 114 </name>
-				<id> 114 </id>
 				<mass> 114.1106 </mass>
 			</reporterIon>
 			<reporterIon>
 				<name> iTRAQ 115 </name>
-				<id> 115 </id>
 				<mass> 115.1077 </mass>
 			</reporterIon>
 			<reporterIon>
 				<name> iTRAQ 116 </name>
-				<id> 116 </id>
 				<mass> 116.1110 </mass>
 			</reporterIon>
 			<reporterIon>
 				<name> iTRAQ 117 </name>
-				<id> 117 </id>
 				<mass> 117.1144 </mass>
 			</reporterIon>
 		</reporterIonList>
@@ -59,42 +55,34 @@
 		<reporterIonList>
 			<reporterIon>
 				<name> iTRAQ 113 </name>
-				<id> 113 </id>
 				<mass> 113.1 </mass>
 			</reporterIon>
 			<reporterIon>
 				<name> iTRAQ 114 </name>
-				<id> 114 </id>
 				<mass> 114.1 </mass>
 			</reporterIon>
 			<reporterIon>
 				<name> iTRAQ 115 </name>
-				<id> 115 </id>
 				<mass> 115.1 </mass>
 			</reporterIon>
 			<reporterIon>
 				<name> iTRAQ 116 </name>
-				<id> 116 </id>
 				<mass> 116.1 </mass>
 			</reporterIon>
 			<reporterIon>
 				<name> iTRAQ 117 </name>
-				<id> 117 </id>
 				<mass> 117.1 </mass>
 			</reporterIon>
 			<reporterIon>
 				<name> iTRAQ 118 </name>
-				<id> 118 </id>
 				<mass> 118.1 </mass>
 			</reporterIon>
 			<reporterIon>
 				<name> iTRAQ 119 </name>
-				<id> 119 </id>
 				<mass> 119.1 </mass>
 			</reporterIon>
 			<reporterIon>
 				<name> iTRAQ 121 </name>
-				<id> 121 </id>
 				<mass> 121.1 </mass>
 			</reporterIon>
 		</reporterIonList>
@@ -162,32 +150,26 @@
 		<reporterIonList>
 			<reporterIon>
 				<name> TMT0 </name>
-				<id> 126 </id>
 				<mass> 126 </mass>
 			</reporterIon>
 			<reporterIon>
 				<name> TMT1 </name>
-				<id> 127 </id>
 				<mass> 127 </mass>
 			</reporterIon>
 			<reporterIon>
 				<name> TMT2 </name>
-				<id> 128 </id>
 				<mass> 128 </mass>
 			</reporterIon>
 			<reporterIon>
 				<name> TMT3 </name>
-				<id> 129 </id>
 				<mass> 129 </mass>
 			</reporterIon>
 			<reporterIon>
 				<name> TMT4 </name>
-				<id> 130 </id>
 				<mass> 130 </mass>
 			</reporterIon>
 			<reporterIon>
 				<name> TMT5 </name>
-				<id> 131 </id>
 				<mass> 131 </mass>
 			</reporterIon>
 		</reporterIonList>
@@ -241,12 +223,10 @@
 		<reporterIonList>
 			<reporterIon>
 				<name> TMT0 </name>
-				<id> 126 </id>
 				<mass> 126 </mass>
 			</reporterIon>
 			<reporterIon>
 				<name> TMT1 </name>
-				<id> 127 </id>
 				<mass> 127 </mass>
 			</reporterIon>
 		</reporterIonList>

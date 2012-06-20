@@ -16,11 +16,9 @@ import com.compomics.util.experiment.massspectrometry.Spectrum;
 import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.quantification.PsmQuantification;
+import com.compomics.util.gui.waiting.waitinghandlers.WaitingDialog;
+import eu.isas.peptideshaker.fileimport.IdFilter;
 import eu.isas.peptideshaker.myparameters.PSParameter;
-import eu.isas.reporter.gui.WaitingDialog;
-import eu.isas.reporter.identifications.FdrCalculator;
-import eu.isas.reporter.identifications.IdFilter;
-import eu.isas.reporter.myparameters.IdentificationDetails;
 import eu.isas.reporter.myparameters.QuantificationPreferences;
 import java.io.File;
 import java.util.ArrayList;
@@ -39,14 +37,6 @@ import javax.swing.JOptionPane;
 public class DataLoader {
 
     /**
-     * The compomics utilities identification file reader factory.
-     */
-    private IdfileReaderFactory readerFactory = IdfileReaderFactory.getInstance();
-    /**
-     * The FDR estimator.
-     */
-    private FdrCalculator fdrCalculator = new FdrCalculator();
-    /**
      * The waiting dialog will display feedback to the user.
      */
     private WaitingDialog waitingDialog;
@@ -55,37 +45,13 @@ public class DataLoader {
      */
     private QuantificationPreferences quantificationPreferences;
     /**
-     * Modification file.
-     */
-    private final String MODIFICATIONS_FILE = "conf/reporter_mods.xml";
-    /**
-     * User modification file.
-     */
-    private final String USER_MODIFICATIONS_FILE = "conf/reporter_usermods.xml";
-    /**
-     * The compomics PTM factory.
-     */
-    private PTMFactory ptmFactory = PTMFactory.getInstance();
-    /**
      * The identification.
      */
     private Identification identification;
     /**
-     * The number of decimals to display for the e-values in the report.
-     */
-    private final int eValueDecimals = 6;
-    /**
-     * List of all identified spectra.
-     */
-    private ArrayList<String> identifiedSpectra = new ArrayList<String>();
-    /**
-     * List of needed mgf files.
-     */
-    private ArrayList<String> mgfFilesNeeded = new ArrayList<String>();
-    /**
      * The spectrum factory.
      */
-    private SpectrumFactory spectrumFactory = SpectrumFactory.getInstance(100);
+    private SpectrumFactory spectrumFactory = SpectrumFactory.getInstance();
 
     /**
      * Constructor.
@@ -98,223 +64,6 @@ public class DataLoader {
         this.identification = identification;
         this.quantificationPreferences = quantificationPreferences;
         this.waitingDialog = waitingDialog;
-    }
-
-    /**
-     * Loads identifications from a file.
-     *
-     * @param idFiles the identification files
-     */
-    public void loadIdentifications(ArrayList<File> idFiles) {
-        
-        loadModifications();
-        HashSet<SpectrumMatch> allSpectrumMatches = new HashSet<SpectrumMatch>();
-        IdFilter idFilter = new IdFilter(quantificationPreferences);
-        int nTotal = 0;
-        int nRetained = 0;
-        
-        try {
-            HashSet<SpectrumMatch> tempSet;
-            
-            for (File idFile : idFiles) {
-                
-                waitingDialog.appendReport("Importing identifications from " + idFile.getName() + ".");
-                int searchEngine = readerFactory.getSearchEngine(idFile);
-                IdfileReader fileReader = readerFactory.getFileReader(idFile);
-                tempSet = fileReader.getAllSpectrumMatches();
-                Iterator<SpectrumMatch> matchIt = tempSet.iterator();
-                
-                while (matchIt.hasNext()) {
-                    
-                    SpectrumMatch match = matchIt.next();
-                    nTotal++;
-                    
-                    if (!idFilter.validate(match.getFirstHit(searchEngine))) {
-                        matchIt.remove();
-                    } else {
-                        match.setBestAssumption(match.getFirstHit(searchEngine));
-                        fdrCalculator.addHit(match.getBestAssumption().getEValue(), match.getFirstHit(searchEngine).isDecoy());
-                        nRetained++;
-                    }
-                    if (waitingDialog.isRunCancelled()) {
-                        waitingDialog.setRunCancelled();
-                        return;
-                    }
-                }
-                
-                allSpectrumMatches.addAll(tempSet);
-                
-                if (waitingDialog.isRunCancelled()) {
-                    waitingDialog.setRunCancelled();
-                    return;
-                }
-            }
-            
-            if (nRetained == 0) {
-                waitingDialog.appendReport("No identification retained.");
-                return;
-            }
-            
-            waitingDialog.appendReport("Identification file(s) import completed. " + nTotal + " identifications imported, " + nRetained + " identifications retained.");
-            waitingDialog.appendReport("FDR estimation.");
-            
-            double eValueMax = fdrCalculator.getEvalueLimit(quantificationPreferences.getFdrThreshold());
-
-            Iterator<SpectrumMatch> matchIt = allSpectrumMatches.iterator();
-            IdentificationDetails identificationDetails;
-            
-            while (matchIt.hasNext()) {
-                SpectrumMatch match = matchIt.next();
-                if (match.getBestAssumption().getEValue() > eValueMax) {
-                    matchIt.remove();
-                } else {
-                    String matchKey = match.getKey();
-                    String fileName = MSnSpectrum.getSpectrumFile(matchKey);
-                    identifiedSpectra.add(matchKey);
-                    
-                    if (!mgfFilesNeeded.contains(fileName)) {
-                        mgfFilesNeeded.add(fileName);
-                    }
-                    
-                    identificationDetails = new IdentificationDetails();
-                    identificationDetails.setValidated(true);
-                    identification.addMatchParameter(matchKey, identificationDetails);
-                }
-            }
-            
-            int nTarget = fdrCalculator.getNTargetTotal();
-            String report = "FDR processing completed at " + quantificationPreferences.getFdrThreshold() * 100 + "% FDR, " + nTarget + " PSMs retained.\n";
-            waitingDialog.appendReport(report);
-            waitingDialog.appendReport("Building protein objects.");
-            identification.addSpectrumMatch(allSpectrumMatches);
-            identification.buildPeptidesAndProteins();
-
-            int nDecoy = 0, nPeptides = 0;
-            nTarget = 0;
-            
-            for (String proteinKey : identification.getProteinIdentification()) {
-                
-                identificationDetails = new IdentificationDetails();
-                
-                if (ProteinMatch.isDecoy(proteinKey)) {
-                    nDecoy++;
-                    identificationDetails.setValidated(false);
-                } else {
-                    nTarget++;
-                    identificationDetails.setValidated(true);
-                    ProteinMatch proteinMatch = identification.getProteinMatch(proteinKey);
-                    
-                    for (String peptideKey : proteinMatch.getPeptideMatches()) {
-                        IdentificationDetails peptideDetails = new IdentificationDetails();
-                        peptideDetails.setValidated(true);
-                        identification.addMatchParameter(peptideKey, peptideDetails);
-                        nPeptides++;
-                    }
-                }
-                
-                identification.addMatchParameter(proteinKey, identificationDetails);
-            }
-            
-            double fdr = (100.0 * nDecoy) / nTarget;
-            waitingDialog.appendReport(identification.getProteinIdentification().size() + " proteins imported (" + nPeptides + " peptides). Estimated protein FDR: " + fdr + "%.");
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            waitingDialog.appendReport("An error occured while loading the identification Files:");
-            waitingDialog.appendReport(e.getLocalizedMessage());
-            waitingDialog.setRunCancelled();
-        }
-    }
-
-    /**
-     * Loads identifications from a Peptide-Shaker (cps) file.
-     *
-     * @param cpsFile the cps file
-     */
-    public void loadIdentifications(File cpsFile) {
-        
-        loadModifications();
-        PSParameter psParameter = new PSParameter();
-        IdentificationDetails identificationDetails;
-        
-        for (String proteinKey : identification.getProteinIdentification()) {
-            identificationDetails = new IdentificationDetails();
-            psParameter = (PSParameter) identification.getMatchParameter(proteinKey, psParameter);
-            identificationDetails.setValidated(psParameter.isValidated());
-            identification.addMatchParameter(proteinKey, identificationDetails);
-        }
-        
-        for (String peptideKey : identification.getPeptideIdentification()) {
-            identificationDetails = new IdentificationDetails();
-            psParameter = (PSParameter) identification.getMatchParameter(peptideKey, psParameter);
-            identificationDetails.setValidated(psParameter.isValidated());
-            identification.addMatchParameter(peptideKey, identificationDetails);
-        }
-        
-        for (String psmKey : identification.getSpectrumIdentification()) {
-            identificationDetails = new IdentificationDetails();
-            psParameter = (PSParameter) identification.getMatchParameter(psmKey, psParameter);
-            identificationDetails.setValidated(psParameter.isValidated());
-            identification.addMatchParameter(psmKey, identificationDetails);
-            identifiedSpectra.add(psmKey);
-            String fileName = Spectrum.getSpectrumFile(psmKey);
-            
-            if (!mgfFilesNeeded.contains(fileName)) {
-                mgfFilesNeeded.add(fileName);
-            }
-        }
-    }
-
-    /**
-     * Verifies that identifications were loaded and that all needed spectrum
-     * files are provided.
-     *
-     * @param mgfFiles The provided mgf files
-     * @return true if we have all needed mgf files
-     */
-    private boolean validateFiles(ArrayList<File> mgfFiles) {
-        
-        if (identifiedSpectra.isEmpty()) {
-            waitingDialog.appendReport("No identification was retained, import will be cancelled.");
-            return false;
-        }
-        
-        for (String fileNeeded : mgfFilesNeeded) {
-            
-            boolean found = false;
-            
-            for (File file : mgfFiles) {
-                if (file.getName().equals(fileNeeded)) {
-                    found = true;
-                }
-            }
-            
-            if (!found) {
-                waitingDialog.appendReport(fileNeeded + " could not be found, import will be cancelled.");
-                return false;
-            }
-        }
-        
-        return true;
-    }
-
-    /**
-     * Loads the modifications from the modification file.
-     */
-    private void loadModifications() {
-        
-        try {
-            ptmFactory.importModifications(new File(MODIFICATIONS_FILE));
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "An error (" + e.getMessage() + ") occured when trying to load the modifications from " + MODIFICATIONS_FILE + ".",
-                    "Configuration import Error", JOptionPane.ERROR_MESSAGE);
-        }
-        try {
-            ptmFactory.importModifications(new File(USER_MODIFICATIONS_FILE));
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "An error (" + e.getMessage() + ") occured when trying to load the modifications from " + USER_MODIFICATIONS_FILE + ".",
-                    "Configuration import Error", JOptionPane.ERROR_MESSAGE);
-        }
     }
 
     /**
@@ -375,14 +124,14 @@ public class DataLoader {
             boolean over = true;
             
             for (ReporterIon ion : reporterIons) {
-                if (mz > ion.theoreticMass - ionTolerance && mz < ion.theoreticMass + ionTolerance) {
+                if (mz > ion.getTheoreticMass() - ionTolerance && mz < ion.getTheoreticMass() + ionTolerance) {
                     if (peaks.get(ion) == null) {
                         peaks.put(ion, peakMap.get(mz));
-                    } else if (Math.abs(mz - ion.theoreticMass) < peaks.get(ion).mz - ion.theoreticMass) {
+                    } else if (Math.abs(mz - ion.getTheoreticMass()) < peaks.get(ion).mz - ion.getTheoreticMass()) {
                         peaks.put(ion, peakMap.get(mz));
                     }
                     over = false;
-                } else if (mz <= ion.theoreticMass + ionTolerance) {
+                } else if (mz <= ion.getTheoreticMass() + ionTolerance) {
                     over = false;
                 }
             }
@@ -402,33 +151,6 @@ public class DataLoader {
     }
 
     /**
-     * Imports spectra from various spectrum files.
-     *
-     * @param spectrumFiles the spectrum files
-     */
-    public void importSpectra(ArrayList<File> spectrumFiles) {
-
-        String fileName = "";
-
-        waitingDialog.appendReport("Importing spectra.");
-
-        for (File spectrumFile : spectrumFiles) {
-            if (mgfFilesNeeded.contains(spectrumFile.getName())) {
-                try {
-                    fileName = spectrumFile.getName();
-                    waitingDialog.appendReport("Importing " + fileName);
-                    spectrumFactory.addSpectra(spectrumFile, null);
-                } catch (Exception e) {
-                    waitingDialog.appendReport("Spectrum files import failed when trying to import " + fileName + ".");
-                    e.printStackTrace();
-                }
-            }
-        }
-        
-        waitingDialog.appendReport("Spectra import completed.");
-    }
-
-    /**
      * Load quantifications.
      * 
      * @param quantification
@@ -436,21 +158,11 @@ public class DataLoader {
      */
     public void loadQuantification(ReporterIonQuantification quantification, ArrayList<File> mgfFiles) {
         try {
-            waitingDialog.appendReport("Spectrum import.");
-            
-            if (!validateFiles(mgfFiles)) {
-                waitingDialog.setRunCancelled();
-                return;
-            }
-            
-            importSpectra(mgfFiles);
             waitingDialog.appendReport("PSM quantification.");
-            waitingDialog.setProgressBarMaximum(identifiedSpectra.size());
-            
-            for (String matchKey : identifiedSpectra) {
+            waitingDialog.setSecondaryProgressValue(identification.getSpectrumIdentification().size());
+            for (String matchKey : identification.getSpectrumIdentification()) {
                 
-                if (waitingDialog.isRunCancelled()) {
-                    waitingDialog.setRunCancelled();
+                if (waitingDialog.isRunCanceled()) {
                     return;
                 }
                 
@@ -464,22 +176,21 @@ public class DataLoader {
                     
                     quantification.addPsmQuantification(spectrumQuantification);
                     
-                    if (waitingDialog.isRunCancelled()) {
-                        waitingDialog.setRunCancelled();
+                    if (waitingDialog.isRunCanceled()) {
                         return;
                     }
                 }
                 
-                waitingDialog.incrementProgressBar();
+                waitingDialog.increaseSecondaryProgressValue();
             }
             
             waitingDialog.appendReport("PSM quantification completed.");
             
         } catch (Exception e) {
             e.printStackTrace();
-            waitingDialog.appendReport("An error occured while quantifying PSMs:");
+            waitingDialog.appendReport("An error occurred while quantifying PSMs:");
             waitingDialog.appendReport(e.getLocalizedMessage());
-            waitingDialog.setRunCancelled();
+            waitingDialog.setRunCanceled();
         }
     }
 }

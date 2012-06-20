@@ -1,6 +1,6 @@
 package eu.isas.reporter.myparameters;
 
-import eu.isas.reporter.preferences.AnnotationPreferences;
+import eu.isas.peptideshaker.preferences.AnnotationPreferences;
 import eu.isas.reporter.preferences.ProjectDetails;
 
 /**

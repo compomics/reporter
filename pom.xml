@@ -231,37 +231,11 @@
 
     <!-- Dependencies -->
     <dependencies>
-        <!-- This project depends on the junit JAR file. -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>3.8.1</version>
-            <scope>build</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>no.uib</groupId>
-            <artifactId>jsparklines</artifactId>
-            <version>0.5.36</version>
-        </dependency>
-
-        <dependency>
-            <groupId>xpp3</groupId>
-            <artifactId>xpp3</artifactId>
-            <version>1.1.3.4-RC3</version>
-            <type>jar</type>
-        </dependency>
-
-        <dependency>
-            <groupId>org.ujmp</groupId>
-            <artifactId>ujmp-complete</artifactId>
-            <version>0.2.5</version>
-        </dependency>
-
+        
         <dependency>
             <groupId>com.compomics</groupId>
             <artifactId>utilities</artifactId>
-            <version>3.2.18</version>
+            <version>3.5.3</version>
             <exclusions>
                 <exclusion>
                     <artifactId>commons-math</artifactId>
@@ -293,6 +267,34 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        
+        <!-- This project depends on the junit JAR file. -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>3.8.1</version>
+            <scope>build</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>no.uib</groupId>
+            <artifactId>jsparklines</artifactId>
+            <version>0.5.36</version>
+        </dependency>
+
+        <dependency>
+            <groupId>xpp3</groupId>
+            <artifactId>xpp3</artifactId>
+            <version>1.1.3.4-RC3</version>
+            <type>jar</type>
+        </dependency>
+
+        <dependency>
+            <groupId>org.ujmp</groupId>
+            <artifactId>ujmp-complete</artifactId>
+            <version>0.2.5</version>
+        </dependency>
+
 
         <dependency>
             <groupId>jfree</groupId>
@@ -320,25 +322,7 @@
         <dependency>
             <groupId>eu.isas.peptideshaker</groupId>
             <artifactId>PeptideShaker</artifactId>
-            <version>0.9.7</version>
-        </dependency>
-
-        <dependency>
-            <groupId>de.proteinms.omxparser</groupId>
-            <artifactId>omssa-parser</artifactId>
-            <version>1.4.6</version>
-        </dependency>
-
-        <dependency>
-            <groupId>de.proteinms.xtandemparser</groupId>
-            <artifactId>xtandem-parser</artifactId>
-            <version>1.3.4</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.compomics</groupId>
-            <artifactId>mascotdatfile</artifactId>
-            <version>3.2.2</version>
+            <version>0.18.0</version>
         </dependency>
         <dependency>
             <groupId>uk.ac.ebi.jmzml</groupId>

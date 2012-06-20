@@ -1,5 +1,6 @@
 package eu.isas.reporter.calculation;
 
+import com.compomics.util.experiment.biology.Enzyme;
 import com.compomics.util.experiment.biology.ions.ReporterIon;
 import com.compomics.util.experiment.identification.matches.IonMatch;
 import com.compomics.util.experiment.quantification.Quantification;
@@ -12,7 +13,6 @@ import eu.isas.reporter.myparameters.IgnoredRatios;
 import eu.isas.reporter.myparameters.ItraqScore;
 import eu.isas.reporter.myparameters.QuantificationPreferences;
 import eu.isas.reporter.myparameters.RatioLimits;
-import eu.isas.reporter.preferences.IdentificationPreferences;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -67,14 +67,14 @@ public class RatioEstimator {
      * @param quantificationPreferences
      * @param identificationPreferences 
      */
-    public RatioEstimator(Quantification quantification, ReporterMethod method, int referenceLabel, QuantificationPreferences quantificationPreferences, IdentificationPreferences identificationPreferences) {
+    public RatioEstimator(Quantification quantification, ReporterMethod method, int referenceLabel, QuantificationPreferences quantificationPreferences, Enzyme enzyme) {
         this.quantification = quantification;
         this.deisotoper = new Deisotoper(method);
         this.reporterIons = method.getReporterIons();
         this.referenceLabel = referenceLabel;
         resolution = quantificationPreferences.getRatioResolution();
         k = quantificationPreferences.getK();
-        ignorer = new Ignorer(quantificationPreferences, identificationPreferences);
+        ignorer = new Ignorer(quantificationPreferences, enzyme);
         ignoreNullIntensities = quantificationPreferences.isIgnoreNullIntensities();
     }
 

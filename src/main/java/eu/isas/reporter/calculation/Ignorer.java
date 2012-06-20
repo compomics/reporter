@@ -4,7 +4,6 @@ import com.compomics.util.experiment.biology.Enzyme;
 import com.compomics.util.experiment.biology.Peptide;
 import com.compomics.util.experiment.identification.matches.ModificationMatch;
 import eu.isas.reporter.myparameters.QuantificationPreferences;
-import eu.isas.reporter.preferences.IdentificationPreferences;
 import java.util.ArrayList;
 
 /**
@@ -42,12 +41,12 @@ public class Ignorer {
      * @param quantificationPreferences the quantification preferences
      * @param searchPreferences the search preferences 
      */
-    public Ignorer(QuantificationPreferences quantificationPreferences, IdentificationPreferences searchPreferences) {
+    public Ignorer(QuantificationPreferences quantificationPreferences, Enzyme enzyme) {
         this.ratioMin = quantificationPreferences.getRatioMin();
         this.ratioMax = quantificationPreferences.getRatioMax();
         this.ignoreMissedCleavages = quantificationPreferences.isIgnoreMissedCleavages();
         this.ignoredModifications.addAll(quantificationPreferences.getIgnoredPTM());
-        this.enzymeUsed = searchPreferences.getEnzyme();
+        this.enzymeUsed = enzyme;
     }
 
     /**
