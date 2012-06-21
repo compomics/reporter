@@ -31,6 +31,7 @@ import java.io.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
@@ -64,7 +65,7 @@ public class NewDialog extends javax.swing.JDialog {
     /**
      * The method selected.
      */
-    private ReporterMethod selectedMethod = getMethod("Method");
+    private ReporterMethod selectedMethod = getMethod(null);
     /**
      * The reporter ion reference.
      */
@@ -105,6 +106,10 @@ public class NewDialog extends javax.swing.JDialog {
      * The spectrum factory.
      */
     private SpectrumFactory spectrumFactory = SpectrumFactory.getInstance(100);
+    /**
+     * List of all sample names
+     */
+    private HashMap<Integer, String> sampleNames = new HashMap<Integer, String>();
 
     /**
      * Constructor.
@@ -117,6 +122,8 @@ public class NewDialog extends javax.swing.JDialog {
 
         this.reporterGui = reporterGui;
         this.reporter = reporter;
+        
+        importMethods();
 
         initComponents();
 
@@ -133,8 +140,8 @@ public class NewDialog extends javax.swing.JDialog {
         sameSpectra.setSelected(true);
 
         if (selectedMethod != null) {
-        comboMethod2.setSelectedItem(methodsFactory.getMethodsNames()[0]);
-        comboMethod1.setSelectedItem(methodsFactory.getMethodsNames()[0]);
+            comboMethod2.setSelectedItem(methodsFactory.getMethodsNames()[0]);
+            comboMethod1.setSelectedItem(methodsFactory.getMethodsNames()[0]);
         }
 
         // centrally align the comboboxes
@@ -243,8 +250,8 @@ public class NewDialog extends javax.swing.JDialog {
         jLabel20 = new javax.swing.JLabel();
         rtTolTxt = new javax.swing.JTextField();
         mzTolTxt = new javax.swing.JTextField();
-        jLabel21 = new javax.swing.JLabel();
         jLabel22 = new javax.swing.JLabel();
+        ppmCmb = new javax.swing.JComboBox();
         jPanel1 = new javax.swing.JPanel();
         jLabel7 = new javax.swing.JLabel();
         editPreferencesButton = new javax.swing.JButton();
@@ -342,11 +349,11 @@ public class NewDialog extends javax.swing.JDialog {
         txtSpectraFileLocation.setEditable(false);
         txtSpectraFileLocation.setHorizontalAlignment(javax.swing.JTextField.CENTER);
 
-        jLabel3.setText("PeptideShaker project:");
+        jLabel3.setText("Identification File:");
 
         txtIdFileLocation.setEditable(false);
         txtIdFileLocation.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        txtIdFileLocation.setText("Please select a file");
+        txtIdFileLocation.setText("Please import a PeptideShaker project");
 
         addIdFilesButton.setText("Browse");
         addIdFilesButton.addActionListener(new java.awt.event.ActionListener() {
@@ -429,6 +436,11 @@ public class NewDialog extends javax.swing.JDialog {
         jLabel5.setText("Method Selected");
 
         comboMethod1.setModel(new DefaultComboBoxModel(methodsFactory.getMethodsNames()));
+        comboMethod1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                comboMethod1ActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout samplePanelLayout = new org.jdesktop.layout.GroupLayout(samplePanel);
         samplePanel.setLayout(samplePanelLayout);
@@ -669,15 +681,16 @@ public class NewDialog extends javax.swing.JDialog {
 
         jLabel20.setText("RT tolerance");
 
+        rtTolTxt.setText("10");
         rtTolTxt.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 rtTolTxtActionPerformed(evt);
             }
         });
 
-        jLabel21.setText("m/z");
-
         jLabel22.setText("s");
+
+        ppmCmb.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "ppm", "m/z" }));
 
         org.jdesktop.layout.GroupLayout spectrumAnalysisPanelLayout = new org.jdesktop.layout.GroupLayout(spectrumAnalysisPanel);
         spectrumAnalysisPanel.setLayout(spectrumAnalysisPanelLayout);
@@ -688,8 +701,8 @@ public class NewDialog extends javax.swing.JDialog {
                 .add(jLabel6)
                 .add(18, 18, 18)
                 .add(ionToleranceTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 102, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 128, Short.MAX_VALUE)
-                .add(spectrumAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 211, Short.MAX_VALUE)
+                .add(spectrumAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jLabel11)
                     .add(spectrumAnalysisPanelLayout.createSequentialGroup()
                         .add(10, 10, 10)
@@ -708,8 +721,8 @@ public class NewDialog extends javax.swing.JDialog {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(spectrumAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(jLabel22)
-                            .add(jLabel21))))
-                .add(123, 123, 123))
+                            .add(ppmCmb, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap())
         );
         spectrumAnalysisPanelLayout.setVerticalGroup(
             spectrumAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -726,7 +739,7 @@ public class NewDialog extends javax.swing.JDialog {
                         .add(spectrumAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                             .add(jLabel19)
                             .add(mzTolTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(jLabel21))
+                            .add(ppmCmb, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(spectrumAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                             .add(rtTolTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -752,6 +765,8 @@ public class NewDialog extends javax.swing.JDialog {
         });
 
         quantificationPreferencesTxt.setEditable(false);
+        quantificationPreferencesTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        quantificationPreferencesTxt.setText("Default Settings");
 
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -1004,8 +1019,12 @@ public class NewDialog extends javax.swing.JDialog {
 
     private void editPreferencesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editPreferencesButtonActionPerformed
         new PreferencesDialog(reporterGui, quantificationPreferences);
+        quantificationPreferencesTxt.setText("User Settings");
     }//GEN-LAST:event_editPreferencesButtonActionPerformed
 
+    private void comboMethod1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboMethod1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_comboMethod1ActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addDbButton;
     private javax.swing.JButton addIdFilesButton;
@@ -1032,7 +1051,6 @@ public class NewDialog extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel20;
-    private javax.swing.JLabel jLabel21;
     private javax.swing.JLabel jLabel22;
     private javax.swing.JLabel jLabel24;
     private javax.swing.JLabel jLabel25;
@@ -1045,6 +1063,7 @@ public class NewDialog extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel methodPanel;
     private javax.swing.JTextField mzTolTxt;
+    private javax.swing.JComboBox ppmCmb;
     private javax.swing.JRadioButton precursorMatching;
     private javax.swing.JPanel processingPanel;
     private javax.swing.JPanel projectPanel;
@@ -1076,14 +1095,14 @@ public class NewDialog extends javax.swing.JDialog {
      */
     private ReporterIonQuantification getReporterIonQuantification() {
         ReporterIonQuantification quantification = new ReporterIonQuantification(QuantificationMethod.REPORTER_IONS);
+        quantification.setInMemory(false);
+        quantification.setAutomatedMemoryManagement(true);
+        quantification.setDirectory(Reporter.SERIALIZATION_DIRECTORY);
         for (int row = 0; row < sampleAssignmentTable.getRowCount(); row++) {
             quantification.assignSample(selectedMethod.getReporterIons().get(row).getIndex(), new Sample((String) sampleAssignmentTable.getValueAt(row, 1)));
         }
         quantification.setMethod(selectedMethod);
         quantification.setReferenceLabel(selectedMethod.getReporterIons().get(reference).getIndex());
-        quantification.setInMemory(false);
-        quantification.setAutomatedMemoryManagement(true);
-        quantification.setSerializationDirectory(reporter.SERIALIZATION_DIRECTORY);
         return quantification;
     }
 
@@ -1098,7 +1117,7 @@ public class NewDialog extends javax.swing.JDialog {
             importMethods();
         }
         for (ReporterMethod method : methodsFactory.getMethods()) {
-            if (method.getName().equals(methodName)) {
+            if (methodName == null || method.getName().equals(methodName)) {
                 return method;
             }
         }
@@ -1264,14 +1283,6 @@ public class NewDialog extends javax.swing.JDialog {
                     PSSettings psSettings = new PSSettings();
                     psSettings = (PSSettings) experiment.getUrParam(psSettings);
                     reporter.setPSSettings(psSettings);
-//                    setAnnotationPreferences(experimentSettings.getAnnotationPreferences());
-//                    setSpectrumCountingPreferences(experimentSettings.getSpectrumCountingPreferences());
-//                    setProjectDetails(experimentSettings.getProjectDetails());
-//                    setSearchParameters(experimentSettings.getSearchParameters());
-//                    setProcessingPreferences(experimentSettings.getProcessingPreferences());
-//                    setFilterPreferences(experimentSettings.getFilterPreferences());
-//                    setDisplayPreferences(experimentSettings.getDisplayPreferences());
-//                    setMetrics(experimentSettings.getMetrics());
 
                     PeptideShaker.setPeptideShakerPTMs(psSettings.getSearchParameters());
 
@@ -1532,9 +1543,31 @@ public class NewDialog extends javax.swing.JDialog {
                     sampleNameTxt.setText(sample.getReference());
                     replicateNumberTxt.setText(replicateNumber + "");
                     txtIdFileLocation.setText(currentPSFile.getName());
-                    
+
                     Identification identification = experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).getIdentification(IdentificationMethod.MS2_IDENTIFICATION);
                     identification.establishConnection();
+                    
+                    ArrayList<String> foundModifications = psSettings.getMetrics().getFoundModifications();
+                    for (String ptm : foundModifications) {
+                        if (ptm.toLowerCase().contains("8plex")) {
+                            selectedMethod = getMethod("iTRAQ 8Plex");
+                        } else if (ptm.toLowerCase().contains("duplex")) {
+                            selectedMethod = getMethod("TMT2");
+                        } else if (ptm.toLowerCase().contains("6-plex")) {
+                            selectedMethod = getMethod("TMT6");
+                        } else if (ptm.toLowerCase().contains("itraq")) {
+                            selectedMethod = getMethod("iTRAQ 4Plex");
+                        }
+                    }
+                    mzTolTxt.setText(psSettings.getSearchParameters().getPrecursorAccuracy() + "");
+                    if (psSettings.getSearchParameters().isPrecursorAccuracyTypePpm()) {
+                        ppmCmb.setSelectedIndex(0);
+                    } else {
+                        ppmCmb.setSelectedIndex(1);
+                    }
+                    
+                    sampleNames.clear();
+                    refresh();
 
                     progressDialog.dispose();
 
@@ -1771,10 +1804,15 @@ public class NewDialog extends javax.swing.JDialog {
                 case 0:
                     return selectedMethod.getReporterIons().get(row).getName();
                 case 1:
-                    if (experiment.getSample(row) == null) {
-                        experiment.setSample(row, new Sample("Sample " + (row + 1)));
+                    int index = selectedMethod.getReporterIons().get(row).getIndex();
+                    if (sampleNames.get(row) == null) {
+                        if (sample != null) {
+                            sampleNames.put(row, sample.getReference() + " " + index);
+                        } else {
+                            sampleNames.put(row, "Sample " + index);
+                        }
                     }
-                    return experiment.getSample(row).getReference();
+                    return sampleNames.get(row);
                 case 2:
                     if (row == reference) {
                         return true;
@@ -1789,7 +1827,7 @@ public class NewDialog extends javax.swing.JDialog {
         @Override
         public void setValueAt(Object aValue, int row, int column) {
             if (column == 1) {
-                experiment.setSample(row, new Sample(aValue.toString()));
+                sampleNames.put(row, aValue.toString());
             } else if (column == 2) {
                 if ((Boolean) aValue) {
                     reference = row;
@@ -1811,7 +1849,7 @@ public class NewDialog extends javax.swing.JDialog {
 
         @Override
         public int getRowCount() {
-            if (selectedMethod==null) {
+            if (selectedMethod == null) {
                 return 0;
             }
             return selectedMethod.getReporterIons().size();

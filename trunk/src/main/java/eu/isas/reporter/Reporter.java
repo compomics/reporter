@@ -2,6 +2,7 @@ package eu.isas.reporter;
 
 import com.compomics.util.examples.BareBonesBrowserLaunch;
 import com.compomics.util.experiment.MsExperiment;
+import com.compomics.util.experiment.ProteomicAnalysis;
 import com.compomics.util.experiment.biology.Enzyme;
 import com.compomics.util.experiment.biology.PTMFactory;
 import com.compomics.util.experiment.biology.Sample;
@@ -276,6 +277,7 @@ public class Reporter {
         dataImporter.execute();
         waitingDialog.setLocationRelativeTo(reporterGUI);
         waitingDialog.setVisible(true);
+        updateResults();
     }
 
     /**
@@ -298,6 +300,7 @@ public class Reporter {
 
     /**
      * Returns the identification. Null if none loaded.
+     *
      * @return the identification
      */
     public Identification getIdentification() {
@@ -306,17 +309,19 @@ public class Reporter {
         }
         return null;
     }
-    
+
     /**
      * Returns the PeptideShaker settings
+     *
      * @return the PeptideShaker settings
      */
     public PSSettings getPSSettings() {
         return psSettings;
     }
-    
+
     /**
      * Sets the PeptideShaker settings
+     *
      * @param psSettings the peptide shaker settings
      */
     public void setPSSettings(PSSettings psSettings) {
@@ -385,7 +390,7 @@ public class Reporter {
      * Loads the modifications from the modification file.
      */
     private void loadModifications() {
-        
+
         try {
             ptmFactory.importModifications(new File(MODIFICATIONS_FILE), false);
         } catch (Exception e) {
@@ -440,6 +445,7 @@ public class Reporter {
             try {
                 quantification.buildPeptidesAndProteinQuantifications(identification);
             } catch (Exception e) {
+                e.printStackTrace();
                 waitingDialog.appendReport("An error occured whlie building peptide and protein quantification objects.\n" + e.getLocalizedMessage());
                 waitingDialog.setRunCanceled();
                 return 1;

@@ -15,7 +15,7 @@ import com.compomics.util.experiment.massspectrometry.Precursor;
 import com.compomics.util.experiment.massspectrometry.Spectrum;
 import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
-import com.compomics.util.experiment.quantification.reporterion.quantification.PsmQuantification;
+import com.compomics.util.experiment.quantification.matches.PsmQuantification;
 import com.compomics.util.gui.waiting.waitinghandlers.WaitingDialog;
 import eu.isas.peptideshaker.fileimport.IdFilter;
 import eu.isas.peptideshaker.myparameters.PSParameter;
@@ -159,7 +159,7 @@ public class DataLoader {
     public void loadQuantification(ReporterIonQuantification quantification, ArrayList<File> mgfFiles) {
         try {
             waitingDialog.appendReport("PSM quantification.");
-            waitingDialog.setSecondaryProgressValue(identification.getSpectrumIdentification().size());
+            waitingDialog.setMaxSecondaryProgressValue(identification.getSpectrumIdentification().size());
             for (String matchKey : identification.getSpectrumIdentification()) {
                 
                 if (waitingDialog.isRunCanceled()) {

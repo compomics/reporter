@@ -235,7 +235,7 @@
         <dependency>
             <groupId>com.compomics</groupId>
             <artifactId>utilities</artifactId>
-            <version>3.5.3</version>
+            <version>3.5.5</version>
             <exclusions>
                 <exclusion>
                     <artifactId>commons-math</artifactId>
@@ -248,10 +248,6 @@
                 <exclusion>
                     <artifactId>servlet-api</artifactId>
                     <groupId>javax.servlet</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>swingx</artifactId>
-                    <groupId>org.swinglabs</groupId>
                 </exclusion>
                 <exclusion>
                     <artifactId>swing-layout</artifactId>
