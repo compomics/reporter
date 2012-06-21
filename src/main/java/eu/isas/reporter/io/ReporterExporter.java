@@ -16,9 +16,9 @@ import com.compomics.util.experiment.massspectrometry.Precursor;
 import com.compomics.util.experiment.massspectrometry.Spectrum;
 import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
-import com.compomics.util.experiment.quantification.reporterion.quantification.PeptideQuantification;
-import com.compomics.util.experiment.quantification.reporterion.quantification.ProteinQuantification;
-import com.compomics.util.experiment.quantification.reporterion.quantification.PsmQuantification;
+import com.compomics.util.experiment.quantification.matches.PeptideQuantification;
+import com.compomics.util.experiment.quantification.matches.ProteinQuantification;
+import com.compomics.util.experiment.quantification.matches.PsmQuantification;
 import com.compomics.util.experiment.refinementparameters.MascotScore;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
 import eu.isas.peptideshaker.myparameters.PSParameter;
@@ -467,7 +467,7 @@ public class ReporterExporter {
         for (String proteinKey : quantification.getProteinQuantification()) {
 
         PSParameter probabilities = new PSParameter();
-        probabilities = (PSParameter) identification.getProteinMatchPArameter(proteinKey, probabilities);
+        probabilities = (PSParameter) identification.getProteinMatchParameter(proteinKey, probabilities);
         ProteinMatch proteinMatch = identification.getProteinMatch(proteinKey);
         
         

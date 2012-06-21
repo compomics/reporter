@@ -5,7 +5,7 @@ import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.matches.PeptideMatch;
 import com.compomics.util.experiment.identification.matches.ProteinMatch;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
-import com.compomics.util.experiment.quantification.reporterion.quantification.ProteinQuantification;
+import com.compomics.util.experiment.quantification.matches.ProteinQuantification;
 import com.compomics.util.gui.UtilitiesGUIDefaults;
 import eu.isas.reporter.Reporter;
 import eu.isas.reporter.io.ReporterExporter;
