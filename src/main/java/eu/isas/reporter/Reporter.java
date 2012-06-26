@@ -269,10 +269,10 @@ public class Reporter {
      */
     public void loadFiles(ArrayList<File> mgfFiles) {
 
-        // change the reporter icon to a "waiting version"
-        reporterGUI.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")));
-
-        WaitingDialog waitingDialog = new WaitingDialog(reporterGUI, null, null, false, null, true); //@TODO: put images and tips
+        WaitingDialog waitingDialog = new WaitingDialog(reporterGUI, 
+                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")), 
+                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), 
+                false, null, true); //@TODO: put and tips
         DataImporter dataImporter = new DataImporter(waitingDialog, mgfFiles);
         dataImporter.execute();
         waitingDialog.setLocationRelativeTo(reporterGUI);
@@ -441,9 +441,10 @@ public class Reporter {
             Identification identification = experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).getIdentification(IdentificationMethod.MS2_IDENTIFICATION);
             Quantification quantification = getQuantification();
             DataLoader dataLoader = new DataLoader(quantificationPreferences, waitingDialog, identification);
+            waitingDialog.appendReport("Building peptides and protein quantification objects.");
 
             try {
-                quantification.buildPeptidesAndProteinQuantifications(identification);
+                quantification.buildPeptidesAndProteinQuantifications(identification, waitingDialog);
             } catch (Exception e) {
                 e.printStackTrace();
                 waitingDialog.appendReport("An error occured whlie building peptide and protein quantification objects.\n" + e.getLocalizedMessage());

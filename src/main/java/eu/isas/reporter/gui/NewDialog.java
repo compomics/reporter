@@ -25,6 +25,7 @@ import eu.isas.peptideshaker.fileimport.IdFilter;
 import eu.isas.peptideshaker.myparameters.PSSettings;
 import eu.isas.reporter.Reporter;
 import eu.isas.reporter.myparameters.QuantificationPreferences;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
@@ -122,7 +123,7 @@ public class NewDialog extends javax.swing.JDialog {
 
         this.reporterGui = reporterGui;
         this.reporter = reporter;
-        
+
         importMethods();
 
         initComponents();
@@ -934,14 +935,23 @@ public class NewDialog extends javax.swing.JDialog {
 
     private void startButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startButtonActionPerformed
         if (validateInput()) {
-            savePreferences();
-            ReporterIonQuantification reporterIonQuantification = getReporterIonQuantification();
-            experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).addQuantificationResults(reporterIonQuantification.getMethodUsed(), reporterIonQuantification);
-            reporter.setExperiment(experiment);
-            reporter.setSample(sample);
-            reporter.setReplicateNumber(replicateNumber);
-            reporter.loadFiles(mgfFiles);
-            dispose();
+            try {
+                savePreferences();
+                ReporterIonQuantification reporterIonQuantification = getReporterIonQuantification();
+                experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).addQuantificationResults(reporterIonQuantification.getMethodUsed(), reporterIonQuantification);
+                reporter.setExperiment(experiment);
+                reporter.setSample(sample);
+                reporter.setReplicateNumber(replicateNumber);
+                reporter.loadFiles(mgfFiles);
+                dispose();
+            } catch (Exception e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(this,
+                        "An error occured while creating project: "
+                        + e.getLocalizedMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
         }
     }//GEN-LAST:event_startButtonActionPerformed
 
@@ -1093,11 +1103,11 @@ public class NewDialog extends javax.swing.JDialog {
      *
      * @return the quantification method selected
      */
-    private ReporterIonQuantification getReporterIonQuantification() {
+    private ReporterIonQuantification getReporterIonQuantification() throws SQLException {
         ReporterIonQuantification quantification = new ReporterIonQuantification(QuantificationMethod.REPORTER_IONS);
         quantification.setInMemory(false);
         quantification.setAutomatedMemoryManagement(true);
-        quantification.setDirectory(Reporter.SERIALIZATION_DIRECTORY);
+        quantification.establishConnection(Reporter.SERIALIZATION_DIRECTORY);
         for (int row = 0; row < sampleAssignmentTable.getRowCount(); row++) {
             quantification.assignSample(selectedMethod.getReporterIons().get(row).getIndex(), new Sample((String) sampleAssignmentTable.getValueAt(row, 1)));
         }
@@ -1202,7 +1212,7 @@ public class NewDialog extends javax.swing.JDialog {
     private void importPeptideShakerFile(File psFile) {
         currentPSFile = psFile;
 
-        progressDialog = new ProgressDialogX(this, true);
+        progressDialog = new ProgressDialogX(this, Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")), Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
         progressDialog.setIndeterminate(true);
         progressDialog.setTitle("Importing Project. Please Wait...");
 
@@ -1545,8 +1555,8 @@ public class NewDialog extends javax.swing.JDialog {
                     txtIdFileLocation.setText(currentPSFile.getName());
 
                     Identification identification = experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).getIdentification(IdentificationMethod.MS2_IDENTIFICATION);
-                    identification.establishConnection();
-                    
+                    identification.establishConnection(Reporter.SERIALIZATION_DIRECTORY);
+
                     ArrayList<String> foundModifications = psSettings.getMetrics().getFoundModifications();
                     for (String ptm : foundModifications) {
                         if (ptm.toLowerCase().contains("8plex")) {
@@ -1565,7 +1575,7 @@ public class NewDialog extends javax.swing.JDialog {
                     } else {
                         ppmCmb.setSelectedIndex(1);
                     }
-                    
+
                     sampleNames.clear();
                     refresh();
 
@@ -1681,7 +1691,7 @@ public class NewDialog extends javax.swing.JDialog {
      * @param files the spectra files to process
      */
     public void addSpectrumFiles(ArrayList<File> files) {
-        progressDialog = new ProgressDialogX(this, true);
+        progressDialog = new ProgressDialogX(this, Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")), Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
         progressDialog.setIndeterminate(true);
         progressDialog.setTitle("Importing Spectra. Please Wait...");
         final ArrayList<File> newMgfFiles = files;
