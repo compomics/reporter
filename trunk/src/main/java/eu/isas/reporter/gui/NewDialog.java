@@ -68,10 +68,6 @@ public class NewDialog extends javax.swing.JDialog {
      */
     private ReporterMethod selectedMethod = getMethod(null);
     /**
-     * The reporter ion reference.
-     */
-    private int reference = 0;
-    /**
      * The experiment conducted.
      */
     private MsExperiment experiment;
@@ -181,13 +177,13 @@ public class NewDialog extends javax.swing.JDialog {
      * Set up the properties of the tables.
      */
     private void setTableProperties() {
-        sampleAssignmentTable.getColumn("Ref").setCellRenderer(new TrueFalseIconRenderer(
-                new ImageIcon(this.getClass().getResource("/icons/selected_green.png")),
-                null,
-                "Reference", null));
-
-        sampleAssignmentTable.getColumn("Ref").setMaxWidth(40);
-        sampleAssignmentTable.getColumn("Ref").setMinWidth(40);
+//        sampleAssignmentTable.getColumn("Ref").setCellRenderer(new TrueFalseIconRenderer(
+//                new ImageIcon(this.getClass().getResource("/icons/selected_green.png")),
+//                null,
+//                "Reference", null));
+//
+//        sampleAssignmentTable.getColumn("Ref").setMaxWidth(40);
+//        sampleAssignmentTable.getColumn("Ref").setMinWidth(40);
     }
 
     /**
@@ -1112,7 +1108,6 @@ public class NewDialog extends javax.swing.JDialog {
             quantification.assignSample(selectedMethod.getReporterIons().get(row).getIndex(), new Sample((String) sampleAssignmentTable.getValueAt(row, 1)));
         }
         quantification.setMethod(selectedMethod);
-        quantification.setReferenceLabel(selectedMethod.getReporterIons().get(reference).getIndex());
         return quantification;
     }
 
@@ -1139,7 +1134,6 @@ public class NewDialog extends javax.swing.JDialog {
      * quantification method.
      */
     private void refresh() {
-        reference = 0;
 
         comboMethod1.setSelectedItem(selectedMethod.getName());
         comboMethod2.setSelectedItem(selectedMethod.getName());
@@ -1479,7 +1473,6 @@ public class NewDialog extends javax.swing.JDialog {
                                 cpt++;
                                 report += name;
                             }
-                            report += " selected.";
                         } else {
                             report += names.size() + " files selected.";
                         }
@@ -1492,6 +1485,7 @@ public class NewDialog extends javax.swing.JDialog {
                     }
 
                     progressDialog.setIndeterminate(true);
+                    progressDialog.setTitle("Importing Experiment details. Please Wait...");
 
                     if (progressDialog.isRunCanceled()) {
                         progressDialog.dispose();
@@ -1791,7 +1785,7 @@ public class NewDialog extends javax.swing.JDialog {
 
         @Override
         public int getColumnCount() {
-            return 3;
+            return 2;
         }
 
         @Override
@@ -1801,8 +1795,6 @@ public class NewDialog extends javax.swing.JDialog {
                     return "Label";
                 case 1:
                     return "Sample";
-                case 2:
-                    return "Ref";
                 default:
                     return "";
             }
@@ -1823,12 +1815,6 @@ public class NewDialog extends javax.swing.JDialog {
                         }
                     }
                     return sampleNames.get(row);
-                case 2:
-                    if (row == reference) {
-                        return true;
-                    } else {
-                        return false;
-                    }
                 default:
                     return "";
             }
@@ -1838,10 +1824,6 @@ public class NewDialog extends javax.swing.JDialog {
         public void setValueAt(Object aValue, int row, int column) {
             if (column == 1) {
                 sampleNames.put(row, aValue.toString());
-            } else if (column == 2) {
-                if ((Boolean) aValue) {
-                    reference = row;
-                }
             }
             repaint();
         }
