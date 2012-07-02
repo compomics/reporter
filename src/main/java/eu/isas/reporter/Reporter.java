@@ -13,6 +13,7 @@ import com.compomics.util.experiment.massspectrometry.Spectrum;
 import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
 import com.compomics.util.experiment.quantification.Quantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
+import com.compomics.util.gui.waiting.WaitingHandler;
 import com.compomics.util.gui.waiting.waitinghandlers.WaitingDialog;
 import eu.isas.peptideshaker.myparameters.PSSettings;
 import eu.isas.reporter.io.DataLoader;
@@ -269,24 +270,14 @@ public class Reporter {
      */
     public void loadFiles(ArrayList<File> mgfFiles) {
 
-        WaitingDialog waitingDialog = new WaitingDialog(reporterGUI, 
-                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")), 
-                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), 
+        WaitingDialog waitingDialog = new WaitingDialog(reporterGUI,
+                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
+                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")),
                 false, null, true); //@TODO: put and tips
         DataImporter dataImporter = new DataImporter(waitingDialog, mgfFiles);
         dataImporter.execute();
         waitingDialog.setLocationRelativeTo(reporterGUI);
         waitingDialog.setVisible(true);
-        updateResults();
-    }
-
-    /**
-     * Displays the results in the main gui.
-     */
-    public void updateResults() {
-        RatiosCompilator ratiosCompilator = new RatiosCompilator();
-        ratiosCompilator.execute();
-        // @TODO add a progress bar? May be necessary for big experiments...
     }
 
     /**
@@ -329,28 +320,33 @@ public class Reporter {
     }
 
     /**
-     * Worker used to compile ratios.
+     * Compiles the PSM ratios into peptides and proteins
+     * @param waitingHandler a waiting handler displaying the progress. Progress will be displayed on the secondary progress bar if any.
      */
-    private class RatiosCompilator extends SwingWorker {
-
-        @Override
-        protected Object doInBackground() throws Exception {
+    public void compileRatios(WaitingHandler waitingHandler) {
             try {
                 Enzyme enzyme = psSettings.getSearchParameters().getEnzyme();
                 ReporterIonQuantification quantification = getQuantification();
-                RatioEstimator ratioEstimator = new RatioEstimator(quantification, quantification.getReporterMethod(),
-                        quantification.getReferenceLabel(), quantificationPreferences, enzyme);
-                //ProteinQuantification proteinQuantification;
+                RatioEstimator ratioEstimator = new RatioEstimator(quantification, quantification.getReporterMethod(), quantificationPreferences, enzyme);
+
+                if (waitingHandler != null) {
+                    waitingHandler.setMaxSecondaryProgressValue(quantification.getProteinQuantification().size());
+                    waitingHandler.setSecondaryProgressDialogIndeterminate(false);
+                }
                 for (String proteinKey : quantification.getProteinQuantification()) {
                     ratioEstimator.estimateProteinRatios(proteinKey);
+                    if (waitingHandler != null) {
+                        waitingHandler.increaseSecondaryProgressValue();
+                        if (waitingHandler.isRunCanceled()) {
+                            return;
+                        }
+                    }
                 }
-                reporterGUI.displayResults(quantification, getIdentification());
             } catch (Exception e) {
-                e.printStackTrace();
+                catchException(e);
+                waitingHandler.setRunCanceled();
             }
-            return 0;
         }
-    }
 
     /**
      * Returns the desired spectrum.
@@ -442,6 +438,7 @@ public class Reporter {
             Quantification quantification = getQuantification();
             DataLoader dataLoader = new DataLoader(quantificationPreferences, waitingDialog, identification);
             waitingDialog.appendReport("Building peptides and protein quantification objects.");
+            waitingDialog.setMaxProgressValue(3);
 
             try {
                 quantification.buildPeptidesAndProteinQuantifications(identification, waitingDialog);
@@ -453,7 +450,13 @@ public class Reporter {
             }
 
             dataLoader.loadQuantification(getQuantification(), mgfFiles);
-            waitingDialog.setRunFinished();
+            waitingDialog.increaseProgressValue();
+            waitingDialog.appendReport("Estimating peptide and protein ratios");
+            compileRatios(waitingDialog);
+            if (!waitingDialog.isRunCanceled()) {
+                reporterGUI.displayResults(getQuantification(), getIdentification());
+                waitingDialog.setRunFinished();
+            }
             return 0;
         }
     }

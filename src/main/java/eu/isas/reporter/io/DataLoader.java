@@ -159,6 +159,7 @@ public class DataLoader {
     public void loadQuantification(ReporterIonQuantification quantification, ArrayList<File> mgfFiles) {
         try {
             waitingDialog.appendReport("PSM quantification.");
+            waitingDialog.increaseProgressValue();
             waitingDialog.setMaxSecondaryProgressValue(identification.getSpectrumIdentification().size());
             for (String matchKey : identification.getSpectrumIdentification()) {
                 
@@ -183,8 +184,6 @@ public class DataLoader {
                 
                 waitingDialog.increaseSecondaryProgressValue();
             }
-            
-            waitingDialog.appendReport("PSM quantification completed.");
             
         } catch (Exception e) {
             e.printStackTrace();
