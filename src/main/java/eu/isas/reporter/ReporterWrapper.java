@@ -27,7 +27,7 @@ public class ReporterWrapper {
      * The name of the jar file. Must be equal to the name given in the pom
      * file.
      */
-    private String jarFileName = "PeptideShaker-";
+    private String jarFileName = "Reporter-";
     /**
      * True if this the first time the wrapper tries to launch the application.
      * If the first launch failes, e.g., due to memory settings, it is set to
@@ -62,12 +62,12 @@ public class ReporterWrapper {
             loadUserPreferences();
 
             if (useStartUpLog) {
-                String path = this.getClass().getResource("PeptideShakerWrapper.class").getPath();
+                String path = this.getClass().getResource("ReporterWrapper.class").getPath();
                 path = path.substring(5, path.indexOf(jarFileName));
                 path = path.replace("%20", " ");
                 path = path.replace("%5b", "[");
                 path = path.replace("%5d", "]");
-                File debugOutput = new File(path + "resources/conf/startup.log");
+                File debugOutput = new File(path + "conf/startup.log");
                 bw = new BufferedWriter(new FileWriter(debugOutput));
                 bw.write("Memory settings read from the user preferences: " + userPreferences.getMemoryPreference() + "\n");
             }
@@ -94,16 +94,16 @@ public class ReporterWrapper {
         String options = "", currentOption;
 
         // locate the settings files
-        path = this.getClass().getResource("PeptideShakerWrapper.class").getPath();
+        path = this.getClass().getResource("ReporterWrapper.class").getPath();
         path = path.substring(5, path.indexOf(jarFileName));
         path = path.replace("%20", " ");
         path = path.replace("%5b", "[");
         path = path.replace("%5d", "]");
 
-        File javaOptions = new File(path + "resources/conf/JavaOptions.txt");
-        File nonStandardJavaHome = new File(path + "resources/conf/JavaHome.txt");
+        File javaOptions = new File(path + "conf/JavaOptions.txt");
+        File nonStandardJavaHome = new File(path + "conf/JavaHome.txt");
 
-        File uniprotApiPropertiesFile = new File(path + "resources/conf/proxy/uniprotjapi.properties");
+        File uniprotApiPropertiesFile = new File(path + "conf/proxy/uniprotjapi.properties");
         String uniprotApiProperties = "";
 
         // read any java option settings
@@ -272,7 +272,7 @@ public class ReporterWrapper {
         }
 
         // get the splash 
-        String splashPath = path + "resources/conf/peptide-shaker-splash.png";
+        String splashPath = path + "conf/reporter-splash.png";
 
         // set the correct slashes for the splash path
         if (System.getProperty("os.name").lastIndexOf("Windows") != -1) {
@@ -306,7 +306,7 @@ public class ReporterWrapper {
         // create the complete command line
         cmdLine = javaHome + "java -splash:" + quote + splashPath + quote + " " + options + " -cp "
                 + quote + new File(path, jarFileName).getAbsolutePath() + quote + uniprotProxyClassPath
-                + " eu.isas.peptideshaker.gui.PeptideShakerGUI";
+                + " eu.isas.reporter.Reporter";
 
         if (useStartUpLog) {
             System.out.println("\n" + cmdLine + "\n\n");
@@ -455,14 +455,14 @@ public class ReporterWrapper {
      */
     private void saveJavaOptions() {
 
-        String path = this.getClass().getResource("PeptideShakerWrapper.class").getPath();
+        String path = this.getClass().getResource("ReporterWrapper.class").getPath();
         String currentLine, lines = "";
         path = path.substring(5, path.indexOf(jarFileName));
         path = path.replace("%20", " ");
         path = path.replace("%5b", "[");
         path = path.replace("%5d", "]");
 
-        File javaOptions = new File(path + "resources/conf/JavaOptions.txt");
+        File javaOptions = new File(path + "conf/JavaOptions.txt");
 
         // read any java option settings
         if (javaOptions.exists()) {
