@@ -2,17 +2,12 @@ package eu.isas.reporter.gui;
 
 import com.compomics.util.Util;
 import com.compomics.util.experiment.MsExperiment;
-import com.compomics.util.experiment.ProteomicAnalysis;
-import com.compomics.util.experiment.SampleAnalysisSet;
 import com.compomics.util.experiment.biology.Sample;
 import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.IdentificationMethod;
 import com.compomics.util.experiment.identification.SequenceFactory;
-import com.compomics.util.experiment.identification.advocates.SearchEngine;
-import com.compomics.util.experiment.identification.identifications.Ms2Identification;
 import com.compomics.util.experiment.io.ExperimentIO;
 import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
-import com.compomics.util.experiment.quantification.Quantification;
 import com.compomics.util.experiment.quantification.Quantification.QuantificationMethod;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
@@ -21,7 +16,6 @@ import com.compomics.util.gui.dialogs.SampleSelection;
 import com.compomics.util.gui.renderers.AlignedListCellRenderer;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
 import eu.isas.peptideshaker.PeptideShaker;
-import eu.isas.peptideshaker.fileimport.IdFilter;
 import eu.isas.peptideshaker.myparameters.PSSettings;
 import eu.isas.reporter.Reporter;
 import eu.isas.reporter.myparameters.QuantificationPreferences;
@@ -36,7 +30,6 @@ import java.util.HashMap;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
-import no.uib.jsparklines.extra.TrueFalseIconRenderer;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.ArchiveStreamFactory;
@@ -80,7 +73,7 @@ public class NewDialog extends javax.swing.JDialog {
      */
     private int replicateNumber;
     /**
-     * The currently loaded PeptideShaker file
+     * The currently loaded PeptideShaker file.
      */
     private File currentPSFile;
     /**
@@ -1095,7 +1088,7 @@ public class NewDialog extends javax.swing.JDialog {
     // End of variables declaration//GEN-END:variables
 
     /**
-     * returns the quantification method selected.
+     * Returns the quantification method selected.
      *
      * @return the quantification method selected
      */
@@ -1103,7 +1096,7 @@ public class NewDialog extends javax.swing.JDialog {
         ReporterIonQuantification quantification = new ReporterIonQuantification(QuantificationMethod.REPORTER_IONS);
         quantification.setInMemory(false);
         quantification.setAutomatedMemoryManagement(true);
-        quantification.establishConnection(Reporter.SERIALIZATION_DIRECTORY);
+        quantification.establishConnection(Reporter.SERIALIZATION_DIRECTORY, true); // @TODO: verify that the old database should be deleted here!
         for (int row = 0; row < sampleAssignmentTable.getRowCount(); row++) {
             quantification.assignSample(selectedMethod.getReporterIons().get(row).getIndex(), new Sample((String) sampleAssignmentTable.getValueAt(row, 1)));
         }
@@ -1234,7 +1227,8 @@ public class NewDialog extends javax.swing.JDialog {
                     }
 
                     File experimentFile = new File(Reporter.SERIALIZATION_DIRECTORY, Reporter.experimentObjectName);
-                    File destinationFile, destinationFolder, matchFolder = new File(Reporter.SERIALIZATION_DIRECTORY);
+                    File matchFolder = new File(Reporter.SERIALIZATION_DIRECTORY);
+                    
                     for (File file : matchFolder.listFiles()) {
                         if (file.isDirectory()) {
                             Util.deleteDir(file);
@@ -1252,11 +1246,11 @@ public class NewDialog extends javax.swing.JDialog {
                     progressDialog.setMaxProgressValue(100);
                     progressDialog.setValue(0);
                     progressDialog.setIndeterminate(false);
-                    int progress;
                     long fileLength = currentPSFile.length();
+                    
                     while ((archiveEntry = tarInput.getNextEntry()) != null) {
-                        destinationFile = new File(archiveEntry.getName());
-                        destinationFolder = destinationFile.getParentFile();
+                        File destinationFile = new File(archiveEntry.getName());
+                        File destinationFolder = destinationFile.getParentFile();
                         if (!destinationFolder.exists()) {
                             destinationFolder.mkdirs();
                         }
@@ -1268,7 +1262,7 @@ public class NewDialog extends javax.swing.JDialog {
                         }
                         bos.close();
                         fos.close();
-                        progress = (int) (100 * tarInput.getBytesRead() / fileLength);
+                        int progress = (int) (100 * tarInput.getBytesRead() / fileLength);
                         progressDialog.setValue(progress);
                         if (progressDialog.isRunCanceled()) {
                             progressDialog.dispose();
@@ -1419,7 +1413,7 @@ public class NewDialog extends javax.swing.JDialog {
                     }
 
 
-                    int cpt = 1;
+
                     progressDialog.setTitle("Importing Spectrum Files. Please Wait...");
                     progressDialog.setIndeterminate(true);
 
@@ -1428,7 +1422,7 @@ public class NewDialog extends javax.swing.JDialog {
                     if (!error.isEmpty()) {
                         String report = "An error occurred while importing ";
                         if (error.size() <= 3) {
-                            cpt = 0;
+                            int cpt = 0;
                             Collections.sort(error);
                             for (File errorFile : error) {
                                 if (cpt > 0) {
@@ -1460,7 +1454,7 @@ public class NewDialog extends javax.swing.JDialog {
                     } else {
                         String report = "";
                         if (names.size() <= 3) {
-                            cpt = 0;
+                            int cpt = 0;
                             Collections.sort(names);
                             for (String name : names) {
                                 if (cpt > 0) {
@@ -1549,7 +1543,7 @@ public class NewDialog extends javax.swing.JDialog {
                     txtIdFileLocation.setText(currentPSFile.getName());
 
                     Identification identification = experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).getIdentification(IdentificationMethod.MS2_IDENTIFICATION);
-                    identification.establishConnection(Reporter.SERIALIZATION_DIRECTORY);
+                    identification.establishConnection(Reporter.SERIALIZATION_DIRECTORY, true);
 
                     ArrayList<String> foundModifications = psSettings.getMetrics().getFoundModifications();
                     for (String ptm : foundModifications) {
