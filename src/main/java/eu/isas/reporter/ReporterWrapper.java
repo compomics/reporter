@@ -35,10 +35,6 @@ public class ReporterWrapper {
      */
     private boolean firstTry = true;
     /**
-     * Is set to true if proxy settings are found in the JavaOptions file.
-     */
-    private boolean proxySettingsFound = false;
-    /**
      * User preferences file.
      */
     private final String USER_PREFERENCES_FILE = System.getProperty("user.home") + "/.reporter/userpreferences.cpf";
@@ -103,9 +99,6 @@ public class ReporterWrapper {
         File javaOptions = new File(path + "conf/JavaOptions.txt");
         File nonStandardJavaHome = new File(path + "conf/JavaHome.txt");
 
-        File uniprotApiPropertiesFile = new File(path + "conf/proxy/uniprotjapi.properties");
-        String uniprotApiProperties = "";
-
         // read any java option settings
         if (javaOptions.exists()) {
 
@@ -142,36 +135,10 @@ public class ReporterWrapper {
                             }
                         }
                     } else if (!currentOption.startsWith("#")) {
-
-                        // extract the proxy settings as these are needed for uniprotjapi.properties
-                        if (currentOption.startsWith("-Dhttp")) {
-
-                            proxySettingsFound = true;
-                            String[] tempProxySetting = currentOption.split("=");
-
-                            if (tempProxySetting[0].equalsIgnoreCase("-Dhttp.proxyHost")) { // proxy host
-                                uniprotApiProperties += "proxy.host=" + tempProxySetting[1] + "\n";
-                            } else if (tempProxySetting[0].equalsIgnoreCase("-Dhttp.proxyPort")) { // proxy port
-                                uniprotApiProperties += "proxy.port=" + tempProxySetting[1] + "\n";
-                            } else if (tempProxySetting[0].equalsIgnoreCase("-Dhttp.proxyUser")) { // proxy user name
-                                uniprotApiProperties += "username=" + tempProxySetting[1] + "\n";
-                            } else if (tempProxySetting[0].equalsIgnoreCase("-Dhttp.proxyPassword")) { // proxy password
-                                uniprotApiProperties += "password=" + tempProxySetting[1] + "\n";
-                            }
-                        }
-
                         options += currentOption + " ";
                     }
-                    currentOption = b.readLine();
-                }
 
-                // create the uniprot japi proxy settings file
-                if (proxySettingsFound) {
-                    FileWriter uniprotProxyWriter = new FileWriter(uniprotApiPropertiesFile);
-                    BufferedWriter uniprotProxyBufferedWriter = new BufferedWriter(uniprotProxyWriter);
-                    uniprotProxyBufferedWriter.write(uniprotApiProperties);
-                    uniprotProxyBufferedWriter.close();
-                    uniprotProxyWriter.close();
+                    currentOption = b.readLine();
                 }
 
                 b.close();
@@ -284,28 +251,9 @@ public class ReporterWrapper {
             }
         }
 
-        String uniprotProxyClassPath = "";
-
-        // add the classpath for the uniprot proxy file
-        if (proxySettingsFound) {
-            uniprotProxyClassPath = path + "resources/conf/proxy";
-            
-            // set the correct slashes for the proxy path
-            if (System.getProperty("os.name").lastIndexOf("Windows") != -1) {
-                uniprotProxyClassPath = uniprotProxyClassPath.replace("/", "\\");
-
-                // remove the initial '\' at the start of the line 
-                if (uniprotProxyClassPath.startsWith("\\") && !uniprotProxyClassPath.startsWith("\\\\")) {
-                    uniprotProxyClassPath = uniprotProxyClassPath.substring(1);
-                }
-            }
-            
-            uniprotProxyClassPath = ";" + quote + uniprotProxyClassPath + quote;
-        }
-
         // create the complete command line
         cmdLine = javaHome + "java -splash:" + quote + splashPath + quote + " " + options + " -cp "
-                + quote + new File(path, jarFileName).getAbsolutePath() + quote + uniprotProxyClassPath
+                + quote + new File(path, jarFileName).getAbsolutePath() + quote
                 + " eu.isas.reporter.Reporter";
 
         if (useStartUpLog) {
@@ -369,9 +317,9 @@ public class ReporterWrapper {
 
                         javax.swing.JOptionPane.showMessageDialog(null,
                                 "Failed to create the Java virtual machine.\n\n"
-                                + "Inspect the log file for details: resources/conf/startup.log.\n\n"
-                                + "Then go to Troubleshooting at http://peptide-shaker.googlecode.com.",
-                                "PeptideShaker - Startup Failed", JOptionPane.ERROR_MESSAGE);
+                                + "Inspect the log file for details: conf/startup.log.\n\n"
+                                + "Then go to Troubleshooting at http://reporter.googlecode.com.",
+                                "Reporter - Startup Failed", JOptionPane.ERROR_MESSAGE);
 
                         System.exit(0);
                     }
@@ -383,10 +331,10 @@ public class ReporterWrapper {
                     }
 
                     javax.swing.JOptionPane.showMessageDialog(null,
-                            "An error occurred when starting PeptideShaker.\n\n"
-                            + "Inspect the log file for details: resources/conf/startup.log.\n\n"
-                            + "Then go to Troubleshooting at http://peptide-shaker.googlecode.com.",
-                            "PeptideShaker - Startup Error", JOptionPane.ERROR_MESSAGE);
+                            "An error occurred when starting Reporter.\n\n"
+                            + "Inspect the log file for details: conf/startup.log.\n\n"
+                            + "Then go to Troubleshooting at http://reporter.googlecode.com.",
+                            "Reporter - Startup Error", JOptionPane.ERROR_MESSAGE);
 
                     System.exit(0);
                 }

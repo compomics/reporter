@@ -2,7 +2,6 @@ package eu.isas.reporter;
 
 import com.compomics.util.examples.BareBonesBrowserLaunch;
 import com.compomics.util.experiment.MsExperiment;
-import com.compomics.util.experiment.ProteomicAnalysis;
 import com.compomics.util.experiment.biology.Enzyme;
 import com.compomics.util.experiment.biology.PTMFactory;
 import com.compomics.util.experiment.biology.Sample;
@@ -387,18 +386,44 @@ public class Reporter {
      */
     private void loadModifications() {
 
+        String path = getJarFilePath();
+        
         try {
-            ptmFactory.importModifications(new File(MODIFICATIONS_FILE), false);
+            ptmFactory.importModifications(new File(path, MODIFICATIONS_FILE), false);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "An error (" + e.getMessage() + ") occured when trying to load the modifications from " + MODIFICATIONS_FILE + ".",
                     "Configuration import Error", JOptionPane.ERROR_MESSAGE);
         }
         try {
-            ptmFactory.importModifications(new File(USER_MODIFICATIONS_FILE), true);
+            ptmFactory.importModifications(new File(path, USER_MODIFICATIONS_FILE), true);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "An error (" + e.getMessage() + ") occured when trying to load the modifications from " + USER_MODIFICATIONS_FILE + ".",
                     "Configuration import Error", JOptionPane.ERROR_MESSAGE);
         }
+    }
+    
+    /**
+     * Returns the path to the jar file.
+     *
+     * @return the path to the jar file
+     */
+    public String getJarFilePath() {
+        String path = this.getClass().getResource("Reporter.class").getPath();
+
+        if (path.lastIndexOf("/Reporter-") != -1) {
+            path = path.substring(5, path.lastIndexOf("/Reporter-"));
+            path = path.replace("%20", " ");
+            path = path.replace("%5b", "[");
+            path = path.replace("%5d", "]");
+
+            if (System.getProperty("os.name").lastIndexOf("Windows") != -1) {
+                path = path.replace("/", "\\");
+            }
+        } else {
+            path = ".";
+        }
+
+        return path;
     }
 
     /**

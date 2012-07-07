@@ -2,7 +2,6 @@ package eu.isas.reporter.gui;
 
 import com.compomics.util.experiment.biology.ions.ReporterIon;
 import com.compomics.util.experiment.identification.Identification;
-import com.compomics.util.experiment.identification.matches.PeptideMatch;
 import com.compomics.util.experiment.identification.matches.ProteinMatch;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.matches.ProteinQuantification;
@@ -20,7 +19,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 import net.jimmc.jshortcut.JShellLink;
 import org.ujmp.core.collections.ArrayIndexList;
@@ -85,16 +83,16 @@ public class ReporterGUI extends javax.swing.JFrame {
         setLookAndFeel();
 
         // add desktop shortcut?
-        if (!getJarFilePath().equalsIgnoreCase(".")
+        if (!parent.getJarFilePath().equalsIgnoreCase(".")
                 && System.getProperty("os.name").lastIndexOf("Windows") != -1
-                && new File(getJarFilePath() + "/conf/firstRun").exists()) {
+                && new File(parent.getJarFilePath() + "/conf/firstRun").exists()) {
 
             // @TODO: add support for desktop icons in mac and linux??
 
             // delete the firstRun file such that the user is not asked the next time around
-            new File(getJarFilePath() + "/conf/firstRun").delete();
+            new File(parent.getJarFilePath() + "/conf/firstRun").delete();
 
-            int value = JOptionPane.showConfirmDialog(this,
+            int value = JOptionPane.showConfirmDialog(null,
                     "Create a shortcut to Reporter on the desktop?",
                     "Create Desktop Shortcut?",
                     JOptionPane.YES_NO_OPTION,
@@ -658,8 +656,8 @@ public class ReporterGUI extends javax.swing.JFrame {
     private void setUpLogFile() {
 
         try {
-            if (useLogFile && !getJarFilePath().equalsIgnoreCase(".")) {
-                String path = getJarFilePath() + "/conf/Reporter.log";
+            if (useLogFile && !parent.getJarFilePath().equalsIgnoreCase(".")) {
+                String path = parent.getJarFilePath() + "/conf/Reporter.log";
 
                 File file = new File(path);
                 System.setOut(new java.io.PrintStream(new FileOutputStream(file, true)));
@@ -685,30 +683,6 @@ public class ReporterGUI extends javax.swing.JFrame {
     }
 
     /**
-     * Returns the path to the jar file.
-     *
-     * @return the path to the jar file
-     */
-    public String getJarFilePath() {
-        String path = this.getClass().getResource("ReporterGUI.class").getPath();
-
-        if (path.lastIndexOf("/Reporter-") != -1) {
-            path = path.substring(5, path.lastIndexOf("/Reporter-"));
-            path = path.replace("%20", " ");
-            path = path.replace("%5b", "[");
-            path = path.replace("%5d", "]");
-
-            if (System.getProperty("os.name").lastIndexOf("Windows") != -1) {
-                path = path.replace("/", "\\");
-            }
-        } else {
-            path = ".";
-        }
-
-        return path;
-    }
-
-    /**
      * Method called to close the program
      *
      * @param status closing status to report
@@ -723,7 +697,7 @@ public class ReporterGUI extends javax.swing.JFrame {
      */
     private void addShortcutAtDeskTop() {
 
-        String jarFilePath = getJarFilePath();
+        String jarFilePath = parent.getJarFilePath();
 
         if (!jarFilePath.equalsIgnoreCase(".")) {
 
