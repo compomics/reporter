@@ -158,7 +158,7 @@ public class DataLoader {
      */
     public void loadQuantification(ReporterIonQuantification quantification, ArrayList<File> mgfFiles) {
         try {
-            waitingDialog.appendReport("PSM quantification.");
+            waitingDialog.appendReport("PSM quantification.", true, true);
             waitingDialog.increaseProgressValue();
             waitingDialog.setMaxSecondaryProgressValue(identification.getSpectrumIdentification().size());
             for (String matchKey : identification.getSpectrumIdentification()) {
@@ -187,8 +187,8 @@ public class DataLoader {
             
         } catch (Exception e) {
             e.printStackTrace();
-            waitingDialog.appendReport("An error occurred while quantifying PSMs:");
-            waitingDialog.appendReport(e.getLocalizedMessage());
+            waitingDialog.appendReport("An error occurred while quantifying PSMs:", true, true);
+            waitingDialog.appendReport(e.getLocalizedMessage(), true, true);
             waitingDialog.setRunCanceled();
         }
     }

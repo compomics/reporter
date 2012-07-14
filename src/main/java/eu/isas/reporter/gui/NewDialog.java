@@ -1,11 +1,13 @@
 package eu.isas.reporter.gui;
 
 import com.compomics.util.Util;
+import com.compomics.util.db.ObjectsCache;
 import com.compomics.util.experiment.MsExperiment;
 import com.compomics.util.experiment.biology.Sample;
 import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.IdentificationMethod;
 import com.compomics.util.experiment.identification.SequenceFactory;
+import com.compomics.util.experiment.identification.matches.ProteinMatch;
 import com.compomics.util.experiment.io.ExperimentIO;
 import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
 import com.compomics.util.experiment.quantification.Quantification.QuantificationMethod;
@@ -100,6 +102,10 @@ public class NewDialog extends javax.swing.JDialog {
      * List of all sample names
      */
     private HashMap<Integer, String> sampleNames = new HashMap<Integer, String>();
+    /**
+     * The cache to use for identification and quantification objects
+     */
+    private ObjectsCache cache;
 
     /**
      * Constructor.
@@ -1094,9 +1100,7 @@ public class NewDialog extends javax.swing.JDialog {
      */
     private ReporterIonQuantification getReporterIonQuantification() throws SQLException {
         ReporterIonQuantification quantification = new ReporterIonQuantification(QuantificationMethod.REPORTER_IONS);
-        quantification.setInMemory(false);
-        quantification.setAutomatedMemoryManagement(true);
-        quantification.establishConnection(Reporter.SERIALIZATION_DIRECTORY, true); // @TODO: verify that the old database should be deleted here!
+        quantification.establishConnection(Reporter.SERIALIZATION_DIRECTORY, ReporterIonQuantification.getDefaultReference(experiment.getReference(), sample.getReference(), replicateNumber), true, cache);
         for (int row = 0; row < sampleAssignmentTable.getRowCount(); row++) {
             quantification.assignSample(selectedMethod.getReporterIons().get(row).getIndex(), new Sample((String) sampleAssignmentTable.getValueAt(row, 1)));
         }
@@ -1542,8 +1546,14 @@ public class NewDialog extends javax.swing.JDialog {
                     replicateNumberTxt.setText(replicateNumber + "");
                     txtIdFileLocation.setText(currentPSFile.getName());
 
+                    cache = new ObjectsCache();
+cache.setAutomatedMemoryManagement(true);
                     Identification identification = experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).getIdentification(IdentificationMethod.MS2_IDENTIFICATION);
-                    identification.establishConnection(Reporter.SERIALIZATION_DIRECTORY, true);
+                    identification.establishConnection(Reporter.SERIALIZATION_DIRECTORY, false, cache);
+                    
+                    if (!testIdentificationConnection()) {
+                        progressDialog.setRunCanceled();
+                    }
 
                     ArrayList<String> foundModifications = psSettings.getMetrics().getFoundModifications();
                     for (String ptm : foundModifications) {
@@ -1603,6 +1613,27 @@ public class NewDialog extends javax.swing.JDialog {
                 }
             }
         }.start();
+    }
+    
+    /**
+     * Tests the connection to the identification database
+     */
+    private boolean testIdentificationConnection() {
+        try {
+                    Identification identification = experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).getIdentification(IdentificationMethod.MS2_IDENTIFICATION);
+                    String proteinKey = identification.getProteinIdentification().get(0);
+                    ProteinMatch testMatch = identification.getProteinMatch(proteinKey);
+                    if (testMatch == null) {
+                        throw new IllegalArgumentException("Test protein " + proteinKey + " not found.");
+                    }
+                    return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(NewDialog.this,
+                            "A problem occurred while connecting to the database.",
+                            "Database connection error", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
     }
 
     /**

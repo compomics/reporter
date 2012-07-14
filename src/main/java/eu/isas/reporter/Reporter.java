@@ -462,21 +462,21 @@ public class Reporter {
             Identification identification = experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).getIdentification(IdentificationMethod.MS2_IDENTIFICATION);
             Quantification quantification = getQuantification();
             DataLoader dataLoader = new DataLoader(quantificationPreferences, waitingDialog, identification);
-            waitingDialog.appendReport("Building peptides and protein quantification objects.");
+            waitingDialog.appendReport("Building peptides and protein quantification objects.", true, true);
             waitingDialog.setMaxProgressValue(3);
 
             try {
                 quantification.buildPeptidesAndProteinQuantifications(identification, waitingDialog);
             } catch (Exception e) {
                 e.printStackTrace();
-                waitingDialog.appendReport("An error occured whlie building peptide and protein quantification objects.\n" + e.getLocalizedMessage());
+                waitingDialog.appendReport("An error occured whlie building peptide and protein quantification objects.\n" + e.getLocalizedMessage(), true, true);
                 waitingDialog.setRunCanceled();
                 return 1;
             }
 
             dataLoader.loadQuantification(getQuantification(), mgfFiles);
             waitingDialog.increaseProgressValue();
-            waitingDialog.appendReport("Estimating peptide and protein ratios");
+            waitingDialog.appendReport("Estimating peptide and protein ratios", true, true);
             compileRatios(waitingDialog);
             if (!waitingDialog.isRunCanceled()) {
                 reporterGUI.displayResults(getQuantification(), getIdentification());
