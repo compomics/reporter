@@ -410,10 +410,13 @@ public class RatioEstimator {
         psmQuantification.addUrParam(scores);
 
         HashMap<Integer, Double> deisotopedInt = deisotoper.deisotope(reporterMatches);
+        ArrayList<Double> nonNullIntensities = new ArrayList<Double>();
         // avoid negative intensities and deisotoping artifacts
         for (int label : deisotopedInt.keySet()) {
             if (nullIntensities.contains(label)) {
                 deisotopedInt.put(label, 0.0);
+            } else if (deisotopedInt.get(label) > 0) {
+                nonNullIntensities.add(deisotopedInt.get(label));
             }
         }
         psmQuantification.setDeisotopedIntensities(deisotopedInt);
@@ -422,9 +425,9 @@ public class RatioEstimator {
         //String spectrumName = Spectrum.getSpectrumFile(psmQuantification.getKey());
         //deisotopedInt = deisotoper.deisotopeSwitch(reporterMatches, spectrumName);
 
-        Double referenceInt = BasicMathFunctions.median(new ArrayList<Double>(deisotopedInt.values()));
-        if (referenceInt == 0.0) {
-            referenceInt = Collections.max(deisotopedInt.values());
+        Double referenceInt = 0.0;
+        if (!nonNullIntensities.isEmpty()) {
+        referenceInt = BasicMathFunctions.median(nonNullIntensities);
         }
         psmQuantification.setReferenceIntensity(referenceInt);
 
