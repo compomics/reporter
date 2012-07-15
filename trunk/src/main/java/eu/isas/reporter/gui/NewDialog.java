@@ -49,7 +49,7 @@ public class NewDialog extends javax.swing.JDialog {
     /**
      * File containing the various reporter methods.
      */
-    private final String METHODS_FILE = "conf/reporterMethods.xml";
+    private final String METHODS_FILE = "resources/conf/reporterMethods.xml";
     /**
      * The compomics reporter methods factory.
      */

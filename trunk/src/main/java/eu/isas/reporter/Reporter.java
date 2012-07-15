@@ -58,11 +58,11 @@ public class Reporter {
     /**
      * Modification file.
      */
-    private final String MODIFICATIONS_FILE = "conf/reporter_mods.xml";
+    private final String MODIFICATIONS_FILE = "resources/conf/reporter_mods.xml";
     /**
      * User modification file.
      */
-    private final String USER_MODIFICATIONS_FILE = "conf/reporter_usermods.xml";
+    private final String USER_MODIFICATIONS_FILE = "resources/conf/reporter_usermods.xml";
     /**
      * The name of the reporter experiment
      */
@@ -272,7 +272,7 @@ public class Reporter {
         WaitingDialog waitingDialog = new WaitingDialog(reporterGUI,
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")),
-                false, null, true); //@TODO: put and tips
+                false, null, "Quantifying", true); //@TODO: put and tips
         DataImporter dataImporter = new DataImporter(waitingDialog, mgfFiles);
         dataImporter.execute();
         waitingDialog.setLocationRelativeTo(reporterGUI);

@@ -85,12 +85,12 @@ public class ReporterGUI extends javax.swing.JFrame {
         // add desktop shortcut?
         if (!parent.getJarFilePath().equalsIgnoreCase(".")
                 && System.getProperty("os.name").lastIndexOf("Windows") != -1
-                && new File(parent.getJarFilePath() + "/conf/firstRun").exists()) {
+                && new File(parent.getJarFilePath() + "resources//conf/firstRun").exists()) {
 
             // @TODO: add support for desktop icons in mac and linux??
 
             // delete the firstRun file such that the user is not asked the next time around
-            new File(parent.getJarFilePath() + "/conf/firstRun").delete();
+            new File(parent.getJarFilePath() + "resources//conf/firstRun").delete();
 
             int value = JOptionPane.showConfirmDialog(null,
                     "Create a shortcut to Reporter on the desktop?",
@@ -657,7 +657,7 @@ public class ReporterGUI extends javax.swing.JFrame {
 
         try {
             if (useLogFile && !parent.getJarFilePath().equalsIgnoreCase(".")) {
-                String path = parent.getJarFilePath() + "/conf/Reporter.log";
+                String path = parent.getJarFilePath() + "resources//conf/Reporter.log";
 
                 File file = new File(path);
                 System.setOut(new java.io.PrintStream(new FileOutputStream(file, true)));
