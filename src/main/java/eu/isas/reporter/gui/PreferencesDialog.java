@@ -33,11 +33,11 @@ public class PreferencesDialog extends javax.swing.JDialog {
     /**
      * Modification file.
      */
-    private final String MODIFICATIONS_FILE = "conf/reporter_mods.xml";
+    private final String MODIFICATIONS_FILE = "resources/conf/reporter_mods.xml";
     /**
      * User modification file.
      */
-    private final String USER_MODIFICATIONS_FILE = "conf/reporter_usermods.xml";
+    private final String USER_MODIFICATIONS_FILE = "resources/conf/reporter_usermods.xml";
     /**
      * The compomics PTM factory.
      */
