@@ -1203,7 +1203,8 @@ public class NewDialog extends javax.swing.JDialog {
     private void importPeptideShakerFile(File psFile) {
         currentPSFile = psFile;
 
-        progressDialog = new ProgressDialogX(this, Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")), 
+        progressDialog = new ProgressDialogX(this, reporterGui,
+                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")), 
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
         progressDialog.setIndeterminate(true);
         progressDialog.setTitle("Importing Project. Please Wait...");
@@ -1711,7 +1712,8 @@ public class NewDialog extends javax.swing.JDialog {
      * @param files the spectra files to process
      */
     public void addSpectrumFiles(ArrayList<File> files) {
-        progressDialog = new ProgressDialogX(this, Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")), 
+        progressDialog = new ProgressDialogX(this, reporterGui,
+                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")), 
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
         progressDialog.setIndeterminate(true);
         progressDialog.setTitle("Importing Spectra. Please Wait...");
