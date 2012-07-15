@@ -158,6 +158,7 @@
                                     <directory>./</directory>
                                     <includes>
                                         <include>resources/</include>
+                                        <include>README.txt</include>
                                     </includes>
                                 </resource>
                             </resources>
