@@ -157,8 +157,7 @@
                                 <resource>
                                     <directory>./</directory>
                                     <includes>
-                                        <include>conf/</include>
-                                        <include>LICENSE-2.0.txt</include>
+                                        <include>resources/</include>
                                     </includes>
                                 </resource>
                             </resources>
