@@ -39,7 +39,7 @@ public class Ignorer {
      * Constructor.
      *
      * @param quantificationPreferences the quantification preferences
-     * @param searchPreferences the search preferences 
+     * @param enzyme the enzyme used
      */
     public Ignorer(QuantificationPreferences quantificationPreferences, Enzyme enzyme) {
         this.ratioMin = quantificationPreferences.getRatioMin();

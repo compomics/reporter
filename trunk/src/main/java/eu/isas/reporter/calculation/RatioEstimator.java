@@ -16,7 +16,6 @@ import eu.isas.reporter.myparameters.QuantificationPreferences;
 import eu.isas.reporter.myparameters.RatioLimits;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 
 /**
@@ -61,9 +60,8 @@ public class RatioEstimator {
      *
      * @param quantification
      * @param method
-     * @param referenceLabel
      * @param quantificationPreferences
-     * @param identificationPreferences
+     * @param enzyme
      */
     public RatioEstimator(Quantification quantification, ReporterMethod method, QuantificationPreferences quantificationPreferences, Enzyme enzyme) {
         this.quantification = quantification;

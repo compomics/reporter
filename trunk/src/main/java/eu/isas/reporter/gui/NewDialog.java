@@ -99,11 +99,11 @@ public class NewDialog extends javax.swing.JDialog {
      */
     private SpectrumFactory spectrumFactory = SpectrumFactory.getInstance(100);
     /**
-     * List of all sample names
+     * List of all sample names.
      */
     private HashMap<Integer, String> sampleNames = new HashMap<Integer, String>();
     /**
-     * The cache to use for identification and quantification objects
+     * The cache to use for identification and quantification objects.
      */
     private ObjectsCache cache;
 
@@ -1203,7 +1203,8 @@ public class NewDialog extends javax.swing.JDialog {
     private void importPeptideShakerFile(File psFile) {
         currentPSFile = psFile;
 
-        progressDialog = new ProgressDialogX(this, Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")), Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
+        progressDialog = new ProgressDialogX(this, Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")), 
+                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
         progressDialog.setIndeterminate(true);
         progressDialog.setTitle("Importing Project. Please Wait...");
 
@@ -1232,7 +1233,7 @@ public class NewDialog extends javax.swing.JDialog {
 
                     File experimentFile = new File(Reporter.SERIALIZATION_DIRECTORY, Reporter.experimentObjectName);
                     File matchFolder = new File(Reporter.SERIALIZATION_DIRECTORY);
-                    
+
                     for (File file : matchFolder.listFiles()) {
                         if (file.isDirectory()) {
                             Util.deleteDir(file);
@@ -1251,7 +1252,7 @@ public class NewDialog extends javax.swing.JDialog {
                     progressDialog.setValue(0);
                     progressDialog.setIndeterminate(false);
                     long fileLength = currentPSFile.length();
-                    
+
                     while ((archiveEntry = tarInput.getNextEntry()) != null) {
                         File destinationFile = new File(archiveEntry.getName());
                         File destinationFolder = destinationFile.getParentFile();
@@ -1547,10 +1548,10 @@ public class NewDialog extends javax.swing.JDialog {
                     txtIdFileLocation.setText(currentPSFile.getName());
 
                     cache = new ObjectsCache();
-cache.setAutomatedMemoryManagement(true);
+                    cache.setAutomatedMemoryManagement(true);
                     Identification identification = experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).getIdentification(IdentificationMethod.MS2_IDENTIFICATION);
                     identification.establishConnection(Reporter.SERIALIZATION_DIRECTORY, false, cache);
-                    
+
                     if (!testIdentificationConnection()) {
                         progressDialog.setRunCanceled();
                     }
@@ -1614,24 +1615,24 @@ cache.setAutomatedMemoryManagement(true);
             }
         }.start();
     }
-    
+
     /**
-     * Tests the connection to the identification database
+     * Tests the connection to the identification database.
      */
     private boolean testIdentificationConnection() {
         try {
-                    Identification identification = experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).getIdentification(IdentificationMethod.MS2_IDENTIFICATION);
-                    String proteinKey = identification.getProteinIdentification().get(0);
-                    ProteinMatch testMatch = identification.getProteinMatch(proteinKey);
-                    if (testMatch == null) {
-                        throw new IllegalArgumentException("Test protein " + proteinKey + " not found.");
-                    }
-                    return true;
+            Identification identification = experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).getIdentification(IdentificationMethod.MS2_IDENTIFICATION);
+            String proteinKey = identification.getProteinIdentification().get(0);
+            ProteinMatch testMatch = identification.getProteinMatch(proteinKey);
+            if (testMatch == null) {
+                throw new IllegalArgumentException("Test protein " + proteinKey + " not found.");
+            }
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(NewDialog.this,
-                            "A problem occurred while connecting to the database.",
-                            "Database connection error", JOptionPane.ERROR_MESSAGE);
+                    "A problem occurred while connecting to the database.",
+                    "Database connection error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
     }
@@ -1710,7 +1711,8 @@ cache.setAutomatedMemoryManagement(true);
      * @param files the spectra files to process
      */
     public void addSpectrumFiles(ArrayList<File> files) {
-        progressDialog = new ProgressDialogX(this, Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")), Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
+        progressDialog = new ProgressDialogX(this, Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")), 
+                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
         progressDialog.setIndeterminate(true);
         progressDialog.setTitle("Importing Spectra. Please Wait...");
         final ArrayList<File> newMgfFiles = files;
@@ -1749,7 +1751,7 @@ cache.setAutomatedMemoryManagement(true);
 
     /**
      * Imports a list of spectrum files and returns a list containing any
-     * problematic file
+     * problematic file.
      *
      * @param spectrumFiles list of spectrum files to process
      * @param progressDialog process dialog displaying progress
