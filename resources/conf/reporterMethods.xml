@@ -55,35 +55,35 @@
 		<reporterIonList>
 			<reporterIon>
 				<name> iTRAQ 113 </name>
-				<mass> 113.1 </mass>
+				<mass> 113.1075 </mass>
 			</reporterIon>
 			<reporterIon>
 				<name> iTRAQ 114 </name>
-				<mass> 114.1 </mass>
+				<mass> 114.111 </mass>
 			</reporterIon>
 			<reporterIon>
 				<name> iTRAQ 115 </name>
-				<mass> 115.1 </mass>
+				<mass> 115.1079 </mass>
 			</reporterIon>
 			<reporterIon>
 				<name> iTRAQ 116 </name>
-				<mass> 116.1 </mass>
+				<mass> 116.1113 </mass>
 			</reporterIon>
 			<reporterIon>
 				<name> iTRAQ 117 </name>
-				<mass> 117.1 </mass>
+				<mass> 117.11465 </mass>
 			</reporterIon>
 			<reporterIon>
 				<name> iTRAQ 118 </name>
-				<mass> 118.1 </mass>
+				<mass> 118.1117 </mass>
 			</reporterIon>
 			<reporterIon>
 				<name> iTRAQ 119 </name>
-				<mass> 119.1 </mass>
+				<mass> 119.115 </mass>
 			</reporterIon>
 			<reporterIon>
 				<name> iTRAQ 121 </name>
-				<mass> 121.1 </mass>
+				<mass> 121.1217 </mass>
 			</reporterIon>
 		</reporterIonList>
 		<correctionFactorList>
