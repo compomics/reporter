@@ -1,6 +1,6 @@
 package eu.isas.reporter.myparameters;
 
-import eu.isas.peptideshaker.preferences.AnnotationPreferences;
+import com.compomics.util.preferences.AnnotationPreferences;
 import eu.isas.reporter.preferences.ProjectDetails;
 
 /**
@@ -15,7 +15,7 @@ public class ReporterSettings {
      */
     private AnnotationPreferences annotationPreferences;
     /**
-     * The proejct details.
+     * The project details.
      */
     private ProjectDetails projectDetails;
 

@@ -569,6 +569,7 @@ public class ReporterExporter {
             } catch (Exception e) {
                 proteinsOutput.write("Protein not found");
             }
+            proteinsOutput.write(SEPARATOR);
             ProteinQuantification proteinQuantification = quantification.getProteinMatch(proteinKey);
             proteinsOutput.write(getRatios(proteinQuantification));
             proteinsOutput.write("\n");

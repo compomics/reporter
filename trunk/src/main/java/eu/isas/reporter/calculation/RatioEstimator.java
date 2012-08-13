@@ -152,6 +152,7 @@ public class RatioEstimator {
         proteinQuantification.addUrParam(ignoredRatios);
         proteinQuantification.addUrParam(scores);
         proteinQuantification.addUrParam(limits);
+        quantification.setMatchChanged(proteinQuantification);
     }
 
     /**
@@ -200,6 +201,9 @@ public class RatioEstimator {
             for (String spectrumKey : quantification.getPsmIDentificationToQuantification().get(psmKey)) {
 
                 PsmQuantification psmQuantification = quantification.getSpectrumMatch(spectrumKey);
+                if (psmQuantification == null) {
+                    throw new IllegalArgumentException("Quantification spectrum match not found: " + psmKey);
+                }
                 estimateRatios(spectrumKey, deisotoper);
                 ignoredRatios = (IgnoredRatios) psmQuantification.getUrParam(ignoredRatios);
                 HashMap<Integer, Ratio> ratiosMap = psmQuantification.getRatios();
@@ -265,6 +269,7 @@ public class RatioEstimator {
         peptideQuantification.addUrParam(scores);
         peptideQuantification.addUrParam(ratioLimits);
         peptideQuantification.addUrParam(ignoredRatios);
+        quantification.setMatchChanged(peptideQuantification);
     }
 
     /**
@@ -419,7 +424,7 @@ public class RatioEstimator {
         }
         psmQuantification.setDeisotopedIntensities(deisotopedInt);
 
-        // User dependant code!
+        // User dependent code!
         //String spectrumName = Spectrum.getSpectrumFile(psmQuantification.getKey());
         //deisotopedInt = deisotoper.deisotopeSwitch(reporterMatches, spectrumName);
 
@@ -455,5 +460,6 @@ public class RatioEstimator {
         }
 
         psmQuantification.addUrParam(ignoredRatios);
+        quantification.setMatchChanged(psmQuantification);
     }
 }
