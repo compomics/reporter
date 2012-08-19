@@ -1,15 +1,9 @@
 package eu.isas.reporter.io;
 
-import com.compomics.util.experiment.biology.PTMFactory;
 import com.compomics.util.experiment.biology.ions.ReporterIon;
 import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.matches.IonMatch;
-import com.compomics.util.experiment.identification.matches.ProteinMatch;
-import com.compomics.util.experiment.identification.matches.SpectrumMatch;
-import com.compomics.util.experiment.io.identifications.IdfileReader;
-import com.compomics.util.experiment.io.identifications.IdfileReaderFactory;
 import com.compomics.util.experiment.massspectrometry.Charge;
-import com.compomics.util.experiment.massspectrometry.MSnSpectrum;
 import com.compomics.util.experiment.massspectrometry.Peak;
 import com.compomics.util.experiment.massspectrometry.Precursor;
 import com.compomics.util.experiment.massspectrometry.Spectrum;
@@ -17,16 +11,11 @@ import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.matches.PsmQuantification;
 import com.compomics.util.gui.waiting.waitinghandlers.WaitingDialog;
-import eu.isas.peptideshaker.fileimport.IdFilter;
-import eu.isas.peptideshaker.myparameters.PSParameter;
 import eu.isas.reporter.myparameters.QuantificationPreferences;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import javax.swing.JOptionPane;
 
 /**
  * This class will load information from spectra and identifications files.
@@ -52,6 +41,14 @@ public class DataLoader {
      * The spectrum factory.
      */
     private SpectrumFactory spectrumFactory = SpectrumFactory.getInstance();
+    /**
+     * The precursor m/z values.
+     */
+    HashMap<String, Double> precursorMzValues = new HashMap<String, Double>();
+    /**
+     * The precursor retention time values.
+     */
+    HashMap<String, Double> precursorRtValues = new HashMap<String, Double>();
 
     /**
      * Constructor.
@@ -74,32 +71,34 @@ public class DataLoader {
      * @return the spectrum references of the corresponding spectra
      */
     private ArrayList<String> getSpectrumIds(String spectrumKey) throws Exception {
-        
+
         ArrayList<String> result = new ArrayList<String>();
-        
+
         if (quantificationPreferences.isSameSpectra()) {
             result.add(spectrumKey);
         } else {
-            Precursor precursor, referencePrecursor = spectrumFactory.getPrecursor(spectrumKey);
+
             double rtTol = quantificationPreferences.getPrecursorRTTolerance();
             double mzTol = quantificationPreferences.getPrecursorMzTolerance();
-            double mzRef = referencePrecursor.getMz();
-            double rtRef = referencePrecursor.getRt();
-            
+            double mzRef = precursorMzValues.get(spectrumKey);
+            double rtRef = precursorRtValues.get(spectrumKey);
+
             for (String spectrumFile : spectrumFactory.getMgfFileNames()) {
                 for (String spectrumTitle : spectrumFactory.getSpectrumTitles(spectrumFile)) {
-                    
+
                     String newKey = Spectrum.getSpectrumKey(spectrumFile, spectrumTitle);
-                    precursor = spectrumFactory.getPrecursor(newKey);
-                    double errPpm = Math.abs((mzRef - precursor.getMz()) / mzRef * 1000000);
-                    
-                    if (errPpm < mzTol && Math.abs(precursor.getRt() - rtRef) < rtTol) {
+                    double precursorMz = precursorMzValues.get(newKey);
+                    double precursorRt = precursorRtValues.get(newKey);
+
+                    double errPpm = Math.abs((mzRef - precursorMz) / mzRef * 1000000);
+
+                    if (errPpm < mzTol && Math.abs(precursorRt - rtRef) < rtTol) {
                         result.add(newKey);
                     }
                 }
             }
         }
-        
+
         return result;
     }
 
@@ -112,17 +111,17 @@ public class DataLoader {
      * be null.
      */
     private HashMap<ReporterIon, IonMatch> matchIons(String spectrumKey, ArrayList<ReporterIon> reporterIons) throws Exception {
-        
+
         HashMap<Double, Peak> peakMap = spectrumFactory.getSpectrum(spectrumKey).getPeakMap();
         ArrayList<Double> mzArray = new ArrayList(peakMap.keySet());
         Collections.sort(mzArray);
         HashMap<ReporterIon, Peak> peaks = new HashMap<ReporterIon, Peak>();
         double ionTolerance = quantificationPreferences.getReporterIonsMzTolerance();
-        
+
         for (Double mz : mzArray) {
-            
+
             boolean over = true;
-            
+
             for (ReporterIon ion : reporterIons) {
                 if (mz > ion.getTheoreticMass() - ionTolerance && mz < ion.getTheoreticMass() + ionTolerance) {
                     if (peaks.get(ion) == null) {
@@ -135,56 +134,85 @@ public class DataLoader {
                     over = false;
                 }
             }
-            
+
             if (over) {
                 break;
             }
         }
-        
+
         HashMap<ReporterIon, IonMatch> result = new HashMap<ReporterIon, IonMatch>();
-        
+
         for (ReporterIon ion : peaks.keySet()) {
             result.put(ion, new IonMatch(peaks.get(ion), ion, new Charge(Charge.PLUS, 1)));
         }
-        
+
         return result;
     }
 
     /**
      * Load quantifications.
-     * 
+     *
      * @param quantification
-     * @param mgfFiles 
+     * @param mgfFiles
      */
     public void loadQuantification(ReporterIonQuantification quantification, ArrayList<File> mgfFiles) {
+
         try {
+            precursorMzValues = new HashMap<String, Double>();
+            precursorRtValues = new HashMap<String, Double>();
+            
+            // @TODO: The code should (if possible) be refactored to not have to temporary store the precursor mz and rt values.
+            //        This has to be done without reading the spectra more than once!
+            
+
+            // see if we need to load the precuror rt and m/z values
+            if (!quantificationPreferences.isSameSpectra()) {
+
+                waitingDialog.appendReport("Merging HCD and CID spectra.", true, true);
+                waitingDialog.resetSecondaryProgressBar();
+                waitingDialog.setMaxSecondaryProgressValue(spectrumFactory.getNSpectra());
+
+                for (String spectrumFile : spectrumFactory.getMgfFileNames()) {
+                    for (String spectrumTitle : spectrumFactory.getSpectrumTitles(spectrumFile)) {
+                        String newKey = Spectrum.getSpectrumKey(spectrumFile, spectrumTitle);
+                        Precursor precursor = spectrumFactory.getPrecursor(newKey); // @TODO: replace by batch selection?
+                        precursorMzValues.put(newKey, precursor.getMz());
+                        precursorRtValues.put(newKey, precursor.getRt());
+                        waitingDialog.increaseSecondaryProgressValue();
+                    }
+                }
+            }
+
+
             waitingDialog.appendReport("PSM quantification.", true, true);
             waitingDialog.increaseProgressValue();
+            waitingDialog.resetSecondaryProgressBar();
             waitingDialog.setMaxSecondaryProgressValue(identification.getSpectrumIdentification().size());
+
             for (String matchKey : identification.getSpectrumIdentification()) {
-                
+
                 if (waitingDialog.isRunCanceled()) {
                     return;
                 }
-                
+
                 for (String spectrumKey : getSpectrumIds(matchKey)) {
                     PsmQuantification spectrumQuantification = new PsmQuantification(spectrumKey, matchKey);
                     HashMap<ReporterIon, IonMatch> ionMatches = matchIons(spectrumKey, quantification.getReporterMethod().getReporterIons());
-                    
+
                     for (ReporterIon ion : ionMatches.keySet()) {
                         spectrumQuantification.addIonMatch(ion.getIndex(), ionMatches.get(ion));
                     }
-                    
+
                     quantification.addPsmQuantification(spectrumQuantification);
-                    
+
                     if (waitingDialog.isRunCanceled()) {
                         return;
                     }
                 }
-                
+
                 waitingDialog.increaseSecondaryProgressValue();
             }
-            
+
         } catch (Exception e) {
             e.printStackTrace();
             waitingDialog.appendReport("An error occurred while quantifying PSMs:", true, true);
