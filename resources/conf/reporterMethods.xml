@@ -223,23 +223,23 @@
 		<reporterIonList>
 			<reporterIon>
 				<name> TMT0 </name>
-				<mass> 126 </mass>
+				<mass> 126.127491 </mass>
 			</reporterIon>
 			<reporterIon>
 				<name> TMT1 </name>
-				<mass> 127 </mass>
+				<mass> 127.1308594 </mass>
 			</reporterIon>
 		</reporterIonList>
 		<correctionFactorList>
 			<correctionFactor>
-				<ionId> 126.127491 </ionId>
+				<ionId> 126 </ionId>
 				<minus2> 0.0 </minus2>
 				<minus1> 0.0 </minus1>
 				<plus1> 0.0 </plus1>
 				<plus2> 0.0 </plus2>
 			</correctionFactor>	
 			<correctionFactor>
-				<ionId> 127.1308594 </ionId>
+				<ionId> 127 </ionId>
 				<minus2> 0.0 </minus2>
 				<minus1> 0.0 </minus1>
 				<plus1> 0.0 </plus1>
