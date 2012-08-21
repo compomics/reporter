@@ -11,6 +11,7 @@ import eu.isas.reporter.Reporter;
 import eu.isas.reporter.io.ReporterExporter;
 import eu.isas.reporter.myparameters.ItraqScore;
 import eu.isas.reporter.myparameters.QuantificationPreferences;
+import eu.isas.reporter.resultpanels.ProteinPanel;
 import eu.isas.reporter.utils.Properties;
 import java.awt.Toolkit;
 import java.io.*;
@@ -104,6 +105,11 @@ public class ReporterGUI extends javax.swing.JFrame {
         }
 
         initComponents();
+        
+        ProteinPanel proteinPanel = new ProteinPanel(this);
+        proteinsJPanel.add(proteinPanel);
+        
+        setUpGui();
 
 
         // set the title of the frame and add the icon
@@ -111,9 +117,22 @@ public class ReporterGUI extends javax.swing.JFrame {
         this.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")));
         this.setExtendedState(MAXIMIZED_BOTH);
 
-
         setLocationRelativeTo(null);
         setVisible(true);
+        
+        try {
+            new NewDialog(this, parent);
+        } catch (Exception e) {
+            parent.catchException(e);
+        }
+    }
+    
+    private void setUpGui() {
+        
+        tabPanel.setEnabledAt(1, false);
+        tabPanel.setEnabledAt(2, false);
+        tabPanel.setEnabledAt(3, false);
+        
     }
 
     /**
@@ -209,11 +228,11 @@ public class ReporterGUI extends javax.swing.JFrame {
     private void initComponents() {
 
         backgroundPanel = new javax.swing.JPanel();
-        resultsPanel = new javax.swing.JPanel();
         tabPanel = new javax.swing.JTabbedPane();
-        proteinPanel = new javax.swing.JPanel();
-        peptidePanel = new javax.swing.JPanel();
-        psmPanel = new javax.swing.JPanel();
+        proteinsJPanel = new javax.swing.JPanel();
+        peptidesJPanel = new javax.swing.JPanel();
+        psmsJPanel = new javax.swing.JPanel();
+        ptmsJPanel = new javax.swing.JPanel();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         newMenuItem = new javax.swing.JMenuItem();
@@ -228,89 +247,38 @@ public class ReporterGUI extends javax.swing.JFrame {
         quantificationOptionsMenuItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setMinimumSize(new java.awt.Dimension(1280, 750));
+        setPreferredSize(new java.awt.Dimension(1278, 883));
 
         backgroundPanel.setBackground(new java.awt.Color(255, 255, 255));
 
-        resultsPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Results"));
-        resultsPanel.setOpaque(false);
+        tabPanel.setTabPlacement(javax.swing.JTabbedPane.RIGHT);
 
-        proteinPanel.setOpaque(false);
+        proteinsJPanel.setOpaque(false);
+        proteinsJPanel.setLayout(new javax.swing.BoxLayout(proteinsJPanel, javax.swing.BoxLayout.LINE_AXIS));
+        tabPanel.addTab("Proteins", proteinsJPanel);
 
-        javax.swing.GroupLayout proteinPanelLayout = new javax.swing.GroupLayout(proteinPanel);
-        proteinPanel.setLayout(proteinPanelLayout);
-        proteinPanelLayout.setHorizontalGroup(
-            proteinPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 684, Short.MAX_VALUE)
-        );
-        proteinPanelLayout.setVerticalGroup(
-            proteinPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 519, Short.MAX_VALUE)
-        );
+        peptidesJPanel.setOpaque(false);
+        peptidesJPanel.setLayout(new javax.swing.BoxLayout(peptidesJPanel, javax.swing.BoxLayout.LINE_AXIS));
+        tabPanel.addTab("Peptides", peptidesJPanel);
 
-        tabPanel.addTab("Proteins", proteinPanel);
+        psmsJPanel.setOpaque(false);
+        psmsJPanel.setLayout(new javax.swing.BoxLayout(psmsJPanel, javax.swing.BoxLayout.LINE_AXIS));
+        tabPanel.addTab("PSMs", psmsJPanel);
 
-        peptidePanel.setOpaque(false);
-
-        javax.swing.GroupLayout peptidePanelLayout = new javax.swing.GroupLayout(peptidePanel);
-        peptidePanel.setLayout(peptidePanelLayout);
-        peptidePanelLayout.setHorizontalGroup(
-            peptidePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 684, Short.MAX_VALUE)
-        );
-        peptidePanelLayout.setVerticalGroup(
-            peptidePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 519, Short.MAX_VALUE)
-        );
-
-        tabPanel.addTab("Modifications", peptidePanel);
-
-        psmPanel.setOpaque(false);
-
-        javax.swing.GroupLayout psmPanelLayout = new javax.swing.GroupLayout(psmPanel);
-        psmPanel.setLayout(psmPanelLayout);
-        psmPanelLayout.setHorizontalGroup(
-            psmPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 684, Short.MAX_VALUE)
-        );
-        psmPanelLayout.setVerticalGroup(
-            psmPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 519, Short.MAX_VALUE)
-        );
-
-        tabPanel.addTab("Spectrum overview", psmPanel);
-
-        javax.swing.GroupLayout resultsPanelLayout = new javax.swing.GroupLayout(resultsPanel);
-        resultsPanel.setLayout(resultsPanelLayout);
-        resultsPanelLayout.setHorizontalGroup(
-            resultsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(resultsPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(tabPanel)
-                .addContainerGap())
-        );
-        resultsPanelLayout.setVerticalGroup(
-            resultsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(resultsPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(tabPanel)
-                .addContainerGap())
-        );
+        ptmsJPanel.setOpaque(false);
+        ptmsJPanel.setLayout(new javax.swing.BoxLayout(ptmsJPanel, javax.swing.BoxLayout.LINE_AXIS));
+        tabPanel.addTab("Modifications", ptmsJPanel);
 
         javax.swing.GroupLayout backgroundPanelLayout = new javax.swing.GroupLayout(backgroundPanel);
         backgroundPanel.setLayout(backgroundPanelLayout);
         backgroundPanelLayout.setHorizontalGroup(
             backgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(backgroundPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(resultsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+            .addComponent(tabPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 1278, Short.MAX_VALUE)
         );
         backgroundPanelLayout.setVerticalGroup(
             backgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(backgroundPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(resultsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+            .addComponent(tabPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 862, Short.MAX_VALUE)
         );
 
         fileMenu.setMnemonic('F');
@@ -452,19 +420,21 @@ public class ReporterGUI extends javax.swing.JFrame {
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JMenuItem newMenuItem;
     private javax.swing.JMenuItem openMenuItem;
-    private javax.swing.JPanel peptidePanel;
-    private javax.swing.JPanel proteinPanel;
-    private javax.swing.JPanel psmPanel;
+    private javax.swing.JPanel peptidesJPanel;
+    private javax.swing.JPanel proteinsJPanel;
+    private javax.swing.JPanel psmsJPanel;
+    private javax.swing.JPanel ptmsJPanel;
     private javax.swing.JMenu quantificationOptionsMenu;
     private javax.swing.JMenuItem quantificationOptionsMenuItem;
-    private javax.swing.JPanel resultsPanel;
     private javax.swing.JMenuItem saveMenuItem;
     private javax.swing.JTabbedPane tabPanel;
     // End of variables declaration//GEN-END:variables
 
     private void exportToCSV(File file) {
 
-        progressDialog = new ProgressDialogX(this, Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")), Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
+        progressDialog = new ProgressDialogX(this, 
+                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")), 
+                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
         progressDialog.setIndeterminate(true);
         progressDialog.setTitle("Exporting Project. Please Wait...");
         final File exportFolder = file;
@@ -487,15 +457,18 @@ public class ReporterGUI extends javax.swing.JFrame {
                 try {
                     ReporterExporter exporter = new ReporterExporter(parent.getExperiment(), "\t");
                     exporter.exportResults(quantification, identification, exportFolder.getPath(), progressDialog);
+
                     if (!progressDialog.isRunCanceled()) {
-                        JOptionPane.showMessageDialog(ReporterGUI.this, "Output complete.", "Output successful.", JOptionPane.INFORMATION_MESSAGE);
+                        progressDialog.setRunFinished();
+                        progressDialog.dispose();
+                        JOptionPane.showMessageDialog(ReporterGUI.this, "Output Complete.", "Output successful.", JOptionPane.INFORMATION_MESSAGE);
                     }
                 } catch (Exception e) {
-                    JOptionPane.showMessageDialog(ReporterGUI.this, "Output error.", "Output error, see log file.", JOptionPane.ERROR_MESSAGE);
+                    progressDialog.setRunFinished();
+                    progressDialog.dispose();
+                    JOptionPane.showMessageDialog(ReporterGUI.this, "Output Error.", "Output error, see log file.", JOptionPane.ERROR_MESSAGE);
                     e.printStackTrace();
                 }
-                progressDialog.setRunFinished();
-                progressDialog.dispose();
             }
         }.start();
     }

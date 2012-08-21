@@ -13,13 +13,11 @@ import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
 import com.compomics.util.experiment.quantification.Quantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.gui.waiting.WaitingHandler;
-import com.compomics.util.gui.waiting.waitinghandlers.WaitingDialog;
 import eu.isas.peptideshaker.myparameters.PSSettings;
 import eu.isas.reporter.io.DataLoader;
 import eu.isas.reporter.calculation.RatioEstimator;
 import eu.isas.reporter.gui.ReporterGUI;
 import eu.isas.reporter.myparameters.QuantificationPreferences;
-import java.awt.Toolkit;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -266,17 +264,11 @@ public class Reporter {
      * Loads identification and quantification information from files.
      *
      * @param mgfFiles the quantification files
+     * @param waitingHandler  
      */
-    public void loadFiles(ArrayList<File> mgfFiles) {
-
-        WaitingDialog waitingDialog = new WaitingDialog(reporterGUI,
-                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
-                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")),
-                false, null, "Quantifying", true); //@TODO: put and tips
-        DataImporter dataImporter = new DataImporter(waitingDialog, mgfFiles);
+    public void loadFiles(ArrayList<File> mgfFiles, WaitingHandler waitingHandler) {
+        DataImporter dataImporter = new DataImporter(waitingHandler, mgfFiles);
         dataImporter.execute();
-        waitingDialog.setLocationRelativeTo(reporterGUI);
-        waitingDialog.setVisible(true);
     }
 
     /**
@@ -434,7 +426,7 @@ public class Reporter {
         /**
          * The waiting dialog will provide feedback to the user.
          */
-        private WaitingDialog waitingDialog;
+        private WaitingHandler waitingHandler;
         /**
          * The identification files.
          */
@@ -447,13 +439,13 @@ public class Reporter {
         /**
          * Constructor.
          *
-         * @param waitingDialog The waiting dialog will provide feedback to the
+         * @param waitingHandler The waiting dialog will provide feedback to the
          * user
          * @param idFiles The identification files
          * @param mgfFiles The mgf files
          */
-        public DataImporter(WaitingDialog waitingDialog, ArrayList<File> mgfFiles) {
-            this.waitingDialog = waitingDialog;
+        public DataImporter(WaitingHandler waitingHandler, ArrayList<File> mgfFiles) {
+            this.waitingHandler = waitingHandler;
             this.mgfFiles = mgfFiles;
         }
 
@@ -461,27 +453,39 @@ public class Reporter {
         protected Object doInBackground() {
             Identification identification = experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).getIdentification(IdentificationMethod.MS2_IDENTIFICATION);
             Quantification quantification = getQuantification();
-            DataLoader dataLoader = new DataLoader(quantificationPreferences, waitingDialog, identification);
-            waitingDialog.appendReport("Building peptides and protein quantification objects.", true, true);
-            waitingDialog.setMaxProgressValue(3);
+            DataLoader dataLoader = new DataLoader(quantificationPreferences, waitingHandler, identification);
+            waitingHandler.appendReport("Building peptides and protein quantification objects.", true, true);
 
             try {
-                quantification.buildPeptidesAndProteinQuantifications(identification, waitingDialog);
+                quantification.buildPeptidesAndProteinQuantifications(identification, waitingHandler);
             } catch (Exception e) {
                 e.printStackTrace();
-                waitingDialog.appendReport("An error occured whlie building peptide and protein quantification objects.\n" + e.getLocalizedMessage(), true, true);
-                waitingDialog.setRunCanceled();
+                waitingHandler.appendReport("An error occured whlie building peptide and protein quantification objects.\n" + e.getLocalizedMessage(), true, true);
+                waitingHandler.setRunCanceled();
+                return 1;
+            }
+            
+            if (waitingHandler.isRunCanceled()) {
                 return 1;
             }
 
             dataLoader.loadQuantification(getQuantification(), mgfFiles);
-            waitingDialog.increaseProgressValue();
-            waitingDialog.appendReport("Estimating peptide and protein ratios", true, true);
-            compileRatios(waitingDialog);
-            if (!waitingDialog.isRunCanceled()) {
-                reporterGUI.displayResults(getQuantification(), getIdentification());
-                waitingDialog.setRunFinished();
+            waitingHandler.increaseProgressValue();
+            
+            if (waitingHandler.isRunCanceled()) {
+                return 1;
             }
+            
+            waitingHandler.appendReport("Estimating peptide and protein ratios.", true, true);
+            compileRatios(waitingHandler);
+            
+            if (!waitingHandler.isRunCanceled()) {
+                reporterGUI.displayResults(getQuantification(), getIdentification());
+                waitingHandler.appendReportEndLine();
+                waitingHandler.appendReport("Quantification Completed.", true, true);
+                waitingHandler.setRunFinished();
+            }
+            
             return 0;
         }
     }
