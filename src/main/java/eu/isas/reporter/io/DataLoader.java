@@ -10,7 +10,7 @@ import com.compomics.util.experiment.massspectrometry.Spectrum;
 import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.matches.PsmQuantification;
-import com.compomics.util.gui.waiting.waitinghandlers.WaitingDialog;
+import com.compomics.util.gui.waiting.WaitingHandler;
 import eu.isas.reporter.myparameters.QuantificationPreferences;
 import java.io.File;
 import java.util.ArrayList;
@@ -28,7 +28,7 @@ public class DataLoader {
     /**
      * The waiting dialog will display feedback to the user.
      */
-    private WaitingDialog waitingDialog;
+    private WaitingHandler waitingHandler;
     /**
      * The quantification preferences.
      */
@@ -54,13 +54,13 @@ public class DataLoader {
      * Constructor.
      *
      * @param quantificationPreferences The quantification preferences
-     * @param waitingDialog A waiting dialog to display feedback to the user
+     * @param waitingHandler A waiting handler to display feedback to the user
      * @param identification the identification
      */
-    public DataLoader(QuantificationPreferences quantificationPreferences, WaitingDialog waitingDialog, Identification identification) {
+    public DataLoader(QuantificationPreferences quantificationPreferences, WaitingHandler waitingHandler, Identification identification) {
         this.identification = identification;
         this.quantificationPreferences = quantificationPreferences;
-        this.waitingDialog = waitingDialog;
+        this.waitingHandler = waitingHandler;
     }
 
     /**
@@ -168,9 +168,9 @@ public class DataLoader {
             // see if we need to load the precuror rt and m/z values
             if (!quantificationPreferences.isSameSpectra()) {
 
-                waitingDialog.appendReport("Merging HCD and CID spectra.", true, true);
-                waitingDialog.resetSecondaryProgressBar();
-                waitingDialog.setMaxSecondaryProgressValue(spectrumFactory.getNSpectra());
+                waitingHandler.appendReport("Merging HCD and CID spectra.", true, true);
+                waitingHandler.resetSecondaryProgressBar();
+                waitingHandler.setMaxSecondaryProgressValue(spectrumFactory.getNSpectra());
 
                 for (String spectrumFile : spectrumFactory.getMgfFileNames()) {
                     for (String spectrumTitle : spectrumFactory.getSpectrumTitles(spectrumFile)) {
@@ -178,20 +178,23 @@ public class DataLoader {
                         Precursor precursor = spectrumFactory.getPrecursor(newKey); // @TODO: replace by batch selection?
                         precursorMzValues.put(newKey, precursor.getMz());
                         precursorRtValues.put(newKey, precursor.getRt());
-                        waitingDialog.increaseSecondaryProgressValue();
+                        waitingHandler.increaseSecondaryProgressValue();
+                        
+                        if (waitingHandler.isRunCanceled()) {
+                            return;
+                        }
                     }
                 }
             }
 
-
-            waitingDialog.appendReport("PSM quantification.", true, true);
-            waitingDialog.increaseProgressValue();
-            waitingDialog.resetSecondaryProgressBar();
-            waitingDialog.setMaxSecondaryProgressValue(identification.getSpectrumIdentification().size());
+            waitingHandler.appendReport("PSM quantification.", true, true);
+            waitingHandler.increaseProgressValue();
+            waitingHandler.resetSecondaryProgressBar();
+            waitingHandler.setMaxSecondaryProgressValue(identification.getSpectrumIdentification().size());
 
             for (String matchKey : identification.getSpectrumIdentification()) {
 
-                if (waitingDialog.isRunCanceled()) {
+                if (waitingHandler.isRunCanceled()) {
                     return;
                 }
 
@@ -205,19 +208,19 @@ public class DataLoader {
 
                     quantification.addPsmQuantification(spectrumQuantification);
 
-                    if (waitingDialog.isRunCanceled()) {
+                    if (waitingHandler.isRunCanceled()) {
                         return;
                     }
                 }
 
-                waitingDialog.increaseSecondaryProgressValue();
+                waitingHandler.increaseSecondaryProgressValue();
             }
 
         } catch (Exception e) {
             e.printStackTrace();
-            waitingDialog.appendReport("An error occurred while quantifying PSMs:", true, true);
-            waitingDialog.appendReport(e.getLocalizedMessage(), true, true);
-            waitingDialog.setRunCanceled();
+            waitingHandler.appendReport("An error occurred while quantifying PSMs:", true, true);
+            waitingHandler.appendReport(e.getLocalizedMessage(), true, true);
+            waitingHandler.setRunCanceled();
         }
     }
 }

@@ -17,6 +17,7 @@ import com.compomics.util.experiment.quantification.reporterion.ReporterMethodFa
 import com.compomics.util.gui.dialogs.SampleSelection;
 import com.compomics.util.gui.renderers.AlignedListCellRenderer;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
+import com.compomics.util.gui.waiting.waitinghandlers.WaitingDialog;
 import eu.isas.peptideshaker.PeptideShaker;
 import eu.isas.peptideshaker.myparameters.PSSettings;
 import eu.isas.reporter.Reporter;
@@ -106,6 +107,10 @@ public class NewDialog extends javax.swing.JDialog {
      * The cache to use for identification and quantification objects.
      */
     private ObjectsCache cache;
+    /**
+     * The waiting dialog.
+     */
+    private WaitingDialog waitingDialog;
 
     /**
      * Constructor.
@@ -279,6 +284,7 @@ public class NewDialog extends javax.swing.JDialog {
 
         experimentTxt.setEditable(false);
         experimentTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        experimentTxt.setEnabled(false);
         experimentTxt.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 experimentTxtKeyReleased(evt);
@@ -291,6 +297,7 @@ public class NewDialog extends javax.swing.JDialog {
 
         sampleNameTxt.setEditable(false);
         sampleNameTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        sampleNameTxt.setEnabled(false);
         sampleNameTxt.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 sampleNameTxtActionPerformed(evt);
@@ -301,6 +308,7 @@ public class NewDialog extends javax.swing.JDialog {
 
         replicateNumberTxt.setEditable(false);
         replicateNumberTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        replicateNumberTxt.setEnabled(false);
 
         org.jdesktop.layout.GroupLayout projectPanelLayout = new org.jdesktop.layout.GroupLayout(projectPanel);
         projectPanel.setLayout(projectPanelLayout);
@@ -344,6 +352,7 @@ public class NewDialog extends javax.swing.JDialog {
 
         txtSpectraFileLocation.setEditable(false);
         txtSpectraFileLocation.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        txtSpectraFileLocation.setEnabled(false);
 
         jLabel3.setText("Identification File:");
 
@@ -359,6 +368,7 @@ public class NewDialog extends javax.swing.JDialog {
         });
 
         addSpectraFilesJButton.setText("Add");
+        addSpectraFilesJButton.setEnabled(false);
         addSpectraFilesJButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addSpectraFilesJButtonActionPerformed(evt);
@@ -369,8 +379,10 @@ public class NewDialog extends javax.swing.JDialog {
 
         fastaTxt.setEditable(false);
         fastaTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        fastaTxt.setEnabled(false);
 
         addDbButton.setText("Browse");
+        addDbButton.setEnabled(false);
 
         org.jdesktop.layout.GroupLayout fileSelectiontPanelLayout = new org.jdesktop.layout.GroupLayout(fileSelectiontPanel);
         fileSelectiontPanel.setLayout(fileSelectiontPanelLayout);
@@ -836,7 +848,7 @@ public class NewDialog extends javax.swing.JDialog {
                 .add(backgroundPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(backgroundPanelLayout.createSequentialGroup()
                         .add(0, 0, Short.MAX_VALUE)
-                        .add(startButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 57, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(startButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(exitJButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(tabbedPane))
@@ -930,23 +942,55 @@ public class NewDialog extends javax.swing.JDialog {
 
     private void startButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startButtonActionPerformed
         if (validateInput()) {
-            try {
-                savePreferences();
-                ReporterIonQuantification reporterIonQuantification = getReporterIonQuantification();
-                experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).addQuantificationResults(reporterIonQuantification.getMethodUsed(), reporterIonQuantification);
-                reporter.setExperiment(experiment);
-                reporter.setSample(sample);
-                reporter.setReplicateNumber(replicateNumber);
-                reporter.loadFiles(mgfFiles);
-                dispose();
-            } catch (Exception e) {
-                e.printStackTrace();
-                JOptionPane.showMessageDialog(this,
-                        "An error occured while creating project: "
-                        + e.getLocalizedMessage(),
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE);
-            }
+
+            dispose();
+            waitingDialog = new WaitingDialog(reporterGui,
+                    Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
+                    Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")),
+                    false, null, "Quantifying", true); //@TODO: put and tips
+            waitingDialog.setLocationRelativeTo(this);
+            waitingDialog.setMaxProgressValue(5);
+            
+            final ReporterGUI finalRef = reporterGui;
+
+
+            new Thread(new Runnable() {
+
+                public void run() {
+                    try {
+                        waitingDialog.setVisible(true);
+                    } catch (IndexOutOfBoundsException e) {
+                        // ignore
+                    }
+                }
+            }, "ProgressDialog").start();
+
+            new Thread("DisplayThread") {
+
+                @Override
+                public void run() {
+
+                    try {
+                        waitingDialog.appendReport("Preparing for the quantification.", true, true);
+                        waitingDialog.increaseProgressValue();
+                        savePreferences();
+                        ReporterIonQuantification reporterIonQuantification = getReporterIonQuantification();
+                        experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).addQuantificationResults(reporterIonQuantification.getMethodUsed(), reporterIonQuantification);
+                        reporter.setExperiment(experiment);
+                        reporter.setSample(sample);
+                        reporter.setReplicateNumber(replicateNumber);
+                        waitingDialog.increaseProgressValue();
+                        reporter.loadFiles(mgfFiles, waitingDialog);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        JOptionPane.showMessageDialog(finalRef,
+                                "An error occured while creating the project:\n"
+                                + e.getLocalizedMessage(),
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            }.start();
         }
     }//GEN-LAST:event_startButtonActionPerformed
 
@@ -1204,7 +1248,7 @@ public class NewDialog extends javax.swing.JDialog {
         currentPSFile = psFile;
 
         progressDialog = new ProgressDialogX(this, reporterGui,
-                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")), 
+                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
         progressDialog.setIndeterminate(true);
         progressDialog.setTitle("Importing Project. Please Wait...");
@@ -1713,7 +1757,7 @@ public class NewDialog extends javax.swing.JDialog {
      */
     public void addSpectrumFiles(ArrayList<File> files) {
         progressDialog = new ProgressDialogX(this, reporterGui,
-                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")), 
+                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
         progressDialog.setIndeterminate(true);
         progressDialog.setTitle("Importing Spectra. Please Wait...");
