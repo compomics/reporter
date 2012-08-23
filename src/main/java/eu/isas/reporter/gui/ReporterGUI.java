@@ -105,10 +105,10 @@ public class ReporterGUI extends javax.swing.JFrame {
         }
 
         initComponents();
-        
+
         ProteinPanel proteinPanel = new ProteinPanel(this);
         proteinsJPanel.add(proteinPanel);
-        
+
         setUpGui();
 
 
@@ -119,20 +119,20 @@ public class ReporterGUI extends javax.swing.JFrame {
 
         setLocationRelativeTo(null);
         setVisible(true);
-        
+
         try {
             new NewDialog(this, parent);
         } catch (Exception e) {
             parent.catchException(e);
         }
     }
-    
+
     private void setUpGui() {
-        
+
         tabPanel.setEnabledAt(1, false);
         tabPanel.setEnabledAt(2, false);
         tabPanel.setEnabledAt(3, false);
-        
+
     }
 
     /**
@@ -390,7 +390,27 @@ public class ReporterGUI extends javax.swing.JFrame {
         fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 
         int returnVal = fileChooser.showSaveDialog(this);
+
         if (returnVal == JFileChooser.APPROVE_OPTION) {
+
+            File tempDir = fileChooser.getSelectedFile();
+
+            if (!tempDir.exists()) {
+                int value = JOptionPane.showConfirmDialog(this, "The folder \'" + tempDir.getAbsolutePath() + "\' does not exist.\n"
+                        + "Do you want to create it?", "Create Folder?", JOptionPane.YES_NO_OPTION);
+                if (value == JOptionPane.NO_OPTION) {
+                    return;
+                } else { // yes option selected
+                    boolean success = tempDir.mkdir();
+
+                    if (!success) {
+                        JOptionPane.showMessageDialog(this, "Failed to create the folder. Please create it manually and then select it.",
+                                "File Error", JOptionPane.INFORMATION_MESSAGE);
+                        return;
+                    }
+                }
+            }
+
             exportToCSV(fileChooser.getSelectedFile());
         }
     }//GEN-LAST:event_exportMenuItemActionPerformed
@@ -432,8 +452,8 @@ public class ReporterGUI extends javax.swing.JFrame {
 
     private void exportToCSV(File file) {
 
-        progressDialog = new ProgressDialogX(this, 
-                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")), 
+        progressDialog = new ProgressDialogX(this,
+                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
         progressDialog.setIndeterminate(true);
         progressDialog.setTitle("Exporting Project. Please Wait...");

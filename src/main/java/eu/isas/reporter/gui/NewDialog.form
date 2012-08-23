@@ -320,7 +320,7 @@
                     </Component>
                     <Component class="javax.swing.JLabel" name="jLabel3">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="Identification File:"/>
+                        <Property name="text" type="java.lang.String" value="Identification File"/>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JTextField" name="txtIdFileLocation">
@@ -349,7 +349,7 @@
                     </Component>
                     <Component class="javax.swing.JLabel" name="jLabel10">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="Database File (FASTA)"/>
+                        <Property name="text" type="java.lang.String" value="Database File"/>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JTextField" name="fastaTxt">
@@ -964,7 +964,7 @@
                   <SubComponents>
                     <Component class="javax.swing.JLabel" name="jLabel7">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="Quantification Preferences:"/>
+                        <Property name="text" type="java.lang.String" value="Quantification Preferences"/>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JButton" name="editPreferencesButton">
