@@ -108,7 +108,6 @@ public class ReporterExporter {
                 + quantification.getPeptideQuantification().size()
                 + quantification.getProteinQuantification().size();
         increment = increment / 100;
-
         if (progressDialog != null) {
             progressDialog.setIndeterminate(false);
             progressDialog.setMaxProgressValue(100);
@@ -130,24 +129,16 @@ public class ReporterExporter {
                 + SEPARATOR + "X!Tandem E-Value" + SEPARATOR + "p score" + SEPARATOR + "p" + SEPARATOR + "Decoy" + SEPARATOR + "Validated" + SEPARATOR
                 + getIntensitiesLabels() + SEPARATOR + getDeisotopedIntensitiesLabels() + SEPARATOR + "Reference" + SEPARATOR + getRatiosLabels(quantification) + "\n";
         spectraOutput.write(titles);
-
-        PSParameter psParameter = new PSParameter();
+        SpectrumMatch spectrumMatch;
 
         for (String psmKey : quantification.getPsmIDentificationToQuantification().keySet()) {
 
-            SpectrumMatch spectrumMatch = identification.getSpectrumMatch(psmKey); // @TODO: should be replaced by batch selection? same for the rest of this code...
+            spectrumMatch = identification.getSpectrumMatch(psmKey);
 
             for (String spectrumKey : quantification.getPsmIDentificationToQuantification().get(psmKey)) {
 
-                if (progressDialog != null && progressDialog.isRunCanceled()) {
-                    spectraOutput.close();
-                    spectraFile.delete();
-                    peptidesFile.delete();
-                    proteinsFile.delete();
-                    return;
-                }
-
                 Peptide bestAssumption = spectrumMatch.getBestAssumption().getPeptide();
+
 
                 for (String protein : bestAssumption.getParentProteins()) {
                     spectraOutput.write(protein + " ");
@@ -233,14 +224,6 @@ public class ReporterExporter {
                     }
                 }
 
-                if (progressDialog != null && progressDialog.isRunCanceled()) {
-                    spectraOutput.close();
-                    spectraFile.delete();
-                    peptidesFile.delete();
-                    proteinsFile.delete();
-                    return;
-                }
-
                 spectraOutput.write(SEPARATOR);
                 String fileName = Spectrum.getSpectrumFile(spectrumMatch.getKey());
                 String spectrumTitle = Spectrum.getSpectrumTitle(spectrumMatch.getKey());
@@ -271,7 +254,6 @@ public class ReporterExporter {
                 spectraOutput.write(precursor.getMz() + SEPARATOR);
                 spectraOutput.write(spectrumMatch.getBestAssumption().getPeptide().getMass() + SEPARATOR);
                 spectraOutput.write(Math.abs(spectrumMatch.getBestAssumption().getDeltaMass(precursor.getMz(), true)) + SEPARATOR);
-
                 Double mascotEValue = null;
                 Double omssaEValue = null;
                 Double xtandemEValue = null;
@@ -295,14 +277,6 @@ public class ReporterExporter {
                                         xtandemEValue = eValue;
                                     }
                                 }
-                            }
-
-                            if (progressDialog != null && progressDialog.isRunCanceled()) {
-                                spectraOutput.close();
-                                spectraFile.delete();
-                                peptidesFile.delete();
-                                proteinsFile.delete();
-                                return;
                             }
                         }
                     }
@@ -331,10 +305,11 @@ public class ReporterExporter {
                 }
 
                 spectraOutput.write(SEPARATOR);
-                psParameter = (PSParameter) identification.getSpectrumMatchParameter(psmKey, psParameter);
+                PSParameter probabilities = new PSParameter();
+                probabilities = (PSParameter) identification.getSpectrumMatchParameter(psmKey, probabilities);
 
-                spectraOutput.write(psParameter.getPsmProbabilityScore() + SEPARATOR
-                        + psParameter.getPsmProbability() + SEPARATOR);
+                spectraOutput.write(probabilities.getPsmProbabilityScore() + SEPARATOR
+                        + probabilities.getPsmProbability() + SEPARATOR);
 
                 if (spectrumMatch.getBestAssumption().isDecoy()) {
                     spectraOutput.write("1" + SEPARATOR);
@@ -342,7 +317,7 @@ public class ReporterExporter {
                     spectraOutput.write("0" + SEPARATOR);
                 }
 
-                if (psParameter.isValidated()) {
+                if (probabilities.isValidated()) {
                     spectraOutput.write("1" + SEPARATOR);
                 } else {
                     spectraOutput.write("0" + SEPARATOR);
@@ -359,7 +334,6 @@ public class ReporterExporter {
             if (progressDialog != null) {
                 progress++;
                 progressDialog.setValue((int) (progress / increment));
-
                 if (progressDialog.isRunCanceled()) {
                     spectraOutput.close();
                     spectraFile.delete();
@@ -376,10 +350,11 @@ public class ReporterExporter {
         titles = "Protein(s)" + SEPARATOR + "Sequence" + SEPARATOR + "Variable Modification(s)" + SEPARATOR + "PTM location confidence" + SEPARATOR
                 + "n Spectra" + SEPARATOR + "n Spectra Validated" + SEPARATOR + "p score" + SEPARATOR + "p" + SEPARATOR + "Decoy" + SEPARATOR + "Validated" + SEPARATOR + getRatiosLabels(quantification) + "\n";
         peptidesOutput.write(titles);
+        PeptideMatch peptideMatch;
 
         for (String peptideKey : quantification.getPeptideQuantification()) {
 
-            PeptideMatch peptideMatch = identification.getPeptideMatch(peptideKey);
+            peptideMatch = identification.getPeptideMatch(peptideKey);
 
             for (String protein : peptideMatch.getTheoreticPeptide().getParentProteins()) {
                 peptidesOutput.write(protein + " ");
@@ -464,20 +439,21 @@ public class ReporterExporter {
             peptidesOutput.write(SEPARATOR);
 
             peptidesOutput.write(peptideMatch.getSpectrumCount() + SEPARATOR);
+            PSParameter probabilities = new PSParameter();
             int nSpectraValidated = 0;
 
             for (String spectrumKey : peptideMatch.getSpectrumMatches()) {
-                psParameter = (PSParameter) identification.getSpectrumMatchParameter(spectrumKey, psParameter);
-                if (psParameter.isValidated()) {
+                probabilities = (PSParameter) identification.getSpectrumMatchParameter(spectrumKey, probabilities);
+                if (probabilities.isValidated()) {
                     nSpectraValidated++;
                 }
             }
 
             peptidesOutput.write(nSpectraValidated + SEPARATOR);
-            psParameter = (PSParameter) identification.getPeptideMatchParameter(peptideKey, psParameter);
+            probabilities = (PSParameter) identification.getPeptideMatchParameter(peptideKey, probabilities);
 
-            peptidesOutput.write(psParameter.getPeptideProbabilityScore() + SEPARATOR
-                    + psParameter.getPeptideProbability() + SEPARATOR);
+            peptidesOutput.write(probabilities.getPeptideProbabilityScore() + SEPARATOR
+                    + probabilities.getPeptideProbability() + SEPARATOR);
 
             if (peptideMatch.isDecoy()) {
                 peptidesOutput.write("1" + SEPARATOR);
@@ -485,7 +461,7 @@ public class ReporterExporter {
                 peptidesOutput.write("0" + SEPARATOR);
             }
 
-            if (psParameter.isValidated()) {
+            if (probabilities.isValidated()) {
                 peptidesOutput.write("1" + SEPARATOR);
             } else {
                 peptidesOutput.write("0" + SEPARATOR);
@@ -498,7 +474,6 @@ public class ReporterExporter {
             if (progressDialog != null) {
                 progress++;
                 progressDialog.setValue((int) (progress / increment));
-
                 if (progressDialog.isRunCanceled()) {
                     peptidesOutput.close();
                     peptidesFile.delete();
@@ -518,8 +493,10 @@ public class ReporterExporter {
 
         for (String proteinKey : quantification.getProteinQuantification()) {
 
-            psParameter = (PSParameter) identification.getProteinMatchParameter(proteinKey, psParameter);
+            PSParameter probabilities = new PSParameter();
+            probabilities = (PSParameter) identification.getProteinMatchParameter(proteinKey, probabilities);
             ProteinMatch proteinMatch = identification.getProteinMatch(proteinKey);
+
 
             proteinsOutput.write(proteinMatch.getMainMatch() + SEPARATOR);
 
@@ -529,15 +506,16 @@ public class ReporterExporter {
                 }
             }
 
-            proteinsOutput.write(SEPARATOR + psParameter.getGroupClass() + SEPARATOR);
+            proteinsOutput.write(SEPARATOR + probabilities.getGroupClass() + SEPARATOR);
             proteinsOutput.write(proteinMatch.getPeptideCount() + SEPARATOR);
             int nSpectra = 0;
             int nValidatedPeptides = 0;
             int nValidatedPsms = 0;
+            PSParameter psParameter = new PSParameter();
 
             for (String peptideKey : proteinMatch.getPeptideMatches()) {
 
-                PeptideMatch peptideMatch = identification.getPeptideMatch(peptideKey);
+                peptideMatch = identification.getPeptideMatch(peptideKey);
                 nSpectra += peptideMatch.getSpectrumCount();
                 psParameter = (PSParameter) identification.getPeptideMatchParameter(peptideKey, psParameter);
 
@@ -567,8 +545,8 @@ public class ReporterExporter {
             }
 
             try {
-                proteinsOutput.write(psParameter.getProteinProbabilityScore() + SEPARATOR
-                        + psParameter.getProteinProbability() + SEPARATOR);
+                proteinsOutput.write(probabilities.getProteinProbabilityScore() + SEPARATOR
+                        + probabilities.getProteinProbability() + SEPARATOR);
             } catch (Exception e) {
                 proteinsOutput.write(SEPARATOR + SEPARATOR);
             }
@@ -579,7 +557,7 @@ public class ReporterExporter {
                 proteinsOutput.write("0" + SEPARATOR);
             }
 
-            if (psParameter.isValidated()) {
+            if (probabilities.isValidated()) {
                 proteinsOutput.write("1" + SEPARATOR);
             } else {
                 proteinsOutput.write("0" + SEPARATOR);

@@ -354,7 +354,7 @@ public class NewDialog extends javax.swing.JDialog {
         txtSpectraFileLocation.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         txtSpectraFileLocation.setEnabled(false);
 
-        jLabel3.setText("Identification File:");
+        jLabel3.setText("Identification File");
 
         txtIdFileLocation.setEditable(false);
         txtIdFileLocation.setHorizontalAlignment(javax.swing.JTextField.CENTER);
@@ -375,7 +375,7 @@ public class NewDialog extends javax.swing.JDialog {
             }
         });
 
-        jLabel10.setText("Database File (FASTA)");
+        jLabel10.setText("Database File");
 
         fastaTxt.setEditable(false);
         fastaTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
@@ -762,7 +762,7 @@ public class NewDialog extends javax.swing.JDialog {
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Quantification Options"));
         jPanel1.setOpaque(false);
 
-        jLabel7.setText("Quantification Preferences:");
+        jLabel7.setText("Quantification Preferences");
 
         editPreferencesButton.setText("Edit");
         editPreferencesButton.setPreferredSize(new java.awt.Dimension(57, 23));
@@ -935,8 +935,14 @@ public class NewDialog extends javax.swing.JDialog {
 
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File newFile = fileChooser.getSelectedFile();
-            reporterGui.setLastSelectedFolder(newFile.getPath());
-            importPeptideShakerFile(newFile);
+
+            if (!newFile.exists()) {
+                JOptionPane.showMessageDialog(this, "The file\'" + newFile.getAbsolutePath() + "\' " + "does not exist!",
+                        "File Not Found.", JOptionPane.ERROR_MESSAGE);
+            } else {
+                reporterGui.setLastSelectedFolder(newFile.getPath());
+                importPeptideShakerFile(newFile);
+            }
         }
     }//GEN-LAST:event_addIdFilesButtonActionPerformed
 
@@ -950,7 +956,7 @@ public class NewDialog extends javax.swing.JDialog {
                     false, null, "Quantifying", true); //@TODO: put and tips
             waitingDialog.setLocationRelativeTo(this);
             waitingDialog.setMaxProgressValue(5);
-            
+
             final ReporterGUI finalRef = reporterGui;
 
 
@@ -1072,7 +1078,7 @@ public class NewDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_editPreferencesButtonActionPerformed
 
     private void comboMethod1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboMethod1ActionPerformed
-        // TODO add your handling code here:
+        sampleNames = new HashMap<Integer, String>();
     }//GEN-LAST:event_comboMethod1ActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addDbButton;
@@ -1204,6 +1210,7 @@ public class NewDialog extends javax.swing.JDialog {
         try {
             methodsFactory.importMethods(new File(METHODS_FILE));
         } catch (Exception e) {
+            e.printStackTrace();
             importMethodsError();
         }
     }
@@ -1240,9 +1247,9 @@ public class NewDialog extends javax.swing.JDialog {
     }
 
     /**
-     * Method used to import a peptide shaker file.
+     * Method used to import a PeptideShaker file.
      *
-     * @param psFile a peptide shaker file
+     * @param psFile a PeptideShaker file
      */
     private void importPeptideShakerFile(File psFile) {
         currentPSFile = psFile;
@@ -1252,7 +1259,6 @@ public class NewDialog extends javax.swing.JDialog {
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
         progressDialog.setIndeterminate(true);
         progressDialog.setTitle("Importing Project. Please Wait...");
-
 
         new Thread(new Runnable() {
 
@@ -1460,6 +1466,7 @@ public class NewDialog extends javax.swing.JDialog {
                         JOptionPane.showMessageDialog(NewDialog.this,
                                 "An error occured while looking for the spectrum files. Please locate the files manually.",
                                 "File Input Error", JOptionPane.ERROR_MESSAGE);
+                        e.printStackTrace();
                     }
 
 
@@ -1529,7 +1536,7 @@ public class NewDialog extends javax.swing.JDialog {
                     }
 
                     progressDialog.setIndeterminate(true);
-                    progressDialog.setTitle("Importing Experiment details. Please Wait...");
+                    progressDialog.setTitle("Importing Experiment Details. Please Wait...");
 
                     if (progressDialog.isRunCanceled()) {
                         progressDialog.dispose();
@@ -1601,6 +1608,10 @@ public class NewDialog extends javax.swing.JDialog {
                         progressDialog.setRunCanceled();
                     }
 
+
+                    // try to detect the method used
+
+                    // @TODO: this list only contains the variable mods. and thus defaults to iTRAQ 4plex for TMT...
                     ArrayList<String> foundModifications = psSettings.getMetrics().getFoundModifications();
                     for (String ptm : foundModifications) {
                         if (ptm.toLowerCase().contains("8plex")) {
@@ -1613,6 +1624,7 @@ public class NewDialog extends javax.swing.JDialog {
                             selectedMethod = getMethod("iTRAQ 4Plex");
                         }
                     }
+
                     mzTolTxt.setText(psSettings.getSearchParameters().getPrecursorAccuracy() + "");
                     if (psSettings.getSearchParameters().isPrecursorAccuracyTypePpm()) {
                         ppmCmb.setSelectedIndex(0);
@@ -1880,6 +1892,7 @@ public class NewDialog extends javax.swing.JDialog {
                     return selectedMethod.getReporterIons().get(row).getName();
                 case 1:
                     int index = selectedMethod.getReporterIons().get(row).getIndex();
+
                     if (sampleNames.get(row) == null) {
                         if (sample != null) {
                             sampleNames.put(row, sample.getReference() + " " + index);
@@ -1951,6 +1964,7 @@ public class NewDialog extends javax.swing.JDialog {
 
         @Override
         public void setValueAt(Object aValue, int row, int column) {
+            // @TODO: implement me!!
         }
 
         @Override
@@ -2015,6 +2029,7 @@ public class NewDialog extends javax.swing.JDialog {
 
         @Override
         public void setValueAt(Object aValue, int row, int column) {
+            // @TODO: implement me!!
         }
 
         @Override
