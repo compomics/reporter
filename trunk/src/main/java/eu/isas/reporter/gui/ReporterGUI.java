@@ -639,8 +639,12 @@ public class ReporterGUI extends javax.swing.JFrame {
      * to get the best appearance.
      */
     private static void setLookAndFeel() {
+        try {
         // update the look and feel after adding the panels
         UtilitiesGUIDefaults.setLookAndFeel();
+        } catch (Exception w) {
+            
+        }
     }
 
     /**
