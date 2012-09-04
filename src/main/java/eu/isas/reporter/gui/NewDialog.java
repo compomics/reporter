@@ -1699,7 +1699,7 @@ public class NewDialog extends javax.swing.JDialog {
      * methods.
      */
     private void importMethodsError() {
-        JOptionPane.showMessageDialog(this, "\"" + METHODS_FILE + "\" could not be found, please select a method file.", "No Spectra File Selected", JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(this, "\"" + METHODS_FILE + "\" could not be found, please select a method file.", "No Spectrum File Selected", JOptionPane.ERROR_MESSAGE);
         JFileChooser fileChooser = new JFileChooser(reporterGui.getLastSelectedFolder());
         fileChooser.setDialogTitle("Select Methods file");
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);

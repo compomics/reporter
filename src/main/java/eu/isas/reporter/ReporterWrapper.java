@@ -1,10 +1,8 @@
 package eu.isas.reporter;
 
 import com.compomics.software.CompomicsWrapper;
-import com.compomics.util.gui.UtilitiesGUIDefaults;
 import eu.isas.reporter.utils.Properties;
 import java.io.*;
-import javax.swing.JOptionPane;
 
 /**
  * A wrapper class used to start the jar file with parameters. The parameters
@@ -31,9 +29,8 @@ public class ReporterWrapper extends CompomicsWrapper {
         // get the splash 
         String splash = "reporter-splash.png";
         String mainClass = "eu.isas.reporter.gui.ReporterGUI";
-        
+
         launchTool("Reporter", jarFile, splash, mainClass);
-        
     }
 
     /**
