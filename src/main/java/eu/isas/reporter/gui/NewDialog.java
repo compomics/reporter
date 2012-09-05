@@ -62,7 +62,7 @@ public class NewDialog extends javax.swing.JDialog {
     /**
      * The method selected.
      */
-    private ReporterMethod selectedMethod = getMethod(null);
+    private ReporterMethod selectedMethod;
     /**
      * The experiment conducted.
      */
@@ -169,7 +169,7 @@ public class NewDialog extends javax.swing.JDialog {
             }
         });
 
-        txtConfigurationFileLocation.setText(METHODS_FILE);
+        txtConfigurationFileLocation.setText(reporterGui.getReporter().getJarFilePath() + File.separator + METHODS_FILE);
 
         isotopeCorrectionTable.getColumnModel().getColumn(0).setMaxWidth(50);
         pack();
@@ -882,6 +882,11 @@ public class NewDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseConfigButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseConfigButtonActionPerformed
+
+        if (txtConfigurationFileLocation.getText().length() > 0) {
+            reporterGui.setLastSelectedFolder(txtConfigurationFileLocation.getText());
+        }
+
         JFileChooser fileChooser = new JFileChooser(reporterGui.getLastSelectedFolder());
         fileChooser.setDialogTitle("Select Configuration file");
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -1208,7 +1213,7 @@ public class NewDialog extends javax.swing.JDialog {
      */
     private void importMethods() {
         try {
-            methodsFactory.importMethods(new File(METHODS_FILE));
+            methodsFactory.importMethods(new File(reporterGui.getReporter().getJarFilePath() + File.separator + METHODS_FILE));
         } catch (Exception e) {
             e.printStackTrace();
             importMethodsError();

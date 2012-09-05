@@ -127,12 +127,22 @@ public class ReporterGUI extends javax.swing.JFrame {
         }
     }
 
+    /**
+     * Sets up the GUI.
+     */
     private void setUpGui() {
-
         tabPanel.setEnabledAt(1, false);
         tabPanel.setEnabledAt(2, false);
         tabPanel.setEnabledAt(3, false);
+    }
 
+    /**
+     * Returns a reference to the parent Reporter object.
+     *
+     * @return a reference to the parent Reporter object
+     */
+    public Reporter getReporter() {
+        return parent;
     }
 
     /**
@@ -640,10 +650,9 @@ public class ReporterGUI extends javax.swing.JFrame {
      */
     private static void setLookAndFeel() {
         try {
-        // update the look and feel after adding the panels
-        UtilitiesGUIDefaults.setLookAndFeel();
+            // update the look and feel after adding the panels
+            UtilitiesGUIDefaults.setLookAndFeel();
         } catch (Exception w) {
-            
         }
     }
 
