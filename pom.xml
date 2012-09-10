@@ -5,16 +5,9 @@
     <groupId>eu.isas.reporter</groupId>
     <artifactId>Reporter</artifactId>
     <packaging>jar</packaging>
-    <version>${version.number}</version>
+    <version>1.4.1-beta</version>
     <name>Reporter</name>
     <url>http://reporter.googlecode.com</url>
-
-
-    <!-- Set the version number for the whole project -->
-    <properties>
-        <version.number>1.4.1-beta</version.number>
-    </properties>
-
 
     <!-- Licence -->
     <licenses>
