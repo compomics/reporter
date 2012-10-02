@@ -131,8 +131,16 @@ public class ReporterExporter {
         spectraOutput.write(titles);
         SpectrumMatch spectrumMatch;
 
+        ArrayList<String> loadedfiles = new ArrayList<String>(); // dirty speeding trick. To be removed when utilities has been upgraded
         for (String psmKey : quantification.getPsmIDentificationToQuantification().keySet()) {
 
+                String fileName = Spectrum.getSpectrumFile(psmKey);
+                if (!loadedfiles.contains(fileName)) {
+                    loadedfiles.add(fileName);
+                    identification.loadSpectrumMatchParameters(fileName, new PSParameter(), new ProgressDialogX(false));
+                    identification.loadSpectrumMatches(fileName, new ProgressDialogX(false));
+                }
+                
             spectrumMatch = identification.getSpectrumMatch(psmKey);
 
             for (String spectrumKey : quantification.getPsmIDentificationToQuantification().get(psmKey)) {
@@ -225,7 +233,6 @@ public class ReporterExporter {
                 }
 
                 spectraOutput.write(SEPARATOR);
-                String fileName = Spectrum.getSpectrumFile(spectrumMatch.getKey());
                 String spectrumTitle = Spectrum.getSpectrumTitle(spectrumMatch.getKey());
                 Precursor precursor = spectrumFactory.getPrecursor(fileName, spectrumTitle);
                 spectraOutput.write(precursor.getPossibleChargesAsString() + SEPARATOR);
@@ -351,6 +358,8 @@ public class ReporterExporter {
                 + "n Spectra" + SEPARATOR + "n Spectra Validated" + SEPARATOR + "p score" + SEPARATOR + "p" + SEPARATOR + "Decoy" + SEPARATOR + "Validated" + SEPARATOR + getRatiosLabels(quantification) + "\n";
         peptidesOutput.write(titles);
         PeptideMatch peptideMatch;
+        
+        identification.loadPeptideMatchParameters(new PSParameter(), new ProgressDialogX(false));
 
         for (String peptideKey : quantification.getPeptideQuantification()) {
 
@@ -491,6 +500,8 @@ public class ReporterExporter {
                 + SEPARATOR + "p" + SEPARATOR + "Decoy" + SEPARATOR + "Validated" + SEPARATOR + "Description" + SEPARATOR + getRatiosLabels(quantification) + "\n";
         proteinsOutput.write(titles);
 
+        identification.loadProteinMatchParameters(new PSParameter(), new ProgressDialogX(false));
+        identification.loadProteinMatches(new ProgressDialogX(false));
         for (String proteinKey : quantification.getProteinQuantification()) {
 
             PSParameter probabilities = new PSParameter();
