@@ -83,7 +83,8 @@ public class DataLoader {
             double mzRef = precursorMzValues.get(spectrumKey);
             double rtRef = precursorRtValues.get(spectrumKey);
 
-            for (String spectrumFile : spectrumFactory.getMgfFileNames()) {
+            String spectrumFile = Spectrum.getSpectrumFile(spectrumKey);
+            
                 for (String spectrumTitle : spectrumFactory.getSpectrumTitles(spectrumFile)) {
 
                     String newKey = Spectrum.getSpectrumKey(spectrumFile, spectrumTitle);
@@ -96,7 +97,6 @@ public class DataLoader {
                         result.add(newKey);
                     }
                 }
-            }
         }
 
         return result;
