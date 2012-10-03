@@ -264,7 +264,7 @@ public class Reporter {
      * Loads identification and quantification information from files.
      *
      * @param mgfFiles the quantification files
-     * @param waitingHandler  
+     * @param waitingHandler
      */
     public void loadFiles(ArrayList<File> mgfFiles, WaitingHandler waitingHandler) {
         DataImporter dataImporter = new DataImporter(waitingHandler, mgfFiles);
@@ -312,32 +312,34 @@ public class Reporter {
 
     /**
      * Compiles the PSM ratios into peptides and proteins
-     * @param waitingHandler a waiting handler displaying the progress. Progress will be displayed on the secondary progress bar if any.
+     *
+     * @param waitingHandler a waiting handler displaying the progress. Progress
+     * will be displayed on the secondary progress bar if any.
      */
     public void compileRatios(WaitingHandler waitingHandler) {
-            try {
-                Enzyme enzyme = psSettings.getSearchParameters().getEnzyme();
-                ReporterIonQuantification quantification = getQuantification();
-                RatioEstimator ratioEstimator = new RatioEstimator(quantification, quantification.getReporterMethod(), quantificationPreferences, enzyme);
+        try {
+            Enzyme enzyme = psSettings.getSearchParameters().getEnzyme();
+            ReporterIonQuantification quantification = getQuantification();
+            RatioEstimator ratioEstimator = new RatioEstimator(quantification, quantification.getReporterMethod(), quantificationPreferences, enzyme);
 
+            if (waitingHandler != null) {
+                waitingHandler.setMaxSecondaryProgressValue(quantification.getProteinQuantification().size());
+                waitingHandler.setSecondaryProgressDialogIndeterminate(false);
+            }
+            for (String proteinKey : quantification.getProteinQuantification()) {
+                ratioEstimator.estimateProteinRatios(proteinKey);
                 if (waitingHandler != null) {
-                    waitingHandler.setMaxSecondaryProgressValue(quantification.getProteinQuantification().size());
-                    waitingHandler.setSecondaryProgressDialogIndeterminate(false);
-                }
-                for (String proteinKey : quantification.getProteinQuantification()) {
-                    ratioEstimator.estimateProteinRatios(proteinKey);
-                    if (waitingHandler != null) {
-                        waitingHandler.increaseSecondaryProgressValue();
-                        if (waitingHandler.isRunCanceled()) {
-                            return;
-                        }
+                    waitingHandler.increaseSecondaryProgressValue();
+                    if (waitingHandler.isRunCanceled()) {
+                        return;
                     }
                 }
-            } catch (Exception e) {
-                catchException(e);
-                waitingHandler.setRunCanceled();
             }
+        } catch (Exception e) {
+            catchException(e);
+            waitingHandler.setRunCanceled();
         }
+    }
 
     /**
      * Returns the desired spectrum.
@@ -379,7 +381,7 @@ public class Reporter {
     private void loadModifications() {
 
         String path = getJarFilePath();
-        
+
         try {
             ptmFactory.importModifications(new File(path, MODIFICATIONS_FILE), false);
         } catch (Exception e) {
@@ -393,7 +395,7 @@ public class Reporter {
                     "Configuration import Error", JOptionPane.ERROR_MESSAGE);
         }
     }
-    
+
     /**
      * Returns the path to the jar file.
      *
@@ -464,28 +466,28 @@ public class Reporter {
                 waitingHandler.setRunCanceled();
                 return 1;
             }
-            
+
             if (waitingHandler.isRunCanceled()) {
                 return 1;
             }
 
             dataLoader.loadQuantification(getQuantification(), mgfFiles);
             waitingHandler.increaseProgressValue();
-            
+
             if (waitingHandler.isRunCanceled()) {
                 return 1;
             }
-            
+
             waitingHandler.appendReport("Estimating peptide and protein ratios.", true, true);
             compileRatios(waitingHandler);
-            
+
             if (!waitingHandler.isRunCanceled()) {
                 reporterGUI.displayResults(getQuantification(), getIdentification());
                 waitingHandler.appendReportEndLine();
                 waitingHandler.appendReport("Quantification Completed.", true, true);
                 waitingHandler.setRunFinished();
             }
-            
+
             return 0;
         }
     }

@@ -19,6 +19,7 @@ import com.compomics.util.gui.renderers.AlignedListCellRenderer;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
 import com.compomics.util.gui.waiting.waitinghandlers.WaitingDialog;
 import eu.isas.peptideshaker.PeptideShaker;
+import eu.isas.peptideshaker.myparameters.PSParameter;
 import eu.isas.peptideshaker.myparameters.PSSettings;
 import eu.isas.reporter.Reporter;
 import eu.isas.reporter.myparameters.QuantificationPreferences;
@@ -1182,7 +1183,7 @@ public class NewDialog extends javax.swing.JDialog {
     }
 
     /**
-     * Updates the combo box and tables values based on the currently selected
+     * Updates the combo box and table values based on the currently selected
      * quantification method.
      */
     private void refresh() {
@@ -1611,6 +1612,22 @@ public class NewDialog extends javax.swing.JDialog {
 
                     if (!testIdentificationConnection()) {
                         progressDialog.setRunCanceled();
+                    }
+                    
+                    if (identification.getSpectrumIdentificationMap() == null) {
+                        // 0.18 version, needs update of the spectrum mapping
+                        identification.updateSpectrumMapping();
+                    }
+
+                    if (!progressDialog.isRunCanceled()) {
+                        progressDialog.setIndeterminate(true);
+                        progressDialog.setTitle("Loading Proteins. Please Wait...");
+                        identification.loadProteinMatches(progressDialog);
+                        progressDialog.setTitle("Loading Protein Details. Please Wait...");
+                        identification.loadProteinMatchParameters(new PSParameter(), progressDialog);
+                        progressDialog.setTitle("Loading Peptide Details. Please Wait...");
+                        identification.loadPeptideMatchParameters(new PSParameter(), progressDialog);
+                        progressDialog.setIndeterminate(true);
                     }
 
 
