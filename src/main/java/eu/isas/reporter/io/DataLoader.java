@@ -84,19 +84,19 @@ public class DataLoader {
             double rtRef = precursorRtValues.get(spectrumKey);
 
             String spectrumFile = Spectrum.getSpectrumFile(spectrumKey);
-            
-                for (String spectrumTitle : spectrumFactory.getSpectrumTitles(spectrumFile)) {
 
-                    String newKey = Spectrum.getSpectrumKey(spectrumFile, spectrumTitle);
-                    double precursorMz = precursorMzValues.get(newKey);
-                    double precursorRt = precursorRtValues.get(newKey);
+            for (String spectrumTitle : spectrumFactory.getSpectrumTitles(spectrumFile)) {
 
-                    double errPpm = Math.abs((mzRef - precursorMz) / mzRef * 1000000);
+                String newKey = Spectrum.getSpectrumKey(spectrumFile, spectrumTitle);
+                double precursorMz = precursorMzValues.get(newKey);
+                double precursorRt = precursorRtValues.get(newKey);
 
-                    if (errPpm < mzTol && Math.abs(precursorRt - rtRef) < rtTol) {
-                        result.add(newKey);
-                    }
+                double errPpm = Math.abs((mzRef - precursorMz) / mzRef * 1000000);
+
+                if (errPpm < mzTol && Math.abs(precursorRt - rtRef) < rtTol) {
+                    result.add(newKey);
                 }
+            }
         }
 
         return result;
@@ -160,10 +160,10 @@ public class DataLoader {
         try {
             precursorMzValues = new HashMap<String, Double>();
             precursorRtValues = new HashMap<String, Double>();
-            
+
             // @TODO: The code should (if possible) be refactored to not have to temporary store the precursor mz and rt values.
             //        This has to be done without reading the spectra more than once!
-            
+
 
             // see if we need to load the precuror rt and m/z values
             if (!quantificationPreferences.isSameSpectra()) {
@@ -179,7 +179,7 @@ public class DataLoader {
                         precursorMzValues.put(newKey, precursor.getMz());
                         precursorRtValues.put(newKey, precursor.getRt());
                         waitingHandler.increaseSecondaryProgressValue();
-                        
+
                         if (waitingHandler.isRunCanceled()) {
                             return;
                         }
@@ -190,32 +190,37 @@ public class DataLoader {
             waitingHandler.appendReport("PSM quantification.", true, true);
             waitingHandler.increaseProgressValue();
             waitingHandler.resetSecondaryProgressBar();
-            waitingHandler.setMaxSecondaryProgressValue(identification.getSpectrumIdentification().size());
 
-            for (String matchKey : identification.getSpectrumIdentification()) {
+            int fileCounter = 0;
 
-                if (waitingHandler.isRunCanceled()) {
-                    return;
-                }
+            for (String spectrumFile : spectrumFactory.getMgfFileNames()) {
 
-                for (String spectrumKey : getSpectrumIds(matchKey)) {
-                    PsmQuantification spectrumQuantification = new PsmQuantification(spectrumKey, matchKey);
-                    HashMap<ReporterIon, IonMatch> ionMatches = matchIons(spectrumKey, quantification.getReporterMethod().getReporterIons());
+                waitingHandler.appendReport("Quantifying file: " + spectrumFile + " (" + ++fileCounter + "/" + spectrumFactory.getMgfFileNames().size() + ")", true, true);
+                waitingHandler.resetSecondaryProgressBar();
+                waitingHandler.setMaxSecondaryProgressValue(identification.getSpectrumIdentification(spectrumFile).size());
 
-                    for (ReporterIon ion : ionMatches.keySet()) {
-                        spectrumQuantification.addIonMatch(ion.getIndex(), ionMatches.get(ion));
+                //identification.loadSpectrumMatches(spectrumFile, null); // this should take in a waiting handler!!
+                //identification.loadSpectrumMatchParameters(spectrumFile, ?, null); // this should take in a waiting handler!!
+
+                for (String matchKey : identification.getSpectrumIdentification(spectrumFile)) {
+                    for (String spectrumKey : getSpectrumIds(matchKey)) {
+                        PsmQuantification spectrumQuantification = new PsmQuantification(spectrumKey, matchKey);
+                        HashMap<ReporterIon, IonMatch> ionMatches = matchIons(spectrumKey, quantification.getReporterMethod().getReporterIons());
+
+                        for (ReporterIon ion : ionMatches.keySet()) {
+                            spectrumQuantification.addIonMatch(ion.getIndex(), ionMatches.get(ion));
+                        }
+
+                        quantification.addPsmQuantification(spectrumQuantification);
+
+                        if (waitingHandler.isRunCanceled()) {
+                            return;
+                        }
                     }
 
-                    quantification.addPsmQuantification(spectrumQuantification);
-
-                    if (waitingHandler.isRunCanceled()) {
-                        return;
-                    }
+                    waitingHandler.increaseSecondaryProgressValue();
                 }
-
-                waitingHandler.increaseSecondaryProgressValue();
             }
-
         } catch (Exception e) {
             e.printStackTrace();
             waitingHandler.appendReport("An error occurred while quantifying PSMs:", true, true);
