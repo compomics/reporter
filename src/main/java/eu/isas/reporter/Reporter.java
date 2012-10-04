@@ -1,6 +1,6 @@
 package eu.isas.reporter;
 
-import com.compomics.util.examples.BareBonesBrowserLaunch;
+import com.compomics.software.CompomicsWrapper;
 import com.compomics.util.experiment.MsExperiment;
 import com.compomics.util.experiment.biology.Enzyme;
 import com.compomics.util.experiment.biology.PTMFactory;
@@ -18,13 +18,8 @@ import eu.isas.reporter.io.DataLoader;
 import eu.isas.reporter.calculation.RatioEstimator;
 import eu.isas.reporter.gui.ReporterGUI;
 import eu.isas.reporter.myparameters.QuantificationPreferences;
-import java.io.BufferedReader;
+import eu.isas.reporter.utils.Properties;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
@@ -87,7 +82,7 @@ public class Reporter {
     public Reporter(ReporterGUI reporterGUI) {
         this.reporterGUI = reporterGUI;
         // check if a newer version of Reporter is available
-        //checkForNewVersion(new Properties().getVersion()); // @TODO: re-add later!
+        CompomicsWrapper.checkForNewVersion(new Properties().getVersion(), "Reporter", "reporter");
         loadModifications();
     }
     /**
@@ -110,74 +105,6 @@ public class Reporter {
      * The quantification preferences.
      */
     private QuantificationPreferences quantificationPreferences = new QuantificationPreferences();
-
-    /**
-     * Check if a newer version of reporter is available.
-     *
-     * @param currentVersion the version number of the currently running
-     * reporter
-     */
-    private static void checkForNewVersion(String currentVersion) {
-
-        try {
-            boolean deprecatedOrDeleted = false;
-            URL downloadPage = new URL(
-                    "http://code.google.com/p/reporter/downloads/detail?name=Reporter-"
-                    + currentVersion + ".zip");
-
-            if ((java.net.HttpURLConnection) downloadPage.openConnection() != null) {
-
-                int respons = ((java.net.HttpURLConnection) downloadPage.openConnection()).getResponseCode();
-
-                // 404 means that the file no longer exists, which means that
-                // the running version is no longer available for download,
-                // which again means that a never version is available.
-                if (respons == 404) {
-                    deprecatedOrDeleted = true;
-                } else {
-
-                    // also need to check if the available running version has been
-                    // deprecated (but not deleted)
-                    BufferedReader in = new BufferedReader(
-                            new InputStreamReader(downloadPage.openStream()));
-
-                    String inputLine;
-
-                    while ((inputLine = in.readLine()) != null && !deprecatedOrDeleted) {
-                        if (inputLine.lastIndexOf("Deprecated") != -1
-                                && inputLine.lastIndexOf("Deprecated Downloads") == -1
-                                && inputLine.lastIndexOf("Deprecated downloads") == -1) {
-                            deprecatedOrDeleted = true;
-                        }
-                    }
-
-                    in.close();
-                }
-
-                // informs the user about an updated version of the tool, unless the user
-                // is running a beta version
-                if (deprecatedOrDeleted && currentVersion.lastIndexOf("beta") == -1) {
-                    int option = JOptionPane.showConfirmDialog(null,
-                            "A newer version of Reporter is available.\n"
-                            + "Do you want to upgrade?",
-                            "Upgrade Available",
-                            JOptionPane.YES_NO_CANCEL_OPTION);
-                    if (option == JOptionPane.YES_OPTION) {
-                        BareBonesBrowserLaunch.openURL("http://reporter.googlecode.com/");
-                        System.exit(0);
-                    } else if (option == JOptionPane.CANCEL_OPTION) {
-                        System.exit(0);
-                    }
-                }
-            }
-        } catch (UnknownHostException e) {
-            // ignore exception
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
     /**
      * This method terminates the program.
@@ -402,22 +329,7 @@ public class Reporter {
      * @return the path to the jar file
      */
     public String getJarFilePath() {
-        String path = this.getClass().getResource("Reporter.class").getPath();
-
-        if (path.lastIndexOf("/Reporter-") != -1) {
-            path = path.substring(5, path.lastIndexOf("/Reporter-"));
-            path = path.replace("%20", " ");
-            path = path.replace("%5b", "[");
-            path = path.replace("%5d", "]");
-
-            if (System.getProperty("os.name").lastIndexOf("Windows") != -1) {
-                path = path.replace("/", "\\");
-            }
-        } else {
-            path = ".";
-        }
-
-        return path;
+        return CompomicsWrapper.getJarFilePath(this.getClass().getResource("Reporter.class").getPath(), "Reporter");
     }
 
     /**
