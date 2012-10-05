@@ -220,7 +220,7 @@ public class Reporter {
     }
 
     /**
-     * Returns the PeptideShaker settings
+     * Returns the PeptideShaker settings.
      *
      * @return the PeptideShaker settings
      */
@@ -229,7 +229,7 @@ public class Reporter {
     }
 
     /**
-     * Sets the PeptideShaker settings
+     * Sets the PeptideShaker settings.
      *
      * @param psSettings the peptide shaker settings
      */
@@ -238,7 +238,7 @@ public class Reporter {
     }
 
     /**
-     * Compiles the PSM ratios into peptides and proteins
+     * Compiles the PSM ratios into peptides and proteins.
      *
      * @param waitingHandler a waiting handler displaying the progress. Progress
      * will be displayed on the secondary progress bar if any.
