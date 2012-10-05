@@ -31,7 +31,7 @@ public class RatioEstimator {
      */
     private double resolution;
     /**
-     * The "k" of the M-estimator (see PMID ).
+     * The "k" of the M-estimator (see PMID ...).
      */
     private double k;
     /**
@@ -88,7 +88,7 @@ public class RatioEstimator {
         for (String peptideKey : proteinQuantification.getPeptideQuantification()) {
 
             PeptideQuantification peptideQuantification = quantification.getPeptideMatch(peptideKey);
-            estimatePeptideRatios(peptideKey);
+            estimatePeptideRatios(peptideQuantification);
             ignoredRatios = (IgnoredRatios) peptideQuantification.getUrParam(ignoredRatios);
             HashMap<Integer, Ratio> ratiosMap = peptideQuantification.getRatios();
 
@@ -126,7 +126,7 @@ public class RatioEstimator {
                 window = resolution;
             }
 
-            int nPeptides = getNPeptides(ion, proteinKey, ratio, window);
+            int nPeptides = getNPeptides(ion, proteinQuantification, ratio, window);
 
             if (nPeptides > 0) {
                 double relativeSpread = -(window) / (3 * ratio);
@@ -165,15 +165,13 @@ public class RatioEstimator {
      * @return the number of peptides in the window centered around the protein
      * ratio
      */
-    private int getNPeptides(int ion, String proteinKey, double ratio, double window) throws Exception {
+    private int getNPeptides(int ion, ProteinQuantification proteinQuantification, double ratio, double window) throws Exception {
 
         int nPeptides = 0;
         IgnoredRatios ignoredRatios = new IgnoredRatios();
-        ProteinQuantification proteinQuantification = quantification.getProteinMatch(proteinKey);
-        PeptideQuantification peptideQuantification;
 
         for (String peptideKey : proteinQuantification.getPeptideQuantification()) {
-            peptideQuantification = quantification.getPeptideMatch(peptideKey);
+            PeptideQuantification peptideQuantification = quantification.getPeptideMatch(peptideKey);
             ignoredRatios = (IgnoredRatios) peptideQuantification.getUrParam(ignoredRatios);
             if (!ignoredRatios.isIgnored(ion)) {
                 if (peptideQuantification.getRatios().get(ion).getRatio() < ratio + window
@@ -191,9 +189,8 @@ public class RatioEstimator {
      *
      * @param peptideQuantification the peptide quantification considered
      */
-    private void estimatePeptideRatios(String peptideKey) throws Exception {
+    private void estimatePeptideRatios(PeptideQuantification peptideQuantification) throws Exception {
 
-        PeptideQuantification peptideQuantification = quantification.getPeptideMatch(peptideKey);
         IgnoredRatios ignoredRatios = new IgnoredRatios();
         HashMap<Integer, ArrayList<Double>> allRatios = new HashMap<Integer, ArrayList<Double>>();
 
@@ -204,7 +201,7 @@ public class RatioEstimator {
                 if (psmQuantification == null) {
                     throw new IllegalArgumentException("Quantification spectrum match not found: " + psmKey);
                 }
-                estimateRatios(spectrumKey, deisotoper);
+                estimateRatios(psmQuantification, deisotoper);
                 ignoredRatios = (IgnoredRatios) psmQuantification.getUrParam(ignoredRatios);
                 HashMap<Integer, Ratio> ratiosMap = psmQuantification.getRatios();
 
@@ -244,7 +241,7 @@ public class RatioEstimator {
                 window = resolution;
             }
 
-            int nSpectra = getNSpectra(ion, peptideKey, ratio, window);
+            int nSpectra = getNSpectra(ion, peptideQuantification, ratio, window);
 
             if (nSpectra > 0) {
                 double quality = Math.pow(10, -(window) / (3 * ratio));
@@ -283,16 +280,14 @@ public class RatioEstimator {
      * @return the number of psm ratios comprised in the window centered around
      * the peptide ratio
      */
-    private int getNSpectra(int ion, String peptideKey, double ratio, double window) throws Exception {
+    private int getNSpectra(int ion, PeptideQuantification peptideQuantification, double ratio, double window) throws Exception {
 
         int nSpectra = 0;
         IgnoredRatios ignoredRatios = new IgnoredRatios();
-        PeptideQuantification peptideQuantification = quantification.getPeptideMatch(peptideKey);
-        PsmQuantification spectrumQuantification;
 
         for (String psmKey : peptideQuantification.getPsmQuantification()) {
             for (String spectrumKey : quantification.getPsmIDentificationToQuantification().get(psmKey)) {
-                spectrumQuantification = quantification.getSpectrumMatch(spectrumKey);
+                PsmQuantification spectrumQuantification = quantification.getSpectrumMatch(spectrumKey);
                 ignoredRatios = (IgnoredRatios) spectrumQuantification.getUrParam(ignoredRatios);
                 if (!ignoredRatios.isIgnored(ion)) {
                     if (spectrumQuantification.getRatios().get(ion).getRatio() < ratio + window
@@ -348,12 +343,12 @@ public class RatioEstimator {
             nPeptidesMax = Math.max(nPeptidesMax, nPeptides);
         }
 
-        double integral, bestIntegral = -1;
+        double bestIntegral = -1;
         ArrayList<Double> bestRatios = new ArrayList<Double>();
 
         for (double r0 = ratios[0]; r0 < ratios[ratios.length - 1]; r0 += resolution) {
 
-            integral = 0;
+            double integral = 0;
             nPeptides = 0;
 
             for (double r : ratios) {
@@ -395,10 +390,9 @@ public class RatioEstimator {
      *
      * @param psmQuantification the current spectrum quantification
      */
-    private void estimateRatios(String spectrumKey, Deisotoper deisotoper) throws Exception {
+    private void estimateRatios(PsmQuantification psmQuantification, Deisotoper deisotoper) throws Exception {
 
         IgnoredRatios ignoredRatios = new IgnoredRatios();
-        PsmQuantification psmQuantification = quantification.getSpectrumMatch(spectrumKey);
         HashMap<Integer, IonMatch> reporterMatches = psmQuantification.getReporterMatches();
         ArrayList<Integer> nullIntensities = new ArrayList<Integer>();
         ItraqScore scores = new ItraqScore();
@@ -424,13 +418,9 @@ public class RatioEstimator {
         }
         psmQuantification.setDeisotopedIntensities(deisotopedInt);
 
-        // User dependent code!
-        //String spectrumName = Spectrum.getSpectrumFile(psmQuantification.getKey());
-        //deisotopedInt = deisotoper.deisotopeSwitch(reporterMatches, spectrumName);
-
         Double referenceInt = 0.0;
         if (!nonNullIntensities.isEmpty()) {
-        referenceInt = BasicMathFunctions.median(nonNullIntensities);
+            referenceInt = BasicMathFunctions.median(nonNullIntensities);
         }
         psmQuantification.setReferenceIntensity(referenceInt);
 

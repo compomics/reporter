@@ -221,6 +221,11 @@ public class DataLoader {
                     waitingHandler.increaseSecondaryProgressValue();
                 }
             }
+
+            // empty the mz and rt maps to free memory
+            precursorMzValues.clear();
+            precursorRtValues.clear();
+
         } catch (Exception e) {
             e.printStackTrace();
             waitingHandler.appendReport("An error occurred while quantifying PSMs:", true, true);
