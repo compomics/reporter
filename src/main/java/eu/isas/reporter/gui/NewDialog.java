@@ -141,7 +141,7 @@ public class NewDialog extends javax.swing.JDialog {
 
         sameSpectra.setSelected(true);
 
-        if (selectedMethod != null) {
+        if (selectedMethod == null) {
             comboMethod2.setSelectedItem(methodsFactory.getMethodsNames()[0]);
             comboMethod1.setSelectedItem(methodsFactory.getMethodsNames()[0]);
         }
@@ -1188,8 +1188,11 @@ public class NewDialog extends javax.swing.JDialog {
      */
     private void refresh() {
 
-        comboMethod1.setSelectedItem(selectedMethod.getName());
-        comboMethod2.setSelectedItem(selectedMethod.getName());
+        if (selectedMethod != null) {
+            comboMethod1.setSelectedItem(selectedMethod.getName());
+            comboMethod2.setSelectedItem(selectedMethod.getName());
+        }
+
         sampleAssignmentTable.setModel(new AssignementTableModel());
 
         setTableProperties();
@@ -1645,6 +1648,12 @@ public class NewDialog extends javax.swing.JDialog {
                         } else if (ptm.toLowerCase().contains("itraq")) {
                             selectedMethod = getMethod("iTRAQ 4Plex");
                         }
+                    }
+
+                    // no method detected, default to iTRAQ 4 plex
+                    if (selectedMethod == null) {
+                        comboMethod2.setSelectedItem(methodsFactory.getMethodsNames()[0]);
+                        comboMethod1.setSelectedItem(methodsFactory.getMethodsNames()[0]);
                     }
 
                     mzTolTxt.setText(psSettings.getSearchParameters().getPrecursorAccuracy() + "");
