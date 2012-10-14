@@ -248,6 +248,14 @@
                     <artifactId>pdf-transcoder</artifactId>
                     <groupId>batik</groupId>
                 </exclusion>
+                <exclusion>
+                    <groupId>no.uib</groupId>
+                    <artifactId>ols-dialog</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.swinglabs</groupId>
+                    <artifactId>swingx</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         
@@ -263,6 +271,12 @@
             <groupId>no.uib</groupId>
             <artifactId>jsparklines</artifactId>
             <version>0.5.40</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.swinglabs</groupId>
+                    <artifactId>swingx</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -294,6 +308,32 @@
             <groupId>eu.isas.peptideshaker</groupId>
             <artifactId>PeptideShaker</artifactId>
             <version>0.19.0-beta</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>de.proteinms.omxparser</groupId>
+                    <artifactId>omssa-parser</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>de.proteinms.xtandemparser</groupId>
+                    <artifactId>xtandem-parser</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.compomics</groupId>
+                    <artifactId>mascotdatfile</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>uk.ac.ebi.das</groupId>
+                    <artifactId>jdas</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>no.uib</groupId>
+                    <artifactId>ols-dialog</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>niklaas</groupId>
+                    <artifactId>jmol</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         
         <dependency>
