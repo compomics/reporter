@@ -271,12 +271,6 @@
             <groupId>no.uib</groupId>
             <artifactId>jsparklines</artifactId>
             <version>0.5.40</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.swinglabs</groupId>
-                    <artifactId>swingx</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
