@@ -1,7 +1,7 @@
 package eu.isas.reporter.resultpanels;
 
 import com.compomics.util.gui.GuiUtilities;
-import com.compomics.util.gui.dialogs.HelpDialog;
+import com.compomics.util.gui.error_handlers.HelpDialog;
 import eu.isas.peptideshaker.gui.tablemodels.ProteinTableModel;
 import eu.isas.reporter.gui.ReporterGUI;
 import java.awt.Toolkit;
