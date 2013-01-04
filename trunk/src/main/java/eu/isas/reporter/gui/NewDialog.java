@@ -14,7 +14,7 @@ import com.compomics.util.experiment.quantification.Quantification.Quantificatio
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethodFactory;
-import com.compomics.util.gui.dialogs.SampleSelection;
+import com.compomics.util.gui.SampleSelection;
 import com.compomics.util.gui.renderers.AlignedListCellRenderer;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
 import com.compomics.util.gui.waiting.waitinghandlers.WaitingDialog;
@@ -23,6 +23,7 @@ import eu.isas.peptideshaker.myparameters.PSParameter;
 import eu.isas.peptideshaker.myparameters.PSSettings;
 import eu.isas.reporter.Reporter;
 import eu.isas.reporter.myparameters.QuantificationPreferences;
+import eu.isas.reporter.utils.Properties;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -959,7 +960,7 @@ public class NewDialog extends javax.swing.JDialog {
             waitingDialog = new WaitingDialog(reporterGui,
                     Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
                     Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")),
-                    false, null, "Quantifying", true); //@TODO: put and tips
+                    false, null, "Quantifying", "Reporter", new Properties().getVersion(), true); //@TODO: put and tips
             waitingDialog.setLocationRelativeTo(this);
             waitingDialog.setMaxProgressValue(5);
 
@@ -1347,7 +1348,7 @@ public class NewDialog extends javax.swing.JDialog {
                     psSettings = (PSSettings) experiment.getUrParam(psSettings);
                     reporter.setPSSettings(psSettings);
 
-                    PeptideShaker.setPeptideShakerPTMs(psSettings.getSearchParameters());
+                    PeptideShaker.setPeptideShakerPTMs(psSettings.getSearchParameters()); // @TODO: this needs to be reimplemented!!
 
                     if (progressDialog.isRunCanceled()) {
                         progressDialog.dispose();
@@ -1396,7 +1397,8 @@ public class NewDialog extends javax.swing.JDialog {
 
                     ArrayList<String> names = new ArrayList<String>();
                     ArrayList<String> missing = new ArrayList<String>();
-                    ArrayList<String> spectrumFiles = psSettings.getSearchParameters().getSpectrumFiles();
+                    Identification identification = experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).getIdentification(IdentificationMethod.MS2_IDENTIFICATION);
+                    ArrayList<String> spectrumFiles = identification.getSpectrumFiles();
                     ArrayList<File> mgfFiles = new ArrayList<File>();
 
                     progressDialog.setTitle("Locating Spectrum Files. Please Wait...");
@@ -1610,7 +1612,6 @@ public class NewDialog extends javax.swing.JDialog {
 
                     cache = new ObjectsCache();
                     cache.setAutomatedMemoryManagement(true);
-                    Identification identification = experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).getIdentification(IdentificationMethod.MS2_IDENTIFICATION);
                     identification.establishConnection(Reporter.SERIALIZATION_DIRECTORY, false, cache);
 
                     if (!testIdentificationConnection()) {
