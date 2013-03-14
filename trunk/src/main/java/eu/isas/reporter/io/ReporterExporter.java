@@ -132,21 +132,23 @@ public class ReporterExporter {
         SpectrumMatch spectrumMatch;
 
         ArrayList<String> loadedfiles = new ArrayList<String>(); // dirty speeding trick. To be removed when utilities has been upgraded
+        
+        // @TODO: has to use batch select/insert!!!
+        
         for (String psmKey : quantification.getPsmIDentificationToQuantification().keySet()) {
 
-                String fileName = Spectrum.getSpectrumFile(psmKey);
-                if (!loadedfiles.contains(fileName)) {
-                    loadedfiles.add(fileName);
-                    identification.loadSpectrumMatchParameters(fileName, new PSParameter(), new ProgressDialogX(false));
-                    identification.loadSpectrumMatches(fileName, new ProgressDialogX(false));
-                }
+            String fileName = Spectrum.getSpectrumFile(psmKey);
+            if (!loadedfiles.contains(fileName)) {
+                loadedfiles.add(fileName);
+                identification.loadSpectrumMatchParameters(fileName, new PSParameter(), new ProgressDialogX(false));
+                identification.loadSpectrumMatches(fileName, new ProgressDialogX(false));
+            }
                 
             spectrumMatch = identification.getSpectrumMatch(psmKey);
 
             for (String spectrumKey : quantification.getPsmIDentificationToQuantification().get(psmKey)) {
 
                 Peptide bestAssumption = spectrumMatch.getBestAssumption().getPeptide();
-
 
                 for (String protein : bestAssumption.getParentProteins()) {
                     spectraOutput.write(protein + " ");
@@ -330,6 +332,8 @@ public class ReporterExporter {
                     spectraOutput.write("0" + SEPARATOR);
                 }
 
+                // @TODO: has to use batch select/insert!!!
+                
                 PsmQuantification psmQuantification = quantification.getSpectrumMatch(spectrumKey);
                 spectraOutput.write(getIntensities(psmQuantification) + SEPARATOR);
                 spectraOutput.write(getDeisotopedIntensities(psmQuantification) + SEPARATOR);
@@ -502,12 +506,12 @@ public class ReporterExporter {
 
         identification.loadProteinMatchParameters(new PSParameter(), new ProgressDialogX(false));
         identification.loadProteinMatches(new ProgressDialogX(false));
+
         for (String proteinKey : quantification.getProteinQuantification()) {
 
             PSParameter probabilities = new PSParameter();
             probabilities = (PSParameter) identification.getProteinMatchParameter(proteinKey, probabilities);
             ProteinMatch proteinMatch = identification.getProteinMatch(proteinKey);
-
 
             proteinsOutput.write(proteinMatch.getMainMatch() + SEPARATOR);
 
@@ -517,7 +521,7 @@ public class ReporterExporter {
                 }
             }
 
-            proteinsOutput.write(SEPARATOR + probabilities.getGroupClass() + SEPARATOR);
+            proteinsOutput.write(SEPARATOR + probabilities.getProteinInferenceClassAsString() + SEPARATOR);
             proteinsOutput.write(proteinMatch.getPeptideCount() + SEPARATOR);
             int nSpectra = 0;
             int nValidatedPeptides = 0;
