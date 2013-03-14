@@ -13,7 +13,7 @@ import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
 import com.compomics.util.experiment.quantification.Quantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.gui.waiting.WaitingHandler;
-import eu.isas.peptideshaker.myparameters.PSSettings;
+import eu.isas.peptideshaker.myparameters.PeptideShakerSettings;
 import eu.isas.reporter.io.DataLoader;
 import eu.isas.reporter.calculation.RatioEstimator;
 import eu.isas.reporter.gui.ReporterGUI;
@@ -63,7 +63,7 @@ public class Reporter {
     /**
      * The PeptideShaker settings
      */
-    private PSSettings psSettings;
+    private PeptideShakerSettings psSettings;
 
     /**
      * Main method.
@@ -77,7 +77,7 @@ public class Reporter {
     /**
      * Reporter constructor.
      *
-     * @param reporterGUI referenec to the Reporter GUI
+     * @param reporterGUI reference to the Reporter GUI
      */
     public Reporter(ReporterGUI reporterGUI) {
         this.reporterGUI = reporterGUI;
@@ -224,7 +224,7 @@ public class Reporter {
      *
      * @return the PeptideShaker settings
      */
-    public PSSettings getPSSettings() {
+    public PeptideShakerSettings getPSSettings() {
         return psSettings;
     }
 
@@ -233,7 +233,7 @@ public class Reporter {
      *
      * @param psSettings the peptide shaker settings
      */
-    public void setPSSettings(PSSettings psSettings) {
+    public void setPSSettings(PeptideShakerSettings psSettings) {
         this.psSettings = psSettings;
     }
 
@@ -253,6 +253,9 @@ public class Reporter {
                 waitingHandler.setMaxSecondaryProgressValue(quantification.getProteinQuantification().size());
                 waitingHandler.setSecondaryProgressDialogIndeterminate(false);
             }
+            
+            // @TODO: has to use batch select/insert!!!
+
             for (String proteinKey : quantification.getProteinQuantification()) {
                 ratioEstimator.estimateProteinRatios(proteinKey);
                 if (waitingHandler != null) {

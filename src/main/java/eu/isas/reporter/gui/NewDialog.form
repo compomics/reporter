@@ -129,7 +129,7 @@
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="fileSelectiontPanel" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="9" max="32767" attributes="0"/>
+                          <EmptySpace pref="21" max="32767" attributes="0"/>
                           <Component id="projectPanel" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="samplePanel" min="-2" max="-2" attributes="0"/>
@@ -520,7 +520,7 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="reporterIonsConfigJScrollPane" pref="140" max="32767" attributes="0"/>
+                              <Component id="reporterIonsConfigJScrollPane" pref="148" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                           </Group>
                       </Group>
@@ -577,7 +577,7 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="isotopeCorrectionJScrollPane" pref="140" max="32767" attributes="0"/>
+                              <Component id="isotopeCorrectionJScrollPane" pref="148" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                           </Group>
                       </Group>
@@ -760,7 +760,7 @@
                           <Component id="spectrumAnalysisPanel" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="307" max="32767" attributes="0"/>
+                          <EmptySpace pref="315" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>

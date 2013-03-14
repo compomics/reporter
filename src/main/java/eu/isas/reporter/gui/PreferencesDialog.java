@@ -401,14 +401,14 @@ public class PreferencesDialog extends javax.swing.JDialog {
         int nNew = allPTMs.getSelectedIndices().length;
         String[] fixedModifications = new String[nSelected + nNew];
         int cpt = 0;
-        String name;
+
         for (int i = 0; i < nSelected; i++) {
             fixedModifications[cpt] = (String) selectedPTMs.getModel().getElementAt(i);
             cpt++;
         }
         boolean found;
         for (Object selection : allPTMs.getSelectedValues()) {
-            name = (String) selection;
+            String name = (String) selection;
             found = false;
             for (int i = 0; i < selectedPTMs.getModel().getSize(); i++) {
                 if (((String) selectedPTMs.getModel().getElementAt(i)).equals(name)) {

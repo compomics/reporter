@@ -18,9 +18,8 @@ import com.compomics.util.gui.SampleSelection;
 import com.compomics.util.gui.renderers.AlignedListCellRenderer;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
 import com.compomics.util.gui.waiting.waitinghandlers.WaitingDialog;
-import eu.isas.peptideshaker.PeptideShaker;
 import eu.isas.peptideshaker.myparameters.PSParameter;
-import eu.isas.peptideshaker.myparameters.PSSettings;
+import eu.isas.peptideshaker.myparameters.PeptideShakerSettings;
 import eu.isas.reporter.Reporter;
 import eu.isas.reporter.myparameters.QuantificationPreferences;
 import eu.isas.reporter.utils.Properties;
@@ -1344,16 +1343,78 @@ public class NewDialog extends javax.swing.JDialog {
 
                     Sample tempSample = null;
 
-                    PSSettings psSettings = new PSSettings();
-                    psSettings = (PSSettings) experiment.getUrParam(psSettings);
+                    PeptideShakerSettings psSettings = new PeptideShakerSettings();
+                    psSettings = (PeptideShakerSettings) experiment.getUrParam(psSettings);
                     reporter.setPSSettings(psSettings);
-
-                    PeptideShaker.setPeptideShakerPTMs(psSettings.getSearchParameters()); // @TODO: this needs to be reimplemented!!
 
                     if (progressDialog.isRunCanceled()) {
                         progressDialog.dispose();
                         return;
                     }
+                    
+                    
+                    
+                    progressDialog.setIndeterminate(true);
+                    progressDialog.setTitle("Importing Experiment Details. Please Wait...");
+
+                    if (progressDialog.isRunCanceled()) {
+                        progressDialog.dispose();
+                        return;
+                    }
+
+                    ArrayList<Sample> samples = new ArrayList(experiment.getSamples().values());
+
+                    if (samples.size() == 1) {
+                        tempSample = samples.get(0);
+                    } else {
+                        String[] sampleNames = new String[samples.size()];
+                        for (int i = 0; i < sampleNames.length; i++) {
+                            sampleNames[i] = samples.get(i).getReference();
+                        }
+                        SampleSelection sampleSelection = new SampleSelection(null, true, sampleNames, "sample");
+                        sampleSelection.setVisible(true);
+                        String choice = sampleSelection.getChoice();
+                        for (Sample sampleTemp : samples) {
+                            if (sampleTemp.getReference().equals(choice)) {
+                                tempSample = sampleTemp;
+                                break;
+                            }
+                        }
+                    }
+
+                    sample = tempSample;
+
+                    if (progressDialog.isRunCanceled()) {
+                        progressDialog.dispose();
+                        return;
+                    }
+
+                    ArrayList<Integer> replicates = new ArrayList(experiment.getAnalysisSet(tempSample).getReplicateNumberList());
+
+                    int tempReplicate;
+
+                    if (replicates.size() == 1) {
+                        tempReplicate = replicates.get(0);
+                    } else {
+                        String[] replicateNames = new String[replicates.size()];
+                        for (int i = 0; i < replicateNames.length; i++) {
+                            replicateNames[i] = samples.get(i).getReference();
+                        }
+                        SampleSelection sampleSelection = new SampleSelection(null, true, replicateNames, "replicate");
+                        sampleSelection.setVisible(true);
+                        Integer choice = new Integer(sampleSelection.getChoice());
+                        tempReplicate = choice;
+                    }
+
+                    replicateNumber = tempReplicate;
+
+                    if (progressDialog.isRunCanceled()) {
+                        progressDialog.dispose();
+                        return;
+                    }
+                    
+                    
+                    
 
                     progressDialog.setTitle("Loading FASTA File. Please Wait...");
 
@@ -1540,65 +1601,6 @@ public class NewDialog extends javax.swing.JDialog {
                         }
                         txtSpectraFileLocation.setText(report);
                     }
-
-                    if (progressDialog.isRunCanceled()) {
-                        progressDialog.dispose();
-                        return;
-                    }
-
-                    progressDialog.setIndeterminate(true);
-                    progressDialog.setTitle("Importing Experiment Details. Please Wait...");
-
-                    if (progressDialog.isRunCanceled()) {
-                        progressDialog.dispose();
-                        return;
-                    }
-
-                    ArrayList<Sample> samples = new ArrayList(experiment.getSamples().values());
-
-                    if (samples.size() == 1) {
-                        tempSample = samples.get(0);
-                    } else {
-                        String[] sampleNames = new String[samples.size()];
-                        for (int i = 0; i < sampleNames.length; i++) {
-                            sampleNames[i] = samples.get(i).getReference();
-                        }
-                        SampleSelection sampleSelection = new SampleSelection(null, true, sampleNames, "sample");
-                        sampleSelection.setVisible(true);
-                        String choice = sampleSelection.getChoice();
-                        for (Sample sampleTemp : samples) {
-                            if (sampleTemp.getReference().equals(choice)) {
-                                tempSample = sampleTemp;
-                                break;
-                            }
-                        }
-                    }
-
-                    sample = tempSample;
-
-                    if (progressDialog.isRunCanceled()) {
-                        progressDialog.dispose();
-                        return;
-                    }
-
-                    ArrayList<Integer> replicates = new ArrayList(experiment.getAnalysisSet(tempSample).getReplicateNumberList());
-
-                    int tempReplicate;
-
-                    if (replicates.size() == 1) {
-                        tempReplicate = replicates.get(0);
-                    } else {
-                        String[] replicateNames = new String[replicates.size()];
-                        for (int i = 0; i < replicateNames.length; i++) {
-                            replicateNames[i] = samples.get(i).getReference();
-                        }
-                        SampleSelection sampleSelection = new SampleSelection(null, true, replicateNames, "replicate");
-                        sampleSelection.setVisible(true);
-                        Integer choice = new Integer(sampleSelection.getChoice());
-                        tempReplicate = choice;
-                    }
-
-                    replicateNumber = tempReplicate;
 
                     if (progressDialog.isRunCanceled()) {
                         progressDialog.dispose();
