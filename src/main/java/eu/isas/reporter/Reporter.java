@@ -57,11 +57,11 @@ public class Reporter {
      */
     private final String USER_MODIFICATIONS_FILE = "resources/conf/reporter_usermods.xml";
     /**
-     * The name of the reporter experiment
+     * The name of the reporter experiment.
      */
     public static final String experimentObjectName = "experiment";
     /**
-     * The PeptideShaker settings
+     * The PeptideShaker settings.
      */
     private PeptideShakerSettings psSettings;
 
