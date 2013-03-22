@@ -7,6 +7,7 @@ import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuant
 import com.compomics.util.experiment.quantification.matches.ProteinQuantification;
 import com.compomics.util.gui.UtilitiesGUIDefaults;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
+import com.compomics.util.preferences.UtilitiesUserPreferences;
 import eu.isas.reporter.Reporter;
 import eu.isas.reporter.io.ReporterExporter;
 import eu.isas.reporter.myparameters.ItraqScore;
@@ -34,7 +35,7 @@ public class ReporterGUI extends javax.swing.JFrame {
     /**
      * The reporter class which will actually process the data
      */
-    private Reporter parent = new Reporter(this);
+    private Reporter reporter = new Reporter(this);
     /**
      * If set to true all messages will be sent to a log file.
      */
@@ -52,7 +53,7 @@ public class ReporterGUI extends javax.swing.JFrame {
      */
     private ArrayList<String> peptideTableIndex = new ArrayList<String>();
     /**
-     * Mapping of the psm table entries
+     * Mapping of the PSM table entries
      */
     private ArrayList<String> psmTableIndex = new ArrayList<String>();
     /**
@@ -71,6 +72,10 @@ public class ReporterGUI extends javax.swing.JFrame {
      * A simple progress dialog.
      */
     private ProgressDialogX progressDialog;
+    /**
+     * The utilities user preferences.
+     */
+    private UtilitiesUserPreferences utilitiesUserPreferences = null;
 
     /**
      * Creates new form ReporterGUI.
@@ -83,15 +88,36 @@ public class ReporterGUI extends javax.swing.JFrame {
         // update the look and feel after adding the panels
         setLookAndFeel();
 
+        // load the utilities user preferences
+        try {
+            utilitiesUserPreferences = UtilitiesUserPreferences.loadUserPreferences();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "An error occured when reading the user preferences.", "File Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        }
+
+        // set this version as the default Reporter version
+        if (!reporter.getJarFilePath().equalsIgnoreCase(".")) {
+
+            utilitiesUserPreferences.setPeptideShakerPath(new File(reporter.getJarFilePath(), "Reporter-" + new Properties().getVersion() + ".jar").getAbsolutePath());
+
+            try {
+                UtilitiesUserPreferences.saveUserPreferences(utilitiesUserPreferences);
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(this, "An error occured when saving the user preferences.", "File Error", JOptionPane.ERROR_MESSAGE);
+                e.printStackTrace();
+            }
+        }
+
         // add desktop shortcut?
-        if (!parent.getJarFilePath().equalsIgnoreCase(".")
+        if (!reporter.getJarFilePath().equalsIgnoreCase(".")
                 && System.getProperty("os.name").lastIndexOf("Windows") != -1
-                && new File(parent.getJarFilePath() + "/resources/conf/firstRun").exists()) {
+                && new File(reporter.getJarFilePath() + "/resources/conf/firstRun").exists()) {
 
             // @TODO: add support for desktop icons in mac and linux??
 
             // delete the firstRun file such that the user is not asked the next time around
-            new File(parent.getJarFilePath() + "/resources/conf/firstRun").delete();
+            new File(reporter.getJarFilePath() + "/resources/conf/firstRun").delete();
 
             int value = JOptionPane.showConfirmDialog(null,
                     "Create a shortcut to Reporter on the desktop?",
@@ -121,9 +147,9 @@ public class ReporterGUI extends javax.swing.JFrame {
         setVisible(true);
 
         try {
-            new NewDialog(this, parent);
+            new NewDialog(this, reporter);
         } catch (Exception e) {
-            parent.catchException(e);
+            reporter.catchException(e);
         }
     }
 
@@ -142,7 +168,7 @@ public class ReporterGUI extends javax.swing.JFrame {
      * @return a reference to the parent Reporter object
      */
     public Reporter getReporter() {
-        return parent;
+        return reporter;
     }
 
     /**
@@ -175,7 +201,6 @@ public class ReporterGUI extends javax.swing.JFrame {
         progressDialog.setUnstoppable(false);
 
         new Thread(new Runnable() {
-
             public void run() {
                 try {
                     progressDialog.setVisible(true);
@@ -186,11 +211,10 @@ public class ReporterGUI extends javax.swing.JFrame {
         }, "ProgressDialog").start();
 
         new Thread("CloseThread") {
-
             @Override
             public void run() {
-                parent.setQuantificationPreferences(fQuantificationPreferences);
-                parent.compileRatios(progressDialog);
+                reporter.setQuantificationPreferences(fQuantificationPreferences);
+                reporter.compileRatios(progressDialog);
                 displayResults(quantification, identification);
                 progressDialog.setVisible(false);
             }
@@ -224,7 +248,7 @@ public class ReporterGUI extends javax.swing.JFrame {
                 proteinTableIndex.addAll(proteinKeys.get(currentScore));
             }
         } catch (Exception e) {
-            parent.catchException(e);
+            reporter.catchException(e);
         }
     }
 
@@ -379,18 +403,18 @@ public class ReporterGUI extends javax.swing.JFrame {
 
     private void newMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newMenuItemActionPerformed
         try {
-            new NewDialog(this, parent);
+            new NewDialog(this, reporter);
         } catch (Exception e) {
-            parent.catchException(e);
+            reporter.catchException(e);
         }
     }//GEN-LAST:event_newMenuItemActionPerformed
 
     private void quantificationOptionsMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quantificationOptionsMenuActionPerformed
-        new PreferencesDialog(this, parent.getQuantificationPreferences());
+        new PreferencesDialog(this, reporter.getQuantificationPreferences());
     }//GEN-LAST:event_quantificationOptionsMenuActionPerformed
 
     private void quantificationOptionsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quantificationOptionsMenuItemActionPerformed
-        new PreferencesDialog(this, parent.getQuantificationPreferences());
+        new PreferencesDialog(this, reporter.getQuantificationPreferences());
     }//GEN-LAST:event_quantificationOptionsMenuItemActionPerformed
 
     private void exportMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportMenuItemActionPerformed
@@ -470,7 +494,6 @@ public class ReporterGUI extends javax.swing.JFrame {
         final File exportFolder = file;
 
         new Thread(new Runnable() {
-
             public void run() {
                 try {
                     progressDialog.setVisible(true);
@@ -481,11 +504,10 @@ public class ReporterGUI extends javax.swing.JFrame {
         }, "ProgressDialog").start();
 
         new Thread("ImportThread") {
-
             @Override
             public void run() {
                 try {
-                    ReporterExporter exporter = new ReporterExporter(parent.getExperiment(), "\t");
+                    ReporterExporter exporter = new ReporterExporter(reporter.getExperiment(), "\t");
                     exporter.exportResults(quantification, identification, exportFolder.getPath(), progressDialog);
 
                     if (!progressDialog.isRunCanceled()) {
@@ -611,7 +633,7 @@ public class ReporterGUI extends javax.swing.JFrame {
      * @return the quantification preferences
      */
     public QuantificationPreferences getQuantificationPreferences() {
-        return parent.getQuantificationPreferences();
+        return reporter.getQuantificationPreferences();
     }
 
     /**
@@ -620,7 +642,7 @@ public class ReporterGUI extends javax.swing.JFrame {
      * @param quantificationPreferences the quantification preferences
      */
     public void setQuantificationPreferences(QuantificationPreferences quantificationPreferences) {
-        parent.setQuantificationPreferences(quantificationPreferences);
+        reporter.setQuantificationPreferences(quantificationPreferences);
     }
 
     /**
@@ -662,8 +684,8 @@ public class ReporterGUI extends javax.swing.JFrame {
     private void setUpLogFile() {
 
         try {
-            if (useLogFile && !parent.getJarFilePath().equalsIgnoreCase(".")) {
-                String path = parent.getJarFilePath() + "/resources/conf/Reporter.log";
+            if (useLogFile && !reporter.getJarFilePath().equalsIgnoreCase(".")) {
+                String path = reporter.getJarFilePath() + "/resources/conf/Reporter.log";
 
                 File file = new File(path);
                 System.setOut(new java.io.PrintStream(new FileOutputStream(file, true)));
@@ -695,7 +717,7 @@ public class ReporterGUI extends javax.swing.JFrame {
      */
     public void close(int status) {
         this.dispose();
-        parent.close(status);
+        reporter.close(status);
     }
 
     /**
@@ -703,7 +725,7 @@ public class ReporterGUI extends javax.swing.JFrame {
      */
     private void addShortcutAtDeskTop() {
 
-        String jarFilePath = parent.getJarFilePath();
+        String jarFilePath = reporter.getJarFilePath();
 
         if (!jarFilePath.equalsIgnoreCase(".")) {
 
