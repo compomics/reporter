@@ -1024,7 +1024,7 @@ public class NewDialog extends javax.swing.JDialog {
         FileFilter filter = new FileFilter() {
 
             public boolean accept(File myFile) {
-                return myFile.getName().endsWith("mgf")
+                return myFile.getName().toLowerCase().endsWith(".mgf")
                         || myFile.isDirectory();
             }
 
@@ -1042,14 +1042,14 @@ public class NewDialog extends javax.swing.JDialog {
                 if (newFile.isDirectory()) {
                     File[] tempFiles = newFile.listFiles();
                     for (File file : tempFiles) {
-                        if (file.getName().endsWith("mgf")) {
+                        if (file.getName().toLowerCase().endsWith(".mgf")) {
                             if (!mgfFiles.contains(file)) {
                                 mgfFiles.add(file);
                             }
                         }
                     }
                 } else {
-                    if (newFile.getName().endsWith("mgf")) {
+                    if (newFile.getName().toLowerCase().endsWith(".mgf")) {
                         if (!mgfFiles.contains(newFile)) {
                             mgfFiles.add(newFile);
                         }
