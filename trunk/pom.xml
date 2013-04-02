@@ -222,6 +222,14 @@
             <layout>default</layout>
         </repository>
         
+        <!-- EBI nexus repository -->
+        <repository>
+            <id>nexus-ebi-repo</id>
+            <name>The EBI internal repository</name>
+            <url>http://www.ebi.ac.uk/intact/maven/nexus/content/repositories/ebi-repo/</url>
+            <layout>default</layout>
+        </repository>
+        
     </repositories>
 
 
@@ -231,7 +239,7 @@
         <dependency>
             <groupId>com.compomics</groupId>
             <artifactId>utilities</artifactId>
-            <version>3.11.24</version>
+            <version>3.11.28</version>
             <exclusions>
                 <exclusion>
                     <artifactId>commons-math</artifactId>
