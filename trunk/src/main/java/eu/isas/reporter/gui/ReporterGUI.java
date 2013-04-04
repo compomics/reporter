@@ -1,10 +1,15 @@
 package eu.isas.reporter.gui;
 
+import com.compomics.software.CompomicsWrapper;
+import com.compomics.util.Util;
 import com.compomics.util.experiment.biology.ions.ReporterIon;
 import com.compomics.util.experiment.identification.Identification;
+import com.compomics.util.experiment.identification.SequenceFactory;
 import com.compomics.util.experiment.identification.matches.ProteinMatch;
+import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.matches.ProteinQuantification;
+import com.compomics.util.general.ExceptionHandler;
 import com.compomics.util.gui.UtilitiesGUIDefaults;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
 import com.compomics.util.preferences.UtilitiesUserPreferences;
@@ -16,11 +21,13 @@ import eu.isas.reporter.resultpanels.ProteinPanel;
 import eu.isas.reporter.utils.Properties;
 import java.awt.Toolkit;
 import java.io.*;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 import net.jimmc.jshortcut.JShellLink;
 import org.ujmp.core.collections.ArrayIndexList;
@@ -29,11 +36,12 @@ import org.ujmp.core.collections.ArrayIndexList;
  * The main Reporter GUI.
  *
  * @author Marc Vaudel
+ * @author Harald Barsnes
  */
 public class ReporterGUI extends javax.swing.JFrame {
 
     /**
-     * The reporter class which will actually process the data
+     * The reporter class which will actually process the data.
      */
     private Reporter reporter = new Reporter(this);
     /**
@@ -45,27 +53,27 @@ public class ReporterGUI extends javax.swing.JFrame {
      */
     private String lastSelectedFolder = "user.home";
     /**
-     * Mapping of the protein table entries
+     * Mapping of the protein table entries.
      */
     private ArrayList<String> proteinTableIndex = new ArrayList<String>();
     /**
-     * Mapping of the peptide table entries
+     * Mapping of the peptide table entries.
      */
     private ArrayList<String> peptideTableIndex = new ArrayList<String>();
     /**
-     * Mapping of the PSM table entries
+     * Mapping of the PSM table entries.
      */
     private ArrayList<String> psmTableIndex = new ArrayList<String>();
     /**
-     * The currently processed quantification
+     * The currently processed quantification.
      */
     private ReporterIonQuantification quantification;
     /**
-     * The corresponding identification
+     * The corresponding identification.
      */
     private Identification identification;
     /**
-     * The reporter ions used in the method
+     * The reporter ions used in the method.
      */
     private ArrayList<ReporterIon> reporterIons = new ArrayIndexList<ReporterIon>();
     /**
@@ -76,9 +84,25 @@ public class ReporterGUI extends javax.swing.JFrame {
      * The utilities user preferences.
      */
     private UtilitiesUserPreferences utilitiesUserPreferences = null;
+    /**
+     * The location of the folder used for serialization of matches.
+     */
+    public final static String SERIALIZATION_DIRECTORY = "resources/matches";
+    /**
+     * The spectrum factory.
+     */
+    private SpectrumFactory spectrumFactory = SpectrumFactory.getInstance(100);
+    /**
+     * The sequence factory.
+     */
+    private SequenceFactory sequenceFactory = SequenceFactory.getInstance(100000);
+    /**
+     * The exception handler
+     */
+    private ExceptionHandler exceptionHandler = new ExceptionHandler(this);
 
     /**
-     * Creates new form ReporterGUI.
+     * Creates a new ReporterGUI.
      */
     public ReporterGUI() {
 
@@ -97,9 +121,9 @@ public class ReporterGUI extends javax.swing.JFrame {
         }
 
         // set this version as the default Reporter version
-        if (!reporter.getJarFilePath().equalsIgnoreCase(".")) {
+        if (!getJarFilePath().equalsIgnoreCase(".")) {
 
-            utilitiesUserPreferences.setPeptideShakerPath(new File(reporter.getJarFilePath(), "Reporter-" + new Properties().getVersion() + ".jar").getAbsolutePath());
+            utilitiesUserPreferences.setPeptideShakerPath(new File(getJarFilePath(), "Reporter-" + new Properties().getVersion() + ".jar").getAbsolutePath());
 
             try {
                 UtilitiesUserPreferences.saveUserPreferences(utilitiesUserPreferences);
@@ -110,14 +134,14 @@ public class ReporterGUI extends javax.swing.JFrame {
         }
 
         // add desktop shortcut?
-        if (!reporter.getJarFilePath().equalsIgnoreCase(".")
+        if (!getJarFilePath().equalsIgnoreCase(".")
                 && System.getProperty("os.name").lastIndexOf("Windows") != -1
-                && new File(reporter.getJarFilePath() + "/resources/conf/firstRun").exists()) {
+                && new File(getJarFilePath() + "/resources/conf/firstRun").exists()) {
 
             // @TODO: add support for desktop icons in mac and linux??
 
             // delete the firstRun file such that the user is not asked the next time around
-            new File(reporter.getJarFilePath() + "/resources/conf/firstRun").delete();
+            new File(getJarFilePath() + "/resources/conf/firstRun").delete();
 
             int value = JOptionPane.showConfirmDialog(null,
                     "Create a shortcut to Reporter on the desktop?",
@@ -274,15 +298,21 @@ public class ReporterGUI extends javax.swing.JFrame {
         openMenuItem = new javax.swing.JMenuItem();
         jSeparator2 = new javax.swing.JPopupMenu.Separator();
         saveMenuItem = new javax.swing.JMenuItem();
-        exportMenuItem = new javax.swing.JMenuItem();
         jSeparator3 = new javax.swing.JPopupMenu.Separator();
         exitMenuItem = new javax.swing.JMenuItem();
+        exportMenu = new javax.swing.JMenu();
+        exportProteinsMenuItem = new javax.swing.JMenuItem();
+        exportAllMenuItem = new javax.swing.JMenuItem();
         quantificationOptionsMenu = new javax.swing.JMenu();
         quantificationOptionsMenuItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(1280, 750));
-        setPreferredSize(new java.awt.Dimension(1278, 883));
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
 
         backgroundPanel.setBackground(new java.awt.Color(255, 255, 255));
 
@@ -317,11 +347,6 @@ public class ReporterGUI extends javax.swing.JFrame {
 
         fileMenu.setMnemonic('F');
         fileMenu.setText("File");
-        fileMenu.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                fileMenuActionPerformed(evt);
-            }
-        });
 
         newMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
         newMenuItem.setMnemonic('N');
@@ -344,15 +369,6 @@ public class ReporterGUI extends javax.swing.JFrame {
         saveMenuItem.setMnemonic('S');
         saveMenuItem.setText("Save");
         fileMenu.add(saveMenuItem);
-
-        exportMenuItem.setMnemonic('E');
-        exportMenuItem.setText("Export");
-        exportMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                exportMenuItemActionPerformed(evt);
-            }
-        });
-        fileMenu.add(exportMenuItem);
         fileMenu.add(jSeparator3);
 
         exitMenuItem.setMnemonic('x');
@@ -366,13 +382,31 @@ public class ReporterGUI extends javax.swing.JFrame {
 
         menuBar.add(fileMenu);
 
-        quantificationOptionsMenu.setMnemonic('E');
-        quantificationOptionsMenu.setText("Edit");
-        quantificationOptionsMenu.addActionListener(new java.awt.event.ActionListener() {
+        exportMenu.setMnemonic('E');
+        exportMenu.setText("Export");
+
+        exportProteinsMenuItem.setMnemonic('P');
+        exportProteinsMenuItem.setText("Export Proteins");
+        exportProteinsMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                quantificationOptionsMenuActionPerformed(evt);
+                exportProteinsMenuItemActionPerformed(evt);
             }
         });
+        exportMenu.add(exportProteinsMenuItem);
+
+        exportAllMenuItem.setMnemonic('A');
+        exportAllMenuItem.setText("Export All");
+        exportAllMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportAllMenuItemActionPerformed(evt);
+            }
+        });
+        exportMenu.add(exportAllMenuItem);
+
+        menuBar.add(exportMenu);
+
+        quantificationOptionsMenu.setMnemonic('E');
+        quantificationOptionsMenu.setText("Edit");
 
         quantificationOptionsMenuItem.setMnemonic('Q');
         quantificationOptionsMenuItem.setText("Quantification Preferences");
@@ -401,6 +435,11 @@ public class ReporterGUI extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    /**
+     * Opens the new dialog.
+     *
+     * @param evt
+     */
     private void newMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newMenuItemActionPerformed
         try {
             new NewDialog(this, reporter);
@@ -409,15 +448,254 @@ public class ReporterGUI extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_newMenuItemActionPerformed
 
-    private void quantificationOptionsMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quantificationOptionsMenuActionPerformed
-        new PreferencesDialog(this, reporter.getQuantificationPreferences());
-    }//GEN-LAST:event_quantificationOptionsMenuActionPerformed
-
+    /**
+     * Open the preferences dialog.
+     *
+     * @param evt
+     */
     private void quantificationOptionsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quantificationOptionsMenuItemActionPerformed
         new PreferencesDialog(this, reporter.getQuantificationPreferences());
     }//GEN-LAST:event_quantificationOptionsMenuItemActionPerformed
 
-    private void exportMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportMenuItemActionPerformed
+    /**
+     * Export protein level to CSV.
+     *
+     * @param evt
+     */
+    private void exportProteinsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportProteinsMenuItemActionPerformed
+        export(true);
+    }//GEN-LAST:event_exportProteinsMenuItemActionPerformed
+
+    /**
+     * Close Reporter.
+     *
+     * @param evt
+     */
+    private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMenuItemActionPerformed
+        closeReporter();
+    }//GEN-LAST:event_exitMenuItemActionPerformed
+
+    /**
+     * Export everything to CSV.
+     *
+     * @param evt
+     */
+    private void exportAllMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportAllMenuItemActionPerformed
+        export(false);
+    }//GEN-LAST:event_exportAllMenuItemActionPerformed
+
+    /**
+     * Close Reporter.
+     *
+     * @param evt
+     */
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        closeReporter();
+    }//GEN-LAST:event_formWindowClosing
+
+    /**
+     * Closes Reporter.
+     */
+    private void closeReporter() {
+
+        progressDialog = new ProgressDialogX(this,
+                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
+                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")),
+                true);
+        progressDialog.setTitle("Closing. Please Wait...");
+        progressDialog.setIndeterminate(true);
+        progressDialog.setUnstoppable(true);
+
+        final ReporterGUI finalRef = this;
+
+        new Thread(new Runnable() {
+            public void run() {
+                try {
+                    progressDialog.setVisible(true);
+                } catch (IndexOutOfBoundsException e) {
+                    // ignore
+                }
+            }
+        }, "ProgressDialog").start();
+
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    File serializationFolder = new File(getJarFilePath(), ReporterGUI.SERIALIZATION_DIRECTORY);
+                    String[] files = serializationFolder.list();
+
+                    if (files != null) {
+                        progressDialog.setIndeterminate(false);
+                        progressDialog.setMaxProgressValue(files.length);
+                    }
+
+                    // close the files and save the user preferences
+                    if (!progressDialog.isRunCanceled()) {
+                        spectrumFactory.closeFiles();
+                        sequenceFactory.closeFile();
+                        saveUserPreferences();
+                    }
+
+                    // close the progress dialog
+                    if (!progressDialog.isRunCanceled()) {
+                        progressDialog.setRunFinished();
+                    }
+
+                    // hide the gui
+                    finalRef.setVisible(false);
+
+                    // clear the data and database folder
+                    clearData(true);
+
+                    // close the jvm
+                    System.exit(0);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    catchException(e);
+                }
+            }
+        });
+    }
+    
+    /**
+     * Clear the data from the previous experiment.
+     *
+     * @param clearDatabaseFolder decides if the database folder is to be
+     * cleared or not
+     */
+    public void clearData(boolean clearDatabaseFolder) {
+
+        // reset the preferences
+        //selectedProteinKey = NO_SELECTION;
+        //selectedPeptideKey = NO_SELECTION;
+        //selectedPsmKey = NO_SELECTION;
+
+        //projectDetails = null;
+        //spectrumAnnotator = new SpectrumAnnotator();
+
+        try {
+            spectrumFactory.closeFiles();
+        } catch (Exception e) {
+            e.printStackTrace();
+            catchException(e);
+        }
+        try {
+            sequenceFactory.closeFile();
+        } catch (Exception e) {
+            e.printStackTrace();
+            catchException(e);
+        }
+
+        try {
+            spectrumFactory.clearFactory();
+        } catch (Exception e) {
+            e.printStackTrace();
+            catchException(e);
+        }
+
+        try {
+            sequenceFactory.clearFactory();
+        } catch (Exception e) {
+            e.printStackTrace();
+            catchException(e);
+        }
+
+        exceptionHandler = new ExceptionHandler(this);
+
+        if (clearDatabaseFolder) {
+            clearDatabaseFolder();
+        }
+
+        //resetFeatureGenerator();
+
+        // set up the tabs/panels
+        //setUpPanels(true);
+
+        // repaint the panels
+        //repaintPanels();
+
+        // select the overview tab
+        //allTabsJTabbedPane.setSelectedIndex(OVER_VIEW_TAB_INDEX);
+        //currentPSFile = null;
+        //dataSaved = false;
+    }
+    
+    /**
+     * Clears the database folder.
+     */
+    private void clearDatabaseFolder() {
+
+        boolean databaseClosed = true;
+
+        // close the database connection
+        if (identification != null) {
+
+            try {
+                identification.close();
+                identification = null;
+            } catch (SQLException e) {
+                databaseClosed = false;
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(null, "Failed to close the database.", "Database Error", JOptionPane.WARNING_MESSAGE);
+            }
+        }
+
+        // empty the matches folder
+        if (databaseClosed) {
+            File matchFolder = new File(getJarFilePath(), Reporter.SERIALIZATION_DIRECTORY);
+            File[] tempFiles = matchFolder.listFiles();
+
+            if (tempFiles != null) {
+                for (File currentFile : tempFiles) {
+                    Util.deleteDir(currentFile);
+                }
+            }
+
+            if (matchFolder.listFiles() != null && matchFolder.listFiles().length > 0) {
+                JOptionPane.showMessageDialog(null, "Failed to empty the database folder:\n" + matchFolder.getPath() + ".",
+                        "Database Cleanup Failed", JOptionPane.WARNING_MESSAGE);
+            }
+        }
+    }
+
+    /**
+     * Method called whenever an exception is caught.
+     *
+     * @param e the exception caught
+     */
+    public void catchException(Exception e) {
+        exceptionHandler.catchException(e);
+    }
+    
+    /**
+     * Saves the user preferences.
+     */
+    public void saveUserPreferences() {
+        try {
+            UtilitiesUserPreferences.saveUserPreferences(utilitiesUserPreferences);
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "An error occured when saving the user preferences.", "File Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Returns the path to the jar file.
+     *
+     * @return the path to the jar file
+     */
+    public String getJarFilePath() {
+        return CompomicsWrapper.getJarFilePath(this.getClass().getResource("ReporterGUI.class").getPath(), "Reporter");
+    }
+
+    /**
+     * Export to CSV.
+     *
+     * @param proteinOnly export protein level only
+     */
+    private void export(boolean proteinOnly) {
 
         JFileChooser fileChooser = new JFileChooser(getLastSelectedFolder());
         fileChooser.setDialogTitle("Select Export Folder");
@@ -445,17 +723,9 @@ public class ReporterGUI extends javax.swing.JFrame {
                 }
             }
 
-            exportToCSV(fileChooser.getSelectedFile());
+            exportToCSV(fileChooser.getSelectedFile(), proteinOnly);
         }
-    }//GEN-LAST:event_exportMenuItemActionPerformed
-
-    private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMenuItemActionPerformed
-        System.exit(0);
-    }//GEN-LAST:event_exitMenuItemActionPerformed
-
-    private void fileMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fileMenuActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_fileMenuActionPerformed
+    }
 
     /**
      * @param args the command line arguments
@@ -466,7 +736,9 @@ public class ReporterGUI extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel backgroundPanel;
     private javax.swing.JMenuItem exitMenuItem;
-    private javax.swing.JMenuItem exportMenuItem;
+    private javax.swing.JMenuItem exportAllMenuItem;
+    private javax.swing.JMenu exportMenu;
+    private javax.swing.JMenuItem exportProteinsMenuItem;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator2;
@@ -484,7 +756,15 @@ public class ReporterGUI extends javax.swing.JFrame {
     private javax.swing.JTabbedPane tabPanel;
     // End of variables declaration//GEN-END:variables
 
-    private void exportToCSV(File file) {
+    /**
+     * Export the results to a CSV file.
+     *
+     * @param file the file to export to
+     * @param aProteinsOnly if true, only the protein level will be exported
+     */
+    private void exportToCSV(File file, boolean aProteinsOnly) {
+
+        final boolean proteinsOnly = aProteinsOnly;
 
         progressDialog = new ProgressDialogX(this,
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
@@ -508,17 +788,17 @@ public class ReporterGUI extends javax.swing.JFrame {
             public void run() {
                 try {
                     ReporterExporter exporter = new ReporterExporter(reporter.getExperiment(), "\t");
-                    exporter.exportResults(quantification, identification, exportFolder.getPath(), progressDialog);
+                    exporter.exportResults(quantification, identification, exportFolder.getPath(), proteinsOnly, progressDialog);
 
                     if (!progressDialog.isRunCanceled()) {
                         progressDialog.setRunFinished();
                         progressDialog.dispose();
-                        JOptionPane.showMessageDialog(ReporterGUI.this, "Output Complete.", "Output successful.", JOptionPane.INFORMATION_MESSAGE);
+                        JOptionPane.showMessageDialog(ReporterGUI.this, "Export Complete.", "Export successful.", JOptionPane.INFORMATION_MESSAGE);
                     }
                 } catch (Exception e) {
                     progressDialog.setRunFinished();
                     progressDialog.dispose();
-                    JOptionPane.showMessageDialog(ReporterGUI.this, "Output Error.", "Output error, see log file.", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(ReporterGUI.this, "Export Error.", "Export error, see log file.", JOptionPane.ERROR_MESSAGE);
                     e.printStackTrace();
                 }
             }
@@ -628,7 +908,7 @@ public class ReporterGUI extends javax.swing.JFrame {
     }
 
     /**
-     * returns the quantification preferences
+     * Returns the quantification preferences.
      *
      * @return the quantification preferences
      */
@@ -637,7 +917,7 @@ public class ReporterGUI extends javax.swing.JFrame {
     }
 
     /**
-     * sets the quantification preferences
+     * Sets the quantification preferences.
      *
      * @param quantificationPreferences the quantification preferences
      */
@@ -646,7 +926,7 @@ public class ReporterGUI extends javax.swing.JFrame {
     }
 
     /**
-     * Sets the last selected folder
+     * Sets the last selected folder,
      *
      * @param lastSelectedFolder the lastSelectedFolder to set
      */
@@ -684,8 +964,8 @@ public class ReporterGUI extends javax.swing.JFrame {
     private void setUpLogFile() {
 
         try {
-            if (useLogFile && !reporter.getJarFilePath().equalsIgnoreCase(".")) {
-                String path = reporter.getJarFilePath() + "/resources/conf/Reporter.log";
+            if (useLogFile && !getJarFilePath().equalsIgnoreCase(".")) {
+                String path = getJarFilePath() + "/resources/conf/Reporter.log";
 
                 File file = new File(path);
                 System.setOut(new java.io.PrintStream(new FileOutputStream(file, true)));
@@ -711,7 +991,7 @@ public class ReporterGUI extends javax.swing.JFrame {
     }
 
     /**
-     * Method called to close the program
+     * Method called to close the program.
      *
      * @param status closing status to report
      */
@@ -725,7 +1005,7 @@ public class ReporterGUI extends javax.swing.JFrame {
      */
     private void addShortcutAtDeskTop() {
 
-        String jarFilePath = reporter.getJarFilePath();
+        String jarFilePath = getJarFilePath();
 
         if (!jarFilePath.equalsIgnoreCase(".")) {
 

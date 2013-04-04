@@ -156,21 +156,19 @@ public class NewDialog extends javax.swing.JDialog {
         isotopeCorrectionTable.getTableHeader().setReorderingAllowed(false);
 
         comboMethod2.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
                 selectedMethod = getMethod((String) comboMethod2.getSelectedItem());
                 refresh();
             }
         });
         comboMethod1.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
                 selectedMethod = getMethod((String) comboMethod1.getSelectedItem());
                 refresh();
             }
         });
 
-        txtConfigurationFileLocation.setText(reporterGui.getReporter().getJarFilePath() + File.separator + METHODS_FILE);
+        txtConfigurationFileLocation.setText(reporterGui.getJarFilePath() + File.separator + METHODS_FILE);
 
         isotopeCorrectionTable.getColumnModel().getColumn(0).setMaxWidth(50);
         pack();
@@ -924,7 +922,6 @@ public class NewDialog extends javax.swing.JDialog {
         fileChooser.setMultiSelectionEnabled(false);
 
         FileFilter filter = new FileFilter() {
-
             public boolean accept(File myFile) {
                 return myFile.getName().endsWith("cps")
                         || myFile.isDirectory();
@@ -967,7 +964,6 @@ public class NewDialog extends javax.swing.JDialog {
 
 
             new Thread(new Runnable() {
-
                 public void run() {
                     try {
                         waitingDialog.setVisible(true);
@@ -978,7 +974,6 @@ public class NewDialog extends javax.swing.JDialog {
             }, "ProgressDialog").start();
 
             new Thread("DisplayThread") {
-
                 @Override
                 public void run() {
 
@@ -1022,7 +1017,6 @@ public class NewDialog extends javax.swing.JDialog {
         fileChooser.setMultiSelectionEnabled(true);
 
         FileFilter filter = new FileFilter() {
-
             public boolean accept(File myFile) {
                 return myFile.getName().toLowerCase().endsWith(".mgf")
                         || myFile.isDirectory();
@@ -1198,7 +1192,6 @@ public class NewDialog extends javax.swing.JDialog {
         setTableProperties();
 
         SwingUtilities.invokeLater(new Runnable() {
-
             public void run() {
                 sampleAssignmentTable.revalidate();
                 sampleAssignmentTable.repaint();
@@ -1217,7 +1210,7 @@ public class NewDialog extends javax.swing.JDialog {
      */
     private void importMethods() {
         try {
-            methodsFactory.importMethods(new File(reporterGui.getReporter().getJarFilePath() + File.separator + METHODS_FILE));
+            methodsFactory.importMethods(new File(reporterGui.getJarFilePath() + File.separator + METHODS_FILE));
         } catch (Exception e) {
             e.printStackTrace();
             importMethodsError();
@@ -1270,7 +1263,6 @@ public class NewDialog extends javax.swing.JDialog {
         progressDialog.setTitle("Importing Project. Please Wait...");
 
         new Thread(new Runnable() {
-
             public void run() {
                 try {
                     progressDialog.setVisible(true);
@@ -1281,7 +1273,6 @@ public class NewDialog extends javax.swing.JDialog {
         }, "ProgressDialog").start();
 
         new Thread("ImportThread") {
-
             @Override
             public void run() {
 
@@ -1351,9 +1342,8 @@ public class NewDialog extends javax.swing.JDialog {
                         progressDialog.dispose();
                         return;
                     }
-                    
-                    
-                    
+
+
                     progressDialog.setIndeterminate(true);
                     progressDialog.setTitle("Importing Experiment Details. Please Wait...");
 
@@ -1412,9 +1402,7 @@ public class NewDialog extends javax.swing.JDialog {
                         progressDialog.dispose();
                         return;
                     }
-                    
-                    
-                    
+
 
                     progressDialog.setTitle("Loading FASTA File. Please Wait...");
 
@@ -1619,7 +1607,7 @@ public class NewDialog extends javax.swing.JDialog {
                     if (!testIdentificationConnection()) {
                         progressDialog.setRunCanceled();
                     }
-                    
+
                     if (identification.getSpectrumIdentificationMap() == null) {
                         // 0.18 version, needs update of the spectrum mapping
                         identification.updateSpectrumMapping();
@@ -1766,29 +1754,29 @@ public class NewDialog extends javax.swing.JDialog {
      * @return true if the input can be processed
      */
     private boolean validateInput() {
-        double test;
+
         try {
-            test = new Double(ionToleranceTxt.getText().trim());
+            new Double(ionToleranceTxt.getText().trim());
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Wrong Ion Tolerance.", "Please input a number for the ion tolerance.", JOptionPane.ERROR_MESSAGE);
             return false;
         }
         if (precursorMatching.isSelected()) {
             try {
-                test = new Double(mzTolTxt.getText().trim());
+                new Double(mzTolTxt.getText().trim());
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(this, "Wrong spectrum matching m/z tolerance.", "Please input a number for precursor m/z tolerance.", JOptionPane.ERROR_MESSAGE);
                 return false;
             }
             try {
-                test = new Double(rtTolTxt.getText().trim());
+                new Double(rtTolTxt.getText().trim());
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(this, "Wrong spectrum matching RT tolerance.", "Please input a number for precursor RT tolerance.", JOptionPane.ERROR_MESSAGE);
                 return false;
             }
         }
         try {
-            test = new Integer(replicateNumberTxt.getText().trim());
+            new Integer(replicateNumberTxt.getText().trim());
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Wrong replicate number.", "Please input a number for replicate number.", JOptionPane.ERROR_MESSAGE);
             return false;
@@ -1810,7 +1798,6 @@ public class NewDialog extends javax.swing.JDialog {
         final ArrayList<File> newMgfFiles = files;
 
         new Thread(new Runnable() {
-
             public void run() {
                 try {
                     progressDialog.setVisible(true);
@@ -1821,7 +1808,6 @@ public class NewDialog extends javax.swing.JDialog {
         }, "ProgressDialog").start();
 
         new Thread("ImportThread") {
-
             @Override
             public void run() {
                 ArrayList<File> error = processSpectrumFiles(newMgfFiles, progressDialog);
