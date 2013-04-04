@@ -18,8 +18,13 @@ import com.compomics.util.gui.SampleSelection;
 import com.compomics.util.gui.renderers.AlignedListCellRenderer;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
 import com.compomics.util.gui.waiting.waitinghandlers.WaitingDialog;
+import com.compomics.util.preferences.IdFilter;
+import com.compomics.util.preferences.PTMScoringPreferences;
+import com.compomics.util.preferences.ProcessingPreferences;
 import eu.isas.peptideshaker.myparameters.PSParameter;
+import eu.isas.peptideshaker.myparameters.PSSettings;
 import eu.isas.peptideshaker.myparameters.PeptideShakerSettings;
+import eu.isas.peptideshaker.preferences.ProjectDetails;
 import eu.isas.reporter.Reporter;
 import eu.isas.reporter.myparameters.QuantificationPreferences;
 import eu.isas.reporter.utils.Properties;
@@ -112,6 +117,10 @@ public class NewDialog extends javax.swing.JDialog {
      * The waiting dialog.
      */
     private WaitingDialog waitingDialog;
+    /**
+     * The project details.
+     */
+    private ProjectDetails projectDetails = null;
 
     /**
      * Constructor.
@@ -351,7 +360,6 @@ public class NewDialog extends javax.swing.JDialog {
 
         txtSpectraFileLocation.setEditable(false);
         txtSpectraFileLocation.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        txtSpectraFileLocation.setEnabled(false);
 
         jLabel3.setText("Identification File");
 
@@ -367,7 +375,6 @@ public class NewDialog extends javax.swing.JDialog {
         });
 
         addSpectraFilesJButton.setText("Add");
-        addSpectraFilesJButton.setEnabled(false);
         addSpectraFilesJButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addSpectraFilesJButtonActionPerformed(evt);
@@ -378,10 +385,13 @@ public class NewDialog extends javax.swing.JDialog {
 
         fastaTxt.setEditable(false);
         fastaTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        fastaTxt.setEnabled(false);
 
         addDbButton.setText("Browse");
-        addDbButton.setEnabled(false);
+        addDbButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addDbButtonActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout fileSelectiontPanelLayout = new org.jdesktop.layout.GroupLayout(fileSelectiontPanel);
         fileSelectiontPanel.setLayout(fileSelectiontPanelLayout);
@@ -492,7 +502,7 @@ public class NewDialog extends javax.swing.JDialog {
             .add(processingPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(fileSelectiontPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 9, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 21, Short.MAX_VALUE)
                 .add(projectPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(samplePanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -524,7 +534,7 @@ public class NewDialog extends javax.swing.JDialog {
             reporterIonsConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(reporterIonsConfigPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(reporterIonsConfigJScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 140, Short.MAX_VALUE)
+                .add(reporterIonsConfigJScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 148, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -548,7 +558,7 @@ public class NewDialog extends javax.swing.JDialog {
             isotopeCorrectionPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(isotopeCorrectionPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(isotopeCorrectionJScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 140, Short.MAX_VALUE)
+                .add(isotopeCorrectionJScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 148, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -817,7 +827,7 @@ public class NewDialog extends javax.swing.JDialog {
                 .add(spectrumAnalysisPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(307, Short.MAX_VALUE))
+                .addContainerGap(315, Short.MAX_VALUE))
         );
 
         tabbedPane.addTab("Advanced Parameters", advancedParamsPanel);
@@ -1053,7 +1063,7 @@ public class NewDialog extends javax.swing.JDialog {
                 reporterGui.setLastSelectedFolder(newFile.getPath());
             }
 
-            txtSpectraFileLocation.setText(mgfFiles.size() + " file(s) selected.");
+            txtSpectraFileLocation.setText(mgfFiles.size() + " file(s) selected");
         }
     }//GEN-LAST:event_addSpectraFilesJButtonActionPerformed
 
@@ -1080,6 +1090,71 @@ public class NewDialog extends javax.swing.JDialog {
     private void comboMethod1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboMethod1ActionPerformed
         sampleNames = new HashMap<Integer, String>();
     }//GEN-LAST:event_comboMethod1ActionPerformed
+
+    /**
+     * Opens a file chooser where the user can select the database FASTA file to
+     * use.
+     *
+     * @param evt
+     */
+    private void addDbButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addDbButtonActionPerformed
+        JFileChooser fileChooser;
+
+//        if (searchParameters != null && searchParameters.getFastaFile() != null && searchParameters.getFastaFile().exists()) {
+//            fileChooser = new JFileChooser(searchParameters.getFastaFile());
+//        } else {
+//            fileChooser = new JFileChooser(peptideShakerGUI.getLastSelectedFolder());
+//        }
+        
+        fileChooser = new JFileChooser(getLastSelectedFolder());
+
+        fileChooser.setDialogTitle("Select FASTA File(s)");
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        fileChooser.setMultiSelectionEnabled(false);
+
+        FileFilter filter = new FileFilter() {
+            @Override
+            public boolean accept(File myFile) {
+                return myFile.getName().toLowerCase().endsWith("fasta")
+                        || myFile.getName().toLowerCase().endsWith("fast")
+                        || myFile.getName().toLowerCase().endsWith("fas")
+                        || myFile.isDirectory();
+            }
+
+            @Override
+            public String getDescription() {
+                return "Supported formats: FASTA (.fasta)";
+            }
+        };
+
+        fileChooser.setFileFilter(filter);
+        int returnVal = fileChooser.showDialog(this.getParent(), "Open");
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            File fastaFile = fileChooser.getSelectedFile();
+            setLastSelectedFolder(fastaFile.getAbsolutePath());
+            try {
+                SequenceFactory.getInstance().loadFastaFile(fastaFile);
+            } catch (FileNotFoundException ex) {
+                ex.printStackTrace();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            } catch (ClassNotFoundException ex) {
+                ex.printStackTrace();
+            } catch (StringIndexOutOfBoundsException ex) {
+                ex.printStackTrace();
+            } catch (IllegalArgumentException ex) {
+                ex.printStackTrace();
+            }
+            fastaTxt.setText(fastaFile.getName());
+//            checkFastaFile(fastaFile);
+//            if (searchParameters == null) {
+//                searchParameters = new SearchParameters();
+//                searchParameters.setEnzyme(EnzymeFactory.getInstance().getEnzyme("Trypsin"));
+//            }
+//            searchParameters.setFastaFile(fastaFile);
+        }
+    }//GEN-LAST:event_addDbButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addDbButton;
     private javax.swing.JButton addIdFilesButton;
@@ -1403,6 +1478,37 @@ public class NewDialog extends javax.swing.JDialog {
                         return;
                     }
 
+                    PeptideShakerSettings experimentSettings = new PeptideShakerSettings();
+                    MsExperiment tempExperiment = ExperimentIO.loadExperiment(experimentFile);
+
+                    if (tempExperiment.getUrParam(experimentSettings) instanceof PSSettings) {
+
+                        // convert old settings files using utilities version 3.10.68 or older
+
+                        // convert the old ProcessingPreferences object
+                        PSSettings tempSettings = (PSSettings) tempExperiment.getUrParam(experimentSettings);
+                        ProcessingPreferences tempProcessingPreferences = new ProcessingPreferences();
+                        tempProcessingPreferences.setProteinFDR(tempSettings.getProcessingPreferences().getProteinFDR());
+                        tempProcessingPreferences.setPeptideFDR(tempSettings.getProcessingPreferences().getPeptideFDR());
+                        tempProcessingPreferences.setPsmFDR(tempSettings.getProcessingPreferences().getPsmFDR());
+
+                        // convert the old PTMScoringPreferences object
+                        PTMScoringPreferences tempPTMScoringPreferences = new PTMScoringPreferences();
+                        tempPTMScoringPreferences.setaScoreCalculation(tempSettings.getPTMScoringPreferences().aScoreCalculation());
+                        tempPTMScoringPreferences.setaScoreNeutralLosses(tempSettings.getPTMScoringPreferences().isaScoreNeutralLosses());
+                        tempPTMScoringPreferences.setFlrThreshold(tempSettings.getPTMScoringPreferences().getFlrThreshold());
+
+                        experimentSettings = new PeptideShakerSettings(tempSettings.getSearchParameters(), tempSettings.getAnnotationPreferences(),
+                                tempSettings.getSpectrumCountingPreferences(), tempSettings.getProjectDetails(), tempSettings.getFilterPreferences(),
+                                tempSettings.getDisplayPreferences(),
+                                tempSettings.getMetrics(), tempProcessingPreferences, tempSettings.getIdentificationFeaturesCache(),
+                                tempPTMScoringPreferences, new IdFilter());
+
+                    } else {
+                        experimentSettings = (PeptideShakerSettings) tempExperiment.getUrParam(experimentSettings);
+                    }
+
+                    setProjectDetails(experimentSettings.getProjectDetails());
 
                     progressDialog.setTitle("Loading FASTA File. Please Wait...");
 
@@ -1448,7 +1554,6 @@ public class NewDialog extends javax.swing.JDialog {
                     ArrayList<String> missing = new ArrayList<String>();
                     Identification identification = experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).getIdentification(IdentificationMethod.MS2_IDENTIFICATION);
                     ArrayList<String> spectrumFiles = identification.getSpectrumFiles();
-                    ArrayList<File> mgfFiles = new ArrayList<File>();
 
                     progressDialog.setTitle("Locating Spectrum Files. Please Wait...");
                     progressDialog.setIndeterminate(false);
@@ -1456,31 +1561,37 @@ public class NewDialog extends javax.swing.JDialog {
                     progressDialog.increaseProgressValue();
 
                     try {
-                        for (String filePath : spectrumFiles) {
+                        File projectFolder = currentPSFile.getParentFile();
+                        File dataFolder = new File(projectFolder, "data");
+
+                        for (String spectrumFileName : spectrumFiles) {
 
                             progressDialog.increaseProgressValue();
 
-                            File newFile, providedSpectrumLocation = new File(filePath);
-                            String fileName = providedSpectrumLocation.getName();
-                            File projectFolder = currentPSFile.getParentFile();
-                            File dataFolder = new File(projectFolder, "data");
+                            File providedSpectrumLocation = projectDetails.getSpectrumFile(spectrumFileName);
 
                             // try to locate the spectrum file
-                            if (providedSpectrumLocation.exists() && !names.contains(providedSpectrumLocation.getName())) {
+                            if (providedSpectrumLocation == null || !providedSpectrumLocation.exists()) {
+                                File fileInProjectFolder = new File(projectFolder, spectrumFileName);
+                                File fileInDataFolder = new File(dataFolder, spectrumFileName);
+                                File fileInLastSelectedFolder = new File(getLastSelectedFolder(), spectrumFileName);
+                                if (fileInProjectFolder.exists()) {
+                                    projectDetails.addSpectrumFile(fileInProjectFolder);
+                                    names.add(fileInProjectFolder.getName());
+                                } else if (fileInDataFolder.exists()) {
+                                    projectDetails.addSpectrumFile(fileInDataFolder);
+                                    names.add(fileInDataFolder.getName());
+                                } else if (fileInLastSelectedFolder.exists()) {
+                                    projectDetails.addSpectrumFile(fileInLastSelectedFolder);
+                                    names.add(fileInLastSelectedFolder.getName());
+                                } else {
+                                    missing.add(providedSpectrumLocation.getName());
+                                }
+                            } else if (!names.contains(providedSpectrumLocation.getName())) {
                                 names.add(providedSpectrumLocation.getName());
-                                mgfFiles.add(providedSpectrumLocation);
-                            } else if (new File(projectFolder, fileName).exists() && !names.contains(new File(projectFolder, fileName).getName())) {
-                                newFile = new File(projectFolder, fileName);
-                                names.add(newFile.getName());
-                                mgfFiles.add(newFile);
-                            } else if (new File(dataFolder, fileName).exists() && !names.contains(new File(dataFolder, fileName).getName())) {
-                                newFile = new File(dataFolder, fileName);
-                                names.add(newFile.getName());
-                                mgfFiles.add(newFile);
-                            } else {
-                                missing.add(providedSpectrumLocation.getName());
                             }
                         }
+                        
                         if (!missing.isEmpty()) {
                             if (missing.size() <= 3) {
                                 String report = "";
@@ -1511,10 +1622,6 @@ public class NewDialog extends javax.swing.JDialog {
                                 report += " manually."; // Dare you say I don't make efforts for user friendliness!
                                 JOptionPane.showMessageDialog(NewDialog.this,
                                         report,
-                                        "File(s) missing", JOptionPane.ERROR_MESSAGE);
-                            } else if (names.isEmpty()) {
-                                JOptionPane.showMessageDialog(NewDialog.this,
-                                        "The mgf files could not be located, please import them manually.",
                                         "File(s) missing", JOptionPane.ERROR_MESSAGE);
                             } else {
                                 JOptionPane.showMessageDialog(NewDialog.this,
@@ -1567,7 +1674,7 @@ public class NewDialog extends javax.swing.JDialog {
                     }
 
                     if (!missing.isEmpty() || !error.isEmpty()) {
-                        txtSpectraFileLocation.setText("Please select the mgf file(s).");
+                        txtSpectraFileLocation.setText("Please select the mgf file(s)");
                     } else {
                         String report = "";
                         if (names.size() <= 3) {
@@ -1585,9 +1692,13 @@ public class NewDialog extends javax.swing.JDialog {
                                 report += name;
                             }
                         } else {
-                            report += names.size() + " files selected.";
+                            report += names.size() + " files selected";
                         }
-                        txtSpectraFileLocation.setText(report);
+                        if (identification.getSpectrumFiles().size() == 1) {
+                            txtSpectraFileLocation.setText(report);
+                        } else {
+                            txtSpectraFileLocation.setText(report);
+                        } 
                     }
 
                     if (progressDialog.isRunCanceled()) {
@@ -1657,7 +1768,7 @@ public class NewDialog extends javax.swing.JDialog {
                     sampleNames.clear();
                     refresh();
 
-                    progressDialog.dispose();
+                    progressDialog.setRunFinished();
 
                 } catch (OutOfMemoryError error) {
                     System.out.println("Ran out of memory! (runtime.maxMemory(): " + Runtime.getRuntime().maxMemory() + ")");
@@ -2056,5 +2167,14 @@ public class NewDialog extends javax.swing.JDialog {
         public Class getColumnClass(int columnIndex) {
             return getValueAt(0, columnIndex).getClass();
         }
+    }
+
+    /**
+     * Sets the project details.
+     *
+     * @param projectDetails the project details
+     */
+    public void setProjectDetails(ProjectDetails projectDetails) {
+        this.projectDetails = projectDetails;
     }
 }
