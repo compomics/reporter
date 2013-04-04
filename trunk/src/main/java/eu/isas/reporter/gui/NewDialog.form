@@ -315,7 +315,6 @@
                       <Properties>
                         <Property name="editable" type="boolean" value="false"/>
                         <Property name="horizontalAlignment" type="int" value="0"/>
-                        <Property name="enabled" type="boolean" value="false"/>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JLabel" name="jLabel3">
@@ -341,7 +340,6 @@
                     <Component class="javax.swing.JButton" name="addSpectraFilesJButton">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Add"/>
-                        <Property name="enabled" type="boolean" value="false"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addSpectraFilesJButtonActionPerformed"/>
@@ -356,14 +354,15 @@
                       <Properties>
                         <Property name="editable" type="boolean" value="false"/>
                         <Property name="horizontalAlignment" type="int" value="0"/>
-                        <Property name="enabled" type="boolean" value="false"/>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JButton" name="addDbButton">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Browse"/>
-                        <Property name="enabled" type="boolean" value="false"/>
                       </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addDbButtonActionPerformed"/>
+                      </Events>
                     </Component>
                   </SubComponents>
                 </Container>

@@ -11,6 +11,8 @@ import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuant
 import com.compomics.util.experiment.quantification.matches.ProteinQuantification;
 import com.compomics.util.general.ExceptionHandler;
 import com.compomics.util.gui.UtilitiesGUIDefaults;
+import com.compomics.util.gui.error_handlers.BugReport;
+import com.compomics.util.gui.error_handlers.HelpDialog;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
 import com.compomics.util.preferences.UtilitiesUserPreferences;
 import eu.isas.reporter.Reporter;
@@ -305,6 +307,12 @@ public class ReporterGUI extends javax.swing.JFrame {
         exportAllMenuItem = new javax.swing.JMenuItem();
         quantificationOptionsMenu = new javax.swing.JMenu();
         quantificationOptionsMenuItem = new javax.swing.JMenuItem();
+        helpMenu = new javax.swing.JMenu();
+        helpMenuItem = new javax.swing.JMenuItem();
+        jSeparator17 = new javax.swing.JPopupMenu.Separator();
+        logReportMenu = new javax.swing.JMenuItem();
+        jSeparator16 = new javax.swing.JPopupMenu.Separator();
+        aboutMenuItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(1280, 750));
@@ -419,6 +427,41 @@ public class ReporterGUI extends javax.swing.JFrame {
 
         menuBar.add(quantificationOptionsMenu);
 
+        helpMenu.setMnemonic('H');
+        helpMenu.setText("Help");
+
+        helpMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F1, 0));
+        helpMenuItem.setMnemonic('H');
+        helpMenuItem.setText("Help");
+        helpMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                helpMenuItemActionPerformed(evt);
+            }
+        });
+        helpMenu.add(helpMenuItem);
+        helpMenu.add(jSeparator17);
+
+        logReportMenu.setMnemonic('B');
+        logReportMenu.setText("Bug Report");
+        logReportMenu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                logReportMenuActionPerformed(evt);
+            }
+        });
+        helpMenu.add(logReportMenu);
+        helpMenu.add(jSeparator16);
+
+        aboutMenuItem.setMnemonic('A');
+        aboutMenuItem.setText("About");
+        aboutMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                aboutMenuItemActionPerformed(evt);
+            }
+        });
+        helpMenu.add(aboutMenuItem);
+
+        menuBar.add(helpMenu);
+
         setJMenuBar(menuBar);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -492,6 +535,41 @@ public class ReporterGUI extends javax.swing.JFrame {
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         closeReporter();
     }//GEN-LAST:event_formWindowClosing
+
+    /**
+     * Open the help dialog.
+     *
+     * @param evt
+     */
+    private void helpMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_helpMenuItemActionPerformed
+        new HelpDialog(this, getClass().getResource("/helpFiles/ReporterGUI.html"),
+            Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/help.GIF")),
+            Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
+            "ReporterGUI - Help");
+    }//GEN-LAST:event_helpMenuItemActionPerformed
+
+    /**
+     * Open the BugReport dialog.
+     *
+     * @param evt
+     */
+    private void logReportMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logReportMenuActionPerformed
+        new BugReport(this, lastSelectedFolder, "ReporterGUI", "reporter",
+            new Properties().getVersion(),
+            new File(getJarFilePath() + "/resources/ReporterGUI.log"));
+    }//GEN-LAST:event_logReportMenuActionPerformed
+
+    /**
+     * Open the about dialog.
+     *
+     * @param evt
+     */
+    private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutMenuItemActionPerformed
+        new HelpDialog(this, getClass().getResource("/helpFiles/AboutReporterGUI.html"),
+            Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/help.GIF")),
+            Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
+            "About ReporterGUI");
+    }//GEN-LAST:event_aboutMenuItemActionPerformed
 
     /**
      * Closes Reporter.
@@ -734,15 +812,21 @@ public class ReporterGUI extends javax.swing.JFrame {
         new ReporterGUI();
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JMenuItem aboutMenuItem;
     private javax.swing.JPanel backgroundPanel;
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JMenuItem exportAllMenuItem;
     private javax.swing.JMenu exportMenu;
     private javax.swing.JMenuItem exportProteinsMenuItem;
     private javax.swing.JMenu fileMenu;
+    private javax.swing.JMenu helpMenu;
+    private javax.swing.JMenuItem helpMenuItem;
     private javax.swing.JPopupMenu.Separator jSeparator1;
+    private javax.swing.JPopupMenu.Separator jSeparator16;
+    private javax.swing.JPopupMenu.Separator jSeparator17;
     private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
+    private javax.swing.JMenuItem logReportMenu;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JMenuItem newMenuItem;
     private javax.swing.JMenuItem openMenuItem;
@@ -965,7 +1049,7 @@ public class ReporterGUI extends javax.swing.JFrame {
 
         try {
             if (useLogFile && !getJarFilePath().equalsIgnoreCase(".")) {
-                String path = getJarFilePath() + "/resources/conf/Reporter.log";
+                String path = getJarFilePath() + "/resources/ReporterGUI.log";
 
                 File file = new File(path);
                 System.setOut(new java.io.PrintStream(new FileOutputStream(file, true)));
