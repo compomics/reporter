@@ -281,6 +281,11 @@ public class NewDialog extends javax.swing.JDialog {
 
         setTitle("New Project");
         setResizable(false);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
 
         backgroundPanel.setBackground(new java.awt.Color(230, 230, 230));
 
@@ -1078,7 +1083,13 @@ public class NewDialog extends javax.swing.JDialog {
         // TODO add your handling code here:
     }//GEN-LAST:event_rtTolTxtActionPerformed
 
+    /**
+     * Clear the data and close the dialog.
+     * 
+     * @param evt 
+     */
     private void exitJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitJButtonActionPerformed
+        reporterGui.clearData(true);
         this.dispose();
     }//GEN-LAST:event_exitJButtonActionPerformed
 
@@ -1154,6 +1165,15 @@ public class NewDialog extends javax.swing.JDialog {
 //            searchParameters.setFastaFile(fastaFile);
         }
     }//GEN-LAST:event_addDbButtonActionPerformed
+
+    /**
+     * Clear the data and close the dialog.
+     * 
+     * @param evt 
+     */
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        exitJButtonActionPerformed(null);
+    }//GEN-LAST:event_formWindowClosing
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addDbButton;
@@ -1359,12 +1379,23 @@ public class NewDialog extends javax.swing.JDialog {
 
                     File experimentFile = new File(Reporter.SERIALIZATION_DIRECTORY, Reporter.experimentObjectName);
                     File matchFolder = new File(Reporter.SERIALIZATION_DIRECTORY);
+                    
+                    // empty the existing files in the matches folder
+                    if (matchFolder.exists()) {
+                        for (File file : matchFolder.listFiles()) {
+                            if (file.isDirectory()) {
+                                boolean deleted = Util.deleteDir(file);
 
-                    for (File file : matchFolder.listFiles()) {
-                        if (file.isDirectory()) {
-                            Util.deleteDir(file);
-                        } else {
-                            file.delete();
+                                if (!deleted) {
+                                    System.out.println("Failed to delete folder: " + file.getPath());
+                                }
+                            } else {
+                                boolean deleted = file.delete();
+
+                                if (!deleted) {
+                                    System.out.println("Failed to delete file: " + file.getPath());
+                                }
+                            }
                         }
                     }
 
@@ -1954,7 +1985,7 @@ public class NewDialog extends javax.swing.JDialog {
      */
     private ArrayList<File> processSpectrumFiles(ArrayList<File> spectrumFiles, ProgressDialogX progressDialog) {
         ArrayList<File> error = new ArrayList<File>();
-        int cpt = 0;
+        int cpt = 1;
         for (File mgfFile : spectrumFiles) {
 
             if (progressDialog.isRunCanceled()) {
