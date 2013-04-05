@@ -543,9 +543,9 @@ public class ReporterGUI extends javax.swing.JFrame {
      */
     private void helpMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_helpMenuItemActionPerformed
         new HelpDialog(this, getClass().getResource("/helpFiles/ReporterGUI.html"),
-            Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/help.GIF")),
-            Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
-            "ReporterGUI - Help");
+                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/help.GIF")),
+                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
+                "ReporterGUI - Help");
     }//GEN-LAST:event_helpMenuItemActionPerformed
 
     /**
@@ -555,8 +555,8 @@ public class ReporterGUI extends javax.swing.JFrame {
      */
     private void logReportMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logReportMenuActionPerformed
         new BugReport(this, lastSelectedFolder, "ReporterGUI", "reporter",
-            new Properties().getVersion(),
-            new File(getJarFilePath() + "/resources/ReporterGUI.log"));
+                new Properties().getVersion(),
+                new File(getJarFilePath() + "/resources/ReporterGUI.log"));
     }//GEN-LAST:event_logReportMenuActionPerformed
 
     /**
@@ -566,9 +566,9 @@ public class ReporterGUI extends javax.swing.JFrame {
      */
     private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutMenuItemActionPerformed
         new HelpDialog(this, getClass().getResource("/helpFiles/AboutReporterGUI.html"),
-            Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/help.GIF")),
-            Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
-            "About ReporterGUI");
+                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/help.GIF")),
+                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
+                "About ReporterGUI");
     }//GEN-LAST:event_aboutMenuItemActionPerformed
 
     /**
@@ -601,11 +601,14 @@ public class ReporterGUI extends javax.swing.JFrame {
             public void run() {
                 try {
                     File serializationFolder = new File(getJarFilePath(), ReporterGUI.SERIALIZATION_DIRECTORY);
-                    String[] files = serializationFolder.list();
 
-                    if (files != null) {
-                        progressDialog.setIndeterminate(false);
-                        progressDialog.setMaxProgressValue(files.length);
+                    if (serializationFolder.exists()) {
+                        String[] files = serializationFolder.list();
+
+                        if (files != null) {
+                            progressDialog.setIndeterminate(false);
+                            progressDialog.setMaxProgressValue(files.length);
+                        }
                     }
 
                     // close the files and save the user preferences
@@ -636,7 +639,7 @@ public class ReporterGUI extends javax.swing.JFrame {
             }
         });
     }
-    
+
     /**
      * Clear the data from the previous experiment.
      *
@@ -699,7 +702,7 @@ public class ReporterGUI extends javax.swing.JFrame {
         //currentPSFile = null;
         //dataSaved = false;
     }
-    
+
     /**
      * Clears the database folder.
      */
@@ -723,17 +726,23 @@ public class ReporterGUI extends javax.swing.JFrame {
         // empty the matches folder
         if (databaseClosed) {
             File matchFolder = new File(getJarFilePath(), Reporter.SERIALIZATION_DIRECTORY);
-            File[] tempFiles = matchFolder.listFiles();
 
-            if (tempFiles != null) {
-                for (File currentFile : tempFiles) {
-                    Util.deleteDir(currentFile);
+            if (matchFolder.exists()) {
+                File[] tempFiles = matchFolder.listFiles();
+
+                if (tempFiles != null) {
+                    for (File currentFile : tempFiles) {
+                        Util.deleteDir(currentFile);
+                    }
                 }
-            }
 
-            if (matchFolder.listFiles() != null && matchFolder.listFiles().length > 0) {
-                JOptionPane.showMessageDialog(null, "Failed to empty the database folder:\n" + matchFolder.getPath() + ".",
-                        "Database Cleanup Failed", JOptionPane.WARNING_MESSAGE);
+                if (matchFolder.listFiles() != null && matchFolder.listFiles().length > 0) {
+                    
+                    // @TODO: there is sometimes a problem here given that the new dialog operates with a separet identifications objetc. should fix cleaned up!!
+                    
+                    JOptionPane.showMessageDialog(null, "Failed to empty the database folder:\n" + matchFolder.getPath() + ".",
+                            "Database Cleanup Failed", JOptionPane.WARNING_MESSAGE);
+                }
             }
         }
     }
@@ -746,7 +755,7 @@ public class ReporterGUI extends javax.swing.JFrame {
     public void catchException(Exception e) {
         exceptionHandler.catchException(e);
     }
-    
+
     /**
      * Saves the user preferences.
      */
