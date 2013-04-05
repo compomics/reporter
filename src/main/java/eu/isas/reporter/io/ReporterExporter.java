@@ -152,7 +152,7 @@ public class ReporterExporter {
                 String fileName = Spectrum.getSpectrumFile(psmKey);
                 if (!loadedfiles.contains(fileName)) {
                     loadedfiles.add(fileName);
-                    identification.loadSpectrumMatchParameters(fileName, new PSParameter(), new ProgressDialogX(false));
+                    identification.loadSpectrumMatchParameters(fileName, new PSParameter(), new ProgressDialogX(false)); // @TODO: should use the proper progress dialog?
                     identification.loadSpectrumMatches(fileName, new ProgressDialogX(false));
                 }
 
@@ -541,8 +541,8 @@ public class ReporterExporter {
                 + SEPARATOR + "p" + SEPARATOR + "Decoy" + SEPARATOR + "Validated" + SEPARATOR + "Description" + SEPARATOR + getRatiosLabels(quantification) + "\n";
         proteinsOutput.write(titles);
 
-        identification.loadProteinMatchParameters(new PSParameter(), new ProgressDialogX(false));
-        identification.loadProteinMatches(new ProgressDialogX(false));
+        identification.loadProteinMatchParameters(new PSParameter(), new ProgressDialogX(false)); // @TODO: should use the proper progress dialog?
+        identification.loadProteinMatches(new ProgressDialogX(false)); // @TODO: should use the proper progress dialog?
 
         for (String proteinKey : quantification.getProteinQuantification()) {
 

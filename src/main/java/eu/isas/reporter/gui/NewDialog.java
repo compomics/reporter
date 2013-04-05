@@ -1550,10 +1550,12 @@ public class NewDialog extends javax.swing.JDialog {
                         return;
                     }
 
+                    ArrayList<File> tempMgfFiles = new ArrayList<File>();
                     ArrayList<String> names = new ArrayList<String>();
                     ArrayList<String> missing = new ArrayList<String>();
                     Identification identification = experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).getIdentification(IdentificationMethod.MS2_IDENTIFICATION);
                     ArrayList<String> spectrumFiles = identification.getSpectrumFiles();
+                    tempMgfFiles = new ArrayList<File>();
 
                     progressDialog.setTitle("Locating Spectrum Files. Please Wait...");
                     progressDialog.setIndeterminate(false);
@@ -1578,17 +1580,21 @@ public class NewDialog extends javax.swing.JDialog {
                                 if (fileInProjectFolder.exists()) {
                                     projectDetails.addSpectrumFile(fileInProjectFolder);
                                     names.add(fileInProjectFolder.getName());
+                                    tempMgfFiles.add(fileInProjectFolder);
                                 } else if (fileInDataFolder.exists()) {
                                     projectDetails.addSpectrumFile(fileInDataFolder);
                                     names.add(fileInDataFolder.getName());
+                                    tempMgfFiles.add(fileInDataFolder);
                                 } else if (fileInLastSelectedFolder.exists()) {
                                     projectDetails.addSpectrumFile(fileInLastSelectedFolder);
                                     names.add(fileInLastSelectedFolder.getName());
+                                    tempMgfFiles.add(fileInLastSelectedFolder);
                                 } else {
                                     missing.add(providedSpectrumLocation.getName());
                                 }
                             } else if (!names.contains(providedSpectrumLocation.getName())) {
                                 names.add(providedSpectrumLocation.getName());
+                                tempMgfFiles.add(providedSpectrumLocation);
                             }
                         }
                         
@@ -1641,7 +1647,7 @@ public class NewDialog extends javax.swing.JDialog {
                     progressDialog.setTitle("Importing Spectrum Files. Please Wait...");
                     progressDialog.setIndeterminate(true);
 
-                    ArrayList<File> error = processSpectrumFiles(mgfFiles, progressDialog);
+                    ArrayList<File> error = processSpectrumFiles(tempMgfFiles, progressDialog);
 
                     if (!error.isEmpty()) {
                         String report = "An error occurred while importing ";
