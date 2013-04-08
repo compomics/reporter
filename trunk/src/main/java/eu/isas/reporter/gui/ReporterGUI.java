@@ -125,7 +125,7 @@ public class ReporterGUI extends javax.swing.JFrame {
         // set this version as the default Reporter version
         if (!getJarFilePath().equalsIgnoreCase(".")) {
 
-            utilitiesUserPreferences.setPeptideShakerPath(new File(getJarFilePath(), "Reporter-" + new Properties().getVersion() + ".jar").getAbsolutePath());
+            utilitiesUserPreferences.setReporterPath(new File(getJarFilePath(), "Reporter-" + new Properties().getVersion() + ".jar").getAbsolutePath());
 
             try {
                 UtilitiesUserPreferences.saveUserPreferences(utilitiesUserPreferences);
