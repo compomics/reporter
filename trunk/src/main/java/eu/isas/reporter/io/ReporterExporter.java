@@ -33,7 +33,7 @@ import java.util.HashMap;
 import javax.swing.JOptionPane;
 
 /**
- * This class will export the quantification results as CSV files.
+ * This class will export the quantification results as text files.
  *
  * @author Marc Vaudel
  * @author Harald Barsnes
@@ -53,7 +53,7 @@ public class ReporterExporter {
      */
     private final static String proteinsSuffix = "_Reporter_proteins.txt";
     /**
-     * Separator used to create the CSV files.
+     * Separator used to create the text files.
      */
     private String SEPARATOR;
     /**
@@ -74,6 +74,14 @@ public class ReporterExporter {
     private SequenceFactory sequenceFactory = SequenceFactory.getInstance();
 
     /**
+     * The export levels.
+     */
+    public enum ExportLevel {
+
+        PROTEIN, PEPTIDE, PSM
+    };
+
+    /**
      * Constructor.
      *
      * @param experiment The experiment conducted
@@ -85,55 +93,43 @@ public class ReporterExporter {
     }
 
     /**
-     * Exports the quantification results into CSV files.
-     *
-     * @TODO: add number of spectra/peptides used for quantification of
-     * peptides/proteins
+     * Exports the quantification results into text files.
      *
      * @param quantification The quantification achieved
      * @param identification The corresponding identification
-     * @param location The folder where to save the files
-     * @param proteinsOnly if true, only the protein level quantification is
-     * exported
+     * @param saveFile The file to save the results to
+     * @param exportLevel The export level: protein, peptide or PSM
      * @param progressDialog
      * @throws Exception
      */
-    public void exportResults(ReporterIonQuantification quantification, Identification identification, String location, boolean proteinsOnly, ProgressDialogX progressDialog) throws Exception {
+    public void exportResults(ReporterIonQuantification quantification, Identification identification, File saveFile, ExportLevel exportLevel, ProgressDialogX progressDialog) throws Exception {
+
+        // @TODO: add number of spectra/peptides used for quantification of peptides/proteins
+        // @TODO: add indicators of the spread for the values
 
         ions = quantification.getReporterMethod().getReporterIons();
 
-        File spectraFile = new File(location, experiment.getReference() + spectraSuffix);
-        File peptidesFile = new File(location, experiment.getReference() + peptidesSuffix);
-        File proteinsFile = new File(location, experiment.getReference() + proteinsSuffix);
-
         long progress = 0, increment;
 
-        if (proteinsOnly) {
+        if (exportLevel == ExportLevel.PROTEIN) {
             increment = quantification.getProteinQuantification().size();
-        } else {
-            increment = quantification.getPsmIDentificationToQuantification().keySet().size()
-                + quantification.getPeptideQuantification().size()
-                + quantification.getProteinQuantification().size();
+        } else if (exportLevel == ExportLevel.PEPTIDE) {
+            increment = quantification.getPeptideQuantification().size();
+        } else { // psm level
+            increment = quantification.getPsmIDentificationToQuantification().keySet().size();
         }
-        
+
         increment /= 100;
-        
+
         if (progressDialog != null) {
             progressDialog.setIndeterminate(false);
             progressDialog.setMaxProgressValue(100);
             progressDialog.setValue(0);
         }
 
-        if (!proteinsOnly) {
+        if (exportLevel == ExportLevel.PSM) {
 
-            if (spectraFile.exists()) {
-                int outcome = JOptionPane.showConfirmDialog(null, new String[]{"Existing output file found", "Overwrite?"}, "File Exists!", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-                if (outcome != JOptionPane.YES_OPTION) {
-                    return;
-                }
-            }
-
-            BufferedWriter spectraOutput = new BufferedWriter(new FileWriter(spectraFile));
+            BufferedWriter spectraOutput = new BufferedWriter(new FileWriter(saveFile));
             String titles = "Protein(s)" + SEPARATOR + "Sequence" + SEPARATOR + "Variable Modification(s)" + SEPARATOR + "PTM Location Confidence" + SEPARATOR
                     + "Spectrum Charge" + SEPARATOR + "Identification Charge" + SEPARATOR + "Spectrum" + SEPARATOR + "Spectrum File" + SEPARATOR + "Identification File(s)"
                     + SEPARATOR + "Precursor RT" + SEPARATOR + "Precursor mz" + SEPARATOR + "Theoretic Mass" + SEPARATOR + "Mass Error (ppm)" + SEPARATOR
@@ -369,9 +365,7 @@ public class ReporterExporter {
                     progressDialog.setValue((int) (progress / increment));
                     if (progressDialog.isRunCanceled()) {
                         spectraOutput.close();
-                        spectraFile.delete();
-                        peptidesFile.delete();
-                        proteinsFile.delete();
+                        saveFile.delete();
                         return;
                     }
                 }
@@ -379,19 +373,19 @@ public class ReporterExporter {
 
             spectraOutput.close();
 
-            BufferedWriter peptidesOutput = new BufferedWriter(new FileWriter(peptidesFile));
-            titles = "Protein(s)" + SEPARATOR + "Sequence" + SEPARATOR + "Variable Modification(s)" + SEPARATOR + "PTM Location Confidence" + SEPARATOR
+        } else if (exportLevel == ExportLevel.PEPTIDE) {
+
+            BufferedWriter peptidesOutput = new BufferedWriter(new FileWriter(saveFile));
+            String titles = "Protein(s)" + SEPARATOR + "Sequence" + SEPARATOR + "Variable Modification(s)" + SEPARATOR + "PTM Location Confidence" + SEPARATOR
                     + "#Spectra" + SEPARATOR + "#Spectra Validated" + SEPARATOR + "p score" + SEPARATOR + "p" + SEPARATOR + "Decoy" + SEPARATOR
                     + "Validated" + SEPARATOR + getRatiosLabels(quantification) + "\n";
             peptidesOutput.write(titles);
-            PeptideMatch peptideMatch;
 
             identification.loadPeptideMatchParameters(new PSParameter(), new ProgressDialogX(false));
 
             for (String peptideKey : quantification.getPeptideQuantification()) {
 
-                peptideMatch = identification.getPeptideMatch(peptideKey);
-
+                PeptideMatch peptideMatch = identification.getPeptideMatch(peptideKey);
 
                 // sort so that the protein accessions always come in the same order
                 ArrayList<String> allProteins = peptideMatch.getTheoreticPeptide().getParentProteins();
@@ -406,7 +400,6 @@ public class ReporterExporter {
                     }
                     peptidesOutput.write(otherProtein);
                 }
-
 
                 peptidesOutput.write(SEPARATOR);
                 peptidesOutput.write(peptideMatch.getTheoreticPeptide().getSequence() + SEPARATOR);
@@ -524,139 +517,140 @@ public class ReporterExporter {
                     progressDialog.setValue((int) (progress / increment));
                     if (progressDialog.isRunCanceled()) {
                         peptidesOutput.close();
-                        peptidesFile.delete();
-                        proteinsFile.delete();
+                        saveFile.delete();
                         return;
                     }
                 }
             }
 
             peptidesOutput.close();
-        }
 
-        BufferedWriter proteinsOutput = new BufferedWriter(new FileWriter(proteinsFile));
-        String titles = "Protein" + SEPARATOR + "Other Protein(s) (alphabetical order)" + SEPARATOR + "Complete Protein Group (alphabetical order)" + SEPARATOR + "Group class"
-                + SEPARATOR + "#Peptides" + SEPARATOR + "#Spectra"
-                + SEPARATOR + "#Peptides Validated" + SEPARATOR + "#Spectra Validated" + SEPARATOR + "MW" + SEPARATOR + "NSAF" + SEPARATOR + "p score"
-                + SEPARATOR + "p" + SEPARATOR + "Decoy" + SEPARATOR + "Validated" + SEPARATOR + "Description" + SEPARATOR + getRatiosLabels(quantification) + "\n";
-        proteinsOutput.write(titles);
+        } else { // protein level
 
-        identification.loadProteinMatchParameters(new PSParameter(), new ProgressDialogX(false)); // @TODO: should use the proper progress dialog?
-        identification.loadProteinMatches(new ProgressDialogX(false)); // @TODO: should use the proper progress dialog?
+            BufferedWriter proteinsOutput = new BufferedWriter(new FileWriter(saveFile));
+            String titles = "Protein" + SEPARATOR + "Other Protein(s) (alphabetical order)" + SEPARATOR + "Complete Protein Group (alphabetical order)" + SEPARATOR + "Group class"
+                    + SEPARATOR + "#Peptides" + SEPARATOR + "#Spectra"
+                    + SEPARATOR + "#Peptides Validated" + SEPARATOR + "#Spectra Validated" + SEPARATOR + "MW" + SEPARATOR + "NSAF" + SEPARATOR + "p score"
+                    + SEPARATOR + "p" + SEPARATOR + "Decoy" + SEPARATOR + "Validated" + SEPARATOR + "Description" + SEPARATOR + getRatiosLabels(quantification) + "\n";
+            proteinsOutput.write(titles);
 
-        for (String proteinKey : quantification.getProteinQuantification()) {
+            identification.loadProteinMatchParameters(new PSParameter(), new ProgressDialogX(false)); // @TODO: should use the proper progress dialog?
+            identification.loadProteinMatches(new ProgressDialogX(false)); // @TODO: should use the proper progress dialog?
 
-            PSParameter probabilities = new PSParameter();
-            probabilities = (PSParameter) identification.getProteinMatchParameter(proteinKey, probabilities);
-            ProteinMatch proteinMatch = identification.getProteinMatch(proteinKey);
+            for (String proteinKey : quantification.getProteinQuantification()) {
 
-            proteinsOutput.write(proteinMatch.getMainMatch() + SEPARATOR);
+                PSParameter probabilities = new PSParameter();
+                probabilities = (PSParameter) identification.getProteinMatchParameter(proteinKey, probabilities);
+                ProteinMatch proteinMatch = identification.getProteinMatch(proteinKey);
 
-            // sort so that the protein accessions always come in the same order
-            ArrayList<String> allProteins = proteinMatch.getTheoreticProteinsAccessions();
-            Collections.sort(allProteins);
-            StringBuilder completeProteinGroup = new StringBuilder();
-            boolean first = true;
+                proteinsOutput.write(proteinMatch.getMainMatch() + SEPARATOR);
 
-            for (String otherProtein : allProteins) {
-                if (!otherProtein.equalsIgnoreCase(proteinMatch.getMainMatch())) {
-                    if (first) {
-                        first = false;
-                    } else {
-                        proteinsOutput.write(", ");
+                // sort so that the protein accessions always come in the same order
+                ArrayList<String> allProteins = proteinMatch.getTheoreticProteinsAccessions();
+                Collections.sort(allProteins);
+                StringBuilder completeProteinGroup = new StringBuilder();
+                boolean first = true;
+
+                for (String otherProtein : allProteins) {
+                    if (!otherProtein.equalsIgnoreCase(proteinMatch.getMainMatch())) {
+                        if (first) {
+                            first = false;
+                        } else {
+                            proteinsOutput.write(", ");
+                        }
+                        proteinsOutput.write(otherProtein);
                     }
-                    proteinsOutput.write(otherProtein);
+
+                    if (completeProteinGroup.length() > 0) {
+                        completeProteinGroup.append(", ");
+                    }
+
+                    completeProteinGroup.append(otherProtein);
                 }
 
-                if (completeProteinGroup.length() > 0) {
-                    completeProteinGroup.append(", ");
-                }
-
-                completeProteinGroup.append(otherProtein);
-            }
-
-            proteinsOutput.write(SEPARATOR + completeProteinGroup.toString());
+                proteinsOutput.write(SEPARATOR + completeProteinGroup.toString());
 
 
-            proteinsOutput.write(SEPARATOR + probabilities.getProteinInferenceClassAsString() + SEPARATOR);
-            proteinsOutput.write(proteinMatch.getPeptideCount() + SEPARATOR);
-            int nSpectra = 0;
-            int nValidatedPeptides = 0;
-            int nValidatedPsms = 0;
-            PSParameter psParameter = new PSParameter();
+                proteinsOutput.write(SEPARATOR + probabilities.getProteinInferenceClassAsString() + SEPARATOR);
+                proteinsOutput.write(proteinMatch.getPeptideCount() + SEPARATOR);
+                int nSpectra = 0;
+                int nValidatedPeptides = 0;
+                int nValidatedPsms = 0;
+                PSParameter psParameter = new PSParameter();
 
-            for (String peptideKey : proteinMatch.getPeptideMatches()) {
+                for (String peptideKey : proteinMatch.getPeptideMatches()) {
 
-                PeptideMatch peptideMatch = identification.getPeptideMatch(peptideKey);
-                nSpectra += peptideMatch.getSpectrumCount();
-                psParameter = (PSParameter) identification.getPeptideMatchParameter(peptideKey, psParameter);
+                    PeptideMatch peptideMatch = identification.getPeptideMatch(peptideKey);
+                    nSpectra += peptideMatch.getSpectrumCount();
+                    psParameter = (PSParameter) identification.getPeptideMatchParameter(peptideKey, psParameter);
 
-                if (psParameter.isValidated()) {
+                    if (psParameter.isValidated()) {
 
-                    nValidatedPeptides++;
+                        nValidatedPeptides++;
 
-                    for (String spectrumKey : peptideMatch.getSpectrumMatches()) {
+                        for (String spectrumKey : peptideMatch.getSpectrumMatches()) {
 
-                        psParameter = (PSParameter) identification.getSpectrumMatchParameter(spectrumKey, psParameter);
+                            psParameter = (PSParameter) identification.getSpectrumMatchParameter(spectrumKey, psParameter);
 
-                        if (psParameter.isValidated()) {
-                            nValidatedPsms++;
+                            if (psParameter.isValidated()) {
+                                nValidatedPsms++;
+                            }
                         }
                     }
                 }
-            }
 
-            proteinsOutput.write(nSpectra + SEPARATOR);
-            proteinsOutput.write(nValidatedPeptides + SEPARATOR + nValidatedPsms + SEPARATOR);
+                proteinsOutput.write(nSpectra + SEPARATOR);
+                proteinsOutput.write(nValidatedPeptides + SEPARATOR + nValidatedPsms + SEPARATOR);
 
-            try {
-                proteinsOutput.write(sequenceFactory.getProtein(proteinMatch.getMainMatch()).computeMolecularWeight() + SEPARATOR);
-                proteinsOutput.write("Not implemented" + SEPARATOR);
-            } catch (Exception e) {
-                proteinsOutput.write("protein not found " + SEPARATOR + SEPARATOR);
-            }
+                try {
+                    proteinsOutput.write(sequenceFactory.getProtein(proteinMatch.getMainMatch()).computeMolecularWeight() + SEPARATOR);
+                    proteinsOutput.write("Not implemented" + SEPARATOR);
+                } catch (Exception e) {
+                    proteinsOutput.write("protein not found " + SEPARATOR + SEPARATOR);
+                }
 
-            try {
-                proteinsOutput.write(probabilities.getProteinProbabilityScore() + SEPARATOR
-                        + probabilities.getProteinProbability() + SEPARATOR);
-            } catch (Exception e) {
-                proteinsOutput.write(SEPARATOR + SEPARATOR);
-            }
+                try {
+                    proteinsOutput.write(probabilities.getProteinProbabilityScore() + SEPARATOR
+                            + probabilities.getProteinProbability() + SEPARATOR);
+                } catch (Exception e) {
+                    proteinsOutput.write(SEPARATOR + SEPARATOR);
+                }
 
-            if (proteinMatch.isDecoy()) {
-                proteinsOutput.write("1" + SEPARATOR);
-            } else {
-                proteinsOutput.write("0" + SEPARATOR);
-            }
+                if (proteinMatch.isDecoy()) {
+                    proteinsOutput.write("1" + SEPARATOR);
+                } else {
+                    proteinsOutput.write("0" + SEPARATOR);
+                }
 
-            if (probabilities.isValidated()) {
-                proteinsOutput.write("1" + SEPARATOR);
-            } else {
-                proteinsOutput.write("0" + SEPARATOR);
-            }
+                if (probabilities.isValidated()) {
+                    proteinsOutput.write("1" + SEPARATOR);
+                } else {
+                    proteinsOutput.write("0" + SEPARATOR);
+                }
 
-            try {
-                proteinsOutput.write(sequenceFactory.getHeader(proteinMatch.getMainMatch()).getDescription());
-            } catch (Exception e) {
-                proteinsOutput.write("Protein not found");
-            }
-            proteinsOutput.write(SEPARATOR);
-            ProteinQuantification proteinQuantification = quantification.getProteinMatch(proteinKey);
-            proteinsOutput.write(getRatios(proteinQuantification));
-            proteinsOutput.write("\n");
+                try {
+                    proteinsOutput.write(sequenceFactory.getHeader(proteinMatch.getMainMatch()).getDescription());
+                } catch (Exception e) {
+                    proteinsOutput.write("Protein not found");
+                }
+                proteinsOutput.write(SEPARATOR);
+                ProteinQuantification proteinQuantification = quantification.getProteinMatch(proteinKey);
+                proteinsOutput.write(getRatios(proteinQuantification));
+                proteinsOutput.write("\n");
 
-            if (progressDialog != null) {
-                progress++;
-                progressDialog.setValue((int) (progress / increment));
-                if (progressDialog.isRunCanceled()) {
-                    proteinsOutput.close();
-                    proteinsFile.delete();
-                    return;
+                if (progressDialog != null) {
+                    progress++;
+                    progressDialog.setValue((int) (progress / increment));
+                    if (progressDialog.isRunCanceled()) {
+                        proteinsOutput.close();
+                        saveFile.delete();
+                        return;
+                    }
                 }
             }
-        }
 
-        proteinsOutput.close();
+            proteinsOutput.close();
+        }
     }
 
     /**

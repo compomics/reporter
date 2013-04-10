@@ -66,19 +66,28 @@
             <MenuItem class="javax.swing.JMenuItem" name="exportProteinsMenuItem">
               <Properties>
                 <Property name="mnemonic" type="int" value="80"/>
-                <Property name="text" type="java.lang.String" value="Export Proteins"/>
+                <Property name="text" type="java.lang.String" value="Proteins"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportProteinsMenuItemActionPerformed"/>
               </Events>
             </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="exportAllMenuItem">
+            <MenuItem class="javax.swing.JMenuItem" name="exportPeptidesMenuItem">
               <Properties>
-                <Property name="mnemonic" type="int" value="65"/>
-                <Property name="text" type="java.lang.String" value="Export All"/>
+                <Property name="mnemonic" type="int" value="69"/>
+                <Property name="text" type="java.lang.String" value="Peptides"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportAllMenuItemActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportPeptidesMenuItemActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="exportPsmsMenuItem">
+              <Properties>
+                <Property name="mnemonic" type="int" value="83"/>
+                <Property name="text" type="java.lang.String" value="PSMs"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportPsmsMenuItemActionPerformed"/>
               </Events>
             </MenuItem>
           </SubComponents>
