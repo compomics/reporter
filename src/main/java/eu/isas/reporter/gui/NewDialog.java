@@ -974,6 +974,7 @@ public class NewDialog extends javax.swing.JDialog {
                     false, null, "Quantifying", "Reporter", new Properties().getVersion(), true); //@TODO: put and tips
             waitingDialog.setLocationRelativeTo(this);
             waitingDialog.setMaxProgressValue(5);
+            //waitingDialog.setCloseDialogWhenImportCompletes(true, true); // @TODO: include when the GUI is created
 
             final ReporterGUI finalRef = reporterGui;
 

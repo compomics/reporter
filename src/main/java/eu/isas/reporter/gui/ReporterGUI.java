@@ -27,7 +27,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
@@ -304,7 +303,8 @@ public class ReporterGUI extends javax.swing.JFrame {
         exitMenuItem = new javax.swing.JMenuItem();
         exportMenu = new javax.swing.JMenu();
         exportProteinsMenuItem = new javax.swing.JMenuItem();
-        exportAllMenuItem = new javax.swing.JMenuItem();
+        exportPeptidesMenuItem = new javax.swing.JMenuItem();
+        exportPsmsMenuItem = new javax.swing.JMenuItem();
         quantificationOptionsMenu = new javax.swing.JMenu();
         quantificationOptionsMenuItem = new javax.swing.JMenuItem();
         helpMenu = new javax.swing.JMenu();
@@ -394,7 +394,7 @@ public class ReporterGUI extends javax.swing.JFrame {
         exportMenu.setText("Export");
 
         exportProteinsMenuItem.setMnemonic('P');
-        exportProteinsMenuItem.setText("Export Proteins");
+        exportProteinsMenuItem.setText("Proteins");
         exportProteinsMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exportProteinsMenuItemActionPerformed(evt);
@@ -402,14 +402,23 @@ public class ReporterGUI extends javax.swing.JFrame {
         });
         exportMenu.add(exportProteinsMenuItem);
 
-        exportAllMenuItem.setMnemonic('A');
-        exportAllMenuItem.setText("Export All");
-        exportAllMenuItem.addActionListener(new java.awt.event.ActionListener() {
+        exportPeptidesMenuItem.setMnemonic('E');
+        exportPeptidesMenuItem.setText("Peptides");
+        exportPeptidesMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                exportAllMenuItemActionPerformed(evt);
+                exportPeptidesMenuItemActionPerformed(evt);
             }
         });
-        exportMenu.add(exportAllMenuItem);
+        exportMenu.add(exportPeptidesMenuItem);
+
+        exportPsmsMenuItem.setMnemonic('S');
+        exportPsmsMenuItem.setText("PSMs");
+        exportPsmsMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportPsmsMenuItemActionPerformed(evt);
+            }
+        });
+        exportMenu.add(exportPsmsMenuItem);
 
         menuBar.add(exportMenu);
 
@@ -501,12 +510,12 @@ public class ReporterGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_quantificationOptionsMenuItemActionPerformed
 
     /**
-     * Export protein level to CSV.
-     *
-     * @param evt
+     * Export the proteins to a tab separated text file.
+     * 
+     * @param evt 
      */
     private void exportProteinsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportProteinsMenuItemActionPerformed
-        export(true);
+        export(ReporterExporter.ExportLevel.PROTEIN);
     }//GEN-LAST:event_exportProteinsMenuItemActionPerformed
 
     /**
@@ -519,13 +528,13 @@ public class ReporterGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_exitMenuItemActionPerformed
 
     /**
-     * Export everything to CSV.
-     *
-     * @param evt
+     * Export the PSMs to a tab separated text file.
+     * 
+     * @param evt 
      */
-    private void exportAllMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportAllMenuItemActionPerformed
-        export(false);
-    }//GEN-LAST:event_exportAllMenuItemActionPerformed
+    private void exportPsmsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportPsmsMenuItemActionPerformed
+        export(ReporterExporter.ExportLevel.PSM);
+    }//GEN-LAST:event_exportPsmsMenuItemActionPerformed
 
     /**
      * Close Reporter.
@@ -570,6 +579,15 @@ public class ReporterGUI extends javax.swing.JFrame {
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
                 "About ReporterGUI");
     }//GEN-LAST:event_aboutMenuItemActionPerformed
+
+    /**
+     * Export the peptides to a tab separated text file.
+     * 
+     * @param evt 
+     */
+    private void exportPeptidesMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportPeptidesMenuItemActionPerformed
+        export(ReporterExporter.ExportLevel.PEPTIDE);
+    }//GEN-LAST:event_exportPeptidesMenuItemActionPerformed
 
     /**
      * Closes Reporter.
@@ -737,9 +755,9 @@ public class ReporterGUI extends javax.swing.JFrame {
                 }
 
                 if (matchFolder.listFiles() != null && matchFolder.listFiles().length > 0) {
-                    
+
                     // @TODO: there is sometimes a problem here given that the new dialog operates with a separet identifications objetc. should fix cleaned up!!
-                    
+
                     JOptionPane.showMessageDialog(null, "Failed to empty the database folder:\n" + matchFolder.getPath() + ".",
                             "Database Cleanup Failed", JOptionPane.WARNING_MESSAGE);
                 }
@@ -778,39 +796,15 @@ public class ReporterGUI extends javax.swing.JFrame {
     }
 
     /**
-     * Export to CSV.
+     * Export to tab separated text file..
      *
      * @param proteinOnly export protein level only
      */
-    private void export(boolean proteinOnly) {
-
-        JFileChooser fileChooser = new JFileChooser(getLastSelectedFolder());
-        fileChooser.setDialogTitle("Select Export Folder");
-        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-
-        int returnVal = fileChooser.showSaveDialog(this);
-
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-
-            File tempDir = fileChooser.getSelectedFile();
-
-            if (!tempDir.exists()) {
-                int value = JOptionPane.showConfirmDialog(this, "The folder \'" + tempDir.getAbsolutePath() + "\' does not exist.\n"
-                        + "Do you want to create it?", "Create Folder?", JOptionPane.YES_NO_OPTION);
-                if (value == JOptionPane.NO_OPTION) {
-                    return;
-                } else { // yes option selected
-                    boolean success = tempDir.mkdir();
-
-                    if (!success) {
-                        JOptionPane.showMessageDialog(this, "Failed to create the folder. Please create it manually and then select it.",
-                                "File Error", JOptionPane.INFORMATION_MESSAGE);
-                        return;
-                    }
-                }
-            }
-
-            exportToCSV(fileChooser.getSelectedFile(), proteinOnly);
+    private void export(ReporterExporter.ExportLevel exportLevel) {
+        File selectedFile = Util.getUserSelectedFile(this, ".txt", "(Tab separated text file) *.txt", "Export...", lastSelectedFolder, false);
+        if (selectedFile != null) {
+            lastSelectedFolder = selectedFile.getAbsolutePath();
+            exportToTxt(selectedFile, exportLevel);
         }
     }
 
@@ -824,9 +818,10 @@ public class ReporterGUI extends javax.swing.JFrame {
     private javax.swing.JMenuItem aboutMenuItem;
     private javax.swing.JPanel backgroundPanel;
     private javax.swing.JMenuItem exitMenuItem;
-    private javax.swing.JMenuItem exportAllMenuItem;
     private javax.swing.JMenu exportMenu;
+    private javax.swing.JMenuItem exportPeptidesMenuItem;
     private javax.swing.JMenuItem exportProteinsMenuItem;
+    private javax.swing.JMenuItem exportPsmsMenuItem;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenu helpMenu;
     private javax.swing.JMenuItem helpMenuItem;
@@ -850,21 +845,21 @@ public class ReporterGUI extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
 
     /**
-     * Export the results to a CSV file.
+     * Export the results to a tab separated text file.
      *
      * @param file the file to export to
      * @param aProteinsOnly if true, only the protein level will be exported
      */
-    private void exportToCSV(File file, boolean aProteinsOnly) {
+    private void exportToTxt(File file, ReporterExporter.ExportLevel aExportLevel) {
 
-        final boolean proteinsOnly = aProteinsOnly;
+        final ReporterExporter.ExportLevel exportLevel = aExportLevel;
 
         progressDialog = new ProgressDialogX(this,
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
         progressDialog.setIndeterminate(true);
         progressDialog.setTitle("Exporting Project. Please Wait...");
-        final File exportFolder = file;
+        final File exportFile = file;
 
         new Thread(new Runnable() {
             public void run() {
@@ -876,12 +871,12 @@ public class ReporterGUI extends javax.swing.JFrame {
             }
         }, "ProgressDialog").start();
 
-        new Thread("ImportThread") {
+        new Thread("ExportThread") {
             @Override
             public void run() {
                 try {
                     ReporterExporter exporter = new ReporterExporter(reporter.getExperiment(), "\t");
-                    exporter.exportResults(quantification, identification, exportFolder.getPath(), proteinsOnly, progressDialog);
+                    exporter.exportResults(quantification, identification, exportFile, exportLevel, progressDialog);
 
                     if (!progressDialog.isRunCanceled()) {
                         progressDialog.setRunFinished();
