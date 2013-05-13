@@ -20,7 +20,7 @@ import javax.swing.table.JTableHeader;
  * @author Harald Barsnes
  * @author Marc Vaudel
  */
-public class ProteinPanel extends javax.swing.JPanel {
+public class OverviewPanel extends javax.swing.JPanel {
 
     /**
      * The protein table column header tooltips.
@@ -30,11 +30,11 @@ public class ProteinPanel extends javax.swing.JPanel {
     private ReporterGUI reporterGUI;
     
     /**
-     * Creates new form ProteinPanel
+     * Creates new form OverviewPanel
      * 
      * @param reporterGUI 
      */
-    public ProteinPanel(ReporterGUI reporterGUI) {
+    public OverviewPanel(ReporterGUI reporterGUI) {
         initComponents();
         this.reporterGUI = reporterGUI;
         
