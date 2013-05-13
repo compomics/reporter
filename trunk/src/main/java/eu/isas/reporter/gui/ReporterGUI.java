@@ -19,7 +19,7 @@ import eu.isas.reporter.Reporter;
 import eu.isas.reporter.io.ReporterExporter;
 import eu.isas.reporter.myparameters.ItraqScore;
 import eu.isas.reporter.myparameters.QuantificationPreferences;
-import eu.isas.reporter.resultpanels.ProteinPanel;
+import eu.isas.reporter.resultpanels.OverviewPanel;
 import eu.isas.reporter.utils.Properties;
 import java.awt.Toolkit;
 import java.io.*;
@@ -123,15 +123,8 @@ public class ReporterGUI extends javax.swing.JFrame {
 
         // set this version as the default Reporter version
         if (!getJarFilePath().equalsIgnoreCase(".")) {
-
             utilitiesUserPreferences.setReporterPath(new File(getJarFilePath(), "Reporter-" + new Properties().getVersion() + ".jar").getAbsolutePath());
-
-            try {
-                UtilitiesUserPreferences.saveUserPreferences(utilitiesUserPreferences);
-            } catch (IOException e) {
-                JOptionPane.showMessageDialog(this, "An error occured when saving the user preferences.", "File Error", JOptionPane.ERROR_MESSAGE);
-                e.printStackTrace();
-            }
+            UtilitiesUserPreferences.saveUserPreferences(utilitiesUserPreferences);
         }
 
         // add desktop shortcut?
@@ -157,11 +150,10 @@ public class ReporterGUI extends javax.swing.JFrame {
 
         initComponents();
 
-        ProteinPanel proteinPanel = new ProteinPanel(this);
-        proteinsJPanel.add(proteinPanel);
+        OverviewPanel proteinPanel = new OverviewPanel(this);
+        overviewJPanel.add(proteinPanel);
 
         setUpGui();
-
 
         // set the title of the frame and add the icon
         setTitle("Reporter " + new Properties().getVersion());
@@ -182,9 +174,9 @@ public class ReporterGUI extends javax.swing.JFrame {
      * Sets up the GUI.
      */
     private void setUpGui() {
-        tabPanel.setEnabledAt(1, false);
-        tabPanel.setEnabledAt(2, false);
-        tabPanel.setEnabledAt(3, false);
+//        tabPanel.setEnabledAt(1, false);
+//        tabPanel.setEnabledAt(2, false);
+//        tabPanel.setEnabledAt(3, false);
     }
 
     /**
@@ -288,10 +280,7 @@ public class ReporterGUI extends javax.swing.JFrame {
 
         backgroundPanel = new javax.swing.JPanel();
         tabPanel = new javax.swing.JTabbedPane();
-        proteinsJPanel = new javax.swing.JPanel();
-        peptidesJPanel = new javax.swing.JPanel();
-        psmsJPanel = new javax.swing.JPanel();
-        ptmsJPanel = new javax.swing.JPanel();
+        overviewJPanel = new javax.swing.JPanel();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         newMenuItem = new javax.swing.JMenuItem();
@@ -326,21 +315,9 @@ public class ReporterGUI extends javax.swing.JFrame {
 
         tabPanel.setTabPlacement(javax.swing.JTabbedPane.RIGHT);
 
-        proteinsJPanel.setOpaque(false);
-        proteinsJPanel.setLayout(new javax.swing.BoxLayout(proteinsJPanel, javax.swing.BoxLayout.LINE_AXIS));
-        tabPanel.addTab("Proteins", proteinsJPanel);
-
-        peptidesJPanel.setOpaque(false);
-        peptidesJPanel.setLayout(new javax.swing.BoxLayout(peptidesJPanel, javax.swing.BoxLayout.LINE_AXIS));
-        tabPanel.addTab("Peptides", peptidesJPanel);
-
-        psmsJPanel.setOpaque(false);
-        psmsJPanel.setLayout(new javax.swing.BoxLayout(psmsJPanel, javax.swing.BoxLayout.LINE_AXIS));
-        tabPanel.addTab("PSMs", psmsJPanel);
-
-        ptmsJPanel.setOpaque(false);
-        ptmsJPanel.setLayout(new javax.swing.BoxLayout(ptmsJPanel, javax.swing.BoxLayout.LINE_AXIS));
-        tabPanel.addTab("Modifications", ptmsJPanel);
+        overviewJPanel.setOpaque(false);
+        overviewJPanel.setLayout(new javax.swing.BoxLayout(overviewJPanel, javax.swing.BoxLayout.LINE_AXIS));
+        tabPanel.addTab("Overview", overviewJPanel);
 
         javax.swing.GroupLayout backgroundPanelLayout = new javax.swing.GroupLayout(backgroundPanel);
         backgroundPanel.setLayout(backgroundPanelLayout);
@@ -778,12 +755,7 @@ public class ReporterGUI extends javax.swing.JFrame {
      * Saves the user preferences.
      */
     public void saveUserPreferences() {
-        try {
-            UtilitiesUserPreferences.saveUserPreferences(utilitiesUserPreferences);
-        } catch (IOException e) {
-            JOptionPane.showMessageDialog(this, "An error occured when saving the user preferences.", "File Error", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
-        }
+        UtilitiesUserPreferences.saveUserPreferences(utilitiesUserPreferences);
     }
 
     /**
@@ -834,10 +806,7 @@ public class ReporterGUI extends javax.swing.JFrame {
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JMenuItem newMenuItem;
     private javax.swing.JMenuItem openMenuItem;
-    private javax.swing.JPanel peptidesJPanel;
-    private javax.swing.JPanel proteinsJPanel;
-    private javax.swing.JPanel psmsJPanel;
-    private javax.swing.JPanel ptmsJPanel;
+    private javax.swing.JPanel overviewJPanel;
     private javax.swing.JMenu quantificationOptionsMenu;
     private javax.swing.JMenuItem quantificationOptionsMenuItem;
     private javax.swing.JMenuItem saveMenuItem;
