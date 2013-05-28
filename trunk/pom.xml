@@ -50,6 +50,7 @@
                 <filtering>true</filtering>
                 <includes>
                     <include>reporter.properties</include>
+                    <include>reporter-splash.svg</include>
                 </includes>
             </resource>
             <resource>
@@ -57,6 +58,7 @@
                 <filtering>false</filtering>
                 <excludes>
                     <exclude>reporter.properties</exclude>
+                    <exclude>reporter-splash.svg</exclude>
                 </excludes>
             </resource>
         </resources>
@@ -74,6 +76,36 @@
 
         <!-- Plugins -->
         <plugins>
+ 
+            <!-- SVG to PNG converter plugin -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.2.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <argument>-Dmyproperty=myvalue</argument>
+                    <argument>-classpath</argument>
+                    <!-- automatically creates the classpath using all project dependencies,
+                    also adding the project build directory -->
+                    <classpath/>
+                    <argument>com.compomics.software.SplashScreen</argument>
+                    <mainClass>com.compomics.software.SplashScreen</mainClass>
+                    <arguments>
+                        <argument>${project.build.directory}</argument>
+                        <argument>${project.build.directory}/${project.name}-${project.version}</argument>
+                        <argument>reporter-splash</argument>
+                    </arguments>
+                </configuration>
+            </plugin>
+            
             <!-- Compiler plugin -->
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -263,7 +295,7 @@
         <dependency>
             <groupId>com.compomics</groupId>
             <artifactId>utilities</artifactId>
-            <version>3.13.18</version>
+            <version>3.13.29</version>
             <exclusions>
                 <exclusion>
                     <artifactId>commons-math</artifactId>
