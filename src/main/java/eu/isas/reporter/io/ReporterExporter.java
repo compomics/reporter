@@ -381,7 +381,8 @@ public class ReporterExporter {
                     + "Validated" + SEPARATOR + getRatiosLabels(quantification) + "\n";
             peptidesOutput.write(titles);
 
-            identification.loadPeptideMatchParameters(new PSParameter(), new ProgressDialogX(false));
+            identification.loadPeptideMatches(progressDialog);
+            identification.loadPeptideMatchParameters(new PSParameter(), progressDialog);
 
             for (String peptideKey : quantification.getPeptideQuantification()) {
 
