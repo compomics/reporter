@@ -5,7 +5,7 @@
     <groupId>eu.isas.reporter</groupId>
     <artifactId>Reporter</artifactId>
     <packaging>jar</packaging>
-    <version>1.4.2-beta</version>
+    <version>1.4.3-beta</version>
     <name>Reporter</name>
     <url>http://reporter.googlecode.com</url>
 
@@ -295,7 +295,7 @@
         <dependency>
             <groupId>com.compomics</groupId>
             <artifactId>utilities</artifactId>
-            <version>3.13.29</version>
+            <version>3.13.57</version>
             <exclusions>
                 <exclusion>
                     <artifactId>commons-math</artifactId>

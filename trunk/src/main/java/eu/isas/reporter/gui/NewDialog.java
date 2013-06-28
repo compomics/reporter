@@ -1027,6 +1027,8 @@ public class NewDialog extends javax.swing.JDialog {
 
     private void addSpectraFilesJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addSpectraFilesJButtonActionPerformed
 
+        // @TODO: add mgf validation etc like for PeptideShaker
+        
         JFileChooser fileChooser = new JFileChooser(reporterGui.getLastSelectedFolder());
         fileChooser.setDialogTitle("Select Spectra File(s)");
         fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
@@ -1047,29 +1049,39 @@ public class NewDialog extends javax.swing.JDialog {
 
         int returnVal = fileChooser.showDialog(this.getParent(), "Add");
 
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-            for (File newFile : fileChooser.getSelectedFiles()) {
-                if (newFile.isDirectory()) {
-                    File[] tempFiles = newFile.listFiles();
-                    for (File file : tempFiles) {
-                        if (file.getName().toLowerCase().endsWith(".mgf")) {
-                            if (!mgfFiles.contains(file)) {
-                                mgfFiles.add(file);
+        try {
+
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
+                for (File newFile : fileChooser.getSelectedFiles()) {
+                    if (newFile.isDirectory()) {
+                        File[] tempFiles = newFile.listFiles();
+                        for (File file : tempFiles) {
+                            if (file.getName().toLowerCase().endsWith(".mgf")) {
+                                if (!mgfFiles.contains(file)) {
+                                    mgfFiles.add(file);
+                                    projectDetails.addSpectrumFile(file);
+                                }
+                            }
+                        }
+                    } else {
+                        if (newFile.getName().toLowerCase().endsWith(".mgf")) {
+                            if (!mgfFiles.contains(newFile)) {
+                                mgfFiles.add(newFile);
+                                projectDetails.addSpectrumFile(newFile);
+                                spectrumFactory.addSpectra(newFile, null); // @TODO: add progress dialog!!
                             }
                         }
                     }
-                } else {
-                    if (newFile.getName().toLowerCase().endsWith(".mgf")) {
-                        if (!mgfFiles.contains(newFile)) {
-                            mgfFiles.add(newFile);
-                        }
-                    }
+
+                    reporterGui.setLastSelectedFolder(newFile.getPath());
                 }
 
-                reporterGui.setLastSelectedFolder(newFile.getPath());
+                txtSpectraFileLocation.setText(mgfFiles.size() + " file(s) selected");
             }
-
-            txtSpectraFileLocation.setText(mgfFiles.size() + " file(s) selected");
+        } catch (IOException e) {
+            progressDialog.setRunFinished();
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "An error occurred while reading the mgf file.", "Mgf Error", JOptionPane.WARNING_MESSAGE);
         }
     }//GEN-LAST:event_addSpectraFilesJButtonActionPerformed
 
@@ -1086,8 +1098,8 @@ public class NewDialog extends javax.swing.JDialog {
 
     /**
      * Clear the data and close the dialog.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void exitJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitJButtonActionPerformed
         reporterGui.clearData(true);
@@ -1117,7 +1129,7 @@ public class NewDialog extends javax.swing.JDialog {
 //        } else {
 //            fileChooser = new JFileChooser(peptideShakerGUI.getLastSelectedFolder());
 //        }
-        
+
         fileChooser = new JFileChooser(getLastSelectedFolder());
 
         fileChooser.setDialogTitle("Select FASTA File(s)");
@@ -1146,6 +1158,8 @@ public class NewDialog extends javax.swing.JDialog {
             setLastSelectedFolder(fastaFile.getAbsolutePath());
             try {
                 SequenceFactory.getInstance().loadFastaFile(fastaFile);
+                reporter.getPSSettings().getSearchParameters().setFastaFile(fastaFile);
+                fastaTxt.setText(fastaFile.getName());
             } catch (FileNotFoundException ex) {
                 ex.printStackTrace();
             } catch (IOException ex) {
@@ -1157,7 +1171,7 @@ public class NewDialog extends javax.swing.JDialog {
             } catch (IllegalArgumentException ex) {
                 ex.printStackTrace();
             }
-            fastaTxt.setText(fastaFile.getName());
+
 //            checkFastaFile(fastaFile);
 //            if (searchParameters == null) {
 //                searchParameters = new SearchParameters();
@@ -1169,13 +1183,12 @@ public class NewDialog extends javax.swing.JDialog {
 
     /**
      * Clear the data and close the dialog.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         exitJButtonActionPerformed(null);
     }//GEN-LAST:event_formWindowClosing
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addDbButton;
     private javax.swing.JButton addIdFilesButton;
@@ -1380,7 +1393,7 @@ public class NewDialog extends javax.swing.JDialog {
 
                     File experimentFile = new File(Reporter.SERIALIZATION_DIRECTORY, Reporter.experimentObjectName);
                     File matchFolder = new File(Reporter.SERIALIZATION_DIRECTORY);
-                    
+
                     // empty the existing files in the matches folder
                     if (matchFolder.exists()) {
                         for (File file : matchFolder.listFiles()) {
@@ -1629,7 +1642,7 @@ public class NewDialog extends javax.swing.JDialog {
                                 tempMgfFiles.add(providedSpectrumLocation);
                             }
                         }
-                        
+
                         if (!missing.isEmpty()) {
                             if (missing.size() <= 3) {
                                 String report = "";
@@ -1736,7 +1749,7 @@ public class NewDialog extends javax.swing.JDialog {
                             txtSpectraFileLocation.setText(report);
                         } else {
                             txtSpectraFileLocation.setText(report);
-                        } 
+                        }
                     }
 
                     if (progressDialog.isRunCanceled()) {
