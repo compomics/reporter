@@ -338,7 +338,7 @@ public class ReporterExporter {
                     spectraOutput.write(probabilities.getPsmProbabilityScore() + SEPARATOR
                             + probabilities.getPsmProbability() + SEPARATOR);
 
-                    if (spectrumMatch.getBestAssumption().isDecoy()) {
+                    if (spectrumMatch.getBestAssumption().getPeptide().isDecoy()) {
                         spectraOutput.write("1" + SEPARATOR);
                     } else {
                         spectraOutput.write("0" + SEPARATOR);
@@ -497,7 +497,7 @@ public class ReporterExporter {
                 peptidesOutput.write(probabilities.getPeptideProbabilityScore() + SEPARATOR
                         + probabilities.getPeptideProbability() + SEPARATOR);
 
-                if (peptideMatch.isDecoy()) {
+                if (peptideMatch.getTheoreticPeptide().isDecoy()) {
                     peptidesOutput.write("1" + SEPARATOR);
                 } else {
                     peptidesOutput.write("0" + SEPARATOR);
