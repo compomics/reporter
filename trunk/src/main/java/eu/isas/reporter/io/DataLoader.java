@@ -10,7 +10,7 @@ import com.compomics.util.experiment.massspectrometry.Spectrum;
 import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.matches.PsmQuantification;
-import com.compomics.util.gui.waiting.WaitingHandler;
+import com.compomics.util.waiting.WaitingHandler;
 import eu.isas.reporter.myparameters.QuantificationPreferences;
 import java.io.File;
 import java.util.ArrayList;
@@ -169,8 +169,8 @@ public class DataLoader {
             if (!quantificationPreferences.isSameSpectra()) {
 
                 waitingHandler.appendReport("Merging HCD and CID spectra.", true, true);
-                waitingHandler.resetSecondaryProgressBar();
-                waitingHandler.setMaxSecondaryProgressValue(spectrumFactory.getNSpectra());
+                waitingHandler.resetSecondaryProgressCounter();
+                waitingHandler.setMaxSecondaryProgressCounter(spectrumFactory.getNSpectra());
 
                 for (String spectrumFile : spectrumFactory.getMgfFileNames()) {
                     for (String spectrumTitle : spectrumFactory.getSpectrumTitles(spectrumFile)) {
@@ -178,7 +178,7 @@ public class DataLoader {
                         Precursor precursor = spectrumFactory.getPrecursor(newKey); // @TODO: replace by batch selection?
                         precursorMzValues.put(newKey, precursor.getMz());
                         precursorRtValues.put(newKey, precursor.getRt());
-                        waitingHandler.increaseSecondaryProgressValue();
+                        waitingHandler.increaseSecondaryProgressCounter();
 
                         if (waitingHandler.isRunCanceled()) {
                             return;
@@ -188,16 +188,16 @@ public class DataLoader {
             }
 
             waitingHandler.appendReport("PSM quantification.", true, true);
-            waitingHandler.increaseProgressValue();
-            waitingHandler.resetSecondaryProgressBar();
+            waitingHandler.increasePrimaryProgressCounter();
+            waitingHandler.resetSecondaryProgressCounter();
 
             int fileCounter = 0;
 
             for (String spectrumFile : spectrumFactory.getMgfFileNames()) {
 
                 waitingHandler.appendReport("Quantifying file: " + spectrumFile + " (" + ++fileCounter + "/" + spectrumFactory.getMgfFileNames().size() + ")", true, true);
-                waitingHandler.resetSecondaryProgressBar();
-                waitingHandler.setMaxSecondaryProgressValue(identification.getSpectrumIdentification(spectrumFile).size());
+                waitingHandler.resetSecondaryProgressCounter();
+                waitingHandler.setMaxSecondaryProgressCounter(identification.getSpectrumIdentification(spectrumFile).size());
 
                 //identification.loadSpectrumMatches(spectrumFile, null); // this should take in a waiting handler!!
                 //identification.loadSpectrumMatchParameters(spectrumFile, ?, null); // this should take in a waiting handler!!
@@ -218,7 +218,7 @@ public class DataLoader {
                         }
                     }
 
-                    waitingHandler.increaseSecondaryProgressValue();
+                    waitingHandler.increaseSecondaryProgressCounter();
                 }
             }
 

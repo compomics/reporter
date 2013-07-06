@@ -12,7 +12,7 @@ import com.compomics.util.experiment.massspectrometry.Spectrum;
 import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
 import com.compomics.util.experiment.quantification.Quantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
-import com.compomics.util.gui.waiting.WaitingHandler;
+import com.compomics.util.waiting.WaitingHandler;
 import eu.isas.peptideshaker.myparameters.PeptideShakerSettings;
 import eu.isas.reporter.io.DataLoader;
 import eu.isas.reporter.calculation.RatioEstimator;
@@ -250,8 +250,8 @@ public class Reporter {
             RatioEstimator ratioEstimator = new RatioEstimator(quantification, quantification.getReporterMethod(), quantificationPreferences, enzyme);
 
             if (waitingHandler != null) {
-                waitingHandler.setMaxSecondaryProgressValue(quantification.getProteinQuantification().size());
-                waitingHandler.setSecondaryProgressDialogIndeterminate(false);
+                waitingHandler.setMaxSecondaryProgressCounter(quantification.getProteinQuantification().size());
+                waitingHandler.setSecondaryProgressCounterIndeterminate(false);
             }
             
             // @TODO: has to use batch select/insert!!!
@@ -259,7 +259,7 @@ public class Reporter {
             for (String proteinKey : quantification.getProteinQuantification()) {
                 ratioEstimator.estimateProteinRatios(proteinKey);
                 if (waitingHandler != null) {
-                    waitingHandler.increaseSecondaryProgressValue();
+                    waitingHandler.increaseSecondaryProgressCounter();
                     if (waitingHandler.isRunCanceled()) {
                         return;
                     }
@@ -387,7 +387,7 @@ public class Reporter {
             }
 
             dataLoader.loadQuantification(getQuantification(), mgfFiles);
-            waitingHandler.increaseProgressValue();
+            waitingHandler.increasePrimaryProgressCounter();
 
             if (waitingHandler.isRunCanceled()) {
                 return 1;
