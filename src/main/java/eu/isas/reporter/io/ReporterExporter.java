@@ -122,8 +122,8 @@ public class ReporterExporter {
         increment /= 100;
 
         if (progressDialog != null) {
-            progressDialog.setIndeterminate(false);
-            progressDialog.setMaxProgressValue(100);
+            progressDialog.setPrimaryProgressCounterIndeterminate(false);
+            progressDialog.setMaxPrimaryProgressCounter(100);
             progressDialog.setValue(0);
         }
 

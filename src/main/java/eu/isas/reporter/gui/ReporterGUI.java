@@ -214,7 +214,7 @@ public class ReporterGUI extends javax.swing.JFrame {
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")),
                 true);
         progressDialog.setTitle("Updating. Please Wait...");
-        progressDialog.setIndeterminate(true);
+        progressDialog.setPrimaryProgressCounterIndeterminate(true);
         progressDialog.setUnstoppable(false);
 
         new Thread(new Runnable() {
@@ -576,7 +576,7 @@ public class ReporterGUI extends javax.swing.JFrame {
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")),
                 true);
         progressDialog.setTitle("Closing. Please Wait...");
-        progressDialog.setIndeterminate(true);
+        progressDialog.setPrimaryProgressCounterIndeterminate(true);
         progressDialog.setUnstoppable(true);
 
         final ReporterGUI finalRef = this;
@@ -601,8 +601,8 @@ public class ReporterGUI extends javax.swing.JFrame {
                         String[] files = serializationFolder.list();
 
                         if (files != null) {
-                            progressDialog.setIndeterminate(false);
-                            progressDialog.setMaxProgressValue(files.length);
+                            progressDialog.setPrimaryProgressCounterIndeterminate(false);
+                            progressDialog.setMaxPrimaryProgressCounter(files.length);
                         }
                     }
 
@@ -826,7 +826,7 @@ public class ReporterGUI extends javax.swing.JFrame {
         progressDialog = new ProgressDialogX(this,
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
-        progressDialog.setIndeterminate(true);
+        progressDialog.setPrimaryProgressCounterIndeterminate(true);
         progressDialog.setTitle("Exporting Project. Please Wait...");
         final File exportFile = file;
 

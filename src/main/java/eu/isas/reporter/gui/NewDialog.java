@@ -973,7 +973,7 @@ public class NewDialog extends javax.swing.JDialog {
                     Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")),
                     false, null, "Quantifying", "Reporter", new Properties().getVersion(), true); //@TODO: put and tips
             waitingDialog.setLocationRelativeTo(this);
-            waitingDialog.setMaxProgressValue(5);
+            waitingDialog.setMaxPrimaryProgressCounter(5);
             //waitingDialog.setCloseDialogWhenImportCompletes(true, true); // @TODO: include when the GUI is created
 
             final ReporterGUI finalRef = reporterGui;
@@ -995,14 +995,14 @@ public class NewDialog extends javax.swing.JDialog {
 
                     try {
                         waitingDialog.appendReport("Preparing for the quantification.", true, true);
-                        waitingDialog.increaseProgressValue();
+                        waitingDialog.increasePrimaryProgressCounter();
                         savePreferences();
                         ReporterIonQuantification reporterIonQuantification = getReporterIonQuantification();
                         experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).addQuantificationResults(reporterIonQuantification.getMethodUsed(), reporterIonQuantification);
                         reporter.setExperiment(experiment);
                         reporter.setSample(sample);
                         reporter.setReplicateNumber(replicateNumber);
-                        waitingDialog.increaseProgressValue();
+                        waitingDialog.increasePrimaryProgressCounter();
                         reporter.loadFiles(mgfFiles, waitingDialog);
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -1368,7 +1368,7 @@ public class NewDialog extends javax.swing.JDialog {
         progressDialog = new ProgressDialogX(this, reporterGui,
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
-        progressDialog.setIndeterminate(true);
+        progressDialog.setPrimaryProgressCounterIndeterminate(true);
         progressDialog.setTitle("Importing Project. Please Wait...");
 
         new Thread(new Runnable() {
@@ -1419,9 +1419,9 @@ public class NewDialog extends javax.swing.JDialog {
                     BufferedInputStream bis = new BufferedInputStream(fi, BUFFER);
                     ArchiveInputStream tarInput = new ArchiveStreamFactory().createArchiveInputStream(bis);
                     ArchiveEntry archiveEntry;
-                    progressDialog.setMaxProgressValue(100);
+                    progressDialog.setMaxPrimaryProgressCounter(100);
                     progressDialog.setValue(0);
-                    progressDialog.setIndeterminate(false);
+                    progressDialog.setPrimaryProgressCounterIndeterminate(false);
                     long fileLength = currentPSFile.length();
 
                     while ((archiveEntry = tarInput.getNextEntry()) != null) {
@@ -1445,7 +1445,7 @@ public class NewDialog extends javax.swing.JDialog {
                             return;
                         }
                     }
-                    progressDialog.setIndeterminate(true);
+                    progressDialog.setPrimaryProgressCounterIndeterminate(true);
                     fi.close();
                     bis.close();
                     fi.close();
@@ -1464,7 +1464,7 @@ public class NewDialog extends javax.swing.JDialog {
                     }
 
 
-                    progressDialog.setIndeterminate(true);
+                    progressDialog.setPrimaryProgressCounterIndeterminate(true);
                     progressDialog.setTitle("Importing Experiment Details. Please Wait...");
 
                     if (progressDialog.isRunCanceled()) {
@@ -1603,9 +1603,9 @@ public class NewDialog extends javax.swing.JDialog {
                     tempMgfFiles = new ArrayList<File>();
 
                     progressDialog.setTitle("Locating Spectrum Files. Please Wait...");
-                    progressDialog.setIndeterminate(false);
-                    progressDialog.setMaxProgressValue(spectrumFiles.size() + 1);
-                    progressDialog.increaseProgressValue();
+                    progressDialog.setPrimaryProgressCounterIndeterminate(false);
+                    progressDialog.setMaxPrimaryProgressCounter(spectrumFiles.size() + 1);
+                    progressDialog.increasePrimaryProgressCounter();
 
                     try {
                         File projectFolder = currentPSFile.getParentFile();
@@ -1613,7 +1613,7 @@ public class NewDialog extends javax.swing.JDialog {
 
                         for (String spectrumFileName : spectrumFiles) {
 
-                            progressDialog.increaseProgressValue();
+                            progressDialog.increasePrimaryProgressCounter();
 
                             File providedSpectrumLocation = projectDetails.getSpectrumFile(spectrumFileName);
 
@@ -1690,7 +1690,7 @@ public class NewDialog extends javax.swing.JDialog {
 
 
                     progressDialog.setTitle("Importing Spectrum Files. Please Wait...");
-                    progressDialog.setIndeterminate(true);
+                    progressDialog.setPrimaryProgressCounterIndeterminate(true);
 
                     ArrayList<File> error = processSpectrumFiles(tempMgfFiles, progressDialog);
 
@@ -1776,14 +1776,14 @@ public class NewDialog extends javax.swing.JDialog {
                     }
 
                     if (!progressDialog.isRunCanceled()) {
-                        progressDialog.setIndeterminate(true);
+                        progressDialog.setPrimaryProgressCounterIndeterminate(true);
                         progressDialog.setTitle("Loading Proteins. Please Wait...");
                         identification.loadProteinMatches(progressDialog);
                         progressDialog.setTitle("Loading Protein Details. Please Wait...");
                         identification.loadProteinMatchParameters(new PSParameter(), progressDialog);
                         progressDialog.setTitle("Loading Peptide Details. Please Wait...");
                         identification.loadPeptideMatchParameters(new PSParameter(), progressDialog);
-                        progressDialog.setIndeterminate(true);
+                        progressDialog.setPrimaryProgressCounterIndeterminate(true);
                     }
 
 
@@ -1955,7 +1955,7 @@ public class NewDialog extends javax.swing.JDialog {
         progressDialog = new ProgressDialogX(this, reporterGui,
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
-        progressDialog.setIndeterminate(true);
+        progressDialog.setPrimaryProgressCounterIndeterminate(true);
         progressDialog.setTitle("Importing Spectra. Please Wait...");
         final ArrayList<File> newMgfFiles = files;
 
