@@ -5,7 +5,7 @@
     <groupId>eu.isas.reporter</groupId>
     <artifactId>Reporter</artifactId>
     <packaging>jar</packaging>
-    <version>1.4.3-beta</version>
+    <version>1.4.4-beta</version>
     <name>Reporter</name>
     <url>http://reporter.googlecode.com</url>
 
