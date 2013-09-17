@@ -18,6 +18,7 @@ import com.compomics.util.gui.SampleSelection;
 import com.compomics.util.gui.renderers.AlignedListCellRenderer;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
 import com.compomics.util.gui.waiting.waitinghandlers.WaitingDialog;
+import com.compomics.util.preferences.GenePreferences;
 import com.compomics.util.preferences.IdFilter;
 import com.compomics.util.preferences.PTMScoringPreferences;
 import com.compomics.util.preferences.ProcessingPreferences;
@@ -1547,7 +1548,7 @@ public class NewDialog extends javax.swing.JDialog {
                                 tempSettings.getSpectrumCountingPreferences(), tempSettings.getProjectDetails(), tempSettings.getFilterPreferences(),
                                 tempSettings.getDisplayPreferences(),
                                 tempSettings.getMetrics(), tempProcessingPreferences, tempSettings.getIdentificationFeaturesCache(),
-                                tempPTMScoringPreferences, new IdFilter());
+                                tempPTMScoringPreferences, new GenePreferences(), new IdFilter());
 
                     } else {
                         experimentSettings = (PeptideShakerSettings) tempExperiment.getUrParam(experimentSettings);
