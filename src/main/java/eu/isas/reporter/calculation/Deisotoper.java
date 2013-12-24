@@ -1,10 +1,10 @@
 package eu.isas.reporter.calculation;
 
-import com.compomics.util.experiment.biology.ions.ReporterIon;
 import com.compomics.util.experiment.identification.matches.IonMatch;
 import com.compomics.util.experiment.quantification.reporterion.CorrectionFactor;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import org.ujmp.core.doublematrix.calculation.general.decomposition.Ginv;
 
@@ -16,7 +16,7 @@ import org.ujmp.core.doublematrix.calculation.general.decomposition.Ginv;
 public class Deisotoper {
 
     /**
-     * The correction matrix (see PMID: 19953549).
+     * The correction matrix (see Pubmed ID: 19953549).
      */
     private double[][] correctionMatrix;
     /**
@@ -40,24 +40,25 @@ public class Deisotoper {
     private void estimateCorrectionMatrix() {
 
         ArrayList<CorrectionFactor> correctionFactors = method.getCorrectionFactors();
-        ArrayList<ReporterIon> reporterIons = method.getReporterIons();
+        ArrayList<Integer> reporterIonsIndexes = method.getReporterIonIndexes();
+        Collections.sort(reporterIonsIndexes);
         int dimension = correctionFactors.size();
         double[][] coefficients = new double[dimension][dimension];
 
         for (int i = 0; i < dimension; i++) {
             for (int j = 0; j < dimension; j++) {
-                if (reporterIons.get(i).getIndex() - correctionFactors.get(j).getIonId() == -2) {
+                if (reporterIonsIndexes.get(i) - correctionFactors.get(j).getIonId() == -2) {
                     coefficients[i][j] = correctionFactors.get(j).getMinus2() / 100.0;
-                } else if (reporterIons.get(i).getIndex() - correctionFactors.get(j).getIonId() == -1) {
+                } else if (reporterIonsIndexes.get(i) - correctionFactors.get(j).getIonId() == -1) {
                     coefficients[i][j] = correctionFactors.get(j).getMinus1() / 100.0;
-                } else if (reporterIons.get(i).getIndex() - correctionFactors.get(j).getIonId() == 0) {
+                } else if (reporterIonsIndexes.get(i) - correctionFactors.get(j).getIonId() == 0) {
                     coefficients[i][j] = 1 - correctionFactors.get(j).getMinus2() / 100.0
                             - correctionFactors.get(j).getMinus1() / 100.0
                             - correctionFactors.get(j).getPlus1() / 100.0
                             - correctionFactors.get(j).getPlus2() / 100.0;
-                } else if (reporterIons.get(i).getIndex() - correctionFactors.get(j).getIonId() == 1) {
+                } else if (reporterIonsIndexes.get(i) - correctionFactors.get(j).getIonId() == 1) {
                     coefficients[i][j] = correctionFactors.get(j).getPlus1() / 100.0;
-                } else if (reporterIons.get(i).getIndex() - correctionFactors.get(j).getIonId() == 2) {
+                } else if (reporterIonsIndexes.get(i) - correctionFactors.get(j).getIonId() == 2) {
                     coefficients[i][j] = correctionFactors.get(j).getPlus2() / 100.0;
                 } else {
                     coefficients[i][j] = 0.0;
@@ -75,13 +76,14 @@ public class Deisotoper {
      */
     public HashMap<Integer, Double> deisotope(HashMap<Integer, IonMatch> ionMatches) {
 
-        ArrayList<ReporterIon> reporterIons = method.getReporterIons();
-        double[] intensities = new double[reporterIons.size()];
+        ArrayList<Integer> reporterIonsIndexes = method.getReporterIonIndexes();
+        Collections.sort(reporterIonsIndexes);
+        double[] intensities = new double[reporterIonsIndexes.size()];
 
-        for (int i = 0; i < reporterIons.size(); i++) {
-            if (ionMatches.get(reporterIons.get(i).getIndex()) != null) {
-                if (ionMatches.get(reporterIons.get(i).getIndex()).peak != null) {
-                    intensities[i] = ionMatches.get(reporterIons.get(i).getIndex()).peak.intensity;
+        for (int i = 0; i < reporterIonsIndexes.size(); i++) {
+            if (ionMatches.get(reporterIonsIndexes.get(i)) != null) {
+                if (ionMatches.get(reporterIonsIndexes.get(i)).peak != null) {
+                    intensities[i] = ionMatches.get(reporterIonsIndexes.get(i)).peak.intensity;
                 }
             }
         }
@@ -96,7 +98,7 @@ public class Deisotoper {
             if (resultInt < 0) {
                 resultInt = 0;
             }
-            result.put(reporterIons.get(i).getIndex(), resultInt);
+            result.put(reporterIonsIndexes.get(i), resultInt);
         }
         return result;
     }

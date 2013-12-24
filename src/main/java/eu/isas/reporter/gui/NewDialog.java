@@ -1,48 +1,33 @@
 package eu.isas.reporter.gui;
 
-import com.compomics.util.Util;
 import com.compomics.util.db.ObjectsCache;
 import com.compomics.util.experiment.MsExperiment;
 import com.compomics.util.experiment.biology.Sample;
+import com.compomics.util.experiment.biology.ions.ReporterIon;
 import com.compomics.util.experiment.identification.Identification;
-import com.compomics.util.experiment.identification.IdentificationMethod;
+import com.compomics.util.experiment.identification.SearchParameters;
 import com.compomics.util.experiment.identification.SequenceFactory;
-import com.compomics.util.experiment.identification.matches.ProteinMatch;
-import com.compomics.util.experiment.io.ExperimentIO;
 import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
-import com.compomics.util.experiment.quantification.Quantification.QuantificationMethod;
+import com.compomics.util.experiment.quantification.Quantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethodFactory;
-import com.compomics.util.gui.SampleSelection;
+import com.compomics.util.gui.JOptionEditorPane;
 import com.compomics.util.gui.renderers.AlignedListCellRenderer;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
-import com.compomics.util.gui.waiting.waitinghandlers.WaitingDialog;
-import com.compomics.util.preferences.GenePreferences;
-import com.compomics.util.preferences.IdFilter;
-import com.compomics.util.preferences.PTMScoringPreferences;
-import com.compomics.util.preferences.ProcessingPreferences;
-import eu.isas.peptideshaker.myparameters.PSParameter;
-import eu.isas.peptideshaker.myparameters.PSSettings;
-import eu.isas.peptideshaker.myparameters.PeptideShakerSettings;
 import eu.isas.peptideshaker.preferences.ProjectDetails;
-import eu.isas.reporter.Reporter;
-import eu.isas.reporter.myparameters.QuantificationPreferences;
-import eu.isas.reporter.utils.Properties;
+import eu.isas.peptideshaker.utils.CpsParent;
+import eu.isas.reporter.myparameters.ReporterPreferences;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
-import org.apache.commons.compress.archivers.ArchiveEntry;
-import org.apache.commons.compress.archivers.ArchiveInputStream;
-import org.apache.commons.compress.archivers.ArchiveStreamFactory;
 import org.xmlpull.v1.XmlPullParserException;
 
 /**
@@ -69,35 +54,24 @@ public class NewDialog extends javax.swing.JDialog {
     /**
      * The method selected.
      */
-    private ReporterMethod selectedMethod;
+    private ReporterMethod selectedMethod = null;
     /**
-     * The experiment conducted.
+     * The cps parent used to manage the data.
      */
-    private MsExperiment experiment;
-    /**
-     * The sample analyzed.
-     */
-    private Sample sample;
-    /**
-     * The replicate number.
-     */
-    private int replicateNumber;
-    /**
-     * The currently loaded PeptideShaker file.
-     */
-    private File currentPSFile;
+    private CpsParent cpsBean = new CpsParent() {
+        @Override
+        public String getJarFilePath() {
+            return reporterGui.getJarFilePath();
+        }
+    };
     /**
      * The mgf files loaded.
      */
     private ArrayList<File> mgfFiles = new ArrayList<File>();
     /**
-     * Reporter will take care of the calculation.
-     */
-    private Reporter reporter;
-    /**
      * The quantification preferences.
      */
-    private QuantificationPreferences quantificationPreferences;
+    private ReporterPreferences reporterPreferences;
     /**
      * A simple progress dialog.
      */
@@ -111,34 +85,36 @@ public class NewDialog extends javax.swing.JDialog {
      */
     private HashMap<Integer, String> sampleNames = new HashMap<Integer, String>();
     /**
+     * List of control samples.
+     */
+    private HashMap<Integer, Boolean> controlSamples = new HashMap<Integer, Boolean>();
+    /**
      * The cache to use for identification and quantification objects.
      */
     private ObjectsCache cache;
     /**
-     * The waiting dialog.
+     * Boolean indicating whether the user cancelled the project creation
      */
-    private WaitingDialog waitingDialog;
+    private boolean cancelled = false;
     /**
-     * The project details.
+     * a reporter ion quantification object containing the input from the user
      */
-    private ProjectDetails projectDetails = null;
+    private ReporterIonQuantification reporterIonQuantification = null;
 
     /**
      * Constructor.
      *
      * @param reporterGui the reporter class
-     * @param reporter
      */
-    public NewDialog(ReporterGUI reporterGui, Reporter reporter) {
+    public NewDialog(ReporterGUI reporterGui) {
         super(reporterGui, true);
 
         this.reporterGui = reporterGui;
-        this.reporter = reporter;
 
         importMethods();
-
         initComponents();
-
+// load the user preferences
+        loadUserPreferences();
         // make sure that the scroll panes are see-through
         sampleAssignmentJScrollPane.getViewport().setOpaque(false);
         reporterIonsConfigJScrollPane.getViewport().setOpaque(false);
@@ -146,8 +122,6 @@ public class NewDialog extends javax.swing.JDialog {
 
         // set the table properties
         setTableProperties();
-
-        loadPreferences();
 
         sameSpectra.setSelected(true);
 
@@ -780,6 +754,7 @@ public class NewDialog extends javax.swing.JDialog {
         jLabel7.setText("Quantification Preferences");
 
         editPreferencesButton.setText("Edit");
+        editPreferencesButton.setEnabled(false);
         editPreferencesButton.setPreferredSize(new java.awt.Dimension(57, 23));
         editPreferencesButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -944,7 +919,7 @@ public class NewDialog extends javax.swing.JDialog {
             }
 
             public String getDescription() {
-                return "Supported formats: PeptideShaker (.cps)";
+                return "Supported formats: Compomics PeptideShaker (.cps)";
             }
         };
 
@@ -966,56 +941,16 @@ public class NewDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_addIdFilesButtonActionPerformed
 
     private void startButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startButtonActionPerformed
+
         if (validateInput()) {
-
+            reporterIonQuantification = new ReporterIonQuantification(Quantification.QuantificationMethod.REPORTER_IONS);
+            for (int key : sampleNames.keySet()) {
+                reporterIonQuantification.assignSample(key, new Sample(sampleNames.get(key)));
+            }
+            reporterIonQuantification.setMethod(selectedMethod);
             dispose();
-            waitingDialog = new WaitingDialog(reporterGui,
-                    Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
-                    Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")),
-                    false, null, "Quantifying", "Reporter", new Properties().getVersion(), true); //@TODO: put and tips
-            waitingDialog.setLocationRelativeTo(this);
-            waitingDialog.setMaxPrimaryProgressCounter(5);
-            //waitingDialog.setCloseDialogWhenImportCompletes(true, true); // @TODO: include when the GUI is created
-
-            final ReporterGUI finalRef = reporterGui;
-
-
-            new Thread(new Runnable() {
-                public void run() {
-                    try {
-                        waitingDialog.setVisible(true);
-                    } catch (IndexOutOfBoundsException e) {
-                        // ignore
-                    }
-                }
-            }, "ProgressDialog").start();
-
-            new Thread("DisplayThread") {
-                @Override
-                public void run() {
-
-                    try {
-                        waitingDialog.appendReport("Preparing for the quantification.", true, true);
-                        waitingDialog.increasePrimaryProgressCounter();
-                        savePreferences();
-                        ReporterIonQuantification reporterIonQuantification = getReporterIonQuantification();
-                        experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).addQuantificationResults(reporterIonQuantification.getMethodUsed(), reporterIonQuantification);
-                        reporter.setExperiment(experiment);
-                        reporter.setSample(sample);
-                        reporter.setReplicateNumber(replicateNumber);
-                        waitingDialog.increasePrimaryProgressCounter();
-                        reporter.loadFiles(mgfFiles, waitingDialog);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        JOptionPane.showMessageDialog(finalRef,
-                                "An error occured while creating the project:\n"
-                                + e.getLocalizedMessage(),
-                                "Error",
-                                JOptionPane.ERROR_MESSAGE);
-                    }
-                }
-            }.start();
         }
+
     }//GEN-LAST:event_startButtonActionPerformed
 
     private void sameSpectraActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sameSpectraActionPerformed
@@ -1029,7 +964,6 @@ public class NewDialog extends javax.swing.JDialog {
     private void addSpectraFilesJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addSpectraFilesJButtonActionPerformed
 
         // @TODO: add mgf validation etc like for PeptideShaker
-        
         JFileChooser fileChooser = new JFileChooser(reporterGui.getLastSelectedFolder());
         fileChooser.setDialogTitle("Select Spectra File(s)");
         fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
@@ -1060,7 +994,7 @@ public class NewDialog extends javax.swing.JDialog {
                             if (file.getName().toLowerCase().endsWith(".mgf")) {
                                 if (!mgfFiles.contains(file)) {
                                     mgfFiles.add(file);
-                                    projectDetails.addSpectrumFile(file);
+                                    cpsBean.getProjectDetails().addSpectrumFile(file);
                                 }
                             }
                         }
@@ -1068,7 +1002,7 @@ public class NewDialog extends javax.swing.JDialog {
                         if (newFile.getName().toLowerCase().endsWith(".mgf")) {
                             if (!mgfFiles.contains(newFile)) {
                                 mgfFiles.add(newFile);
-                                projectDetails.addSpectrumFile(newFile);
+                                cpsBean.getProjectDetails().addSpectrumFile(newFile);
                                 spectrumFactory.addSpectra(newFile, null); // @TODO: add progress dialog!!
                             }
                         }
@@ -1086,13 +1020,6 @@ public class NewDialog extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_addSpectraFilesJButtonActionPerformed
 
-    private void experimentTxtKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_experimentTxtKeyReleased
-        experiment.setReference(experimentTxt.getText().trim());
-    }//GEN-LAST:event_experimentTxtKeyReleased
-
-    private void sampleNameTxtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sampleNameTxtActionPerformed
-    }//GEN-LAST:event_sampleNameTxtActionPerformed
-
     private void rtTolTxtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rtTolTxtActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_rtTolTxtActionPerformed
@@ -1103,12 +1030,12 @@ public class NewDialog extends javax.swing.JDialog {
      * @param evt
      */
     private void exitJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitJButtonActionPerformed
-        reporterGui.clearData(true);
+        cancelled = true;
         this.dispose();
     }//GEN-LAST:event_exitJButtonActionPerformed
 
     private void editPreferencesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editPreferencesButtonActionPerformed
-        new PreferencesDialog(reporterGui, quantificationPreferences);
+        new PreferencesDialog(reporterGui, reporterPreferences, cpsBean.getSearchParameters());
         quantificationPreferencesTxt.setText("User Settings");
     }//GEN-LAST:event_editPreferencesButtonActionPerformed
 
@@ -1130,7 +1057,6 @@ public class NewDialog extends javax.swing.JDialog {
 //        } else {
 //            fileChooser = new JFileChooser(peptideShakerGUI.getLastSelectedFolder());
 //        }
-
         fileChooser = new JFileChooser(getLastSelectedFolder());
 
         fileChooser.setDialogTitle("Select FASTA File(s)");
@@ -1159,7 +1085,7 @@ public class NewDialog extends javax.swing.JDialog {
             setLastSelectedFolder(fastaFile.getAbsolutePath());
             try {
                 SequenceFactory.getInstance().loadFastaFile(fastaFile);
-                reporter.getPSSettings().getSearchParameters().setFastaFile(fastaFile);
+                getSearchParameters().setFastaFile(fastaFile);
                 fastaTxt.setText(fastaFile.getName());
             } catch (FileNotFoundException ex) {
                 ex.printStackTrace();
@@ -1190,6 +1116,15 @@ public class NewDialog extends javax.swing.JDialog {
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         exitJButtonActionPerformed(null);
     }//GEN-LAST:event_formWindowClosing
+
+    private void sampleNameTxtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sampleNameTxtActionPerformed
+
+    }//GEN-LAST:event_sampleNameTxtActionPerformed
+
+    private void experimentTxtKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_experimentTxtKeyReleased
+
+    }//GEN-LAST:event_experimentTxtKeyReleased
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addDbButton;
     private javax.swing.JButton addIdFilesButton;
@@ -1254,21 +1189,6 @@ public class NewDialog extends javax.swing.JDialog {
     // End of variables declaration//GEN-END:variables
 
     /**
-     * Returns the quantification method selected.
-     *
-     * @return the quantification method selected
-     */
-    private ReporterIonQuantification getReporterIonQuantification() throws SQLException {
-        ReporterIonQuantification quantification = new ReporterIonQuantification(QuantificationMethod.REPORTER_IONS);
-        quantification.establishConnection(Reporter.SERIALIZATION_DIRECTORY, ReporterIonQuantification.getDefaultReference(experiment.getReference(), sample.getReference(), replicateNumber), true, cache);
-        for (int row = 0; row < sampleAssignmentTable.getRowCount(); row++) {
-            quantification.assignSample(selectedMethod.getReporterIons().get(row).getIndex(), new Sample((String) sampleAssignmentTable.getValueAt(row, 1)));
-        }
-        quantification.setMethod(selectedMethod);
-        return quantification;
-    }
-
-    /**
      * Returns the reporter method corresponding to the given name.
      *
      * @param methodName the given name
@@ -1330,32 +1250,33 @@ public class NewDialog extends javax.swing.JDialog {
     /**
      * Loads the quantification preferences in the GUI.
      */
-    private void loadPreferences() {
-        quantificationPreferences = reporter.getQuantificationPreferences();
-        ionToleranceTxt.setText(quantificationPreferences.getReporterIonsMzTolerance() + "");
-        if (quantificationPreferences.isSameSpectra()) {
+    private void loadUserPreferences() {
+        reporterPreferences = ReporterPreferences.getUserPreferences();
+        ionToleranceTxt.setText(reporterPreferences.getReporterIonsMzTolerance() + "");
+        if (reporterPreferences.isSameSpectra()) {
             sameSpectra.setSelected(true);
             precursorMatching.setSelected(false);
         } else {
             sameSpectra.setSelected(false);
             precursorMatching.setSelected(true);
-            mzTolTxt.setText(quantificationPreferences.getPrecursorMzTolerance() + "");
-            rtTolTxt.setText(quantificationPreferences.getPrecursorRTTolerance() + "");
+            mzTolTxt.setText(reporterPreferences.getPrecursorMzTolerance() + "");
+            rtTolTxt.setText(reporterPreferences.getPrecursorRTTolerance() + "");
         }
     }
 
     /**
      * Sets the new quantification preferences.
      */
-    private void savePreferences() {
-        quantificationPreferences.setReporterIonsMzTolerance(new Double(ionToleranceTxt.getText()));
+    private void saveUserPreferences() {
+        reporterPreferences.setReporterIonsMzTolerance(new Double(ionToleranceTxt.getText()));
         if (sameSpectra.isSelected()) {
-            quantificationPreferences.setSameSpectra(true);
+            reporterPreferences.setSameSpectra(true);
         } else {
-            quantificationPreferences.setSameSpectra(false);
-            quantificationPreferences.setPrecursorMzTolerance(new Double(mzTolTxt.getText()));
-            quantificationPreferences.setPrecursorRTTolerance(new Double(rtTolTxt.getText()));
+            reporterPreferences.setSameSpectra(false);
+            reporterPreferences.setPrecursorMzTolerance(new Double(mzTolTxt.getText()));
+            reporterPreferences.setPrecursorRTTolerance(new Double(rtTolTxt.getText()));
         }
+        ReporterPreferences.saveUserPreferences(reporterPreferences);
     }
 
     /**
@@ -1363,8 +1284,7 @@ public class NewDialog extends javax.swing.JDialog {
      *
      * @param psFile a PeptideShaker file
      */
-    private void importPeptideShakerFile(File psFile) {
-        currentPSFile = psFile;
+    private void importPeptideShakerFile(final File psFile) {
 
         progressDialog = new ProgressDialogX(this, reporterGui,
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
@@ -1387,495 +1307,226 @@ public class NewDialog extends javax.swing.JDialog {
             public void run() {
 
                 try {
-                    // reset enzymes, ptms and preferences. Close any open connection to an identification database
-                    if (reporter.getIdentification() != null) {
-                        reporter.getIdentification().close();
+
+                    cpsBean.setCpsFile(psFile);
+
+                    try {
+                        cpsBean.loadCpsFile(progressDialog);
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                        JOptionPane.showMessageDialog(NewDialog.this,
+                                "An error occured while reading:\n" + cpsBean.getCpsFile() + ".\n\n"
+                                + "It looks like another instance of PeptideShaker is still connected to the file.\n"
+                                + "Please close all instances of PeptideShaker and try again.",
+                                "File Input Error", JOptionPane.ERROR_MESSAGE);
                     }
 
-                    File experimentFile = new File(Reporter.SERIALIZATION_DIRECTORY, Reporter.experimentObjectName);
-                    File matchFolder = new File(Reporter.SERIALIZATION_DIRECTORY);
+                    progressDialog.setTitle("Loading Gene Mappings. Please Wait...");
+                    loadGeneMappings(); // have to load the new gene mappings
 
-                    // empty the existing files in the matches folder
-                    if (matchFolder.exists()) {
-                        for (File file : matchFolder.listFiles()) {
-                            if (file.isDirectory()) {
-                                boolean deleted = Util.deleteDir(file);
-
-                                if (!deleted) {
-                                    System.out.println("Failed to delete folder: " + file.getPath());
-                                }
-                            } else {
-                                boolean deleted = file.delete();
-
-                                if (!deleted) {
-                                    System.out.println("Failed to delete file: " + file.getPath());
-                                }
-                            }
-                        }
-                    }
-
-                    final int BUFFER = 2048;
-                    byte data[] = new byte[BUFFER];
-                    FileInputStream fi = new FileInputStream(currentPSFile);
-                    BufferedInputStream bis = new BufferedInputStream(fi, BUFFER);
-                    ArchiveInputStream tarInput = new ArchiveStreamFactory().createArchiveInputStream(bis);
-                    ArchiveEntry archiveEntry;
-                    progressDialog.setMaxPrimaryProgressCounter(100);
-                    progressDialog.setValue(0);
-                    progressDialog.setPrimaryProgressCounterIndeterminate(false);
-                    long fileLength = currentPSFile.length();
-
-                    while ((archiveEntry = tarInput.getNextEntry()) != null) {
-                        File destinationFile = new File(archiveEntry.getName());
-                        File destinationFolder = destinationFile.getParentFile();
-                        if (!destinationFolder.exists()) {
-                            destinationFolder.mkdirs();
-                        }
-                        FileOutputStream fos = new FileOutputStream(destinationFile);
-                        BufferedOutputStream bos = new BufferedOutputStream(fos);
-                        int count;
-                        while ((count = tarInput.read(data, 0, BUFFER)) != -1 && !progressDialog.isRunCanceled()) {
-                            bos.write(data, 0, count);
-                        }
-                        bos.close();
-                        fos.close();
-                        int progress = (int) (100 * tarInput.getBytesRead() / fileLength);
-                        progressDialog.setValue(progress);
-                        if (progressDialog.isRunCanceled()) {
-                            progressDialog.dispose();
-                            return;
-                        }
-                    }
-                    progressDialog.setPrimaryProgressCounterIndeterminate(true);
-                    fi.close();
-                    bis.close();
-                    fi.close();
-
-                    experiment = ExperimentIO.loadExperiment(experimentFile);
-
-                    Sample tempSample = null;
-
-                    PeptideShakerSettings psSettings = new PeptideShakerSettings();
-                    psSettings = (PeptideShakerSettings) experiment.getUrParam(psSettings);
-                    reporter.setPSSettings(psSettings);
-
+                    // @TODO: check if the used gene mapping files are available and download if not?
                     if (progressDialog.isRunCanceled()) {
-                        progressDialog.dispose();
+                        progressDialog.setRunFinished();
                         return;
                     }
-
-
-                    progressDialog.setPrimaryProgressCounterIndeterminate(true);
-                    progressDialog.setTitle("Importing Experiment Details. Please Wait...");
-
-                    if (progressDialog.isRunCanceled()) {
-                        progressDialog.dispose();
-                        return;
-                    }
-
-                    ArrayList<Sample> samples = new ArrayList(experiment.getSamples().values());
-
-                    if (samples.size() == 1) {
-                        tempSample = samples.get(0);
-                    } else {
-                        String[] sampleNames = new String[samples.size()];
-                        for (int i = 0; i < sampleNames.length; i++) {
-                            sampleNames[i] = samples.get(i).getReference();
-                        }
-                        SampleSelection sampleSelection = new SampleSelection(null, true, sampleNames, "sample");
-                        sampleSelection.setVisible(true);
-                        String choice = sampleSelection.getChoice();
-                        for (Sample sampleTemp : samples) {
-                            if (sampleTemp.getReference().equals(choice)) {
-                                tempSample = sampleTemp;
-                                break;
-                            }
-                        }
-                    }
-
-                    sample = tempSample;
-
-                    if (progressDialog.isRunCanceled()) {
-                        progressDialog.dispose();
-                        return;
-                    }
-
-                    ArrayList<Integer> replicates = new ArrayList(experiment.getAnalysisSet(tempSample).getReplicateNumberList());
-
-                    int tempReplicate;
-
-                    if (replicates.size() == 1) {
-                        tempReplicate = replicates.get(0);
-                    } else {
-                        String[] replicateNames = new String[replicates.size()];
-                        for (int i = 0; i < replicateNames.length; i++) {
-                            replicateNames[i] = samples.get(i).getReference();
-                        }
-                        SampleSelection sampleSelection = new SampleSelection(null, true, replicateNames, "replicate");
-                        sampleSelection.setVisible(true);
-                        Integer choice = new Integer(sampleSelection.getChoice());
-                        tempReplicate = choice;
-                    }
-
-                    replicateNumber = tempReplicate;
-
-                    if (progressDialog.isRunCanceled()) {
-                        progressDialog.dispose();
-                        return;
-                    }
-
-                    PeptideShakerSettings experimentSettings = new PeptideShakerSettings();
-                    MsExperiment tempExperiment = ExperimentIO.loadExperiment(experimentFile);
-
-                    if (tempExperiment.getUrParam(experimentSettings) instanceof PSSettings) {
-
-                        // convert old settings files using utilities version 3.10.68 or older
-
-                        // convert the old ProcessingPreferences object
-                        PSSettings tempSettings = (PSSettings) tempExperiment.getUrParam(experimentSettings);
-                        ProcessingPreferences tempProcessingPreferences = new ProcessingPreferences();
-                        tempProcessingPreferences.setProteinFDR(tempSettings.getProcessingPreferences().getProteinFDR());
-                        tempProcessingPreferences.setPeptideFDR(tempSettings.getProcessingPreferences().getPeptideFDR());
-                        tempProcessingPreferences.setPsmFDR(tempSettings.getProcessingPreferences().getPsmFDR());
-
-                        // convert the old PTMScoringPreferences object
-                        PTMScoringPreferences tempPTMScoringPreferences = new PTMScoringPreferences();
-                        tempPTMScoringPreferences.setaScoreCalculation(tempSettings.getPTMScoringPreferences().aScoreCalculation());
-                        tempPTMScoringPreferences.setaScoreNeutralLosses(tempSettings.getPTMScoringPreferences().isaScoreNeutralLosses());
-                        tempPTMScoringPreferences.setFlrThreshold(tempSettings.getPTMScoringPreferences().getFlrThreshold());
-
-                        experimentSettings = new PeptideShakerSettings(tempSettings.getSearchParameters(), tempSettings.getAnnotationPreferences(),
-                                tempSettings.getSpectrumCountingPreferences(), tempSettings.getProjectDetails(), tempSettings.getFilterPreferences(),
-                                tempSettings.getDisplayPreferences(),
-                                tempSettings.getMetrics(), tempProcessingPreferences, tempSettings.getIdentificationFeaturesCache(),
-                                tempPTMScoringPreferences, new GenePreferences(), new IdFilter());
-
-                    } else {
-                        experimentSettings = (PeptideShakerSettings) tempExperiment.getUrParam(experimentSettings);
-                    }
-
-                    setProjectDetails(experimentSettings.getProjectDetails());
 
                     progressDialog.setTitle("Loading FASTA File. Please Wait...");
 
+                    boolean fileFound;
                     try {
-                        File providedFastaLocation = psSettings.getSearchParameters().getFastaFile();
-                        String fileName = providedFastaLocation.getName();
-                        File projectFolder = currentPSFile.getParentFile();
-                        File dataFolder = new File(projectFolder, "data");
-
-                        // try to locate the FASTA file
-                        if (providedFastaLocation.exists()) {
-                            SequenceFactory.getInstance().loadFastaFile(providedFastaLocation);
-                            fastaTxt.setText(fileName);
-                        } else if (new File(projectFolder, fileName).exists()) {
-                            SequenceFactory.getInstance().loadFastaFile(new File(projectFolder, fileName));
-                            psSettings.getSearchParameters().setFastaFile(new File(projectFolder, fileName));
-                            fastaTxt.setText(fileName);
-                        } else if (new File(dataFolder, fileName).exists()) {
-                            SequenceFactory.getInstance().loadFastaFile(new File(dataFolder, fileName));
-                            psSettings.getSearchParameters().setFastaFile(new File(dataFolder, fileName));
-                            fastaTxt.setText(fileName);
-                        } else {
-                            JOptionPane.showMessageDialog(NewDialog.this,
-                                    psSettings.getSearchParameters().getFastaFile() + " could not be found."
-                                    + "\n\nPlease select the FASTA file manually.",
-                                    "File Input Error", JOptionPane.ERROR_MESSAGE);
-                            fastaTxt.setText("Please Select Fasta File(s)");
-                        }
+                        fileFound = cpsBean.loadFastaFile(new File(reporterGui.getLastSelectedFolder()), progressDialog);
                     } catch (Exception e) {
+                        fileFound = false;
+                    }
+
+                    if (!fileFound) {
                         JOptionPane.showMessageDialog(NewDialog.this,
-                                "An error occured while reading:\n" + psSettings.getSearchParameters().getFastaFile() + "."
-                                + "\n\nPlease select the FASTA file manually.",
+                                "An error occured while reading:\n" + getSearchParameters().getFastaFile() + "."
+                                + "\n\nPlease select the file manually.",
                                 "File Input Error", JOptionPane.ERROR_MESSAGE);
-                        fastaTxt.setText("Please Select Fasta File(s)");
                     }
 
                     if (progressDialog.isRunCanceled()) {
-                        progressDialog.dispose();
+                        progressDialog.setRunFinished();
                         return;
                     }
 
-                    ArrayList<File> tempMgfFiles = new ArrayList<File>();
-                    ArrayList<String> names = new ArrayList<String>();
-                    ArrayList<String> missing = new ArrayList<String>();
-                    Identification identification = experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).getIdentification(IdentificationMethod.MS2_IDENTIFICATION);
-                    ArrayList<String> spectrumFiles = identification.getSpectrumFiles();
-                    tempMgfFiles = new ArrayList<File>();
-
-                    progressDialog.setTitle("Locating Spectrum Files. Please Wait...");
+                    progressDialog.setTitle("Loading Spectrum Files. Please Wait...");
                     progressDialog.setPrimaryProgressCounterIndeterminate(false);
-                    progressDialog.setMaxPrimaryProgressCounter(spectrumFiles.size() + 1);
+                    progressDialog.setMaxPrimaryProgressCounter(getIdentification().getSpectrumFiles().size() + 1);
                     progressDialog.increasePrimaryProgressCounter();
 
-                    try {
-                        File projectFolder = currentPSFile.getParentFile();
-                        File dataFolder = new File(projectFolder, "data");
+                    int cpt = 0, total = getIdentification().getSpectrumFiles().size();
+                    for (String spectrumFileName : getIdentification().getSpectrumFiles()) {
 
-                        for (String spectrumFileName : spectrumFiles) {
+                        progressDialog.setTitle("Loading Spectrum Files (" + ++cpt + " of " + total + "). Please Wait...");
+                        progressDialog.increasePrimaryProgressCounter();
 
-                            progressDialog.increasePrimaryProgressCounter();
-
-                            File providedSpectrumLocation = projectDetails.getSpectrumFile(spectrumFileName);
-
-                            // try to locate the spectrum file
-                            if (providedSpectrumLocation == null || !providedSpectrumLocation.exists()) {
-                                File fileInProjectFolder = new File(projectFolder, spectrumFileName);
-                                File fileInDataFolder = new File(dataFolder, spectrumFileName);
-                                File fileInLastSelectedFolder = new File(getLastSelectedFolder(), spectrumFileName);
-                                if (fileInProjectFolder.exists()) {
-                                    projectDetails.addSpectrumFile(fileInProjectFolder);
-                                    names.add(fileInProjectFolder.getName());
-                                    tempMgfFiles.add(fileInProjectFolder);
-                                } else if (fileInDataFolder.exists()) {
-                                    projectDetails.addSpectrumFile(fileInDataFolder);
-                                    names.add(fileInDataFolder.getName());
-                                    tempMgfFiles.add(fileInDataFolder);
-                                } else if (fileInLastSelectedFolder.exists()) {
-                                    projectDetails.addSpectrumFile(fileInLastSelectedFolder);
-                                    names.add(fileInLastSelectedFolder.getName());
-                                    tempMgfFiles.add(fileInLastSelectedFolder);
-                                } else {
-                                    missing.add(providedSpectrumLocation.getName());
-                                }
-                            } else if (!names.contains(providedSpectrumLocation.getName())) {
-                                names.add(providedSpectrumLocation.getName());
-                                tempMgfFiles.add(providedSpectrumLocation);
-                            }
+                        boolean found;
+                        try {
+                            found = cpsBean.loadSpectrumFiles(new File(getLastSelectedFolder()), progressDialog);
+                        } catch (Exception e) {
+                            found = false;
+                        }
+                        if (!found) {
+                            JOptionPane.showMessageDialog(NewDialog.this,
+                                    "Spectrum file not found: \'" + spectrumFileName + "\'."
+                                    + "\nPlease select the spectrum file or the folder containing it manually.",
+                                    "File Not Found", JOptionPane.ERROR_MESSAGE);
                         }
 
-                        if (!missing.isEmpty()) {
-                            if (missing.size() <= 3) {
-                                String report = "";
-                                int cpt = 0;
-                                Collections.sort(missing);
-                                for (String name : missing) {
-                                    if (cpt > 0) {
-                                        if (cpt == missing.size() - 1) {
-                                            report += " and ";
-                                        } else {
-                                            report += ", ";
-                                        }
-                                    }
-                                    cpt++;
-                                    report += name;
-                                }
-                                if (cpt == 1) {
-                                    report += " was";
-                                } else {
-                                    report += " were";
-                                }
-                                report += " not found. Please import ";
-                                if (cpt == 1) {
-                                    report += "it";
-                                } else {
-                                    report += "them";
-                                }
-                                report += " manually."; // Dare you say I don't make efforts for user friendliness!
-                                JOptionPane.showMessageDialog(NewDialog.this,
-                                        report,
-                                        "File(s) missing", JOptionPane.ERROR_MESSAGE);
-                            } else {
-                                JOptionPane.showMessageDialog(NewDialog.this,
-                                        missing.size() + " mgf files could not be located, please import them manually.",
-                                        "File(s) missing", JOptionPane.ERROR_MESSAGE);
-                            }
+                        if (progressDialog.isRunCanceled()) {
+                            progressDialog.setRunFinished();
+                            return;
                         }
-                    } catch (Exception e) {
-                        JOptionPane.showMessageDialog(NewDialog.this,
-                                "An error occured while looking for the spectrum files. Please locate the files manually.",
-                                "File Input Error", JOptionPane.ERROR_MESSAGE);
-                        e.printStackTrace();
+
                     }
-
-
-
-                    progressDialog.setTitle("Importing Spectrum Files. Please Wait...");
+                    editPreferencesButton.setEnabled(true);
                     progressDialog.setPrimaryProgressCounterIndeterminate(true);
-
-                    ArrayList<File> error = processSpectrumFiles(tempMgfFiles, progressDialog);
-
-                    if (!error.isEmpty()) {
-                        String report = "An error occurred while importing ";
-                        if (error.size() <= 3) {
-                            int cpt = 0;
-                            Collections.sort(error);
-                            for (File errorFile : error) {
-                                if (cpt > 0) {
-                                    if (cpt == error.size() - 1) {
-                                        report += " and ";
-                                    } else {
-                                        report += ", ";
-                                    }
-                                }
-                                String fileName = errorFile.getName();
-                                cpt++;
-                                report += fileName;
-                            }
-                        } else {
-                            report += error.size() + " mgf files";
-                        }
-                        if (error.size() > 1) {
-                            report += ". Please import them manually.";
-                        } else {
-                            report += ". Please import it manually.";
-                        }
-                        JOptionPane.showMessageDialog(NewDialog.this,
-                                report,
-                                "File Input Error", JOptionPane.ERROR_MESSAGE);
-                    }
-
-                    if (!missing.isEmpty() || !error.isEmpty()) {
-                        txtSpectraFileLocation.setText("Please select the mgf file(s)");
-                    } else {
-                        String report = "";
-                        if (names.size() <= 3) {
-                            int cpt = 0;
-                            Collections.sort(names);
-                            for (String name : names) {
-                                if (cpt > 0) {
-                                    if (cpt == names.size() - 1) {
-                                        report += " and ";
-                                    } else {
-                                        report += ", ";
-                                    }
-                                }
-                                cpt++;
-                                report += name;
-                            }
-                        } else {
-                            report += names.size() + " files selected";
-                        }
-                        if (identification.getSpectrumFiles().size() == 1) {
-                            txtSpectraFileLocation.setText(report);
-                        } else {
-                            txtSpectraFileLocation.setText(report);
-                        }
-                    }
-
-                    if (progressDialog.isRunCanceled()) {
-                        progressDialog.dispose();
-                        return;
-                    }
-
-                    experimentTxt.setText(experiment.getReference());
-                    sampleNameTxt.setText(sample.getReference());
-                    replicateNumberTxt.setText(replicateNumber + "");
-                    txtIdFileLocation.setText(currentPSFile.getName());
-
-                    cache = new ObjectsCache();
-                    cache.setAutomatedMemoryManagement(true);
-                    identification.establishConnection(Reporter.SERIALIZATION_DIRECTORY, false, cache);
-
-                    if (!testIdentificationConnection()) {
-                        progressDialog.setRunCanceled();
-                    }
-
-                    if (identification.getSpectrumIdentificationMap() == null) {
-                        // 0.18 version, needs update of the spectrum mapping
-                        identification.updateSpectrumMapping();
-                    }
-
-                    if (!progressDialog.isRunCanceled()) {
-                        progressDialog.setPrimaryProgressCounterIndeterminate(true);
-                        progressDialog.setTitle("Loading Proteins. Please Wait...");
-                        identification.loadProteinMatches(progressDialog);
-                        progressDialog.setTitle("Loading Protein Details. Please Wait...");
-                        identification.loadProteinMatchParameters(new PSParameter(), progressDialog);
-                        progressDialog.setTitle("Loading Peptide Details. Please Wait...");
-                        identification.loadPeptideMatchParameters(new PSParameter(), progressDialog);
-                        progressDialog.setPrimaryProgressCounterIndeterminate(true);
-                    }
-
-
-                    // try to detect the method used
-
-                    // @TODO: this list only contains the variable mods. and thus defaults to iTRAQ 4plex for TMT...
-                    ArrayList<String> foundModifications = psSettings.getMetrics().getFoundModifications();
-                    for (String ptm : foundModifications) {
-                        if (ptm.toLowerCase().contains("8plex")) {
-                            selectedMethod = getMethod("iTRAQ 8Plex");
-                        } else if (ptm.toLowerCase().contains("duplex")) {
-                            selectedMethod = getMethod("TMT2");
-                        } else if (ptm.toLowerCase().contains("6-plex")) {
-                            selectedMethod = getMethod("TMT6");
-                        } else if (ptm.toLowerCase().contains("itraq")) {
-                            selectedMethod = getMethod("iTRAQ 4Plex");
-                        }
-                    }
-
-                    // no method detected, default to iTRAQ 4 plex
-                    if (selectedMethod == null) {
-                        comboMethod2.setSelectedItem(methodsFactory.getMethodsNames()[0]);
-                        comboMethod1.setSelectedItem(methodsFactory.getMethodsNames()[0]);
-                    }
-
-                    mzTolTxt.setText(psSettings.getSearchParameters().getPrecursorAccuracy() + "");
-                    if (psSettings.getSearchParameters().isPrecursorAccuracyTypePpm()) {
-                        ppmCmb.setSelectedIndex(0);
-                    } else {
-                        ppmCmb.setSelectedIndex(1);
-                    }
-
-                    sampleNames.clear();
-                    refresh();
-
                     progressDialog.setRunFinished();
 
                 } catch (OutOfMemoryError error) {
                     System.out.println("Ran out of memory! (runtime.maxMemory(): " + Runtime.getRuntime().maxMemory() + ")");
                     Runtime.getRuntime().gc();
-                    JOptionPane.showMessageDialog(null,
-                            "The task used up all the available memory and had to be stopped.\n"
-                            + "Memory boundaries are set in ../resources/conf/JavaOptions.txt.",
-                            "Out Of Memory Error",
-                            JOptionPane.ERROR_MESSAGE);
-
-                    progressDialog.dispose();
-
+                    JOptionPane.showMessageDialog(NewDialog.this, JOptionEditorPane.getJOptionEditorPane(
+                            "PeptideShaker used up all the available memory and had to be stopped.<br>"
+                            + "Memory boundaries are changed in the the Welcome Dialog (Settings<br>"
+                            + "& Help > Settings > Java Memory Settings) or in the Edit menu (Edit<br>"
+                            + "Java Options). See also <a href=\"http://code.google.com/p/compomics-utilities/wiki/JavaTroubleShooting\">JavaTroubleShooting</a>."),
+                            "Out Of Memory", JOptionPane.ERROR_MESSAGE);
+                    progressDialog.setRunFinished();
                     error.printStackTrace();
                 } catch (EOFException e) {
-
-                    progressDialog.dispose();
-
+                    progressDialog.setRunFinished();
                     JOptionPane.showMessageDialog(NewDialog.this,
-                            "An error occured while reading:\n" + currentPSFile + ".\n\n"
+                            "An error occured while reading:\n" + cpsBean.getCpsFile() + ".\n\n"
                             + "The file is corrupted and cannot be opened anymore.",
                             "File Input Error", JOptionPane.ERROR_MESSAGE);
                     e.printStackTrace();
                 } catch (Exception e) {
-
-                    progressDialog.dispose();
-
+                    progressDialog.setRunFinished();
                     JOptionPane.showMessageDialog(NewDialog.this,
-                            "An error occured while reading:\n" + currentPSFile + ".\n\n"
+                            "An error occured while reading:\n" + cpsBean.getCpsFile() + ".\n\n"
                             + "Please verify that the compomics-utilities version used to create\n"
                             + "the file is compatible with your version of PeptideShaker.",
                             "File Input Error", JOptionPane.ERROR_MESSAGE);
                     e.printStackTrace();
                 }
+
+                if (progressDialog.isRunCanceled()) {
+                    progressDialog.dispose();
+                    return;
+                }
+
+                experimentTxt.setText(getExperiment().getReference());
+                sampleNameTxt.setText(getSample().getReference());
+                replicateNumberTxt.setText(getReplicateNumber() + "");
+                txtIdFileLocation.setText(cpsBean.getCpsFile().getName());
+
+                cache = new ObjectsCache();
+                cache.setAutomatedMemoryManagement(true);
+
+                //@TODO: load quantification parameters if existing
+                SearchParameters searchParameters = getSearchParameters();
+                // try to detect the method used
+                for (String ptmName : searchParameters.getModificationProfile().getAllModifications()) {
+                    if (ptmName.contains("8plex")) {
+                        selectedMethod = getMethod("iTRAQ 8Plex");
+                        break;
+                    } else if (ptmName.contains("duplex")) {
+                        selectedMethod = getMethod("TMT2");
+                        break;
+                    } else if (ptmName.contains("6-plex")) {
+                        selectedMethod = getMethod("TMT6");
+                        break;
+                    } else if (ptmName.contains("itraq")) {
+                        selectedMethod = getMethod("iTRAQ 4Plex");
+                        break;
+                    }
+                }
+
+                // no method detected, default to iTRAQ 4 plex
+                if (selectedMethod == null) {
+                    comboMethod2.setSelectedItem(methodsFactory.getMethodsNames()[0]);
+                    comboMethod1.setSelectedItem(methodsFactory.getMethodsNames()[0]);
+                }
+
+                mzTolTxt.setText(searchParameters.getPrecursorAccuracy() + "");
+                if (searchParameters.isPrecursorAccuracyTypePpm()) {
+                    ppmCmb.setSelectedIndex(0);
+                } else {
+                    ppmCmb.setSelectedIndex(1);
+                }
+
+                sampleNames.clear();
+                refresh();
+
+                progressDialog.setRunFinished();
+
             }
         }.start();
     }
 
     /**
-     * Tests the connection to the identification database.
+     * Returns the project details.
+     *
+     * @return the project details
      */
-    private boolean testIdentificationConnection() {
-        try {
-            Identification identification = experiment.getAnalysisSet(sample).getProteomicAnalysis(replicateNumber).getIdentification(IdentificationMethod.MS2_IDENTIFICATION);
-            String proteinKey = identification.getProteinIdentification().get(0);
-            ProteinMatch testMatch = identification.getProteinMatch(proteinKey);
-            if (testMatch == null) {
-                throw new IllegalArgumentException("Test protein " + proteinKey + " not found.");
-            }
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(NewDialog.this,
-                    "A problem occurred while connecting to the database.",
-                    "Database connection error", JOptionPane.ERROR_MESSAGE);
-            return false;
+    public ProjectDetails getProjectDetails() {
+        return cpsBean.getProjectDetails();
+    }
+
+    /**
+     * Returns the search parameters.
+     *
+     * @return the search parameters
+     */
+    public SearchParameters getSearchParameters() {
+        return cpsBean.getSearchParameters();
+    }
+
+    /**
+     * Returns the experiment.
+     *
+     * @return the experiment
+     */
+    public MsExperiment getExperiment() {
+        return cpsBean.getExperiment();
+    }
+
+    /**
+     * Returns the sample.
+     *
+     * @return the sample
+     */
+    public Sample getSample() {
+        return cpsBean.getSample();
+    }
+
+    /**
+     * Returns the replicate number.
+     *
+     * @return the replicateNumber
+     */
+    public int getReplicateNumber() {
+        return cpsBean.getReplicateNumber();
+    }
+
+    /**
+     * Returns the identification displayed.
+     *
+     * @return the identification displayed
+     */
+    public Identification getIdentification() {
+        return cpsBean.getIdentification();
+    }
+
+    /**
+     * Imports the gene mapping.
+     */
+    private void loadGeneMappings() {
+        if (!cpsBean.loadGeneMappings(progressDialog)) {
+            JOptionPane.showMessageDialog(this, "Unable to load the gene/GO mapping file.", "File Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -2048,7 +1699,7 @@ public class NewDialog extends javax.swing.JDialog {
             if (selectedMethod == null) {
                 return 0;
             }
-            return selectedMethod.getReporterIons().size();
+            return selectedMethod.getReporterIonIndexes().size();
         }
 
         @Override
@@ -2070,12 +1721,13 @@ public class NewDialog extends javax.swing.JDialog {
 
         @Override
         public Object getValueAt(int row, int column) {
+            int index = selectedMethod.getReporterIonIndexes().get(row);
             switch (column) {
                 case 0:
-                    return selectedMethod.getReporterIons().get(row).getName();
+                    ReporterIon reporterIon = selectedMethod.getReporterIon(index);
+                    return reporterIon.getName();
                 case 1:
-                    int index = selectedMethod.getReporterIons().get(row).getIndex();
-
+                    Sample sample = getSample();
                     if (sampleNames.get(row) == null) {
                         if (sample != null) {
                             sampleNames.put(row, sample.getReference() + " " + index);
@@ -2113,7 +1765,7 @@ public class NewDialog extends javax.swing.JDialog {
             if (selectedMethod == null) {
                 return 0;
             }
-            return selectedMethod.getReporterIons().size();
+            return selectedMethod.getReporterIonIndexes().size();
         }
 
         @Override
@@ -2135,11 +1787,13 @@ public class NewDialog extends javax.swing.JDialog {
 
         @Override
         public Object getValueAt(int row, int column) {
+            int index = selectedMethod.getReporterIonIndexes().get(row);
+            ReporterIon reporterIon = selectedMethod.getReporterIon(index);
             switch (column) {
                 case 0:
-                    return selectedMethod.getReporterIons().get(row).getName();
+                    return reporterIon.getName();
                 case 1:
-                    return selectedMethod.getReporterIons().get(row).getTheoreticMass();
+                    return reporterIon.getTheoreticMass();
                 default:
                     return "";
             }
@@ -2222,11 +1876,53 @@ public class NewDialog extends javax.swing.JDialog {
     }
 
     /**
-     * Sets the project details.
+     * Indicates whether the user cancelled the project creation.
      *
-     * @param projectDetails the project details
+     * @return a boolean indicating whether the user cancelled the project
+     * creation
      */
-    public void setProjectDetails(ProjectDetails projectDetails) {
-        this.projectDetails = projectDetails;
+    public boolean isCancelled() {
+        return cancelled;
     }
+
+    /**
+     * Returns the cps parent object providing all informations contained in the
+     * cps file
+     *
+     * @return the cps parent object providing all informations contained in the
+     * cps file
+     */
+    public CpsParent getCpsBean() {
+        return cpsBean;
+    }
+
+    /**
+     * Returns the reporter preferences.
+     *
+     * @return the reporter preferences
+     */
+    public ReporterPreferences getReporterPreferences() {
+        return reporterPreferences;
+    }
+
+    /**
+     * Returns the identification objects cache.
+     *
+     * @return the identification objects cache
+     */
+    public ObjectsCache getCache() {
+        return cache;
+    }
+
+    /**
+     * Returns the reporter ion quantification. Note that this object is only
+     * set after the user has pressed "Load".
+     *
+     * @return the reporter ion quantification containing all quantification
+     * parameters
+     */
+    public ReporterIonQuantification getReporterIonQuantification() {
+        return reporterIonQuantification;
+    }
+
 }
