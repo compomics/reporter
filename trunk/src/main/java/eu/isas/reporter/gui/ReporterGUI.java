@@ -1,37 +1,31 @@
 package eu.isas.reporter.gui;
 
 import com.compomics.software.CompomicsWrapper;
-import com.compomics.util.Util;
-import com.compomics.util.experiment.biology.ions.ReporterIon;
-import com.compomics.util.experiment.identification.Identification;
+import com.compomics.util.db.ObjectsCache;
+import com.compomics.util.experiment.biology.PTMFactory;
 import com.compomics.util.experiment.identification.SequenceFactory;
-import com.compomics.util.experiment.identification.matches.ProteinMatch;
 import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
-import com.compomics.util.experiment.quantification.matches.ProteinQuantification;
 import com.compomics.util.general.ExceptionHandler;
 import com.compomics.util.gui.UtilitiesGUIDefaults;
 import com.compomics.util.gui.error_handlers.BugReport;
 import com.compomics.util.gui.error_handlers.HelpDialog;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
 import com.compomics.util.preferences.UtilitiesUserPreferences;
+import eu.isas.peptideshaker.utils.CpsParent;
 import eu.isas.reporter.Reporter;
-import eu.isas.reporter.io.ReporterExporter;
-import eu.isas.reporter.myparameters.ItraqScore;
-import eu.isas.reporter.myparameters.QuantificationPreferences;
+import eu.isas.reporter.calculation.QuantificationFeaturesCache;
+import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
+import eu.isas.reporter.myparameters.ReporterPreferences;
 import eu.isas.reporter.resultpanels.OverviewPanel;
 import eu.isas.reporter.utils.Properties;
 import java.awt.Toolkit;
 import java.io.*;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
-import javax.swing.table.DefaultTableModel;
 import net.jimmc.jshortcut.JShellLink;
-import org.ujmp.core.collections.ArrayIndexList;
+import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
 
 /**
  * The main Reporter GUI.
@@ -42,10 +36,6 @@ import org.ujmp.core.collections.ArrayIndexList;
 public class ReporterGUI extends javax.swing.JFrame {
 
     /**
-     * The reporter class which will actually process the data.
-     */
-    private Reporter reporter = new Reporter(this);
-    /**
      * If set to true all messages will be sent to a log file.
      */
     private static boolean useLogFile = true;
@@ -54,29 +44,9 @@ public class ReporterGUI extends javax.swing.JFrame {
      */
     private String lastSelectedFolder = "user.home";
     /**
-     * Mapping of the protein table entries.
-     */
-    private ArrayList<String> proteinTableIndex = new ArrayList<String>();
-    /**
-     * Mapping of the peptide table entries.
-     */
-    private ArrayList<String> peptideTableIndex = new ArrayList<String>();
-    /**
-     * Mapping of the PSM table entries.
-     */
-    private ArrayList<String> psmTableIndex = new ArrayList<String>();
-    /**
      * The currently processed quantification.
      */
     private ReporterIonQuantification quantification;
-    /**
-     * The corresponding identification.
-     */
-    private Identification identification;
-    /**
-     * The reporter ions used in the method.
-     */
-    private ArrayList<ReporterIon> reporterIons = new ArrayIndexList<ReporterIon>();
     /**
      * A simple progress dialog.
      */
@@ -85,10 +55,6 @@ public class ReporterGUI extends javax.swing.JFrame {
      * The utilities user preferences.
      */
     private UtilitiesUserPreferences utilitiesUserPreferences = null;
-    /**
-     * The location of the folder used for serialization of matches.
-     */
-    public final static String SERIALIZATION_DIRECTORY = "resources/matches";
     /**
      * The spectrum factory.
      */
@@ -100,7 +66,36 @@ public class ReporterGUI extends javax.swing.JFrame {
     /**
      * The exception handler
      */
-    private ExceptionHandler exceptionHandler = new ExceptionHandler(this);
+    private ExceptionHandler exceptionHandler = new ExceptionHandler(this, "http://code.google.com/p/reporter/issues/list");
+    /**
+     * The compomics PTM factory.
+     */
+    private PTMFactory ptmFactory = PTMFactory.getInstance();
+    /**
+     * The cps parent used to manage the data.
+     */
+    private CpsParent cpsBean = null;
+    /**
+     * The reporter preferences
+     */
+    private ReporterPreferences reporterPreferences;
+    /**
+     * The reporter ion quantification containing the quantification parameters
+     */
+    private ReporterIonQuantification reporterIonQuantification;
+    /**
+     * The quantification features generator provides quantification features on
+     * the identified matches
+     */
+    private QuantificationFeaturesGenerator quantificationFeaturesGenerator;
+    /**
+     * The cache to use for identification and quantification objects.
+     */
+    private ObjectsCache cache;
+    /**
+     * Boolean indicating whether the project has been saved
+     */
+    private boolean projectSaved = true;
 
     /**
      * Creates a new ReporterGUI.
@@ -112,6 +107,9 @@ public class ReporterGUI extends javax.swing.JFrame {
 
         // update the look and feel after adding the panels
         setLookAndFeel();
+
+        // load modifications
+        loadModifications();
 
         // load the utilities user preferences
         try {
@@ -133,7 +131,6 @@ public class ReporterGUI extends javax.swing.JFrame {
                 && new File(getJarFilePath() + "/resources/conf/firstRun").exists()) {
 
             // @TODO: add support for desktop icons in mac and linux??
-
             // delete the firstRun file such that the user is not asked the next time around
             new File(getJarFilePath() + "/resources/conf/firstRun").delete();
 
@@ -163,110 +160,82 @@ public class ReporterGUI extends javax.swing.JFrame {
         setLocationRelativeTo(null);
         setVisible(true);
 
+        createNewProject();
+    }
+
+    /**
+     * Loads the modifications from the modification file.
+     */
+    private void loadModifications() {
+
+        String path = getJarFilePath();
+
         try {
-            new NewDialog(this, reporter);
+            ptmFactory.importModifications(new File(path, Reporter.MODIFICATIONS_FILE), false);
         } catch (Exception e) {
-            reporter.catchException(e);
+            JOptionPane.showMessageDialog(null, "An error (" + e.getMessage() + ") occured when trying to load the modifications from " + Reporter.MODIFICATIONS_FILE + ".",
+                    "Configuration import Error", JOptionPane.ERROR_MESSAGE);
         }
+        try {
+            ptmFactory.importModifications(new File(path, Reporter.USER_MODIFICATIONS_FILE), true);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "An error (" + e.getMessage() + ") occured when trying to load the modifications from " + Reporter.USER_MODIFICATIONS_FILE + ".",
+                    "Configuration import Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    /**
+     * Returns the path to the jar file.
+     *
+     * @return the path to the jar file
+     */
+    public String getJarFilePath() {
+        return CompomicsWrapper.getJarFilePath(this.getClass().getResource("ReporterGUI.class").getPath(), "Reporter");
     }
 
     /**
      * Sets up the GUI.
      */
     private void setUpGui() {
-//        tabPanel.setEnabledAt(1, false);
-//        tabPanel.setEnabledAt(2, false);
-//        tabPanel.setEnabledAt(3, false);
+        //@TODO
     }
 
     /**
-     * Returns a reference to the parent Reporter object.
-     *
-     * @return a reference to the parent Reporter object
+     * Closes the currently opened project, open the new project dialog and
+     * loads the new project on the interface
      */
-    public Reporter getReporter() {
-        return reporter;
-    }
-
-    /**
-     * Displays results to the user.
-     *
-     * @param quantification The quantification computed
-     * @param identification The corresponding identification
-     */
-    public void displayResults(ReporterIonQuantification quantification, Identification identification) {
-        this.quantification = quantification;
-        this.identification = identification;
-        reporterIons = quantification.getReporterMethod().getReporterIons();
-        updateProteinMap();
-    }
-
-    /**
-     * Method called when a change was made in the settings.
-     *
-     * @param quantificationPreferences
-     */
-    public void updateResults(QuantificationPreferences quantificationPreferences) {
-
-        final QuantificationPreferences fQuantificationPreferences = quantificationPreferences;
-        progressDialog = new ProgressDialogX(this,
-                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
-                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")),
-                true);
-        progressDialog.setTitle("Updating. Please Wait...");
-        progressDialog.setPrimaryProgressCounterIndeterminate(true);
-        progressDialog.setUnstoppable(false);
-
-        new Thread(new Runnable() {
-            public void run() {
-                try {
-                    progressDialog.setVisible(true);
-                } catch (IndexOutOfBoundsException e) {
-                    // ignore
-                }
-            }
-        }, "ProgressDialog").start();
-
-        new Thread("CloseThread") {
-            @Override
-            public void run() {
-                reporter.setQuantificationPreferences(fQuantificationPreferences);
-                reporter.compileRatios(progressDialog);
-                displayResults(quantification, identification);
-                progressDialog.setVisible(false);
-            }
-        }.start();
-    }
-
-    /**
-     * Updates the maps for results display.
-     */
-    private void updateProteinMap() {
+    private void createNewProject() {
         try {
-            // create the new protein table index ordered by quantification quality.
-            proteinTableIndex = new ArrayList<String>();
-            HashMap<Double, ArrayList<String>> proteinKeys = new HashMap<Double, ArrayList<String>>();
-            ArrayList<Double> scores = new ArrayList<Double>();
-            ProteinQuantification proteinQuantification;
-            ItraqScore itraqScore = new ItraqScore();
-            double score;
-            for (String proteinKey : quantification.getProteinQuantification()) {
-                proteinQuantification = quantification.getProteinMatch(proteinKey);
-                itraqScore = (ItraqScore) proteinQuantification.getUrParam(itraqScore);
-                score = -itraqScore.getMinScore();
-                if (!proteinKeys.containsKey(score)) {
-                    proteinKeys.put(score, new ArrayList<String>());
-                    scores.add(score);
+            if (cpsBean != null) {
+                closeOpenedProject();
+                if (progressDialog.isRunCanceled()) {
+                    return;
                 }
-                proteinKeys.get(score).add(proteinKey);
             }
-            Collections.sort(scores);
-            for (double currentScore : scores) {
-                proteinTableIndex.addAll(proteinKeys.get(currentScore));
+            projectSaved = true;
+            NewDialog newDialog = new NewDialog(this);
+            if (!newDialog.isCancelled()) {
+                cpsBean = newDialog.getCpsBean();
+                reporterPreferences = newDialog.getReporterPreferences();
+                reporterIonQuantification = newDialog.getReporterIonQuantification();
+                projectSaved = false;
+                quantificationFeaturesGenerator = new QuantificationFeaturesGenerator(new QuantificationFeaturesCache(), cpsBean.getIdentification(),reporterPreferences, reporterIonQuantification, cpsBean.getSearchParameters());
+                displayResults();
             }
         } catch (Exception e) {
-            reporter.catchException(e);
+            catchException(e);
         }
+    }
+
+    /**
+     * displays the results on the gui
+     */
+    private void displayResults() throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
+        //@TODO: set progress bar
+        if (!reporterIonQuantification.hasNormalisationFactors()) {
+            Reporter.setNormalizationFactors(reporterIonQuantification, reporterPreferences, cpsBean.getIdentification(), quantificationFeaturesGenerator, progressDialog);
+        }
+        //@TODO: display stuffs on the GUI
     }
 
     /**
@@ -291,9 +260,8 @@ public class ReporterGUI extends javax.swing.JFrame {
         jSeparator3 = new javax.swing.JPopupMenu.Separator();
         exitMenuItem = new javax.swing.JMenuItem();
         exportMenu = new javax.swing.JMenu();
-        exportProteinsMenuItem = new javax.swing.JMenuItem();
-        exportPeptidesMenuItem = new javax.swing.JMenuItem();
-        exportPsmsMenuItem = new javax.swing.JMenuItem();
+        exportQuantificationFeaturesMenuItem = new javax.swing.JMenuItem();
+        jMenuItem1 = new javax.swing.JMenuItem();
         quantificationOptionsMenu = new javax.swing.JMenu();
         quantificationOptionsMenuItem = new javax.swing.JMenuItem();
         helpMenu = new javax.swing.JMenu();
@@ -370,32 +338,17 @@ public class ReporterGUI extends javax.swing.JFrame {
         exportMenu.setMnemonic('E');
         exportMenu.setText("Export");
 
-        exportProteinsMenuItem.setMnemonic('P');
-        exportProteinsMenuItem.setText("Proteins");
-        exportProteinsMenuItem.addActionListener(new java.awt.event.ActionListener() {
+        exportQuantificationFeaturesMenuItem.setMnemonic('P');
+        exportQuantificationFeaturesMenuItem.setText("Quantification Features");
+        exportQuantificationFeaturesMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                exportProteinsMenuItemActionPerformed(evt);
+                exportQuantificationFeaturesMenuItemActionPerformed(evt);
             }
         });
-        exportMenu.add(exportProteinsMenuItem);
+        exportMenu.add(exportQuantificationFeaturesMenuItem);
 
-        exportPeptidesMenuItem.setMnemonic('E');
-        exportPeptidesMenuItem.setText("Peptides");
-        exportPeptidesMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                exportPeptidesMenuItemActionPerformed(evt);
-            }
-        });
-        exportMenu.add(exportPeptidesMenuItem);
-
-        exportPsmsMenuItem.setMnemonic('S');
-        exportPsmsMenuItem.setText("PSMs");
-        exportPsmsMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                exportPsmsMenuItemActionPerformed(evt);
-            }
-        });
-        exportMenu.add(exportPsmsMenuItem);
+        jMenuItem1.setText("Follow-up");
+        exportMenu.add(jMenuItem1);
 
         menuBar.add(exportMenu);
 
@@ -470,11 +423,7 @@ public class ReporterGUI extends javax.swing.JFrame {
      * @param evt
      */
     private void newMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newMenuItemActionPerformed
-        try {
-            new NewDialog(this, reporter);
-        } catch (Exception e) {
-            reporter.catchException(e);
-        }
+        createNewProject();
     }//GEN-LAST:event_newMenuItemActionPerformed
 
     /**
@@ -483,17 +432,17 @@ public class ReporterGUI extends javax.swing.JFrame {
      * @param evt
      */
     private void quantificationOptionsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quantificationOptionsMenuItemActionPerformed
-        new PreferencesDialog(this, reporter.getQuantificationPreferences());
+        new PreferencesDialog(this, reporterPreferences, cpsBean.getSearchParameters());
     }//GEN-LAST:event_quantificationOptionsMenuItemActionPerformed
 
     /**
      * Export the proteins to a tab separated text file.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
-    private void exportProteinsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportProteinsMenuItemActionPerformed
-        export(ReporterExporter.ExportLevel.PROTEIN);
-    }//GEN-LAST:event_exportProteinsMenuItemActionPerformed
+    private void exportQuantificationFeaturesMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportQuantificationFeaturesMenuItemActionPerformed
+        //@TODO: create custom reports like in the Shaker
+    }//GEN-LAST:event_exportQuantificationFeaturesMenuItemActionPerformed
 
     /**
      * Close Reporter.
@@ -503,15 +452,6 @@ public class ReporterGUI extends javax.swing.JFrame {
     private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMenuItemActionPerformed
         closeReporter();
     }//GEN-LAST:event_exitMenuItemActionPerformed
-
-    /**
-     * Export the PSMs to a tab separated text file.
-     * 
-     * @param evt 
-     */
-    private void exportPsmsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportPsmsMenuItemActionPerformed
-        export(ReporterExporter.ExportLevel.PSM);
-    }//GEN-LAST:event_exportPsmsMenuItemActionPerformed
 
     /**
      * Close Reporter.
@@ -558,15 +498,6 @@ public class ReporterGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_aboutMenuItemActionPerformed
 
     /**
-     * Export the peptides to a tab separated text file.
-     * 
-     * @param evt 
-     */
-    private void exportPeptidesMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportPeptidesMenuItemActionPerformed
-        export(ReporterExporter.ExportLevel.PEPTIDE);
-    }//GEN-LAST:event_exportPeptidesMenuItemActionPerformed
-
-    /**
      * Closes Reporter.
      */
     private void closeReporter() {
@@ -595,23 +526,15 @@ public class ReporterGUI extends javax.swing.JFrame {
             @Override
             public void run() {
                 try {
-                    File serializationFolder = new File(getJarFilePath(), ReporterGUI.SERIALIZATION_DIRECTORY);
+                    closeOpenedProject();
 
-                    if (serializationFolder.exists()) {
-                        String[] files = serializationFolder.list();
-
-                        if (files != null) {
-                            progressDialog.setPrimaryProgressCounterIndeterminate(false);
-                            progressDialog.setMaxPrimaryProgressCounter(files.length);
-                        }
+                    if (progressDialog.isRunCanceled()) {
+                        return;
                     }
 
-                    // close the files and save the user preferences
-                    if (!progressDialog.isRunCanceled()) {
-                        spectrumFactory.closeFiles();
-                        sequenceFactory.closeFile();
-                        saveUserPreferences();
-                    }
+                    spectrumFactory.closeFiles();
+                    sequenceFactory.closeFile();
+                    saveUserPreferences();
 
                     // close the progress dialog
                     if (!progressDialog.isRunCanceled()) {
@@ -620,9 +543,6 @@ public class ReporterGUI extends javax.swing.JFrame {
 
                     // hide the gui
                     finalRef.setVisible(false);
-
-                    // clear the data and database folder
-                    clearData(true);
 
                     // close the jvm
                     System.exit(0);
@@ -636,110 +556,10 @@ public class ReporterGUI extends javax.swing.JFrame {
     }
 
     /**
-     * Clear the data from the previous experiment.
-     *
-     * @param clearDatabaseFolder decides if the database folder is to be
-     * cleared or not
+     * Closes the opened project
      */
-    public void clearData(boolean clearDatabaseFolder) {
-
-        // reset the preferences
-        //selectedProteinKey = NO_SELECTION;
-        //selectedPeptideKey = NO_SELECTION;
-        //selectedPsmKey = NO_SELECTION;
-
-        //projectDetails = null;
-        //spectrumAnnotator = new SpectrumAnnotator();
-
-        try {
-            spectrumFactory.closeFiles();
-        } catch (Exception e) {
-            e.printStackTrace();
-            catchException(e);
-        }
-        try {
-            sequenceFactory.closeFile();
-        } catch (Exception e) {
-            e.printStackTrace();
-            catchException(e);
-        }
-
-        try {
-            spectrumFactory.clearFactory();
-        } catch (Exception e) {
-            e.printStackTrace();
-            catchException(e);
-        }
-
-        try {
-            sequenceFactory.clearFactory();
-        } catch (Exception e) {
-            e.printStackTrace();
-            catchException(e);
-        }
-
-        exceptionHandler = new ExceptionHandler(this);
-
-        if (clearDatabaseFolder) {
-            clearDatabaseFolder();
-        }
-
-        //resetFeatureGenerator();
-
-        // set up the tabs/panels
-        //setUpPanels(true);
-
-        // repaint the panels
-        //repaintPanels();
-
-        // select the overview tab
-        //allTabsJTabbedPane.setSelectedIndex(OVER_VIEW_TAB_INDEX);
-        //currentPSFile = null;
-        //dataSaved = false;
-    }
-
-    /**
-     * Clears the database folder.
-     */
-    private void clearDatabaseFolder() {
-
-        boolean databaseClosed = true;
-
-        // close the database connection
-        if (identification != null) {
-
-            try {
-                identification.close();
-                identification = null;
-            } catch (SQLException e) {
-                databaseClosed = false;
-                e.printStackTrace();
-                JOptionPane.showMessageDialog(null, "Failed to close the database.", "Database Error", JOptionPane.WARNING_MESSAGE);
-            }
-        }
-
-        // empty the matches folder
-        if (databaseClosed) {
-            File matchFolder = new File(getJarFilePath(), Reporter.SERIALIZATION_DIRECTORY);
-
-            if (matchFolder.exists()) {
-                File[] tempFiles = matchFolder.listFiles();
-
-                if (tempFiles != null) {
-                    for (File currentFile : tempFiles) {
-                        Util.deleteDir(currentFile);
-                    }
-                }
-
-                if (matchFolder.listFiles() != null && matchFolder.listFiles().length > 0) {
-
-                    // @TODO: there is sometimes a problem here given that the new dialog operates with a separet identifications objetc. should fix cleaned up!!
-
-                    JOptionPane.showMessageDialog(null, "Failed to empty the database folder:\n" + matchFolder.getPath() + ".",
-                            "Database Cleanup Failed", JOptionPane.WARNING_MESSAGE);
-                }
-            }
-        }
+    private void closeOpenedProject() {
+        //@TODO: check whether the project is saved and close all connections
     }
 
     /**
@@ -759,28 +579,6 @@ public class ReporterGUI extends javax.swing.JFrame {
     }
 
     /**
-     * Returns the path to the jar file.
-     *
-     * @return the path to the jar file
-     */
-    public String getJarFilePath() {
-        return CompomicsWrapper.getJarFilePath(this.getClass().getResource("ReporterGUI.class").getPath(), "Reporter");
-    }
-
-    /**
-     * Export to tab separated text file..
-     *
-     * @param proteinOnly export protein level only
-     */
-    private void export(ReporterExporter.ExportLevel exportLevel) {
-        File selectedFile = Util.getUserSelectedFile(this, ".txt", "(Tab separated text file) *.txt", "Export...", lastSelectedFolder, false);
-        if (selectedFile != null) {
-            lastSelectedFolder = selectedFile.getAbsolutePath();
-            exportToTxt(selectedFile, exportLevel);
-        }
-    }
-
-    /**
      * @param args the command line arguments
      */
     public static void main(String args[]) {
@@ -791,12 +589,11 @@ public class ReporterGUI extends javax.swing.JFrame {
     private javax.swing.JPanel backgroundPanel;
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JMenu exportMenu;
-    private javax.swing.JMenuItem exportPeptidesMenuItem;
-    private javax.swing.JMenuItem exportProteinsMenuItem;
-    private javax.swing.JMenuItem exportPsmsMenuItem;
+    private javax.swing.JMenuItem exportQuantificationFeaturesMenuItem;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenu helpMenu;
     private javax.swing.JMenuItem helpMenuItem;
+    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator16;
     private javax.swing.JPopupMenu.Separator jSeparator17;
@@ -812,175 +609,6 @@ public class ReporterGUI extends javax.swing.JFrame {
     private javax.swing.JMenuItem saveMenuItem;
     private javax.swing.JTabbedPane tabPanel;
     // End of variables declaration//GEN-END:variables
-
-    /**
-     * Export the results to a tab separated text file.
-     *
-     * @param file the file to export to
-     * @param aProteinsOnly if true, only the protein level will be exported
-     */
-    private void exportToTxt(File file, ReporterExporter.ExportLevel aExportLevel) {
-
-        final ReporterExporter.ExportLevel exportLevel = aExportLevel;
-
-        progressDialog = new ProgressDialogX(this,
-                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
-                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
-        progressDialog.setPrimaryProgressCounterIndeterminate(true);
-        progressDialog.setTitle("Exporting Project. Please Wait...");
-        final File exportFile = file;
-
-        new Thread(new Runnable() {
-            public void run() {
-                try {
-                    progressDialog.setVisible(true);
-                } catch (IndexOutOfBoundsException e) {
-                    // ignore
-                }
-            }
-        }, "ProgressDialog").start();
-
-        new Thread("ExportThread") {
-            @Override
-            public void run() {
-                try {
-                    ReporterExporter exporter = new ReporterExporter(reporter.getExperiment(), "\t");
-                    exporter.exportResults(quantification, identification, exportFile, exportLevel, progressDialog);
-
-                    if (!progressDialog.isRunCanceled()) {
-                        progressDialog.setRunFinished();
-                        progressDialog.dispose();
-                        JOptionPane.showMessageDialog(ReporterGUI.this, "Export Complete.", "Export successful.", JOptionPane.INFORMATION_MESSAGE);
-                    }
-                } catch (Exception e) {
-                    progressDialog.setRunFinished();
-                    progressDialog.dispose();
-                    JOptionPane.showMessageDialog(ReporterGUI.this, "Export Error.", "Export error, see log file.", JOptionPane.ERROR_MESSAGE);
-                    e.printStackTrace();
-                }
-            }
-        }.start();
-    }
-
-    /**
-     * Table model for the protein result table
-     */
-    private class ProteinTable extends DefaultTableModel {
-
-        /**
-         * Number of columns without counting quantification results
-         */
-        private static final int nC = 7;
-
-        @Override
-        public int getRowCount() {
-            return proteinTableIndex.size();
-        }
-
-        @Override
-        public int getColumnCount() {
-            return nC + reporterIons.size();
-        }
-
-        @Override
-        public String getColumnName(int column) {
-            if (column == 1) {
-                return "Protein";
-            } else if (column == 2) {
-                return "Other protein(s)";
-            } else if (column == 3) {
-                return "# Peptides";
-            } else if (column == 4) {
-                return "# Spectra identified";
-            } else if (column == 5) {
-                return "# Spectra quantified";
-            } else if (column == 6) {
-                return "emPAI";
-            } else if (column > nC - 1 && column < nC - 1 + reporterIons.size()) {
-                int pos = column - nC + 1;
-                return quantification.getSample(reporterIons.get(pos).getIndex()).getReference();
-            } else if (column == nC - 1 + reporterIons.size()) {
-                return "Quality";
-            } else {
-                return "";
-            }
-        }
-
-        @Override
-        public Object getValueAt(int row, int column) {
-            try {
-                ProteinQuantification proteinQuantification = quantification.getProteinMatch(proteinTableIndex.get(row));
-                ProteinMatch proteinMatch = identification.getProteinMatch(proteinTableIndex.get(row));
-                if (column == 0) {
-                    return row + 1;
-                } else if (column == 1) {
-                    return proteinMatch.getMainMatch();
-                } else if (column == 2) {
-                    String result = "";
-                    String mainKey = proteinMatch.getMainMatch();
-                    for (String key : proteinMatch.getTheoreticProteinsAccessions()) {
-                        if (!key.equals(mainKey)) {
-                            result += key + " ";
-                        }
-                    }
-                    return result;
-                } else if (column == 3) {
-                    int nPeptides = 0;
-                    return nPeptides;
-                } else if (column == 4) {
-                    int nSpectra = 0;
-                    return nSpectra;
-                } else if (column == 5) {
-                    return " ";
-                } else if (column == 6) {
-                    return " ";
-                } else if (column > nC - 1 && column < nC - 1 + reporterIons.size()) {
-                    int pos = column - nC + 1;
-                    return proteinQuantification.getRatios().get(reporterIons.get(pos).getIndex()).getRatio();
-                } else if (column == nC - 1 + reporterIons.size()) {
-                    ItraqScore itraqScore = (ItraqScore) proteinQuantification.getUrParam(new ItraqScore());
-                    return itraqScore.getMinScore();
-                } else {
-                    return " ";
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                return null;
-            }
-        }
-
-        @Override
-        public void setValueAt(Object aValue, int row, int column) {
-        }
-
-        @Override
-        public Class getColumnClass(int columnIndex) {
-            for (int i = 0; i < getRowCount(); i++) {
-                if (getValueAt(i, columnIndex) != null) {
-                    return getValueAt(i, columnIndex).getClass();
-                }
-            }
-            return (new Double(0.0)).getClass();
-        }
-    }
-
-    /**
-     * Returns the quantification preferences.
-     *
-     * @return the quantification preferences
-     */
-    public QuantificationPreferences getQuantificationPreferences() {
-        return reporter.getQuantificationPreferences();
-    }
-
-    /**
-     * Sets the quantification preferences.
-     *
-     * @param quantificationPreferences the quantification preferences
-     */
-    public void setQuantificationPreferences(QuantificationPreferences quantificationPreferences) {
-        reporter.setQuantificationPreferences(quantificationPreferences);
-    }
 
     /**
      * Sets the last selected folder,
@@ -1045,16 +673,6 @@ public class ReporterGUI extends javax.swing.JFrame {
                     "Error Creating Log File", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }
-    }
-
-    /**
-     * Method called to close the program.
-     *
-     * @param status closing status to report
-     */
-    public void close(int status) {
-        this.dispose();
-        reporter.close(status);
     }
 
     /**

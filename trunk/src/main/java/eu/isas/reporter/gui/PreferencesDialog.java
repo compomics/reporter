@@ -3,7 +3,8 @@ package eu.isas.reporter.gui;
 import com.compomics.util.examples.BareBonesBrowserLaunch;
 import com.compomics.util.experiment.biology.PTM;
 import com.compomics.util.experiment.biology.PTMFactory;
-import eu.isas.reporter.myparameters.QuantificationPreferences;
+import com.compomics.util.experiment.identification.SearchParameters;
+import eu.isas.reporter.myparameters.ReporterPreferences;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,11 +26,11 @@ public class PreferencesDialog extends javax.swing.JDialog {
     /**
      * The quantification preferences.
      */
-    private QuantificationPreferences quantificationPreferences;
+    private ReporterPreferences quantificationPreferences;
     /**
-     * The ptms.
+     * The identification parameters
      */
-    private HashMap<String, PTM> ptms = new HashMap<String, PTM>();
+    private SearchParameters searchParameters;
     /**
      * Modification file.
      */
@@ -38,23 +39,20 @@ public class PreferencesDialog extends javax.swing.JDialog {
      * User modification file.
      */
     private final String USER_MODIFICATIONS_FILE = "resources/conf/reporter_usermods.xml";
-    /**
-     * The compomics PTM factory.
-     */
-    private PTMFactory ptmFactory = PTMFactory.getInstance();
 
     /**
      * Creates new form PreferencesDialog
      * 
      * @param reporterGui reference to the ReporterGUI
      * @param quantificationPreferences the quantification preferences
+     * @param searchParameters the identification parameters
      */
-    public PreferencesDialog(ReporterGUI reporterGui, QuantificationPreferences quantificationPreferences) {
+    public PreferencesDialog(ReporterGUI reporterGui, ReporterPreferences quantificationPreferences, SearchParameters searchParameters) {
         super(reporterGui, true);
         this.reporterGui = reporterGui;
         this.quantificationPreferences = quantificationPreferences;
+        this.searchParameters = searchParameters;
         initComponents();
-        loadModifications();
         loadValues();
         updateModificationList();
         setLocationRelativeTo(reporterGui);
@@ -83,15 +81,14 @@ public class PreferencesDialog extends javax.swing.JDialog {
         removeModification = new javax.swing.JButton();
         ratioEstimationsPanel = new javax.swing.JPanel();
         nullIntensitiesCheck = new javax.swing.JCheckBox();
-        jLabel2 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
-        ratioMaxTxt = new javax.swing.JTextField();
-        ratioMinTxt = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
-        kTxt = new javax.swing.JTextField();
+        widthTxt = new javax.swing.JTextField();
         resolutionTxt = new javax.swing.JTextField();
+        validatedProteinsCheck = new javax.swing.JCheckBox();
+        validatedPeptidesCheck = new javax.swing.JCheckBox();
+        validatedPsmsCheck = new javax.swing.JCheckBox();
         cancelButton = new javax.swing.JButton();
         helpLabel = new javax.swing.JLabel();
         helpLinkLabel = new javax.swing.JLabel();
@@ -191,7 +188,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
                             .addComponent(removeModification, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(addModifications, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(allPtmsScrollPane)
+                .addComponent(allPtmsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 131, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -202,23 +199,24 @@ public class PreferencesDialog extends javax.swing.JDialog {
         nullIntensitiesCheck.setIconTextGap(10);
         nullIntensitiesCheck.setOpaque(false);
 
-        jLabel2.setText("Minimum Ratio:");
-
-        jLabel3.setText("Maximum Ratio:");
-
-        ratioMaxTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-
-        ratioMinTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-
         jLabel4.setText("Resolution:");
 
         jLabel5.setText("Window Width:");
 
-        jLabel6.setText("* MAD");
+        jLabel6.setText("%");
 
-        kTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        widthTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
 
         resolutionTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+
+        validatedProteinsCheck.setText("Validated Proteins Only");
+        validatedProteinsCheck.setOpaque(false);
+
+        validatedPeptidesCheck.setText("Validated Peptides Only");
+        validatedPeptidesCheck.setOpaque(false);
+
+        validatedPsmsCheck.setText("Validated PSMs Only");
+        validatedPsmsCheck.setOpaque(false);
 
         javax.swing.GroupLayout ratioEstimationsPanelLayout = new javax.swing.GroupLayout(ratioEstimationsPanel);
         ratioEstimationsPanel.setLayout(ratioEstimationsPanelLayout);
@@ -227,55 +225,43 @@ public class PreferencesDialog extends javax.swing.JDialog {
             .addGroup(ratioEstimationsPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(validatedProteinsCheck)
+                    .addComponent(validatedPeptidesCheck)
+                    .addComponent(validatedPsmsCheck))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(nullIntensitiesCheck)
                     .addGroup(ratioEstimationsPanelLayout.createSequentialGroup()
                         .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel2)
-                            .addComponent(jLabel3))
+                            .addComponent(jLabel4)
+                            .addComponent(jLabel5))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(ratioMaxTxt, javax.swing.GroupLayout.DEFAULT_SIZE, 167, Short.MAX_VALUE)
-                            .addComponent(ratioMinTxt))
-                        .addGap(18, 18, 18)
-                        .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel4, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jLabel5, javax.swing.GroupLayout.Alignment.TRAILING))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(ratioEstimationsPanelLayout.createSequentialGroup()
-                                .addComponent(kTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(widthTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 165, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jLabel6))
-                            .addComponent(resolutionTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 167, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(resolutionTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addGap(6, 6, 6))
         );
-
-        ratioEstimationsPanelLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {jLabel2, jLabel3, jLabel4, jLabel5});
-
         ratioEstimationsPanelLayout.setVerticalGroup(
             ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(ratioEstimationsPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(ratioEstimationsPanelLayout.createSequentialGroup()
-                        .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel2)
-                            .addComponent(ratioMinTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(ratioMaxTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel3)))
-                    .addGroup(ratioEstimationsPanelLayout.createSequentialGroup()
-                        .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(resolutionTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel4))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel6)
-                            .addComponent(kTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel5))))
-                .addGap(18, 18, 18)
-                .addComponent(nullIntensitiesCheck)
+                .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(resolutionTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel4)
+                    .addComponent(validatedProteinsCheck))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel6)
+                    .addComponent(widthTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel5)
+                    .addComponent(validatedPeptidesCheck))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(nullIntensitiesCheck)
+                    .addComponent(validatedPsmsCheck))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -339,13 +325,13 @@ public class PreferencesDialog extends javax.swing.JDialog {
                 .addComponent(idSelectionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(ratioEstimationsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(backgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
                     .addComponent(helpLabel)
                     .addComponent(helpLinkLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(cancelButton)
                     .addComponent(okButton))
-                .addContainerGap())
+                .addGap(18, 18, 18))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -466,23 +452,22 @@ public class PreferencesDialog extends javax.swing.JDialog {
     private javax.swing.JLabel helpLinkLabel;
     private javax.swing.JPanel idSelectionPanel;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel8;
-    private javax.swing.JTextField kTxt;
     private javax.swing.JCheckBox miscleavageCheck;
     private javax.swing.JCheckBox nullIntensitiesCheck;
     private javax.swing.JButton okButton;
     private javax.swing.JPanel ratioEstimationsPanel;
-    private javax.swing.JTextField ratioMaxTxt;
-    private javax.swing.JTextField ratioMinTxt;
     private javax.swing.JButton removeModification;
     private javax.swing.JTextField resolutionTxt;
     private javax.swing.JList selectedPTMs;
     private javax.swing.JScrollPane selectedPtmsScrollPane;
+    private javax.swing.JCheckBox validatedPeptidesCheck;
+    private javax.swing.JCheckBox validatedProteinsCheck;
+    private javax.swing.JCheckBox validatedPsmsCheck;
+    private javax.swing.JTextField widthTxt;
     // End of variables declaration//GEN-END:variables
 
     /**
@@ -491,17 +476,18 @@ public class PreferencesDialog extends javax.swing.JDialog {
     private void loadValues() {
         miscleavageCheck.setSelected(quantificationPreferences.isIgnoreMissedCleavages());
         nullIntensitiesCheck.setSelected(quantificationPreferences.isIgnoreNullIntensities());
-        kTxt.setText(quantificationPreferences.getK() + "");
-        ratioMinTxt.setText(quantificationPreferences.getRatioMin() + "");
-        ratioMaxTxt.setText(quantificationPreferences.getRatioMax() + "");
+        widthTxt.setText(quantificationPreferences.getPercentile()+ "");
         resolutionTxt.setText(quantificationPreferences.getRatioResolution() + "");
-        ArrayList<String> selectedModificationsList = quantificationPreferences.getIgnoredPTM();
+        ArrayList<String> selectedModificationsList = quantificationPreferences.getexcludingPtms();
         String[] allModificationsAsArray = new String[selectedModificationsList.size()];
         for (int i = 0; i < selectedModificationsList.size(); i++) {
             allModificationsAsArray[i] = selectedModificationsList.get(i);
         }
         selectedPTMs.setListData(allModificationsAsArray);
         updateModificationList();
+        validatedProteinsCheck.setSelected(quantificationPreferences.isValidatedProteins());
+        validatedPeptidesCheck.setSelected(quantificationPreferences.isValidatedPeptides());
+        validatedPsmsCheck.setSelected(quantificationPreferences.isValidatedPsms());
     }
 
     /**
@@ -510,16 +496,17 @@ public class PreferencesDialog extends javax.swing.JDialog {
     private void saveValues() {
         quantificationPreferences.setIgnoreMissedCleavages(miscleavageCheck.isSelected());
         quantificationPreferences.setIgnoreNullIntensities(nullIntensitiesCheck.isSelected());
-        quantificationPreferences.setK(new Double(kTxt.getText()));
-        quantificationPreferences.setRatioMin(new Double(ratioMinTxt.getText()));
-        quantificationPreferences.setRatioMax(new Double(ratioMaxTxt.getText()));
+        quantificationPreferences.setPercentile(new Double(widthTxt.getText()));
         quantificationPreferences.setRatioResolution(new Double(resolutionTxt.getText()));
         quantificationPreferences.emptyPTMList();
         String name;
         for (int j = 0; j < selectedPTMs.getModel().getSize(); j++) {
             name = (String) selectedPTMs.getModel().getElementAt(j);
-            quantificationPreferences.addIgnoredPTM(ptms.get(name));
+            quantificationPreferences.addExcludingPtm(name);
         }
+        quantificationPreferences.setValidatedProteins(validatedProteinsCheck.isSelected());
+        quantificationPreferences.setValidatedPeptides(validatedPeptidesCheck.isSelected());
+        quantificationPreferences.setValidatedPsms(validatedPsmsCheck.isSelected());
     }
 
     /**
@@ -531,15 +518,9 @@ public class PreferencesDialog extends javax.swing.JDialog {
     private boolean validateInput() {
         double test;
         try {
-            test = new Double(kTxt.getText());
+            test = new Double(widthTxt.getText());
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "please enter a correct window width.", "Window width error", JOptionPane.ERROR_MESSAGE);
-            return false;
-        }
-        try {
-            test = new Double(ratioMinTxt.getText());
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "please enter a correct minimal ratio.", "Minimal ratio error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
         try {
@@ -552,28 +533,10 @@ public class PreferencesDialog extends javax.swing.JDialog {
     }
 
     /**
-     * Loads the modifications from the modification file.
-     */
-    private void loadModifications() {
-        try {
-            ptmFactory.importModifications(new File(MODIFICATIONS_FILE), false);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "An error (" + e.getMessage() + ") occured when trying to load the modifications from " + MODIFICATIONS_FILE + ".",
-                    "Configuration import Error", JOptionPane.ERROR_MESSAGE);
-        }
-        try {
-            ptmFactory.importModifications(new File(USER_MODIFICATIONS_FILE), true);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "An error (" + e.getMessage() + ") occured when trying to load the modifications from " + USER_MODIFICATIONS_FILE + ".",
-                    "Configuration import Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    /**
      * Updates the modification list (right).
      */
     private void updateModificationList() {
-        ArrayList<String> allModificationsList = new ArrayList<String>(ptms.keySet());
+        ArrayList<String> allModificationsList = new ArrayList<String>(searchParameters.getModificationProfile().getAllNotFixedModifications());
         int nSelected = selectedPTMs.getModel().getSize();
         ArrayList<String> allModifications = new ArrayList<String>();
 

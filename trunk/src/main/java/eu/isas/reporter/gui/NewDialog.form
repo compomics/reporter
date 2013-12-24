@@ -972,6 +972,7 @@
                     <Component class="javax.swing.JButton" name="editPreferencesButton">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Edit"/>
+                        <Property name="enabled" type="boolean" value="false"/>
                         <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                           <Dimension value="[57, 23]"/>
                         </Property>
