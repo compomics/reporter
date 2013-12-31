@@ -4,6 +4,7 @@ import com.compomics.util.examples.BareBonesBrowserLaunch;
 import com.compomics.util.experiment.biology.PTM;
 import com.compomics.util.experiment.biology.PTMFactory;
 import com.compomics.util.experiment.identification.SearchParameters;
+import eu.isas.peptideshaker.scoring.MatchValidationLevel;
 import eu.isas.reporter.myparameters.ReporterPreferences;
 import java.io.File;
 import java.util.ArrayList;
@@ -86,9 +87,12 @@ public class PreferencesDialog extends javax.swing.JDialog {
         jLabel6 = new javax.swing.JLabel();
         widthTxt = new javax.swing.JTextField();
         resolutionTxt = new javax.swing.JTextField();
-        validatedProteinsCheck = new javax.swing.JCheckBox();
-        validatedPeptidesCheck = new javax.swing.JCheckBox();
-        validatedPsmsCheck = new javax.swing.JCheckBox();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
+        peptideValidationCmb = new javax.swing.JComboBox();
+        proteinValidationCmb = new javax.swing.JComboBox();
+        psmValidationCmb = new javax.swing.JComboBox();
         cancelButton = new javax.swing.JButton();
         helpLabel = new javax.swing.JLabel();
         helpLinkLabel = new javax.swing.JLabel();
@@ -177,7 +181,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
                 .addGap(23, 23, 23)
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(selectedPtmsScrollPane)
+                .addComponent(selectedPtmsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE)
                 .addGroup(idSelectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(idSelectionPanelLayout.createSequentialGroup()
                         .addGap(36, 36, 36)
@@ -188,7 +192,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
                             .addComponent(removeModification, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(addModifications, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(allPtmsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 131, Short.MAX_VALUE)
+                .addComponent(allPtmsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -209,14 +213,17 @@ public class PreferencesDialog extends javax.swing.JDialog {
 
         resolutionTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
 
-        validatedProteinsCheck.setText("Validated Proteins Only");
-        validatedProteinsCheck.setOpaque(false);
+        jLabel2.setText("Proteins:");
 
-        validatedPeptidesCheck.setText("Validated Peptides Only");
-        validatedPeptidesCheck.setOpaque(false);
+        jLabel3.setText("Peptides:");
 
-        validatedPsmsCheck.setText("Validated PSMs Only");
-        validatedPsmsCheck.setOpaque(false);
+        jLabel7.setText("PSMs:");
+
+        peptideValidationCmb.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Confident Only", "Validated Only", "All" }));
+
+        proteinValidationCmb.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Confident Only", "Validated Only", "All" }));
+
+        psmValidationCmb.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Confident Only", "Validated Only", "All" }));
 
         javax.swing.GroupLayout ratioEstimationsPanelLayout = new javax.swing.GroupLayout(ratioEstimationsPanel);
         ratioEstimationsPanel.setLayout(ratioEstimationsPanelLayout);
@@ -225,10 +232,19 @@ public class PreferencesDialog extends javax.swing.JDialog {
             .addGroup(ratioEstimationsPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(validatedProteinsCheck)
-                    .addComponent(validatedPeptidesCheck)
-                    .addComponent(validatedPsmsCheck))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(ratioEstimationsPanelLayout.createSequentialGroup()
+                        .addComponent(jLabel2)
+                        .addGap(12, 12, 12)
+                        .addComponent(proteinValidationCmb, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(ratioEstimationsPanelLayout.createSequentialGroup()
+                        .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel3)
+                            .addComponent(jLabel7))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(psmValidationCmb, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(peptideValidationCmb, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                .addGap(18, 18, 18)
                 .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(nullIntensitiesCheck)
                     .addGroup(ratioEstimationsPanelLayout.createSequentialGroup()
@@ -251,17 +267,20 @@ public class PreferencesDialog extends javax.swing.JDialog {
                 .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(resolutionTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel4)
-                    .addComponent(validatedProteinsCheck))
+                    .addComponent(jLabel2)
+                    .addComponent(proteinValidationCmb, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel6)
                     .addComponent(widthTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel5)
-                    .addComponent(validatedPeptidesCheck))
+                    .addComponent(jLabel3)
+                    .addComponent(peptideValidationCmb, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(nullIntensitiesCheck)
-                    .addComponent(validatedPsmsCheck))
+                    .addComponent(jLabel7)
+                    .addComponent(psmValidationCmb, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -452,21 +471,24 @@ public class PreferencesDialog extends javax.swing.JDialog {
     private javax.swing.JLabel helpLinkLabel;
     private javax.swing.JPanel idSelectionPanel;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JCheckBox miscleavageCheck;
     private javax.swing.JCheckBox nullIntensitiesCheck;
     private javax.swing.JButton okButton;
+    private javax.swing.JComboBox peptideValidationCmb;
+    private javax.swing.JComboBox proteinValidationCmb;
+    private javax.swing.JComboBox psmValidationCmb;
     private javax.swing.JPanel ratioEstimationsPanel;
     private javax.swing.JButton removeModification;
     private javax.swing.JTextField resolutionTxt;
     private javax.swing.JList selectedPTMs;
     private javax.swing.JScrollPane selectedPtmsScrollPane;
-    private javax.swing.JCheckBox validatedPeptidesCheck;
-    private javax.swing.JCheckBox validatedProteinsCheck;
-    private javax.swing.JCheckBox validatedPsmsCheck;
     private javax.swing.JTextField widthTxt;
     // End of variables declaration//GEN-END:variables
 
@@ -485,9 +507,9 @@ public class PreferencesDialog extends javax.swing.JDialog {
         }
         selectedPTMs.setListData(allModificationsAsArray);
         updateModificationList();
-        validatedProteinsCheck.setSelected(quantificationPreferences.isValidatedProteins());
-        validatedPeptidesCheck.setSelected(quantificationPreferences.isValidatedPeptides());
-        validatedPsmsCheck.setSelected(quantificationPreferences.isValidatedPsms());
+        proteinValidationCmb.setSelectedIndex(quantificationPreferences.getProteinValidationLevel().getIndex());
+        peptideValidationCmb.setSelectedIndex(quantificationPreferences.getPeptideValidationLevel().getIndex());
+        psmValidationCmb.setSelectedIndex(quantificationPreferences.getPsmValidationLevel().getIndex());
     }
 
     /**
@@ -504,9 +526,9 @@ public class PreferencesDialog extends javax.swing.JDialog {
             name = (String) selectedPTMs.getModel().getElementAt(j);
             quantificationPreferences.addExcludingPtm(name);
         }
-        quantificationPreferences.setValidatedProteins(validatedProteinsCheck.isSelected());
-        quantificationPreferences.setValidatedPeptides(validatedPeptidesCheck.isSelected());
-        quantificationPreferences.setValidatedPsms(validatedPsmsCheck.isSelected());
+        quantificationPreferences.setProteinValidationLevel(MatchValidationLevel.getMatchValidationLevel(proteinValidationCmb.getSelectedIndex()));
+        quantificationPreferences.setPeptideValidationLevel(MatchValidationLevel.getMatchValidationLevel(peptideValidationCmb.getSelectedIndex()));
+        quantificationPreferences.setPsmValidationLevel(MatchValidationLevel.getMatchValidationLevel(psmValidationCmb.getSelectedIndex()));
     }
 
     /**
