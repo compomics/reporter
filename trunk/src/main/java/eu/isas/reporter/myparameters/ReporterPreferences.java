@@ -1,11 +1,10 @@
 package eu.isas.reporter.myparameters;
 
-import com.compomics.util.experiment.biology.PTM;
 import com.compomics.util.experiment.personalization.UrParameter;
 import com.compomics.util.io.SerializationUtils;
+import eu.isas.peptideshaker.scoring.MatchValidationLevel;
 import java.io.File;
 import java.util.ArrayList;
-import org.ujmp.core.collections.ArrayIndexList;
 
 /**
  * This class contains the quantification options set by the user.
@@ -15,6 +14,10 @@ import org.ujmp.core.collections.ArrayIndexList;
  */
 public class ReporterPreferences implements UrParameter {
 
+    /**
+     * fixed serial number for serialization backward compatibility
+     */
+    static final long serialVersionUID = 3054710627326315328L;
     /**
      * Location of the user preferences file.
      */
@@ -61,7 +64,8 @@ public class ReporterPreferences implements UrParameter {
      */
     private boolean ignoreMissedCleavages = false;
     /**
-     * Percentage of ratios to consider for the likelihood estimator window setting.
+     * Percentage of ratios to consider for the likelihood estimator window
+     * setting.
      */
     private double percentile = 68;
     /**
@@ -69,21 +73,22 @@ public class ReporterPreferences implements UrParameter {
      */
     private double ratioResolution = 0.01;
     /**
-     * List of PTMs to exclude. Peptides presenting these ptms will not be accounted for during quantification.
+     * List of PTMs to exclude. Peptides presenting these ptms will not be
+     * accounted for during quantification.
      */
     private ArrayList<String> excludingPTM = new ArrayList<String>();
     /**
-     * indicates whether only validated proteins should be quantified
+     * The validation threshold to use for protein quantification
      */
-    private boolean validatedProteins = true;
+    private MatchValidationLevel proteinValidation = MatchValidationLevel.confident;
     /**
-     * Indicates whether only validated peptides should be quantified
+     * The validation threshold to use for peptide quantification
      */
-    private boolean validatedPeptides = true;
+    private MatchValidationLevel peptideValidation = MatchValidationLevel.confident;
     /**
-     * Indicates whether only validated PSMs should be quantified
+     * The validation threshold to use for psm quantification
      */
-    private boolean validatedPsms = true;
+    private MatchValidationLevel psmValidation = MatchValidationLevel.confident;
 
     /**
      * Constructor.
@@ -216,18 +221,22 @@ public class ReporterPreferences implements UrParameter {
     }
 
     /**
-     * Returns the share in percent of ratios considered to set the width of the maximum likelihood estimators.
+     * Returns the share in percent of ratios considered to set the width of the
+     * maximum likelihood estimators.
      *
-     * @return the share in percent of ratios considered to set the width of the maximum likelihood estimators
+     * @return the share in percent of ratios considered to set the width of the
+     * maximum likelihood estimators
      */
     public double getPercentile() {
         return percentile;
     }
 
     /**
-     * Sets the share in percent of ratios considered to set the width of the maximum likelihood estimators.
+     * Sets the share in percent of ratios considered to set the width of the
+     * maximum likelihood estimators.
      *
-     * @param percentile the share in percent of ratios considered to set the width of the maximum likelihood estimators
+     * @param percentile the share in percent of ratios considered to set the
+     * width of the maximum likelihood estimators
      */
     public void setPercentile(double percentile) {
         this.percentile = percentile;
@@ -278,6 +287,7 @@ public class ReporterPreferences implements UrParameter {
 
     /**
      * Indicates whether the precursor matching tolerance is in ppm or in m/z
+     *
      * @return true if ppm
      */
     public boolean isPrecursorMzPpm() {
@@ -286,6 +296,7 @@ public class ReporterPreferences implements UrParameter {
 
     /**
      * Sets whether the precursor matching tolerance is in ppm or in m/z
+     *
      * @param precursorMzPpm true for ppm
      */
     public void setPrecursorMzPpm(boolean precursorMzPpm) {
@@ -312,8 +323,8 @@ public class ReporterPreferences implements UrParameter {
     }
 
     /**
-     * Loads the quantification user preferences. If an error is encountered, preferences are
-     * set back to default.
+     * Loads the quantification user preferences. If an error is encountered,
+     * preferences are set back to default.
      *
      * @return returns the utilities user preferences
      */
@@ -339,54 +350,61 @@ public class ReporterPreferences implements UrParameter {
     }
 
     /**
-     * Indicates whether only validated proteins should be quantified
-     * @return true if only validated proteins should be quantified 
+     * Indicates the validation level to require for protein quantification
+     *
+     * @return the minimal validation level for a protein to be accounted for
      */
-    public boolean isValidatedProteins() {
-        return validatedProteins;
+    public MatchValidationLevel getProteinValidationLevel() {
+        return proteinValidation;
     }
 
     /**
-     * Sets whether only validated proteins should be quantified
-     * @param validatedProteins set to true if only validated proteins should be quantified
+     * Sets the validation level to require for quantification
+     *
+     * @param matchValidationLevel the minimal validation level for a protein to
+     * be accounted for
      */
-    public void setValidatedProteins(boolean validatedProteins) {
-        this.validatedProteins = validatedProteins;
+    public void setProteinValidationLevel(MatchValidationLevel matchValidationLevel) {
+        this.proteinValidation = matchValidationLevel;
     }
 
     /**
-     * Indicates whether only validated peptides should be quantified
-     * @return true if only validated peptides should be quantified 
+     * Indicates the validation level to require for peptide quantification
+     *
+     * @return the minimal validation level for a protein to be accounted for
      */
-    public boolean isValidatedPeptides() {
-        return validatedPeptides;
+    public MatchValidationLevel getPeptideValidationLevel() {
+        return peptideValidation;
     }
 
     /**
-     * Sets whether only validated peptides should be quantified
-     * @param validatedPeptides set to true if only validated peptides should be quantified
+     * Sets the validation level to require for quantification
+     *
+     * @param matchValidationLevel the minimal validation level for a peptide to
+     * be accounted for
      */
-    public void setValidatedPeptides(boolean validatedPeptides) {
-        this.validatedPeptides = validatedPeptides;
+    public void setPeptideValidationLevel(MatchValidationLevel matchValidationLevel) {
+        this.peptideValidation = matchValidationLevel;
     }
 
     /**
-     * Indicates whether only validated PSMs should be quantified
-     * @return true if only validated PSMs should be quantified 
+     * Indicates the validation level to require for psm quantification
+     *
+     * @return the minimal validation level for a protein to be accounted for
      */
-    public boolean isValidatedPsms() {
-        return validatedPsms;
+    public MatchValidationLevel getPsmValidationLevel() {
+        return psmValidation;
     }
 
     /**
-     * Sets whether only validated PSMs should be quantified
-     * @param validatedPsms set to true if only validated PSMs should be quantified
+     * Sets the validation level to require for quantification
+     *
+     * @param matchValidationLevel the minimal validation level for a psm to be
+     * accounted for
      */
-    public void setValidatedPsms(boolean validatedPsms) {
-        this.validatedPsms = validatedPsms;
+    public void setPsmValidationLevel(MatchValidationLevel matchValidationLevel) {
+        this.psmValidation = matchValidationLevel;
     }
-    
-    
 
     @Override
     public String getFamilyName() {

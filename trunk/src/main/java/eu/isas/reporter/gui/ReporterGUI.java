@@ -13,11 +13,14 @@ import com.compomics.util.gui.error_handlers.HelpDialog;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
 import com.compomics.util.preferences.UtilitiesUserPreferences;
 import eu.isas.peptideshaker.utils.CpsParent;
+import eu.isas.peptideshaker.utils.DisplayFeaturesGenerator;
+import eu.isas.peptideshaker.utils.IdentificationFeaturesGenerator;
 import eu.isas.reporter.Reporter;
 import eu.isas.reporter.calculation.QuantificationFeaturesCache;
 import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
 import eu.isas.reporter.myparameters.ReporterPreferences;
-import eu.isas.reporter.resultpanels.OverviewPanel;
+import eu.isas.reporter.gui.resultpanels.OverviewPanel;
+import eu.isas.reporter.io.TestExport;
 import eu.isas.reporter.utils.Properties;
 import java.awt.Toolkit;
 import java.io.*;
@@ -83,6 +86,14 @@ public class ReporterGUI extends javax.swing.JFrame {
      * The reporter ion quantification containing the quantification parameters
      */
     private ReporterIonQuantification reporterIonQuantification;
+    /**
+     * The identification features generator provides identification related metrics on the identified matches
+     */
+    private IdentificationFeaturesGenerator identificationFeaturesGenerator;
+    /**
+     * The display features generator provides display features for the identified matches
+     */
+    private DisplayFeaturesGenerator displayFeaturesGenerator;
     /**
      * The quantification features generator provides quantification features on
      * the identified matches
@@ -216,6 +227,9 @@ public class ReporterGUI extends javax.swing.JFrame {
             NewDialog newDialog = new NewDialog(this);
             if (!newDialog.isCancelled()) {
                 cpsBean = newDialog.getCpsBean();
+                identificationFeaturesGenerator = new IdentificationFeaturesGenerator(cpsBean.getIdentification(),cpsBean.getSearchParameters(), cpsBean.getIdFilter(), cpsBean.getMetrics(), cpsBean.getSpectrumCountingPreferences());
+                displayFeaturesGenerator = new DisplayFeaturesGenerator(cpsBean.getSearchParameters().getModificationProfile(), exceptionHandler);
+                displayFeaturesGenerator.setDisplayedPTMs(cpsBean.getDisplayPreferences().getDisplayedPtms());
                 reporterPreferences = newDialog.getReporterPreferences();
                 reporterIonQuantification = newDialog.getReporterIonQuantification();
                 projectSaved = false;
@@ -228,6 +242,34 @@ public class ReporterGUI extends javax.swing.JFrame {
     }
 
     /**
+     * Returns the identification features generator.
+     * 
+     * @return the identification features generator
+     */
+    public IdentificationFeaturesGenerator getIdentificationFeaturesGenerator() {
+        return identificationFeaturesGenerator;
+    }
+
+    /**
+     * Returns the display features generator.
+     * 
+     * @return the display features generator
+     */
+    public DisplayFeaturesGenerator getDisplayFeaturesGenerator() {
+        return displayFeaturesGenerator;
+    }
+
+
+    /**
+     * Returns the quantification features generator.
+     * 
+     * @return the quantification features generator
+     */
+    public QuantificationFeaturesGenerator getQuantificationFeaturesGenerator() {
+        return quantificationFeaturesGenerator;
+    }
+
+    /**
      * displays the results on the gui
      */
     private void displayResults() throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
@@ -235,6 +277,7 @@ public class ReporterGUI extends javax.swing.JFrame {
         if (!reporterIonQuantification.hasNormalisationFactors()) {
             Reporter.setNormalizationFactors(reporterIonQuantification, reporterPreferences, cpsBean.getIdentification(), quantificationFeaturesGenerator, progressDialog);
         }
+        TestExport.testExport(cpsBean.getIdentification(), reporterIonQuantification, quantificationFeaturesGenerator);
         //@TODO: display stuffs on the GUI
     }
 

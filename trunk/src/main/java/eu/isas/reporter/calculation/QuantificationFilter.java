@@ -57,7 +57,7 @@ public class QuantificationFilter {
         // check match validation
         PSParameter psParameter = new PSParameter();
         psParameter = (PSParameter) identification.getSpectrumMatchParameter(matchKey, psParameter);
-        if (reporterPreferences.isValidatedPsms() && !psParameter.getMatchValidationLevel().isValidated()) {
+        if (psParameter.getMatchValidationLevel().getIndex() >= reporterPreferences.getPsmValidationLevel().getIndex()) {
             return false;
         }
         return true;
@@ -84,7 +84,7 @@ public class QuantificationFilter {
         // check match validation
         PSParameter psParameter = new PSParameter();
         psParameter = (PSParameter) identification.getPeptideMatchParameter(matchKey, psParameter);
-        if (reporterPreferences.isValidatedPeptides() && !psParameter.getMatchValidationLevel().isValidated()) {
+        if (psParameter.getMatchValidationLevel().getIndex() >= reporterPreferences.getPeptideValidationLevel().getIndex()) {
             return false;
         }
         // check enzymaticity
@@ -126,7 +126,7 @@ public class QuantificationFilter {
         // check match validation
         PSParameter psParameter = new PSParameter();
         psParameter = (PSParameter) identification.getProteinMatchParameter(matchKey, psParameter);
-        if (reporterPreferences.isValidatedProteins() && !psParameter.getMatchValidationLevel().isValidated()) {
+        if (psParameter.getMatchValidationLevel().getIndex() >= reporterPreferences.getProteinValidationLevel().getIndex()) {
             return false;
         }
         return true;
