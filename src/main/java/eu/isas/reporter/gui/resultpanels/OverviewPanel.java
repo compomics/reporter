@@ -2,7 +2,9 @@ package eu.isas.reporter.gui.resultpanels;
 
 import com.compomics.util.gui.GuiUtilities;
 import com.compomics.util.gui.error_handlers.HelpDialog;
+import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
 import eu.isas.peptideshaker.gui.tablemodels.ProteinTableModel;
+import eu.isas.peptideshaker.preferences.SpectrumCountingPreferences.SpectralCountingMethod;
 import eu.isas.reporter.gui.ReporterGUI;
 import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
@@ -11,8 +13,10 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.RowSorterEvent;
 import javax.swing.event.RowSorterListener;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 
 /**
@@ -26,8 +30,14 @@ public class OverviewPanel extends javax.swing.JPanel {
      * The protein table column header tooltips.
      */
     private ArrayList<String> proteinTableToolTips;
-    
+    /**
+     * The main gui class
+     */
     private ReporterGUI reporterGUI;
+    /**
+     * A simple progress dialog.
+     */
+    private ProgressDialogX progressDialog;
     
     /**
      * Creates new form OverviewPanel
@@ -42,6 +52,9 @@ public class OverviewPanel extends javax.swing.JPanel {
         formComponentResized(null);
     }
     
+    /**
+     * Sets up the GUI components
+     */
     private void setUpGui() {
         // set main table properties
         proteinTable.getTableHeader().setReorderingAllowed(false);
@@ -81,30 +94,151 @@ public class OverviewPanel extends javax.swing.JPanel {
         setUpTableHeaderToolTips();
     }
     
+    /**
+     * Updates the display with the underlying data
+     */
+    public void updateDisplay() {
+        
+
+        progressDialog = new ProgressDialogX(reporterGUI,
+                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
+                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")),
+                true);
+        progressDialog.setPrimaryProgressCounterIndeterminate(true);
+        progressDialog.setTitle("Loading Overview. Please Wait...");
+
+        new Thread(new Runnable() {
+            public void run() {
+                try {
+                    progressDialog.setVisible(true);
+                } catch (IndexOutOfBoundsException e) {
+                    // ignore
+                }
+            }
+        }, "ProgressDialog").start();
+
+        new Thread("DisplayThread") {
+            @Override
+            public void run() {
+
+                try {
+                    
+                    progressDialog.setPrimaryProgressCounterIndeterminate(true);
+                    progressDialog.setTitle("Preparing Overview. Please Wait...");
+
+                       ArrayList<String> proteinKeys = reporterGUI.getIdentificationFeaturesGenerator().getProcessedProteinKeys(progressDialog, reporterGUI.getFilterPreferences());
+                    // update the table model
+                    if (proteinTable.getRowCount() > 0) {
+                        ((ProteinTableModel) proteinTable.getModel()).updateDataModel(reporterGUI.getIdentification(), reporterGUI.getIdentificationFeaturesGenerator(), reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getSearchParameters(), reporterGUI.getExceptionHandler(), proteinKeys);
+                    } else {
+                        ProteinTableModel proteinTableModel = new ProteinTableModel(reporterGUI.getIdentification(), reporterGUI.getIdentificationFeaturesGenerator(), reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getSearchParameters(), reporterGUI.getExceptionHandler(), proteinKeys);
+                        proteinTable.setModel(proteinTableModel);
+                    }
+
+                    setTableProperties();
+                    
+                    ((DefaultTableModel) proteinTable.getModel()).fireTableDataChanged();
+
+                    // update spectrum counting column header tooltip
+                    if (reporterGUI.getSpectrumCountingPreferences().getSelectedMethod() == SpectralCountingMethod.EMPAI) {
+                        proteinTableToolTips.set(proteinTable.getColumn("MS2 Quant.").getModelIndex(), "Protein MS2 Quantification - emPAI");
+                    } else if (reporterGUI.getSpectrumCountingPreferences().getSelectedMethod() == SpectralCountingMethod.NSAF) {
+                        proteinTableToolTips.set(proteinTable.getColumn("MS2 Quant.").getModelIndex(), "Protein MS2 Quantification - NSAF");
+                    } else {
+                        proteinTableToolTips.set(proteinTable.getColumn("MS2 Quant.").getModelIndex(), "Protein MS2 Quantification");
+                    }
+
+                    if (reporterGUI.getDisplayPreferences().showScores()) {
+                        proteinTableToolTips.set(proteinTable.getColumnCount() - 2, "Protein Score");
+                    } else {
+                        proteinTableToolTips.set(proteinTable.getColumnCount() - 2, "Protein Confidence");
+                    }
+
+                    
+                    String title = ReporterGUI.TITLED_BORDER_HORIZONTAL_PADDING + "Proteins (";
+                    try {
+                        int nValidated = reporterGUI.getIdentificationFeaturesGenerator().getNValidatedProteins();
+                        int nConfident = reporterGUI.getIdentificationFeaturesGenerator().getNConfidentProteins();
+                        int nProteins = proteinTable.getRowCount();
+                        if (nConfident > 0) {
+                            title += nValidated + "/" + nProteins + " - " + nConfident + " confident, " + (nValidated - nConfident) + " doubtful";
+                        } else {
+                            title += nValidated + "/" + nProteins;
+                        }
+                    } catch (Exception eNValidated) {
+                        reporterGUI.catchException(eNValidated);
+                    }
+                    title += ")" + ReporterGUI.TITLED_BORDER_HORIZONTAL_PADDING;
+
+                    ((TitledBorder) proteinsLayeredPanel.getBorder()).setTitle(title);
+                    proteinsLayeredPanel.repaint();
+
+                    // updateProteinTableCellRenderers();
+
+                    // enable the contextual export options
+                    exportProteinsJButton.setEnabled(true);
+
+                    reporterGUI.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+                    progressDialog.setRunFinished();
+
+//                    new Thread(new Runnable() {
+//                        public void run() {
+//                            peptideShakerGUI.checkNewsFeed();
+//                            peptideShakerGUI.showNotesNotification();
+//                            updateSelection(true); // @TODO: this is sometimes too fast and results in Row index out of range...
+//                            proteinTable.requestFocus();
+//                        }
+//                    }, "UpdateSelectionThread").start();
+
+                } catch (Exception e) {
+                    reporterGUI.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+                    reporterGUI.catchException(e);
+                    progressDialog.setRunFinished();
+                }
+            }
+        }.start();
+    }
+    
     
     /**
-     * Set up the table header tooltips.
+     * Sets up the table header tooltips.
      */
     private void setUpTableHeaderToolTips() {
         proteinTableToolTips = new ArrayList<String>();
-//        proteinTableToolTips.add(null);
-//        proteinTableToolTips.add("Starred");
-//        proteinTableToolTips.add("Protein Inference Class");
-//        proteinTableToolTips.add("Protein Accession Number");
-//        proteinTableToolTips.add("Protein Description");
-//        proteinTableToolTips.add("Protein Seqeunce Coverage (%) (Observed / Possible)");
-//        proteinTableToolTips.add("Number of Peptides (Validated / Total)");
-//        proteinTableToolTips.add("Number of Spectra (Validated / Total)");
-//        proteinTableToolTips.add("MS2 Quantification");
-//        proteinTableToolTips.add("Protein Molecular Weight (kDa)");
-//
-//        if (peptideShakerGUI.getDisplayPreferences().showScores()) {
-//            proteinTableToolTips.add("Protein Score");
-//        } else {
-//            proteinTableToolTips.add("Protein Confidence");
-//        }
-//
-//        proteinTableToolTips.add("Validated");
+        proteinTableToolTips.add(null);
+        proteinTableToolTips.add("Starred");
+        proteinTableToolTips.add("Protein Inference Class");
+        proteinTableToolTips.add("Protein Accession Number");
+        proteinTableToolTips.add("Protein Description");
+        proteinTableToolTips.add("Protein Seqeunce Coverage (%) (Observed / Possible)");
+        proteinTableToolTips.add("Number of Peptides (Validated / Total)");
+        proteinTableToolTips.add("Number of Spectra (Validated / Total)");
+        proteinTableToolTips.add("MS2 Quantification");
+        proteinTableToolTips.add("Protein Molecular Weight (kDa)");
+
+        if (reporterGUI.getDisplayPreferences().showScores()) {
+            proteinTableToolTips.add("Protein Score");
+        } else {
+            proteinTableToolTips.add("Protein Confidence");
+        }
+
+        proteinTableToolTips.add("Validated");
+    }
+
+    /**
+     * Set up the properties of the tables.
+     */
+    private void setTableProperties() {
+        setProteinTableProperties();
+    }
+
+    /**
+     * Set up the properties of the protein table.
+     */
+    private void setProteinTableProperties() {
+
+        ProteinTableModel.setProteinTableProperties(proteinTable, reporterGUI.getSparklineColor(), reporterGUI.getSparklineColorNonValidated(), reporterGUI.getSparklineColorNotFound(), reporterGUI.getScoreAndConfidenceDecimalFormat(), this.getClass(), reporterGUI.getMetrics().getMaxProteinKeyLength());
+    
     }
 
     /**
