@@ -22,7 +22,7 @@ public class RatioEstimator {
      * @return the resulting ratio
      */
     public static Double estimateRatios(ReporterPreferences reporterPreferences, ArrayList<Double> ratios) {
-        if (ratios.isEmpty()) {
+        if (ratios == null || ratios.isEmpty()) {
             return Double.NaN;
         }
         if (ratios.size() < 6) {
@@ -36,7 +36,7 @@ public class RatioEstimator {
             }
         }
         int nLeft = ratios.size() - 2* nZeros;
-        if (nZeros < 6) {
+        if (nLeft < 6) {
             return BasicMathFunctions.median(ratios);
         }
         double[] logRatios = new double[nLeft];
@@ -59,12 +59,12 @@ public class RatioEstimator {
      */
     private static Double mEstimate(ReporterPreferences reporterPreferences, double[] ratios) {
 
-        double complement = (100 - reporterPreferences.getPercentile()) / 2;
+        double complement = (100 - reporterPreferences.getPercentile()) / 200;
         if (complement < 0 || complement > 100) {
             throw new IllegalArgumentException("Incorrect complement window size of " + complement + ".");
         }
         double percentileLow = BasicMathFunctions.percentile(ratios, complement);
-        double percentileHigh = BasicMathFunctions.percentile(ratios, 100 - complement);
+        double percentileHigh = BasicMathFunctions.percentile(ratios, 1 - complement);
         double window = percentileHigh - percentileLow;
         double halfWindow = window / 2;
         double resolution = reporterPreferences.getRatioResolution();

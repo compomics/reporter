@@ -3,6 +3,8 @@ package eu.isas.reporter.gui;
 import com.compomics.software.CompomicsWrapper;
 import com.compomics.util.db.ObjectsCache;
 import com.compomics.util.experiment.biology.PTMFactory;
+import com.compomics.util.experiment.identification.Identification;
+import com.compomics.util.experiment.identification.SearchParameters;
 import com.compomics.util.experiment.identification.SequenceFactory;
 import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
@@ -12,19 +14,24 @@ import com.compomics.util.gui.error_handlers.BugReport;
 import com.compomics.util.gui.error_handlers.HelpDialog;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
 import com.compomics.util.preferences.UtilitiesUserPreferences;
+import eu.isas.peptideshaker.preferences.FilterPreferences;
+import eu.isas.peptideshaker.preferences.SpectrumCountingPreferences;
 import eu.isas.peptideshaker.utils.CpsParent;
 import eu.isas.peptideshaker.utils.DisplayFeaturesGenerator;
 import eu.isas.peptideshaker.utils.IdentificationFeaturesGenerator;
+import eu.isas.peptideshaker.utils.Metrics;
 import eu.isas.reporter.Reporter;
 import eu.isas.reporter.calculation.QuantificationFeaturesCache;
 import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
 import eu.isas.reporter.myparameters.ReporterPreferences;
 import eu.isas.reporter.gui.resultpanels.OverviewPanel;
-import eu.isas.reporter.io.TestExport;
+import eu.isas.reporter.preferences.DisplayPreferences;
 import eu.isas.reporter.utils.Properties;
+import java.awt.Color;
 import java.awt.Toolkit;
 import java.io.*;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import net.jimmc.jshortcut.JShellLink;
@@ -46,10 +53,6 @@ public class ReporterGUI extends javax.swing.JFrame {
      * The last folder opened by the user. Defaults to user.home.
      */
     private String lastSelectedFolder = "user.home";
-    /**
-     * The currently processed quantification.
-     */
-    private ReporterIonQuantification quantification;
     /**
      * A simple progress dialog.
      */
@@ -87,11 +90,13 @@ public class ReporterGUI extends javax.swing.JFrame {
      */
     private ReporterIonQuantification reporterIonQuantification;
     /**
-     * The identification features generator provides identification related metrics on the identified matches
+     * The identification features generator provides identification related
+     * metrics on the identified matches
      */
     private IdentificationFeaturesGenerator identificationFeaturesGenerator;
     /**
-     * The display features generator provides display features for the identified matches
+     * The display features generator provides display features for the
+     * identified matches
      */
     private DisplayFeaturesGenerator displayFeaturesGenerator;
     /**
@@ -100,13 +105,28 @@ public class ReporterGUI extends javax.swing.JFrame {
      */
     private QuantificationFeaturesGenerator quantificationFeaturesGenerator;
     /**
-     * The cache to use for identification and quantification objects.
-     */
-    private ObjectsCache cache;
-    /**
      * Boolean indicating whether the project has been saved
      */
     private boolean projectSaved = true;
+    /**
+     * The display preferences
+     */
+    private DisplayPreferences displayPreferences = new DisplayPreferences();
+    /**
+     * The horizontal padding used before and after the text in the titled
+     * borders. (Needed to make it look as good in Java 7 as it did in Java
+     * 6...)
+     * @TODO: move to utilities?
+     */
+    public static String TITLED_BORDER_HORIZONTAL_PADDING = "";
+    /**
+     * the overview panel
+     */
+    private OverviewPanel overviewPanel;
+    /**
+     * The decimal format use for the score and confidence columns.
+     */
+    private DecimalFormat scoreAndConfidenceDecimalFormat = new DecimalFormat("0");
 
     /**
      * Creates a new ReporterGUI.
@@ -158,8 +178,8 @@ public class ReporterGUI extends javax.swing.JFrame {
 
         initComponents();
 
-        OverviewPanel proteinPanel = new OverviewPanel(this);
-        overviewJPanel.add(proteinPanel);
+        overviewPanel = new OverviewPanel(this);
+        overviewJPanel.add(overviewPanel);
 
         setUpGui();
 
@@ -216,34 +236,68 @@ public class ReporterGUI extends javax.swing.JFrame {
      * loads the new project on the interface
      */
     private void createNewProject() {
-        try {
-            if (cpsBean != null) {
-                closeOpenedProject();
-                if (progressDialog.isRunCanceled()) {
-                    return;
+
+        progressDialog = new ProgressDialogX(this,
+                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
+                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
+        progressDialog.setPrimaryProgressCounterIndeterminate(true);
+        progressDialog.setTitle("Quantifying proteins. Please Wait...");
+
+        new Thread(new Runnable() {
+            public void run() {
+                try {
+                    progressDialog.setVisible(true);
+                } catch (IndexOutOfBoundsException e) {
+                    // ignore
                 }
             }
-            projectSaved = true;
-            NewDialog newDialog = new NewDialog(this);
-            if (!newDialog.isCancelled()) {
-                cpsBean = newDialog.getCpsBean();
-                identificationFeaturesGenerator = new IdentificationFeaturesGenerator(cpsBean.getIdentification(),cpsBean.getSearchParameters(), cpsBean.getIdFilter(), cpsBean.getMetrics(), cpsBean.getSpectrumCountingPreferences());
-                displayFeaturesGenerator = new DisplayFeaturesGenerator(cpsBean.getSearchParameters().getModificationProfile(), exceptionHandler);
-                displayFeaturesGenerator.setDisplayedPTMs(cpsBean.getDisplayPreferences().getDisplayedPtms());
-                reporterPreferences = newDialog.getReporterPreferences();
-                reporterIonQuantification = newDialog.getReporterIonQuantification();
-                projectSaved = false;
-                quantificationFeaturesGenerator = new QuantificationFeaturesGenerator(new QuantificationFeaturesCache(), cpsBean.getIdentification(),reporterPreferences, reporterIonQuantification, cpsBean.getSearchParameters());
-                displayResults();
+        }, "ProgressDialog").start();
+
+        new Thread("ImportThread") {
+            @Override
+            public void run() {
+                try {
+                    if (cpsBean != null) {
+                        closeOpenedProject();
+                        if (progressDialog.isRunCanceled()) {
+                            return;
+                        }
+                    }
+                    projectSaved = true;
+                    NewDialog newDialog = new NewDialog(ReporterGUI.this);
+                    if (!newDialog.isCancelled()) {
+                        cpsBean = newDialog.getCpsBean();
+                        identificationFeaturesGenerator = new IdentificationFeaturesGenerator(cpsBean.getIdentification(), cpsBean.getSearchParameters(), cpsBean.getIdFilter(), cpsBean.getMetrics(), cpsBean.getSpectrumCountingPreferences());
+                        displayFeaturesGenerator = new DisplayFeaturesGenerator(cpsBean.getSearchParameters().getModificationProfile(), exceptionHandler);
+                        displayFeaturesGenerator.setDisplayedPTMs(cpsBean.getDisplayPreferences().getDisplayedPtms());
+                        reporterPreferences = newDialog.getReporterPreferences();
+                        setDisplayPreferencesFromShakerProject();
+                        reporterIonQuantification = newDialog.getReporterIonQuantification();
+                        projectSaved = false;
+                        quantificationFeaturesGenerator = new QuantificationFeaturesGenerator(new QuantificationFeaturesCache(), cpsBean.getIdentification(), reporterPreferences, reporterIonQuantification, cpsBean.getSearchParameters());
+                        displayResults();
+                    }
+                } catch (Exception e) {
+                    catchException(e);
+                    progressDialog.setRunCanceled();
+                } finally {
+                    progressDialog.setRunFinished();
+                }
             }
-        } catch (Exception e) {
-            catchException(e);
-        }
+        }.start();
+    }
+    
+    /**
+     * Sets the display preferences based on the currently loaded cps file
+     */
+    private void setDisplayPreferencesFromShakerProject() {
+        displayPreferences = new DisplayPreferences();
+        displayPreferences.setShowScores(cpsBean.getDisplayPreferences().showScores());
     }
 
     /**
      * Returns the identification features generator.
-     * 
+     *
      * @return the identification features generator
      */
     public IdentificationFeaturesGenerator getIdentificationFeaturesGenerator() {
@@ -252,17 +306,16 @@ public class ReporterGUI extends javax.swing.JFrame {
 
     /**
      * Returns the display features generator.
-     * 
+     *
      * @return the display features generator
      */
     public DisplayFeaturesGenerator getDisplayFeaturesGenerator() {
         return displayFeaturesGenerator;
     }
 
-
     /**
      * Returns the quantification features generator.
-     * 
+     *
      * @return the quantification features generator
      */
     public QuantificationFeaturesGenerator getQuantificationFeaturesGenerator() {
@@ -273,12 +326,124 @@ public class ReporterGUI extends javax.swing.JFrame {
      * displays the results on the gui
      */
     private void displayResults() throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
-        //@TODO: set progress bar
         if (!reporterIonQuantification.hasNormalisationFactors()) {
             Reporter.setNormalizationFactors(reporterIonQuantification, reporterPreferences, cpsBean.getIdentification(), quantificationFeaturesGenerator, progressDialog);
         }
-        TestExport.testExport(cpsBean.getIdentification(), reporterIonQuantification, quantificationFeaturesGenerator);
-        //@TODO: display stuffs on the GUI
+        overviewPanel.updateDisplay();
+    }
+
+    /**
+     * Returns the reporter preferences.
+     * 
+     * @return the reporter preferences
+     */
+    public ReporterPreferences getReporterPreferences() {
+        return reporterPreferences;
+    }
+    
+    /**
+     * Returns the identification of the cps file. Null if none loaded.
+     * 
+     * @return the identification of the cps file
+     */
+    public Identification getIdentification() {
+        if (cpsBean == null) {
+            return null;
+        }
+        return cpsBean.getIdentification();
+    }
+    
+    /**
+     * Returns the identification parameters of the cps file. Null if none loaded.
+     * 
+     * @return the identification parameters of the cps file
+     */
+    public SearchParameters getSearchParameters() {
+        if (cpsBean == null) {
+            return null;
+        }
+        return cpsBean.getSearchParameters();
+    }
+
+    /**
+     * Returns the exception handler.
+     * 
+     * @return the exception handler
+     */
+    public ExceptionHandler getExceptionHandler() {
+        return exceptionHandler;
+    }
+    
+    /**
+     * Returns the spectrum counting preferences.
+     * 
+     * @return the spectrum counting preferences
+     */
+    public SpectrumCountingPreferences getSpectrumCountingPreferences() {
+        return cpsBean.getSpectrumCountingPreferences();
+    }
+
+    /**
+     * Returns the display preferences.
+     * 
+     * @return the display preferences
+     */
+    public DisplayPreferences getDisplayPreferences() {
+        return displayPreferences;
+    }
+    
+    /**
+     * Returns the filter preferences.
+     * 
+     * @return the filter preferences
+     */
+    public FilterPreferences getFilterPreferences() {
+        return cpsBean.getFilterPreferences();
+    }
+
+    /**
+     * Get the sparklines color.
+     *
+     * @return the sparklineColor
+     */
+    public Color getSparklineColor() {
+        return utilitiesUserPreferences.getSparklineColor();
+    }
+
+    /**
+     * Get the non-validated sparklines color.
+     *
+     * @return the non-validated sparklineColor
+     */
+    public Color getSparklineColorNonValidated() {
+        return utilitiesUserPreferences.getSparklineColorNonValidated();
+    }
+
+    /**
+     * Get the not found sparklines color.
+     *
+     * @return the not found sparklineColor
+     */
+    public Color getSparklineColorNotFound() {
+        return utilitiesUserPreferences.getSparklineColorNotFound();
+    }
+
+    /**
+     * Returns the decimal format used for the score and confidence columns.
+     *
+     * @return the decimal format used for the score and confidence columns
+     */
+    public DecimalFormat getScoreAndConfidenceDecimalFormat() {
+        return scoreAndConfidenceDecimalFormat;
+    }
+
+    /**
+     * Returns the metrics saved while loading the files.
+     *
+     * @return the metrics saved while loading the files
+     */
+    public Metrics getMetrics() {
+        return cpsBean.getMetrics();
     }
 
     /**

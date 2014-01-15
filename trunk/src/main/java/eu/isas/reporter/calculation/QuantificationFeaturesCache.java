@@ -6,6 +6,11 @@
 package eu.isas.reporter.calculation;
 
 import com.compomics.util.experiment.massspectrometry.Spectrum;
+import eu.isas.reporter.quantificationdetails.PeptideQuantificationDetails;
+import eu.isas.reporter.quantificationdetails.ProteinQuantificationDetails;
+import eu.isas.reporter.quantificationdetails.PsmQuantificationDetails;
+import eu.isas.reporter.quantificationdetails.PtmSiteQuantificationDetails;
+import eu.isas.reporter.quantificationdetails.SpectrumQuantificationDetails;
 import java.util.Collections;
 import java.util.HashMap;
 
@@ -24,29 +29,29 @@ public class QuantificationFeaturesCache {
      * The protein quantification details in a map: number of peptides > protein
      * match key > match quantification details
      */
-    private HashMap<Integer, HashMap<String, MatchQuantificationDetails>> proteinRatios = new HashMap<Integer, HashMap<String, MatchQuantificationDetails>>();
+    private HashMap<Integer, HashMap<String, ProteinQuantificationDetails>> proteinRatios = new HashMap<Integer, HashMap<String, ProteinQuantificationDetails>>();
     /**
      * The protein level ptm quantification details in a map: ptm name > protein
      * match key > site > match quantification details
      */
-    private HashMap<String, HashMap<String, HashMap<Integer, MatchQuantificationDetails>>> proteinPtmRatios = new HashMap<String, HashMap<String, HashMap<Integer, MatchQuantificationDetails>>>();
+    private HashMap<String, HashMap<String, HashMap<Integer, PtmSiteQuantificationDetails>>> proteinPtmRatios = new HashMap<String, HashMap<String, HashMap<Integer, PtmSiteQuantificationDetails>>>();
     /**
      * The peptide quantification details in a map: number of psms > peptide
      * match key > match quantification details
      */
-    private HashMap<Integer, HashMap<String, MatchQuantificationDetails>> peptideRatios = new HashMap<Integer, HashMap<String, MatchQuantificationDetails>>();
+    private HashMap<Integer, HashMap<String, PeptideQuantificationDetails>> peptideRatios = new HashMap<Integer, HashMap<String, PeptideQuantificationDetails>>();
     /**
      * The PSM quantification details in a map: Spectrum file name > spectrum
      * key > match quantification details
      */
-    private HashMap<String, HashMap<String, MatchQuantificationDetails>> psmRatios = new HashMap<String, HashMap<String, MatchQuantificationDetails>>();
+    private HashMap<String, HashMap<String, PsmQuantificationDetails>> psmRatios = new HashMap<String, HashMap<String, PsmQuantificationDetails>>();
     /**
      * The spectrum quantification details in a map: Spectrum file name >
      * spectrum key > match quantification details Note: this is used in
      * precursor matching mode only, otherwise the spectrum ratios are the same
      * as the psm ratios
      */
-    private HashMap<String, HashMap<String, MatchQuantificationDetails>> spectrumRatios = new HashMap<String, HashMap<String, MatchQuantificationDetails>>();
+    private HashMap<String, HashMap<String, SpectrumQuantificationDetails>> spectrumRatios = new HashMap<String, HashMap<String, SpectrumQuantificationDetails>>();
 
     /**
      * Constructor
@@ -122,10 +127,10 @@ public class QuantificationFeaturesCache {
      * @param matchKey the key of the protein match
      * @param matchQuantificationDetails The protein quantification details
      */
-    public void addProteinMatchQuantificationDetails(int nPeptides, String matchKey, MatchQuantificationDetails matchQuantificationDetails) {
-        HashMap<String, MatchQuantificationDetails> submap = proteinRatios.get(nPeptides);
+    public void addProteinMatchQuantificationDetails(int nPeptides, String matchKey, ProteinQuantificationDetails matchQuantificationDetails) {
+        HashMap<String, ProteinQuantificationDetails> submap = proteinRatios.get(nPeptides);
         if (submap == null) {
-            submap = new HashMap<String, MatchQuantificationDetails>();
+            submap = new HashMap<String, ProteinQuantificationDetails>();
             proteinRatios.put(nPeptides, submap);
         }
         submap.put(matchKey, matchQuantificationDetails);
@@ -140,9 +145,9 @@ public class QuantificationFeaturesCache {
      *
      * @return The protein quantification details
      */
-    public MatchQuantificationDetails getProteinMatchQuantificationDetails(int nPeptides, String matchKey) {
-        MatchQuantificationDetails result = null;
-        HashMap<String, MatchQuantificationDetails> submap = proteinRatios.get(nPeptides);
+    public ProteinQuantificationDetails getProteinMatchQuantificationDetails(int nPeptides, String matchKey) {
+        ProteinQuantificationDetails result = null;
+        HashMap<String, ProteinQuantificationDetails> submap = proteinRatios.get(nPeptides);
         if (submap != null) {
             result = submap.get(matchKey);
         }
@@ -158,15 +163,15 @@ public class QuantificationFeaturesCache {
      * @param site the site of the PTM on the protein sequence
      * @param matchQuantificationDetails The protein quantification details
      */
-    public void addPtmQuantificationDetails(String ptmName, String matchKey, int site, MatchQuantificationDetails matchQuantificationDetails) {
-        HashMap<String, HashMap<Integer, MatchQuantificationDetails>> submap = proteinPtmRatios.get(ptmName);
+    public void addPtmQuantificationDetails(String ptmName, String matchKey, int site, PtmSiteQuantificationDetails matchQuantificationDetails) {
+        HashMap<String, HashMap<Integer, PtmSiteQuantificationDetails>> submap = proteinPtmRatios.get(ptmName);
         if (submap == null) {
-            submap = new HashMap<String, HashMap<Integer, MatchQuantificationDetails>>();
+            submap = new HashMap<String, HashMap<Integer, PtmSiteQuantificationDetails>>();
             proteinPtmRatios.put(ptmName, submap);
         }
-        HashMap<Integer, MatchQuantificationDetails> subsubmap = submap.get(matchKey);
+        HashMap<Integer, PtmSiteQuantificationDetails> subsubmap = submap.get(matchKey);
         if (subsubmap == null) {
-            subsubmap = new HashMap<Integer, MatchQuantificationDetails>();
+            subsubmap = new HashMap<Integer, PtmSiteQuantificationDetails>();
             submap.put(matchKey, subsubmap);
         }
         subsubmap.put(site, matchQuantificationDetails);
@@ -182,11 +187,11 @@ public class QuantificationFeaturesCache {
      *
      * @return The protein quantification details
      */
-    public MatchQuantificationDetails getPtmQuantificationDetails(String ptmName, String matchKey, int site) {
-        MatchQuantificationDetails result = null;
-        HashMap<String, HashMap<Integer, MatchQuantificationDetails>> submap = proteinPtmRatios.get(ptmName);
+    public PtmSiteQuantificationDetails getPtmQuantificationDetails(String ptmName, String matchKey, int site) {
+        PtmSiteQuantificationDetails result = null;
+        HashMap<String, HashMap<Integer, PtmSiteQuantificationDetails>> submap = proteinPtmRatios.get(ptmName);
         if (submap != null) {
-            HashMap<Integer, MatchQuantificationDetails> subsubmap = submap.get(matchKey);
+            HashMap<Integer, PtmSiteQuantificationDetails> subsubmap = submap.get(matchKey);
             if (subsubmap != null) {
                 result = subsubmap.get(site);
             }
@@ -202,10 +207,10 @@ public class QuantificationFeaturesCache {
      * @param matchKey the key of the protein match
      * @param matchQuantificationDetails The protein quantification details
      */
-    public void addPeptideMatchQuantificationDetails(int nPeptides, String matchKey, MatchQuantificationDetails matchQuantificationDetails) {
-        HashMap<String, MatchQuantificationDetails> submap = peptideRatios.get(nPeptides);
+    public void addPeptideMatchQuantificationDetails(int nPeptides, String matchKey, PeptideQuantificationDetails matchQuantificationDetails) {
+        HashMap<String, PeptideQuantificationDetails> submap = peptideRatios.get(nPeptides);
         if (submap == null) {
-            submap = new HashMap<String, MatchQuantificationDetails>();
+            submap = new HashMap<String, PeptideQuantificationDetails>();
             peptideRatios.put(nPeptides, submap);
         }
         submap.put(matchKey, matchQuantificationDetails);
@@ -220,9 +225,9 @@ public class QuantificationFeaturesCache {
      *
      * @return The peptide quantification details
      */
-    public MatchQuantificationDetails getPeptideMatchQuantificationDetails(int nPsms, String matchKey) {
-        MatchQuantificationDetails result = null;
-        HashMap<String, MatchQuantificationDetails> submap = peptideRatios.get(nPsms);
+    public PeptideQuantificationDetails getPeptideMatchQuantificationDetails(int nPsms, String matchKey) {
+        PeptideQuantificationDetails result = null;
+        HashMap<String, PeptideQuantificationDetails> submap = peptideRatios.get(nPsms);
         if (submap != null) {
             result = submap.get(matchKey);
         }
@@ -236,11 +241,11 @@ public class QuantificationFeaturesCache {
      * @param matchKey the key of spectrum
      * @param matchQuantificationDetails The protein quantification details
      */
-    public void addPSMQuantificationDetails(String matchKey, MatchQuantificationDetails matchQuantificationDetails) {
+    public void addPSMQuantificationDetails(String matchKey, PsmQuantificationDetails matchQuantificationDetails) {
         String spectrumFile = Spectrum.getSpectrumFile(matchKey);
-        HashMap<String, MatchQuantificationDetails> submap = psmRatios.get(spectrumFile);
+        HashMap<String, PsmQuantificationDetails> submap = psmRatios.get(spectrumFile);
         if (submap == null) {
-            submap = new HashMap<String, MatchQuantificationDetails>();
+            submap = new HashMap<String, PsmQuantificationDetails>();
             psmRatios.put(spectrumFile, submap);
         }
         submap.put(matchKey, matchQuantificationDetails);
@@ -254,10 +259,10 @@ public class QuantificationFeaturesCache {
      *
      * @return The PSM quantification details
      */
-    public MatchQuantificationDetails getPSMQuantificationDetails(String matchKey) {
+    public PsmQuantificationDetails getPSMQuantificationDetails(String matchKey) {
         String spectrumFile = Spectrum.getSpectrumFile(matchKey);
-        MatchQuantificationDetails result = null;
-        HashMap<String, MatchQuantificationDetails> submap = psmRatios.get(spectrumFile);
+        PsmQuantificationDetails result = null;
+        HashMap<String, PsmQuantificationDetails> submap = psmRatios.get(spectrumFile);
         if (submap != null) {
             result = submap.get(matchKey);
         }
@@ -271,11 +276,11 @@ public class QuantificationFeaturesCache {
      * @param matchKey the key of spectrum
      * @param matchQuantificationDetails The protein quantification details
      */
-    public void addSpectrumQuantificationDetails(String matchKey, MatchQuantificationDetails matchQuantificationDetails) {
+    public void addSpectrumQuantificationDetails(String matchKey, SpectrumQuantificationDetails matchQuantificationDetails) {
         String spectrumFile = Spectrum.getSpectrumFile(matchKey);
-        HashMap<String, MatchQuantificationDetails> submap = spectrumRatios.get(spectrumFile);
+        HashMap<String, SpectrumQuantificationDetails> submap = spectrumRatios.get(spectrumFile);
         if (submap == null) {
-            submap = new HashMap<String, MatchQuantificationDetails>();
+            submap = new HashMap<String, SpectrumQuantificationDetails>();
             spectrumRatios.put(spectrumFile, submap);
         }
         submap.put(matchKey, matchQuantificationDetails);
@@ -289,10 +294,10 @@ public class QuantificationFeaturesCache {
      *
      * @return The spectrum quantification details
      */
-    public MatchQuantificationDetails getSpectrumQuantificationDetails(String matchKey) {
+    public SpectrumQuantificationDetails getSpectrumQuantificationDetails(String matchKey) {
         String spectrumFile = Spectrum.getSpectrumFile(matchKey);
-        MatchQuantificationDetails result = null;
-        HashMap<String, MatchQuantificationDetails> submap = spectrumRatios.get(spectrumFile);
+        SpectrumQuantificationDetails result = null;
+        HashMap<String, SpectrumQuantificationDetails> submap = spectrumRatios.get(spectrumFile);
         if (submap != null) {
             result = submap.get(matchKey);
         }

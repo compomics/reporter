@@ -272,7 +272,6 @@ public class NewDialog extends javax.swing.JDialog {
 
         experimentTxt.setEditable(false);
         experimentTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        experimentTxt.setEnabled(false);
         experimentTxt.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 experimentTxtKeyReleased(evt);
@@ -285,7 +284,6 @@ public class NewDialog extends javax.swing.JDialog {
 
         sampleNameTxt.setEditable(false);
         sampleNameTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        sampleNameTxt.setEnabled(false);
         sampleNameTxt.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 sampleNameTxtActionPerformed(evt);
@@ -296,7 +294,6 @@ public class NewDialog extends javax.swing.JDialog {
 
         replicateNumberTxt.setEditable(false);
         replicateNumberTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        replicateNumberTxt.setEnabled(false);
 
         org.jdesktop.layout.GroupLayout projectPanelLayout = new org.jdesktop.layout.GroupLayout(projectPanel);
         projectPanel.setLayout(projectPanelLayout);
@@ -945,7 +942,8 @@ public class NewDialog extends javax.swing.JDialog {
         if (validateInput()) {
             reporterIonQuantification = new ReporterIonQuantification(Quantification.QuantificationMethod.REPORTER_IONS);
             for (int key : sampleNames.keySet()) {
-                reporterIonQuantification.assignSample(key, new Sample(sampleNames.get(key)));
+                int index = selectedMethod.getReporterIonIndexes().get(key);
+                reporterIonQuantification.assignSample(index, new Sample(sampleNames.get(key)));
             }
             reporterIonQuantification.setMethod(selectedMethod);
             dispose();
@@ -1418,6 +1416,9 @@ public class NewDialog extends javax.swing.JDialog {
                     return;
                 }
 
+                txtSpectraFileLocation.setText(cpsBean.getIdentification().getSpectrumFiles().size() + " files loaded."); //@TODO: allow editing
+                fastaTxt.setText(cpsBean.getSearchParameters().getFastaFile().getName());
+
                 experimentTxt.setText(getExperiment().getReference());
                 sampleNameTxt.setText(getSample().getReference());
                 replicateNumberTxt.setText(getReplicateNumber() + "");
@@ -1729,10 +1730,11 @@ public class NewDialog extends javax.swing.JDialog {
                 case 1:
                     Sample sample = getSample();
                     if (sampleNames.get(row) == null) {
+                            int number = index +1;
                         if (sample != null) {
-                            sampleNames.put(row, sample.getReference() + " " + index);
+                            sampleNames.put(row, sample.getReference() + " " + number);
                         } else {
-                            sampleNames.put(row, "Sample " + index);
+                            sampleNames.put(row, "Sample " + number);
                         }
                     }
                     return sampleNames.get(row);
