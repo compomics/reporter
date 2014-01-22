@@ -46,9 +46,8 @@ public class ReporterMerger {
             int ratioIndex = 15;
             int referenceChannel = 2;
 
-            boolean removeDecoys = true;
-            int minPeptideCount = 2;
-            int minSpectrumCount = 2;
+            int minValidatedPeptideCount = 2;
+            int minValidatedSpectrumCount = 2;
 
             //String[] orderedExperiments = {"Exp 1", "Exp 2", "Exp 3", "Exp 4"};
             String[] orderedExperiments = {"Mix 1", "Mix 2", "Mix 3"};
@@ -66,6 +65,7 @@ public class ReporterMerger {
             HashMap<String, String> mwMap = new HashMap<String, String>(nProteins);
             HashMap<String, String> descriptionMap = new HashMap<String, String>(nProteins);
             HashMap<String, Integer> decoyMap = new HashMap<String, Integer>(nProteins);
+            HashMap<String, Boolean> proteinValidatedMap = new HashMap<String, Boolean>(nProteins);
 
             HashMap<String, ArrayList<String>> proteinKeysMap = new HashMap<String, ArrayList<String>>(nFiles);
             HashMap<String, HashMap<String, Integer>> peptidesMap = new HashMap<String, HashMap<String, Integer>>(nFiles);
@@ -104,37 +104,56 @@ public class ReporterMerger {
                     ratiosMap.get(experiment).put(value, new HashMap<String, Double>());
                     ratiosMapNormalized.get(experiment).put(value, new HashMap<String, Double>());
                 }
+
+                // read the data from the input file
                 while ((line = br.readLine()) != null && !line.equals("")) {
                     split = line.split(separator);
-                    String key = split[2];
-                    keyToMainMatchMap.put(key, split[0]);
-                    keyToOtherMatchesMap.put(key, split[1]);
-                    groupClassMap.put(key, split[3]);
-                    mwMap.put(key, split[8]);
-                    descriptionMap.put(key, split[14]);
-                    Integer integerValue = new Integer(split[12]);
-                    decoyMap.put(key, integerValue);
-                    integerValue = new Integer(split[4]);
-                    peptidesMap.get(experiment).put(key, integerValue);
-                    integerValue = new Integer(split[5]);
-                    spectraMap.get(experiment).put(key, integerValue);
-                    integerValue = new Integer(split[6]);
-                    validatedPeptidesMap.get(experiment).put(key, integerValue);
-                    integerValue = new Integer(split[7]);
-                    validatedSpectraMap.get(experiment).put(key, integerValue);
-                    Double doubleValue = new Double(split[10]);
-                    scoreMap.get(experiment).put(key, doubleValue);
-                    doubleValue = new Double(split[11]);
-                    pepMap.get(experiment).put(key, doubleValue);
-                    integerValue = new Integer(split[13]);
-                    validatedMap.get(experiment).put(key, integerValue);
+                    String completeProteinGroup = split[2];
+
+                    Integer numberOfValidatedPeptides = new Integer(split[6]);
+                    Integer numberOfValidatedSpectra = new Integer(split[7]);
+                    boolean peptideAndSpectrumFilter = false;
+
+                    // check validated peptide and spectrum counts
+                    if (numberOfValidatedPeptides >= minValidatedPeptideCount
+                            && numberOfValidatedSpectra >= minValidatedSpectrumCount) {
+                        peptideAndSpectrumFilter = true;
+                    }
+
+                    Integer decoyIntegerValue = new Integer(split[12]);
+                    decoyMap.put(completeProteinGroup, decoyIntegerValue);
+                    keyToMainMatchMap.put(completeProteinGroup, split[0]);
+                    keyToOtherMatchesMap.put(completeProteinGroup, split[1]);
+                    groupClassMap.put(completeProteinGroup, split[3]);
+                    mwMap.put(completeProteinGroup, split[8]);
+                    descriptionMap.put(completeProteinGroup, split[14]);
+                    Integer numberOfPeptides = new Integer(split[4]);
+                    peptidesMap.get(experiment).put(completeProteinGroup, numberOfPeptides);
+                    Integer numberOfSpectra = new Integer(split[5]);
+                    spectraMap.get(experiment).put(completeProteinGroup, numberOfSpectra);
+                    validatedPeptidesMap.get(experiment).put(completeProteinGroup, numberOfValidatedPeptides);
+                    validatedSpectraMap.get(experiment).put(completeProteinGroup, numberOfValidatedSpectra);
+                    Double pScore = new Double(split[10]);
+                    scoreMap.get(experiment).put(completeProteinGroup, pScore);
+                    Double p = new Double(split[11]);
+                    pepMap.get(experiment).put(completeProteinGroup, p);
+                    Integer validatedIntegerValue = new Integer(split[13]);
+                    validatedMap.get(experiment).put(completeProteinGroup, validatedIntegerValue);
+
                     for (int i = ratioIndex; i < split.length; i++) {
                         int index = i - ratioIndex;
                         String ratioTitle = ratios.get(experiment).get(index);
-                        doubleValue = new Double(split[i]);
-                        ratiosMap.get(experiment).get(ratioTitle).put(key, doubleValue);
+
+                        // only add ratios passing the peptide and spectrum filter
+                        if (peptideAndSpectrumFilter) {
+                            Double ratioValue = new Double(split[i]);
+                            ratiosMap.get(experiment).get(ratioTitle).put(completeProteinGroup, ratioValue);
+                        } else {
+                            ratiosMap.get(experiment).get(ratioTitle).put(completeProteinGroup, null);
+                        }
                     }
                 }
+
                 br.close();
             }
 
@@ -202,12 +221,70 @@ public class ReporterMerger {
                 peps.put(score, pep);
             }
 
+            // find validated proteins
+            for (String key : keyToMainMatchMap.keySet()) {
+                
+                int validationCount = 0;
+                
+                for (String experiment : orderedExperiments) {
+                    if (validatedMap.get(experiment).containsKey(key)) {
+                        validationCount += validatedMap.get(experiment).get(key);
+                    }
+                }
+                
+                proteinValidatedMap.put(key, validationCount > 0); // @TODO: make this more advanced!!!
+            }
+
+            // find the median values
+            HashMap<String, HashMap<String, Double>> medians = new HashMap<String, HashMap<String, Double>>(nFiles);
+
+            for (String experiment : orderedExperiments) {
+
+                medians.put(experiment, new HashMap<String, Double>(nRatios));
+
+                for (String ratio : ratios.get(experiment)) {
+
+                    ArrayList<Double> tempValues = new ArrayList<Double>();
+
+                    for (String key : keyToMainMatchMap.keySet()) {
+
+                        if (decoyMap.get(key) == 0 && proteinValidatedMap.get(key)) { // filter out decoys and non validated proteins
+                            Double value = ratiosMap.get(experiment).get(ratio).get(key);
+                            if (value != null && !value.isNaN()) {
+                                tempValues.add(value);
+                            }
+                        }
+                    }
+
+                    double median = BasicMathFunctions.median(tempValues);
+                    medians.get(experiment).put(ratio, median);
+                }
+            }
+
+            // find the normalized ratios
+            for (String key : keyToMainMatchMap.keySet()) {
+                if (decoyMap.get(key) == 0 && proteinValidatedMap.get(key)) { // filter out decoys and non validated proteins
+                    for (String experiment : orderedExperiments) {
+                        for (String ratio : ratios.get(experiment)) {
+                            Double value = ratiosMap.get(experiment).get(ratio).get(key);
+                            if (value != null && !value.isNaN()) {
+                                ratiosMapNormalized.get(experiment).get(ratio).put(key, value / medians.get(experiment).get(ratio));
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // find the outliers
+            // @TODO: implement me!!
+
+            // print the results to file
             File outputFile = new File(path, "summary.txt");
             BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile));
 
             // first header row
-            writer.write("Protein" + separator + "Description" + separator + "MW" + separator + "Other Protein(s) (alphabetical order)" + separator + "Complete Protein Group (alphabetical order)" + separator
-                    + "Group Class" + separator + "#Peptides");
+            writer.write("Protein" + separator + "Description" + separator + "MW" + separator + "Other Protein(s) (alphabetical order)"
+                    + separator + "Complete Protein Group (alphabetical order)" + separator + "Group Class" + separator + "#Peptides");
             for (int i = 0; i < nFiles; i++) {
                 writer.write(separator);
             }
@@ -243,12 +320,12 @@ public class ReporterMerger {
                     writer.write(separator);
                 }
             }
-            for (String experiment : orderedExperiments) {
-                writer.write(experiment + " normalized / ref");
-                for (int i = 0; i < nRatios - 1; i++) {
-                    writer.write(separator);
-                }
-            }
+//            for (String experiment : orderedExperiments) {
+//                writer.write(experiment + " normalized / ref");
+//                for (int i = 0; i < nRatios - 1; i++) {
+//                    writer.write(separator);
+//                }
+//            }
             for (String experiment : orderedExperiments) {
                 writer.write(experiment + " normalized / ref (log2)");
                 for (int i = 0; i < nRatios - 1; i++) {
@@ -288,15 +365,15 @@ public class ReporterMerger {
                     writer.write(ratioName + separator);
                 }
             }
-            for (String experiment : orderedExperiments) {
-                for (int i = 0; i < ratios.get(experiment).size(); i++) {
-                    if (i + 1 != referenceChannel) {
-                        writer.write(ratios.get(experiment).get(i) + separator);
-                    } else {
-                        referenceChannels.put(experiment, ratios.get(experiment).get(i));
-                    }
-                }
-            }
+//            for (String experiment : orderedExperiments) {
+//                for (int i = 0; i < ratios.get(experiment).size(); i++) {
+//                    if (i + 1 != referenceChannel) {
+//                        writer.write(ratios.get(experiment).get(i) + separator);
+//                    } else {
+//                        referenceChannels.put(experiment, ratios.get(experiment).get(i));
+//                    }
+//                }
+//            }
             for (String experiment : orderedExperiments) {
                 for (int i = 0; i < ratios.get(experiment).size(); i++) {
                     if (i + 1 != referenceChannel) {
@@ -308,159 +385,127 @@ public class ReporterMerger {
             }
             writer.newLine();
 
-            // find the median values
-            HashMap<String, HashMap<String, Double>> medians = new HashMap<String, HashMap<String, Double>>(nFiles);
-
-            for (String experiment : orderedExperiments) {
-
-                medians.put(experiment, new HashMap<String, Double>(nRatios));
-
-                for (String ratio : ratios.get(experiment)) {
-
-                    ArrayList<Double> tempValues = new ArrayList<Double>();
-
-                    for (String key : keyToMainMatchMap.keySet()) {
-                        Double value = ratiosMap.get(experiment).get(ratio).get(key);
-                        if (value != null && !value.isNaN()) {
-                            tempValues.add(value);
-                        }
-                    }
-
-                    double median = BasicMathFunctions.median(tempValues);
-                    medians.get(experiment).put(ratio, median);
-                }
-            }
-
-            // find the normalized ratios
+            // print the protein details
             for (String key : keyToMainMatchMap.keySet()) {
-                for (String experiment : orderedExperiments) {
 
-                    for (String ratio : ratios.get(experiment)) {
-                        Double value = ratiosMap.get(experiment).get(ratio).get(key);
-                        if (value != null && !value.isNaN()) {
-                            ratiosMapNormalized.get(experiment).get(ratio).put(key, value / medians.get(experiment).get(ratio));
-                        }
-                    }
-                }
-            }
+                if (decoyMap.get(key) == 0 && proteinValidatedMap.get(key)) { // filter out decoys and non validated proteins
 
-            // print out the results
-            for (String key : keyToMainMatchMap.keySet()) {
-                writer.write(keyToMainMatchMap.get(key) + separator);
-                writer.write(descriptionMap.get(key) + separator);
-                writer.write(mwMap.get(key) + separator);
-                writer.write(keyToOtherMatchesMap.get(key) + separator);
-                writer.write(key + separator);
-                writer.write(groupClassMap.get(key) + separator);
-                for (String experiment : orderedExperiments) {
-                    Object value = peptidesMap.get(experiment).get(key);
-                    if (value != null) {
-                        writer.write(value.toString());
-                    }
-                    writer.write(separator);
-                }
-                for (String experiment : orderedExperiments) {
-                    Object value = spectraMap.get(experiment).get(key);
-                    if (value != null) {
-                        writer.write(value.toString());
-                    }
-                    writer.write(separator);
-                }
-                for (String experiment : orderedExperiments) {
-                    Object value = validatedPeptidesMap.get(experiment).get(key);
-                    if (value != null) {
-                        writer.write(value.toString());
-                    }
-                    writer.write(separator);
-                }
-                for (String experiment : orderedExperiments) {
-                    Object value = validatedSpectraMap.get(experiment).get(key);
-                    if (value != null) {
-                        writer.write(value.toString());
-                    }
-                    writer.write(separator);
-                }
-                for (String experiment : orderedExperiments) {
-                    Double value = pepMap.get(experiment).get(key);
-                    if (value != null) {
-                        value = 1 - value;
-                        writer.write(value.toString());
-                    }
-                    writer.write(separator);
-                }
-                double score = keyToScoreMap.get(key);
-                writer.write(score + separator);
-                double pep = peps.get(score);
-                writer.write(pep + separator);
-                writer.write(decoyMap.get(key) + separator);
-                for (String experiment : orderedExperiments) {
-                    Object value = validatedMap.get(experiment).get(key);
-                    if (value != null) {
-                        writer.write(value.toString());
-                    }
-                    writer.write(separator);
-                }
-
-                // write the raw ratios
-                for (String experiment : orderedExperiments) {
-                    for (String ratio : ratios.get(experiment)) {
-                        Double value = ratiosMap.get(experiment).get(ratio).get(key);
-                        if (value != null && !value.isNaN()) {
+                    writer.write(keyToMainMatchMap.get(key) + separator);
+                    writer.write(descriptionMap.get(key) + separator);
+                    writer.write(mwMap.get(key) + separator);
+                    writer.write(keyToOtherMatchesMap.get(key) + separator);
+                    writer.write(key + separator);
+                    writer.write(groupClassMap.get(key) + separator);
+                    for (String experiment : orderedExperiments) {
+                        Object value = peptidesMap.get(experiment).get(key);
+                        if (value != null) {
                             writer.write(value.toString());
                         }
                         writer.write(separator);
                     }
-                }
-
-                // write the normalized ratios
-                for (String experiment : orderedExperiments) {
-                    for (String ratio : ratios.get(experiment)) {
-                        Double value = ratiosMapNormalized.get(experiment).get(ratio).get(key);
-                        if (value != null && !value.isNaN()) {
-                            writer.write("" + value);
+                    for (String experiment : orderedExperiments) {
+                        Object value = spectraMap.get(experiment).get(key);
+                        if (value != null) {
+                            writer.write(value.toString());
                         }
                         writer.write(separator);
                     }
-                }
+                    for (String experiment : orderedExperiments) {
+                        Object value = validatedPeptidesMap.get(experiment).get(key);
+                        if (value != null) {
+                            writer.write(value.toString());
+                        }
+                        writer.write(separator);
+                    }
+                    for (String experiment : orderedExperiments) {
+                        Object value = validatedSpectraMap.get(experiment).get(key);
+                        if (value != null) {
+                            writer.write(value.toString());
+                        }
+                        writer.write(separator);
+                    }
+                    for (String experiment : orderedExperiments) {
+                        Double value = pepMap.get(experiment).get(key);
+                        if (value != null) {
+                            value = 1 - value;
+                            writer.write(value.toString());
+                        }
+                        writer.write(separator);
+                    }
+                    double score = keyToScoreMap.get(key);
+                    writer.write(score + separator);
+                    double pep = peps.get(score);
+                    writer.write(pep + separator);
+                    writer.write(decoyMap.get(key) + separator);
+                    for (String experiment : orderedExperiments) {
+                        Object value = validatedMap.get(experiment).get(key);
+                        if (value != null) {
+                            writer.write(value.toString());
+                        }
+                        writer.write(separator);
+                    }
 
-                // write the normalized ratios divided by the reference
-                for (String experiment : orderedExperiments) {
-                    for (String ratio : ratios.get(experiment)) {
-
-                        if (!ratio.equalsIgnoreCase(referenceChannels.get(experiment))) {
-                            Double value = ratiosMapNormalized.get(experiment).get(ratio).get(key);
-                            Double referenceValue = ratiosMapNormalized.get(experiment).get(referenceChannels.get(experiment)).get(key);
-
-                            if (value != null && !value.isNaN()
-                                    && referenceValue != null && !referenceValue.isNaN() && referenceValue != 0) {
-                                writer.write("" + (value / referenceValue)); // @TODO: store these values?
+                    // write the raw ratios
+                    for (String experiment : orderedExperiments) {
+                        for (String ratio : ratios.get(experiment)) {
+                            Double value = ratiosMap.get(experiment).get(ratio).get(key);
+                            if (value != null && !value.isNaN()) {
+                                writer.write(value.toString());
                             }
-
                             writer.write(separator);
                         }
                     }
-                }
 
-                // write the log2 normalized ratios divided by the reference
-                for (String experiment : orderedExperiments) {
-                    for (String ratio : ratios.get(experiment)) {
-
-                        if (!ratio.equalsIgnoreCase(referenceChannels.get(experiment))) {
+                    // write the normalized ratios
+                    for (String experiment : orderedExperiments) {
+                        for (String ratio : ratios.get(experiment)) {
                             Double value = ratiosMapNormalized.get(experiment).get(ratio).get(key);
-                            Double referenceValue = ratiosMapNormalized.get(experiment).get(referenceChannels.get(experiment)).get(key);
-
-                            if (value != null && !value.isNaN()
-                                    && referenceValue != null && !referenceValue.isNaN() && referenceValue != 0) {
-                                double tempValue = value / referenceValue;
-                                writer.write("" + (FastMath.log(tempValue) / FastMath.log(2))); // @TODO: store these values?
+                            if (value != null && !value.isNaN()) {
+                                writer.write("" + value);
                             }
-
                             writer.write(separator);
                         }
                     }
-                }
 
-                writer.newLine();
+                    // write the normalized ratios divided by the reference
+//                    for (String experiment : orderedExperiments) {
+//                        for (String ratio : ratios.get(experiment)) {
+//
+//                            if (!ratio.equalsIgnoreCase(referenceChannels.get(experiment))) {
+//                                Double value = ratiosMapNormalized.get(experiment).get(ratio).get(key);
+//                                Double referenceValue = ratiosMapNormalized.get(experiment).get(referenceChannels.get(experiment)).get(key);
+//
+//                                if (value != null && !value.isNaN()
+//                                        && referenceValue != null && !referenceValue.isNaN() && referenceValue != 0) {
+//                                    writer.write("" + (value / referenceValue)); // @TODO: store these values?
+//                                }
+//
+//                                writer.write(separator);
+//                            }
+//                        }
+//                    }
+
+                    // write the log2 normalized ratios divided by the reference
+                    for (String experiment : orderedExperiments) {
+                        for (String ratio : ratios.get(experiment)) {
+
+                            if (!ratio.equalsIgnoreCase(referenceChannels.get(experiment))) {
+                                Double value = ratiosMapNormalized.get(experiment).get(ratio).get(key);
+                                Double referenceValue = ratiosMapNormalized.get(experiment).get(referenceChannels.get(experiment)).get(key);
+
+                                if (value != null && !value.isNaN()
+                                        && referenceValue != null && !referenceValue.isNaN() && referenceValue != 0) {
+                                    double tempValue = value / referenceValue;
+                                    writer.write("" + (FastMath.log(tempValue) / FastMath.log(2))); // @TODO: store these values?
+                                }
+
+                                writer.write(separator);
+                            }
+                        }
+                    }
+
+                    writer.newLine();
+                }
             }
 
             writer.close();
