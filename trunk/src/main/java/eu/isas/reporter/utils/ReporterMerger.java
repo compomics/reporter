@@ -40,10 +40,16 @@ public class ReporterMerger {
 //                path = path.substring(1, path.indexOf("/target/"));
 //                path += "/src/test/resources/experiment/testMarc";
 
-            int nFiles = 3,
-                    nProteins = 20000,
-                    nRatios = 6,
-                    ratioIndex = 15;
+            int nFiles = 3;
+            int nProteins = 20000;
+            int nRatios = 6;
+            int ratioIndex = 15;
+            int referenceChannel = 2;
+
+            boolean removeDecoys = true;
+            int minPeptideCount = 2;
+            int minSpectrumCount = 2;
+
             //String[] orderedExperiments = {"Exp 1", "Exp 2", "Exp 3", "Exp 4"};
             String[] orderedExperiments = {"Mix 1", "Mix 2", "Mix 3"};
             HashMap<String, String> fileMap = new HashMap<String, String>(nFiles);
@@ -52,6 +58,7 @@ public class ReporterMerger {
             fileMap.put(orderedExperiments[2], "Mix3.txt");
 
             HashMap<String, ArrayList<String>> ratios = new HashMap<String, ArrayList<String>>(nFiles);
+            HashMap<String, String> referenceChannels = new HashMap<String, String>();
 
             HashMap<String, String> keyToMainMatchMap = new HashMap<String, String>(nProteins);
             HashMap<String, String> keyToOtherMatchesMap = new HashMap<String, String>(nProteins);
@@ -236,6 +243,18 @@ public class ReporterMerger {
                     writer.write(separator);
                 }
             }
+            for (String experiment : orderedExperiments) {
+                writer.write(experiment + " normalized / ref");
+                for (int i = 0; i < nRatios - 1; i++) {
+                    writer.write(separator);
+                }
+            }
+            for (String experiment : orderedExperiments) {
+                writer.write(experiment + " normalized / ref (log2)");
+                for (int i = 0; i < nRatios - 1; i++) {
+                    writer.write(separator);
+                }
+            }
             writer.newLine();
 
             // second header row
@@ -267,6 +286,24 @@ public class ReporterMerger {
             for (String experiment : orderedExperiments) {
                 for (String ratioName : ratios.get(experiment)) {
                     writer.write(ratioName + separator);
+                }
+            }
+            for (String experiment : orderedExperiments) {
+                for (int i = 0; i < ratios.get(experiment).size(); i++) {
+                    if (i + 1 != referenceChannel) {
+                        writer.write(ratios.get(experiment).get(i) + separator);
+                    } else {
+                        referenceChannels.put(experiment, ratios.get(experiment).get(i));
+                    }
+                }
+            }
+            for (String experiment : orderedExperiments) {
+                for (int i = 0; i < ratios.get(experiment).size(); i++) {
+                    if (i + 1 != referenceChannel) {
+                        writer.write(ratios.get(experiment).get(i) + separator);
+                    } else {
+                        referenceChannels.put(experiment, ratios.get(experiment).get(i));
+                    }
                 }
             }
             writer.newLine();
@@ -375,14 +412,51 @@ public class ReporterMerger {
                     }
                 }
 
-                // write the log normalized ratios
+                // write the normalized ratios
                 for (String experiment : orderedExperiments) {
                     for (String ratio : ratios.get(experiment)) {
                         Double value = ratiosMapNormalized.get(experiment).get(ratio).get(key);
                         if (value != null && !value.isNaN()) {
-                            writer.write("" + (FastMath.log(value) / FastMath.log(2)));
+                            writer.write("" + value);
                         }
                         writer.write(separator);
+                    }
+                }
+
+                // write the normalized ratios divided by the reference
+                for (String experiment : orderedExperiments) {
+                    for (String ratio : ratios.get(experiment)) {
+
+                        if (!ratio.equalsIgnoreCase(referenceChannels.get(experiment))) {
+                            Double value = ratiosMapNormalized.get(experiment).get(ratio).get(key);
+                            Double referenceValue = ratiosMapNormalized.get(experiment).get(referenceChannels.get(experiment)).get(key);
+
+                            if (value != null && !value.isNaN()
+                                    && referenceValue != null && !referenceValue.isNaN() && referenceValue != 0) {
+                                writer.write("" + (value / referenceValue)); // @TODO: store these values?
+                            }
+
+                            writer.write(separator);
+                        }
+                    }
+                }
+
+                // write the log2 normalized ratios divided by the reference
+                for (String experiment : orderedExperiments) {
+                    for (String ratio : ratios.get(experiment)) {
+
+                        if (!ratio.equalsIgnoreCase(referenceChannels.get(experiment))) {
+                            Double value = ratiosMapNormalized.get(experiment).get(ratio).get(key);
+                            Double referenceValue = ratiosMapNormalized.get(experiment).get(referenceChannels.get(experiment)).get(key);
+
+                            if (value != null && !value.isNaN()
+                                    && referenceValue != null && !referenceValue.isNaN() && referenceValue != 0) {
+                                double tempValue = value / referenceValue;
+                                writer.write("" + (FastMath.log(tempValue) / FastMath.log(2))); // @TODO: store these values?
+                            }
+
+                            writer.write(separator);
+                        }
                     }
                 }
 
