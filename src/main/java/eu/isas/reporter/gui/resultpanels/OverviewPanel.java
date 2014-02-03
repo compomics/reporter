@@ -148,7 +148,7 @@ public class OverviewPanel extends javax.swing.JPanel {
                         proteinTableToolTips.set(proteinTable.getColumn("MS2 Quant.").getModelIndex(), "Protein MS2 Quantification");
                     }
 
-                    if (reporterGUI.getDisplayPreferences().showScores()) {
+                    if (reporterGUI.getIdentificationDisplayPreferences().showScores()) {
                         proteinTableToolTips.set(proteinTable.getColumnCount() - 2, "Protein Score");
                     } else {
                         proteinTableToolTips.set(proteinTable.getColumnCount() - 2, "Protein Confidence");
@@ -216,7 +216,7 @@ public class OverviewPanel extends javax.swing.JPanel {
         proteinTableToolTips.add("MS2 Quantification");
         proteinTableToolTips.add("Protein Molecular Weight (kDa)");
 
-        if (reporterGUI.getDisplayPreferences().showScores()) {
+        if (reporterGUI.getIdentificationDisplayPreferences() != null && reporterGUI.getIdentificationDisplayPreferences().showScores()) {
             proteinTableToolTips.add("Protein Score");
         } else {
             proteinTableToolTips.add("Protein Confidence");

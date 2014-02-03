@@ -77,29 +77,29 @@ public class Reporter {
         for (String mgfName : identification.getOrderedSpectrumFileNames()) {
             if (waitingHandler != null) {
                 waitingHandler.setPrimaryProgressCounterIndeterminate(true);
-                waitingHandler.setWaitingText("Getting matches for " + mgfName + " (" + ++progress + "/" + totalProgress + "). Please Wait...");
+                waitingHandler.setWaitingText("Loading matches for " + mgfName + " (" + ++progress + "/" + totalProgress + "). Please Wait...");
             }
             identification.loadSpectrumMatches(mgfName, waitingHandler);
         }
         if (waitingHandler != null) {
             waitingHandler.setPrimaryProgressCounterIndeterminate(true);
-            waitingHandler.setWaitingText("Getting peptide matches (" + ++progress + "/" + totalProgress + "). Please Wait...");
+            waitingHandler.setWaitingText("Loading peptide matches (" + ++progress + "/" + totalProgress + "). Please Wait...");
         }
         identification.loadPeptideMatches(waitingHandler);
         for (String mgfName : identification.getOrderedSpectrumFileNames()) {
             if (waitingHandler != null) {
                 waitingHandler.setPrimaryProgressCounterIndeterminate(true);
-                waitingHandler.setWaitingText("Getting match parameters for " + mgfName + " (" + ++progress + "/" + totalProgress + "). Please Wait...");
+                waitingHandler.setWaitingText("Loading match parameters for " + mgfName + " (" + ++progress + "/" + totalProgress + "). Please Wait...");
             }
             identification.loadSpectrumMatchParameters(mgfName, psParameter, waitingHandler);
         }
         if (waitingHandler != null) {
             waitingHandler.setPrimaryProgressCounterIndeterminate(true);
-            waitingHandler.setWaitingText("Getting peptide details (" + ++progress + "/" + totalProgress + "). Please Wait...");
+            waitingHandler.setWaitingText("Loading peptide details (" + ++progress + "/" + totalProgress + "). Please Wait...");
         }
         identification.loadPeptideMatchParameters(psParameter, waitingHandler);
         if (waitingHandler != null) {
-            waitingHandler.setWaitingText("Getting Normalization factors (" + ++progress + "/" + totalProgress + "). Please Wait...");
+            waitingHandler.setWaitingText("Estimating Normalization factors (" + ++progress + "/" + totalProgress + "). Please Wait...");
             waitingHandler.resetPrimaryProgressCounter();
             waitingHandler.setPrimaryProgressCounterIndeterminate(false);
             waitingHandler.setMaxPrimaryProgressCounter(identification.getPeptideIdentification().size());
