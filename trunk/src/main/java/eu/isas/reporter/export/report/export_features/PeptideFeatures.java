@@ -7,6 +7,7 @@
 package eu.isas.reporter.export.report.export_features;
 
 import com.compomics.util.io.export.ExportFeature;
+import eu.isas.reporter.export.report.ReporterExportFeature;
 import java.util.ArrayList;
 
 /**
@@ -14,11 +15,11 @@ import java.util.ArrayList;
  *
  * @author Marc
  */
-public enum PeptideFeatures implements ExportFeature {
+public enum PeptideFeatures implements ReporterExportFeature {
     
-    raw_ratio("Raw Ratios", "The ratios of this peptide."),
-    spread("Spread", "The spread of the PSM ratios of this peptide."),
-    normalized_ratio("Normalized Ratios", "The normalized ratios of this peptide.");
+    raw_ratio("Raw Ratios", "The ratios of this peptide.", true),
+    spread("Spread", "The spread of the PSM ratios of this peptide.", true),
+    normalized_ratio("Normalized Ratios", "The normalized ratios of this peptide.", true);
 
     /**
      * The title of the feature which will be used for column heading.
@@ -29,6 +30,10 @@ public enum PeptideFeatures implements ExportFeature {
      */
     public String description;
     /**
+     * Indicates whether the feature is channel dependent
+     */
+    private boolean hasChannels;
+    /**
      * The type of export feature.
      */
     public final static String type = "Peptide Reporter Quantification Summary";
@@ -38,15 +43,17 @@ public enum PeptideFeatures implements ExportFeature {
      *
      * @param title title of the feature
      * @param description description of the feature
+     * @param hasChannels indicates whether the feature is channel dependent
      */
-    private PeptideFeatures(String title, String description) {
+    private PeptideFeatures(String title, String description, boolean hasChannels) {
         this.title = title;
         this.description = description;
+        this.hasChannels = hasChannels;
     }
 
     @Override
-    public String getTitle(String separator) {
-        return title;
+    public String[] getTitles() {
+        return new String[]{title};
     }
 
     @Override
@@ -66,5 +73,10 @@ public enum PeptideFeatures implements ExportFeature {
         result.add(spread);
         result.add(normalized_ratio);
         return result;
+    }
+
+    @Override
+    public boolean hasChannels() {
+        return hasChannels;
     }
 }

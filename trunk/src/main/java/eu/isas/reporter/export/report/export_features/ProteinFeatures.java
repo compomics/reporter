@@ -7,6 +7,7 @@
 package eu.isas.reporter.export.report.export_features;
 
 import com.compomics.util.io.export.ExportFeature;
+import eu.isas.reporter.export.report.ReporterExportFeature;
 import java.util.ArrayList;
 
 /**
@@ -14,19 +15,23 @@ import java.util.ArrayList;
  *
  * @author Marc
  */
-public enum ProteinFeatures implements ExportFeature {
+public enum ProteinFeatures implements ReporterExportFeature {
 
-    ratio("Ratios", "The ratios of this protein group."),
-    spread("Spread", "The spread of the peptide ratios of this protein group.");
+    ratio("Ratios", "The ratios of this protein group.", true),
+    spread("Spread", "The spread of the peptide ratios of this protein group.", true);
 
     /**
      * The title of the feature which will be used for column heading.
      */
-    public String title;
+    private String title;
     /**
      * The description of the feature.
      */
-    public String description;
+    private String description;
+    /**
+     * Indicates whether the feature is channel dependent
+     */
+    private boolean hasChannels;
     /**
      * The type of export feature.
      */
@@ -37,17 +42,19 @@ public enum ProteinFeatures implements ExportFeature {
      *
      * @param title title of the feature
      * @param description description of the feature
+     * @param hasChannels indicates whether the feature is channel dependent
      */
-    private ProteinFeatures(String title, String description) {
+    private ProteinFeatures(String title, String description, boolean hasChannels) {
         this.title = title;
         this.description = description;
+        this.hasChannels = hasChannels;
     }
 
     @Override
-    public String getTitle(String separator) {
-        return title;
+    public String[] getTitles() {
+        return new String[]{title};
     }
-
+    
     @Override
     public String getDescription() {
         return description;
@@ -64,6 +71,11 @@ public enum ProteinFeatures implements ExportFeature {
         result.add(ratio);
         result.add(spread);
         return result;
+    }
+    
+    @Override
+    public boolean hasChannels() {
+        return hasChannels;
     }
     
 }

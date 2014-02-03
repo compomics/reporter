@@ -8,6 +8,7 @@ package eu.isas.reporter.export.report;
 
 import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.SearchParameters;
+import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.io.SerializationUtils;
 import com.compomics.util.io.export.ExportFactory;
 import com.compomics.util.io.export.ExportFeature;
@@ -220,6 +221,7 @@ public class ReporterExportFactory implements ExportFactory {
      * @param identificationFeaturesGenerator the identification features
      * generator (mandatory for the Protein, Peptide and PSM sections)
      * @param quantificationFeaturesGenerator the object generating the quantification features
+     * @param reporterIonQuantification the reporter ion quantification object containing the quantification configuration
      * @param searchParameters the search parameters (mandatory for the Protein,
      * Peptide, PSM and search parameters sections)
      * @param proteinKeys the protein keys to export (mandatory for the Protein
@@ -249,7 +251,7 @@ public class ReporterExportFactory implements ExportFactory {
      * @throws MzMLUnmarshallerException
      */
     public static void writeExport(ExportScheme exportScheme, File destinationFile, String experiment, String sample, int replicateNumber,
-            ProjectDetails projectDetails, Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, QuantificationFeaturesGenerator quantificationFeaturesGenerator,
+            ProjectDetails projectDetails, Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification,
             SearchParameters searchParameters, ArrayList<String> proteinKeys, ArrayList<String> peptideKeys, ArrayList<String> psmKeys,
             String proteinMatchKey, int nSurroundingAA, AnnotationPreferences annotationPreferences, IdFilter idFilter,
             PTMScoringPreferences ptmcoringPreferences, SpectrumCountingPreferences spectrumCountingPreferences, WaitingHandler waitingHandler)
@@ -277,16 +279,16 @@ public class ReporterExportFactory implements ExportFactory {
                 section.writeSection(idFilter, waitingHandler);
             } else if (sectionName.equals(PeptideFeatures.type)) {
                 PeptideSection section = new PeptideSection(exportScheme.getExportFeatures(sectionName), exportScheme.getSeparator(), exportScheme.isIndexes(), exportScheme.isHeader(), writer);
-                section.writeSection(identification, identificationFeaturesGenerator, searchParameters, annotationPreferences, peptideKeys, nSurroundingAA, "", waitingHandler);
+                section.writeSection(identification, identificationFeaturesGenerator, quantificationFeaturesGenerator, reporterIonQuantification, searchParameters, annotationPreferences, peptideKeys, nSurroundingAA, "", waitingHandler);
             } else if (sectionName.equals(ProjectFeatures.type)) {
                 ProjectSection section = new ProjectSection(exportScheme.getExportFeatures(sectionName), exportScheme.getSeparator(), exportScheme.isIndexes(), exportScheme.isHeader(), writer);
                 section.writeSection(experiment, sample, replicateNumber, projectDetails, waitingHandler);
             } else if (sectionName.equals(ProteinFeatures.type)) {
                 ProteinSection section = new ProteinSection(exportScheme.getExportFeatures(sectionName), exportScheme.getSeparator(), exportScheme.isIndexes(), exportScheme.isHeader(), writer);
-                section.writeSection(identification, identificationFeaturesGenerator, quantificationFeaturesGenerator, searchParameters, annotationPreferences, psmKeys, nSurroundingAA, waitingHandler);
+                section.writeSection(identification, identificationFeaturesGenerator, quantificationFeaturesGenerator, reporterIonQuantification, searchParameters, annotationPreferences, psmKeys, nSurroundingAA, waitingHandler);
             } else if (sectionName.equals(PsmFeatures.type)) {
                 PsmSection section = new PsmSection(exportScheme.getExportFeatures(sectionName), exportScheme.getSeparator(), exportScheme.isIndexes(), exportScheme.isHeader(), writer);
-                section.writeSection(identification, identificationFeaturesGenerator, searchParameters, annotationPreferences, psmKeys, "", waitingHandler);
+                section.writeSection(identification, identificationFeaturesGenerator, quantificationFeaturesGenerator, reporterIonQuantification, searchParameters, annotationPreferences, psmKeys, "", waitingHandler);
             } else if (sectionName.equals(PtmScoringFeatures.type)) {
                 PtmScoringSection section = new PtmScoringSection(exportScheme.getExportFeatures(sectionName), exportScheme.getSeparator(), exportScheme.isIndexes(), exportScheme.isHeader(), writer);
                 section.writeSection(ptmcoringPreferences, waitingHandler);
@@ -333,7 +335,17 @@ public class ReporterExportFactory implements ExportFactory {
                 writer.newLine();
             }
             for (ExportFeature exportFeature : exportScheme.getExportFeatures(sectionName)) {
-                writer.write(exportFeature.getTitle(", ") + exportScheme.getSeparator() + exportFeature.getDescription());
+                boolean firstTitle = true;
+                for (String title : exportFeature.getTitles()) {
+                    if (firstTitle) {
+                        firstTitle = false;
+                    } else {
+                        writer.write(", ");
+                    }
+                    writer.write(title);
+                }
+                writer.write(exportScheme.getSeparator());
+                writer.write(exportFeature.getDescription());
                 writer.newLine();
             }
             writeSeparationLines(writer, exportScheme.getSeparationLines());
@@ -457,8 +469,6 @@ public class ReporterExportFactory implements ExportFactory {
                     exportScheme.addExportFeature(section, PeptideFeatures.normalized_ratio);
                 }
                 if (psm) {
-                    exportScheme.addExportFeature(section, PsmFeatures.intensities);
-                    exportScheme.addExportFeature(section, PsmFeatures.deisotoped_intensities);
                     exportScheme.addExportFeature(section, PsmFeatures.ratio);
                 }
             }

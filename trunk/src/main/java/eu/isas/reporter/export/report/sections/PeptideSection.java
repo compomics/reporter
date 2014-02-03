@@ -3,18 +3,26 @@ package eu.isas.reporter.export.report.sections;
 import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.SearchParameters;
 import com.compomics.util.experiment.identification.matches.PeptideMatch;
+import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.io.export.ExportFeature;
 import com.compomics.util.preferences.AnnotationPreferences;
 import com.compomics.util.waiting.WaitingHandler;
 import eu.isas.peptideshaker.export.sections.PsmSection;
 import eu.isas.peptideshaker.myparameters.PSParameter;
 import eu.isas.peptideshaker.utils.IdentificationFeaturesGenerator;
+import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
+import eu.isas.reporter.export.report.ReporterExportFeature;
 import eu.isas.reporter.export.report.export_features.PeptideFeatures;
+import eu.isas.reporter.export.report.export_features.ProteinFeatures;
 import eu.isas.reporter.export.report.export_features.PsmFeatures;
+import eu.isas.reporter.quantificationdetails.PeptideQuantificationDetails;
+import eu.isas.reporter.quantificationdetails.ProteinQuantificationDetails;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Set;
 import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
 
 /**
@@ -23,7 +31,7 @@ import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
  * @author Marc Vaudel
  */
 public class PeptideSection {
-    
+
     /**
      * The peptide identification features to export.
      */
@@ -31,7 +39,7 @@ public class PeptideSection {
     /**
      * The peptide quantification features to export.
      */
-    private ArrayList<ExportFeature> quantificationFeatures = new ArrayList<ExportFeature>();
+    private ArrayList<ReporterExportFeature> quantificationFeatures = new ArrayList<ReporterExportFeature>();
     /**
      * The psm subsection if needed.
      */
@@ -68,7 +76,7 @@ public class PeptideSection {
             if (exportFeature instanceof eu.isas.peptideshaker.export.exportfeatures.PeptideFeatures) {
                 identificationFeatures.add(exportFeature);
             } else if (exportFeature instanceof PeptideFeatures) {
-                quantificationFeatures.add(exportFeature);
+                quantificationFeatures.add((ReporterExportFeature) exportFeature);
             } else if (exportFeature instanceof PsmFeatures
                     || exportFeature instanceof eu.isas.peptideshaker.export.exportfeatures.PsmFeatures
                     || exportFeature instanceof eu.isas.peptideshaker.export.exportfeatures.FragmentFeatures) {
@@ -92,6 +100,10 @@ public class PeptideSection {
      * @param identification the identification of the project
      * @param identificationFeaturesGenerator the identification features
      * generator of the project
+     * @param quantificationFeaturesGenerator the quantification features
+     * generator containing the quantification information
+     * @param reporterIonQuantification the reporter ion quantification object
+     * containing the quantification configuration
      * @param searchParameters the search parameters of the project
      * @param annotationPreferences the annotation preferences
      * @param keys the keys of the protein matches to output
@@ -107,7 +119,7 @@ public class PeptideSection {
      * @throws InterruptedException
      * @throws MzMLUnmarshallerException
      */
-    public void writeSection(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator,
+    public void writeSection(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification,
             SearchParameters searchParameters, AnnotationPreferences annotationPreferences, ArrayList<String> keys, int nSurroundingAA, String linePrefix, WaitingHandler waitingHandler)
             throws IOException, IllegalArgumentException, SQLException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
 
@@ -116,7 +128,7 @@ public class PeptideSection {
         }
 
         if (header) {
-            writeHeader();
+            writeHeader(reporterIonQuantification);
         }
 
         if (keys == null) {
@@ -166,12 +178,20 @@ public class PeptideSection {
                 eu.isas.peptideshaker.export.exportfeatures.PeptideFeatures peptideFeature = (eu.isas.peptideshaker.export.exportfeatures.PeptideFeatures) exportFeature;
                 writer.write(eu.isas.peptideshaker.export.sections.PeptideSection.getfeature(identification, identificationFeaturesGenerator, searchParameters, annotationPreferences, keys, nSurroundingAA, linePrefix, separator, peptideMatch, psParameter, peptideFeature, waitingHandler) + separator);
             }
-            
+
+            ArrayList<Integer> sampleIndexes = new ArrayList<Integer>(reporterIonQuantification.getSampleIndexes());
+            Collections.sort(sampleIndexes);
             for (ExportFeature exportFeature : quantificationFeatures) {
                 PeptideFeatures peptideFeature = (PeptideFeatures) exportFeature;
-                writer.write(getFeature(peptideFeature) + separator);
+                if (peptideFeature.hasChannels()) {
+                    for (int sampleIndex : sampleIndexes) {
+                        writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, peptideKey, peptideFeature, sampleIndex) + separator);
+                    }
+                } else {
+                    writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, peptideKey, peptideFeature, -1) + separator);
+                }
             }
-            
+
             writer.newLine();
             if (psmSection != null) {
                 String psmSectionPrefix = "";
@@ -184,9 +204,37 @@ public class PeptideSection {
             line++;
         }
     }
-    
-    public static String getFeature(PeptideFeatures peptideFeatures) {
+
+    /**
+     * Returns the report component corresponding to a feature at a given
+     * channel.
+     *
+     * @param quantificationFeaturesGenerator the quantification features
+     * generator
+     * @param reporterIonQuantification the reporter ion quantification object
+     * containing the quantification configuration
+     * @param peptideKey the peptide key
+     * @param peptideFeatures the peptide feature to export
+     * @param sampleIndex the index of the sample in case the feature is channel
+     * dependent, ignored otherwise
+     *
+     * @return the report component corresponding to a feature at a given
+     * channel
+     *
+     * @throws SQLException
+     * @throws IOException
+     * @throws ClassNotFoundException
+     * @throws InterruptedException
+     * @throws MzMLUnmarshallerException
+     */
+    public static String getFeature(QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, String peptideKey, PeptideFeatures peptideFeatures, int sampleIndex) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
         switch (peptideFeatures) {
+            case raw_ratio:
+                PeptideQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideKey);
+                return quantificationDetails.getRawRatio(sampleIndex).toString();
+            case normalized_ratio:
+                quantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideKey);
+                return quantificationDetails.getRatio(sampleIndex, reporterIonQuantification).toString();
             default:
                 return "Not implemented";
         }
@@ -195,28 +243,82 @@ public class PeptideSection {
     /**
      * Writes the title of the section.
      *
+     * @param reporterIonQuantification the reporter ion quantification object
+     * containing the quantification configuration
+     *
      * @throws IOException
      */
-    public void writeHeader() throws IOException {
+    public void writeHeader(ReporterIonQuantification reporterIonQuantification) throws IOException {
+
+        boolean needSecondLine = false;
+        ArrayList<Integer> sampleIndexes = new ArrayList<Integer>(reporterIonQuantification.getSampleIndexes());
+        Collections.sort(sampleIndexes);
+
+        boolean firstColumn = true;
         if (indexes) {
             writer.write(separator);
         }
-        boolean firstColumn = true;
         for (ExportFeature exportFeature : identificationFeatures) {
-            if (firstColumn) {
-                firstColumn = false;
-            } else {
-                writer.write(separator);
+            for (String title : exportFeature.getTitles()) {
+                if (firstColumn) {
+                    firstColumn = false;
+                } else {
+                    writer.write(separator);
+                }
+                writer.write(title);
             }
-            writer.write(exportFeature.getTitle(separator));
         }
-        for (ExportFeature exportFeature : quantificationFeatures) {
+        for (ReporterExportFeature exportFeature : quantificationFeatures) {
             if (firstColumn) {
                 firstColumn = false;
             } else {
                 writer.write(separator);
             }
-            writer.write(exportFeature.getTitle(separator));
+            for (String title : exportFeature.getTitles()) {
+                writer.write(title);
+                if (exportFeature.hasChannels()) {
+                    for (int i = 1; i < sampleIndexes.size(); i++) {
+                        writer.write(separator);
+                    }
+                    needSecondLine = true;
+                }
+            }
+        }
+        if (needSecondLine) {
+            writer.newLine();
+            firstColumn = true;
+            if (indexes) {
+                writer.write(separator);
+            }
+            for (ExportFeature exportFeature : identificationFeatures) {
+                for (String title : exportFeature.getTitles()) {
+                    if (firstColumn) {
+                        firstColumn = false;
+                    } else {
+                        writer.write(separator);
+                    }
+                }
+            }
+            for (ReporterExportFeature exportFeature : quantificationFeatures) {
+                for (String title : exportFeature.getTitles()) {
+                    if (exportFeature.hasChannels()) {
+                        for (int sampleIndex : sampleIndexes) {
+                            if (firstColumn) {
+                                firstColumn = false;
+                            } else {
+                                writer.write(separator);
+                            }
+                            writer.write(reporterIonQuantification.getSample(sampleIndex).getReference());
+                        }
+                    } else {
+                        if (firstColumn) {
+                            firstColumn = false;
+                        } else {
+                            writer.write(separator);
+                        }
+                    }
+                }
+            }
         }
         writer.newLine();
     }
