@@ -293,7 +293,7 @@ public class ReportDialog extends javax.swing.JDialog {
                         ReporterExportFactory.writeExport(exportScheme, selectedFile, reporterGUI.getExperiment().getReference(),
                                 reporterGUI.getSample().getReference(), reporterGUI.getReplicateNumber(),
                                 reporterGUI.getProjectDetails(), reporterGUI.getIdentification(), reporterGUI.getIdentificationFeaturesGenerator(),
-                                reporterGUI.getQuantificationFeaturesGenerator(), reporterGUI.getSearchParameters(),
+                                reporterGUI.getQuantificationFeaturesGenerator(), reporterGUI.getReporterIonQuantification(), reporterGUI.getSearchParameters(),
                                 null, null, null, null, reporterGUI.getIdentificationDisplayPreferences().getnAASurroundingPeptides(),
                                 reporterGUI.getAnnotationPreferences(), reporterGUI.getIdFilter(),
                                 reporterGUI.getPtmScoringPreferences(), reporterGUI.getSpectrumCountingPreferences(), progressDialog);

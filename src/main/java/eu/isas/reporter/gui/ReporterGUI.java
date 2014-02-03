@@ -328,6 +328,15 @@ public class ReporterGUI extends javax.swing.JFrame {
     public QuantificationFeaturesGenerator getQuantificationFeaturesGenerator() {
         return quantificationFeaturesGenerator;
     }
+    
+    /**
+     * Returns the reporter ion quantification.
+     * 
+     * @return the reporter ion quantification
+     */
+    public ReporterIonQuantification getReporterIonQuantification() {
+        return reporterIonQuantification;
+    }
 
     /**
      * displays the results on the gui
