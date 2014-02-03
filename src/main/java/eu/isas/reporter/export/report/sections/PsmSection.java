@@ -1,0 +1,263 @@
+package eu.isas.reporter.export.report.sections;
+
+import com.compomics.util.experiment.biology.PTM;
+import com.compomics.util.experiment.biology.Peptide;
+import com.compomics.util.experiment.identification.Identification;
+import com.compomics.util.experiment.identification.SearchParameters;
+import com.compomics.util.experiment.identification.matches.ModificationMatch;
+import com.compomics.util.experiment.identification.matches.SpectrumMatch;
+import com.compomics.util.experiment.massspectrometry.Precursor;
+import com.compomics.util.experiment.massspectrometry.Spectrum;
+import com.compomics.util.io.export.ExportFeature;
+import com.compomics.util.preferences.AnnotationPreferences;
+import com.compomics.util.waiting.WaitingHandler;
+import eu.isas.peptideshaker.PeptideShaker;
+import eu.isas.peptideshaker.export.sections.FragmentSection;
+import eu.isas.peptideshaker.myparameters.PSParameter;
+import eu.isas.peptideshaker.myparameters.PSPtmScores;
+import eu.isas.peptideshaker.scoring.PtmScoring;
+import eu.isas.peptideshaker.utils.IdentificationFeaturesGenerator;
+import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
+import eu.isas.reporter.export.report.export_features.PsmFeatures;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
+
+/**
+ * This class outputs the PSM level quantification export features.
+ *
+ * @author Marc Vaudel
+ */
+public class PsmSection {
+    
+    /**
+     * The identification features to export.
+     */
+    private ArrayList<ExportFeature> identificationFeatures = new ArrayList<ExportFeature>();
+    
+    /**
+     * The quantification features to export.
+     */
+    private ArrayList<ExportFeature> quantificationFeatures = new ArrayList<ExportFeature>();
+    /**
+     * The fragment subsection if needed.
+     */
+    private FragmentSection fragmentSection = null;
+    /**
+     * The separator used to separate columns.
+     */
+    private String separator;
+    /**
+     * Boolean indicating whether the line shall be indexed.
+     */
+    private boolean indexes;
+    /**
+     * Boolean indicating whether column headers shall be included.
+     */
+    private boolean header;
+    /**
+     * The writer used to send the output to file.
+     */
+    private BufferedWriter writer;
+
+    /**
+     * Constructor.
+     *
+     * @param exportFeatures the features to export in this section
+     * @param separator
+     * @param indexes
+     * @param header
+     * @param writer
+     */
+    public PsmSection(ArrayList<ExportFeature> exportFeatures, String separator, boolean indexes, boolean header, BufferedWriter writer) {
+        ArrayList<ExportFeature> fragmentFeatures = new ArrayList<ExportFeature>();
+        for (ExportFeature exportFeature : exportFeatures) {
+            if (exportFeature instanceof PsmFeatures) {
+                quantificationFeatures.add(exportFeature);
+            } else if (exportFeature instanceof eu.isas.peptideshaker.export.exportfeatures.PsmFeatures) {
+                identificationFeatures.add(exportFeature);
+            } else if (exportFeature instanceof eu.isas.peptideshaker.export.exportfeatures.FragmentFeatures) {
+                fragmentFeatures.add(exportFeature);
+            } else {
+                throw new IllegalArgumentException("Export feature of type " + exportFeature.getClass() + " not recognized.");
+            }
+        }
+        if (!fragmentFeatures.isEmpty()) {
+            fragmentSection = new FragmentSection(fragmentFeatures, separator, indexes, header, writer);
+        }
+        this.separator = separator;
+        this.indexes = indexes;
+        this.header = header;
+        this.writer = writer;
+    }
+
+    /**
+     * Writes the desired section.
+     *
+     * @param identification the identification of the project
+     * @param identificationFeaturesGenerator the identification features
+     * generator of the project
+     * @param searchParameters the search parameters of the project
+     * @param annotationPreferences the annotation preferences
+     * @param keys the keys of the PSM matches to output
+     * @param linePrefix the line prefix
+     * @param waitingHandler the waiting handler
+     * @throws IOException exception thrown whenever an error occurred while
+     * writing the file.
+     * @throws IllegalArgumentException
+     * @throws SQLException
+     * @throws ClassNotFoundException
+     * @throws InterruptedException
+     * @throws MzMLUnmarshallerException
+     */
+    public void writeSection(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator,
+            SearchParameters searchParameters, AnnotationPreferences annotationPreferences, ArrayList<String> keys, String linePrefix, WaitingHandler waitingHandler) throws IOException, IllegalArgumentException, SQLException,
+            ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
+
+        if (waitingHandler != null) {
+            waitingHandler.setSecondaryProgressCounterIndeterminate(true);
+        }
+
+        if (header) {
+            writeHeader();
+        }
+
+        HashMap<String, ArrayList<String>> psmMap = new HashMap<String, ArrayList<String>>();
+
+        if (keys == null) {
+            psmMap = identification.getSpectrumIdentificationMap();
+        } else {
+            for (String key : keys) {
+                String fileName = Spectrum.getSpectrumFile(key);
+                if (!psmMap.containsKey(fileName)) {
+                    psmMap.put(fileName, new ArrayList<String>());
+                }
+                psmMap.get(fileName).add(key);
+            }
+        }
+
+        PSParameter psParameter = new PSParameter();
+        SpectrumMatch spectrumMatch = null;
+        int line = 1;
+
+        int totalSize = 0;
+
+        for (String spectrumFile : psmMap.keySet()) {
+            totalSize += psmMap.get(spectrumFile).size();
+        }
+
+        // get the spectrum keys
+        ArrayList<String> spectrumKeys = new ArrayList<String>();
+
+        for (String spectrumFile : psmMap.keySet()) {
+            for (String spectrumKey : psmMap.get(spectrumFile)) {
+                if (!spectrumKeys.contains(spectrumKey)) {
+                    spectrumKeys.add(spectrumKey);
+                }
+            }
+        }
+
+        if (waitingHandler != null) {
+            waitingHandler.setWaitingText("Loading Spectra. Please Wait...");
+            waitingHandler.resetSecondaryProgressCounter();
+        }
+        identification.loadSpectrumMatches(spectrumKeys, waitingHandler);
+
+        if (waitingHandler != null) {
+            waitingHandler.setWaitingText("Loading Spectrum Details. Please Wait...");
+            waitingHandler.resetSecondaryProgressCounter();
+        }
+        identification.loadSpectrumMatchParameters(spectrumKeys, psParameter, waitingHandler);
+
+        if (waitingHandler != null) {
+            waitingHandler.setWaitingText("Exporting. Please Wait...");
+            waitingHandler.resetSecondaryProgressCounter();
+            waitingHandler.setMaxSecondaryProgressCounter(totalSize);
+        }
+
+        for (String spectrumFile : psmMap.keySet()) {
+
+            for (String spectrumKey : psmMap.get(spectrumFile)) {
+
+                if (waitingHandler != null) {
+                    if (waitingHandler.isRunCanceled()) {
+                        return;
+                    }
+                    waitingHandler.increaseSecondaryProgressCounter();
+                }
+
+                if (indexes) {
+                    if (linePrefix != null) {
+                        writer.write(linePrefix);
+                    }
+                    writer.write(line + separator);
+                }
+
+                spectrumMatch = identification.getSpectrumMatch(spectrumKey);
+                psParameter = (PSParameter) identification.getSpectrumMatchParameter(spectrumKey, psParameter);
+
+                for (ExportFeature exportFeature : identificationFeatures) {
+                    eu.isas.peptideshaker.export.exportfeatures.PsmFeatures psmFeature = (eu.isas.peptideshaker.export.exportfeatures.PsmFeatures) exportFeature;
+                    writer.write(eu.isas.peptideshaker.export.sections.PsmSection.getFeature(identification, identificationFeaturesGenerator, searchParameters, annotationPreferences, keys, linePrefix, separator, spectrumMatch, psParameter, psmFeature, waitingHandler) + separator);
+                }
+                for (ExportFeature exportFeature : quantificationFeatures) {
+                    PsmFeatures psmFeature = (PsmFeatures) exportFeature;
+                    writer.write(getFeature(psmFeature) + separator);
+                    
+                }
+                writer.newLine();
+                if (fragmentSection != null) {
+                    String fractionPrefix = "";
+                    if (linePrefix != null) {
+                        fractionPrefix += linePrefix;
+                    }
+                    fractionPrefix += line + ".";
+                    fragmentSection.writeSection(spectrumMatch, searchParameters, annotationPreferences, fractionPrefix, null);
+                }
+                line++;
+            }
+        }
+    }
+    
+    public static String getFeature(PsmFeatures psmFeatures) {
+        switch (psmFeatures) {
+            default:
+                return "Not implemented";
+        }
+    }
+    
+    
+
+    /**
+     * Writes the header of this section.
+     *
+     * @throws IOException
+     */
+    public void writeHeader() throws IOException {
+        if (indexes) {
+            writer.write(separator);
+        }
+        boolean firstColumn = true;
+        for (ExportFeature exportFeature : identificationFeatures) {
+            if (firstColumn) {
+                firstColumn = false;
+            } else {
+                writer.write(separator);
+            }
+            writer.write(exportFeature.getTitle(separator));
+        }
+        for (ExportFeature exportFeature : quantificationFeatures) {
+            if (firstColumn) {
+                firstColumn = false;
+            } else {
+                writer.write(separator);
+            }
+            writer.write(exportFeature.getTitle(separator));
+        }
+        writer.newLine();
+    }
+}
