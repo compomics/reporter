@@ -1,8 +1,11 @@
 package eu.isas.reporter.gui;
 
 import com.compomics.software.CompomicsWrapper;
+import com.compomics.util.Util;
 import com.compomics.util.db.ObjectsCache;
+import com.compomics.util.experiment.MsExperiment;
 import com.compomics.util.experiment.biology.PTMFactory;
+import com.compomics.util.experiment.biology.Sample;
 import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.SearchParameters;
 import com.compomics.util.experiment.identification.SequenceFactory;
@@ -13,8 +16,12 @@ import com.compomics.util.gui.UtilitiesGUIDefaults;
 import com.compomics.util.gui.error_handlers.BugReport;
 import com.compomics.util.gui.error_handlers.HelpDialog;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
+import com.compomics.util.preferences.AnnotationPreferences;
+import com.compomics.util.preferences.IdFilter;
+import com.compomics.util.preferences.PTMScoringPreferences;
 import com.compomics.util.preferences.UtilitiesUserPreferences;
 import eu.isas.peptideshaker.preferences.FilterPreferences;
+import eu.isas.peptideshaker.preferences.ProjectDetails;
 import eu.isas.peptideshaker.preferences.SpectrumCountingPreferences;
 import eu.isas.peptideshaker.utils.CpsParent;
 import eu.isas.peptideshaker.utils.DisplayFeaturesGenerator;
@@ -23,6 +30,7 @@ import eu.isas.peptideshaker.utils.Metrics;
 import eu.isas.reporter.Reporter;
 import eu.isas.reporter.calculation.QuantificationFeaturesCache;
 import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
+import eu.isas.reporter.gui.export.ReportDialog;
 import eu.isas.reporter.myparameters.ReporterPreferences;
 import eu.isas.reporter.gui.resultpanels.OverviewPanel;
 import eu.isas.reporter.preferences.DisplayPreferences;
@@ -292,7 +300,6 @@ public class ReporterGUI extends javax.swing.JFrame {
      */
     private void setDisplayPreferencesFromShakerProject() {
         displayPreferences = new DisplayPreferences();
-        displayPreferences.setShowScores(cpsBean.getDisplayPreferences().showScores());
     }
 
     /**
@@ -351,6 +358,102 @@ public class ReporterGUI extends javax.swing.JFrame {
             return null;
         }
         return cpsBean.getIdentification();
+    }
+
+    /**
+     * Returns the experiment.
+     *
+     * @return the experiment
+     */
+    public MsExperiment getExperiment() {
+        if (cpsBean == null) {
+            return null;
+        }
+        return cpsBean.getExperiment();
+    }
+
+    /**
+     * Returns the sample.
+     *
+     * @return the sample
+     */
+    public Sample getSample() {
+        if (cpsBean == null) {
+            return null;
+        }
+        return cpsBean.getSample();
+    }
+
+    /**
+     * Returns the replicate number.
+     *
+     * @return the replicateNumber
+     */
+    public Integer getReplicateNumber() {
+        if (cpsBean == null) {
+            return null;
+        }
+        return cpsBean.getReplicateNumber();
+    }
+
+    /**
+     * Returns the project details.
+     *
+     * @return the project details
+     */
+    public ProjectDetails getProjectDetails() {
+        if (cpsBean == null) {
+            return null;
+        }
+        return cpsBean.getProjectDetails();
+    }
+    
+    /**
+     * returns the identification display preferences
+     * 
+     * @return the identification display preferences
+     */
+    public eu.isas.peptideshaker.preferences.DisplayPreferences getIdentificationDisplayPreferences() {
+        if (cpsBean == null) {
+            return null;
+        }
+        return cpsBean.getDisplayPreferences();
+    }
+
+    /**
+     * Returns the annotation preferences as set by the user.
+     *
+     * @return the annotation preferences as set by the user
+     */
+    public AnnotationPreferences getAnnotationPreferences() {
+        if (cpsBean == null) {
+            return null;
+        }
+        return cpsBean.getAnnotationPreferences();
+    }
+
+    /**
+     * Returns the identification filter used when loading the files.
+     *
+     * @return the identification filter
+     */
+    public IdFilter getIdFilter() {
+        if (cpsBean == null) {
+            return null;
+        }
+        return cpsBean.getIdFilter();
+    }
+
+    /**
+     * Returns the PTM scoring preferences
+     *
+     * @return the PTM scoring preferences
+     */
+    public PTMScoringPreferences getPtmScoringPreferences() {
+        if (cpsBean == null) {
+            return null;
+        }
+        return cpsBean.getPtmScoringPreferences();
     }
     
     /**
@@ -649,7 +752,7 @@ public class ReporterGUI extends javax.swing.JFrame {
      * @param evt
      */
     private void exportQuantificationFeaturesMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportQuantificationFeaturesMenuItemActionPerformed
-        //@TODO: create custom reports like in the Shaker
+        new ReportDialog(this);
     }//GEN-LAST:event_exportQuantificationFeaturesMenuItemActionPerformed
 
     /**
@@ -834,6 +937,33 @@ public class ReporterGUI extends javax.swing.JFrame {
      */
     public String getLastSelectedFolder() {
         return lastSelectedFolder;
+    }
+
+    /**
+     * Returns the file selected by the user, or null if no file was selected.
+     *
+     * @param aFileEnding the file type, e.g., .txt
+     * @param aFileFormatDescription the file format description, e.g., (Mascot
+     * Generic Format) *.mgf
+     * @param aDialogTitle the title for the dialog
+     * @param openDialog if true an open dialog is shown, false results in a
+     * save dialog
+     * @return the file selected by the user, or null if no file or folder was
+     * selected
+     */
+    public File getUserSelectedFile(String aFileEnding, String aFileFormatDescription, String aDialogTitle, boolean openDialog) {
+
+        File selectedFile = Util.getUserSelectedFile(this, aFileEnding, aFileFormatDescription, aDialogTitle, lastSelectedFolder, openDialog);
+
+        if (selectedFile != null) {
+            if (selectedFile.isDirectory()) {
+                lastSelectedFolder = selectedFile.getAbsolutePath();
+            } else {
+                lastSelectedFolder = selectedFile.getParentFile().getAbsolutePath();
+            }
+        }
+
+        return selectedFile;
     }
 
     /**
