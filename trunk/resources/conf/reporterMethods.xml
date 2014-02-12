@@ -7,6 +7,7 @@
 				<monoisotopicMass> 114.1106 </monoisotopicMass>
 				<minus2> 0.0 </minus2>
 				<minus1> 1.0 </minus1>
+				<ref> 100.0 </ref>
 				<plus1> 5.9 </plus1>
 				<plus2> 0.2 </plus2>
 			</reagent>
@@ -15,6 +16,7 @@
 				<monoisotopicMass> 115.1077 </monoisotopicMass>
 				<minus2> 0.0 </minus2>
 				<minus1> 2.0 </minus1>
+				<ref> 100.0 </ref>
 				<plus1> 5.6 </plus1>
 				<plus2> 0.1 </plus2>
 			</reagent>
@@ -23,6 +25,7 @@
 				<monoisotopicMass> 116.1110 </monoisotopicMass>
 				<minus2> 0.0 </minus2>
 				<minus1> 3.0 </minus1>
+				<ref> 100.0 </ref>
 				<plus1> 4.5 </plus1>
 				<plus2> 0.1 </plus2>
 			</reagent>
@@ -31,6 +34,7 @@
 				<monoisotopicMass> 117.1144 </monoisotopicMass>
 				<minus2> 0.1 </minus2>
 				<minus1> 4.0 </minus1>
+				<ref> 100.0 </ref>
 				<plus1> 3.5 </plus1>
 				<plus2> 0.1 </plus2>
 			</reagent>
@@ -44,6 +48,7 @@
 				<monoisotopicMass> 113.1075 </monoisotopicMass>
 				<minus2> 0.0 </minus2>
 				<minus1> 0.0 </minus1>
+				<ref> 100.0 </ref>
 				<plus1> 6.89 </plus1>
 				<plus2> 0.22 </plus2>
 			</reagent>
@@ -52,6 +57,7 @@
 				<monoisotopicMass> 114.111 </monoisotopicMass>
 				<minus2> 0.0 </minus2>
 				<minus1> 0.94 </minus1>
+				<ref> 100.0 </ref>
 				<plus1> 5.90 </plus1>
 				<plus2> 0.16 </plus2>
 			</reagent>
@@ -60,6 +66,7 @@
 				<monoisotopicMass> 115.1079 </monoisotopicMass>
 				<minus2> 0.0 </minus2>
 				<minus1> 1.88 </minus1>
+				<ref> 100.0 </ref>
 				<plus1> 4.90 </plus1>
 				<plus2> 0.10 </plus2>
 			</reagent>
@@ -68,6 +75,7 @@
 				<monoisotopicMass> 116.1113 </monoisotopicMass>
 				<minus2> 0.0 </minus2>
 				<minus1> 2.82 </minus1>
+				<ref> 100.0 </ref>
 				<plus1> 3.90 </plus1>
 				<plus2> 0.07 </plus2>
 			</reagent>
@@ -76,6 +84,7 @@
 				<monoisotopicMass> 117.11465 </monoisotopicMass>
 				<minus2> 0.06 </minus2>
 				<minus1> 3.77 </minus1>
+				<ref> 100.0 </ref>
 				<plus1> 2.88 </plus1>
 				<plus2> 0.0 </plus2>
 			</reagent>
@@ -84,6 +93,7 @@
 				<monoisotopicMass> 118.1117 </monoisotopicMass>
 				<minus2> 0.09 </minus2>
 				<minus1> 4.71 </minus1>
+				<ref> 100.0 </ref>
 				<plus1> 1.88 </plus1>
 				<plus2> 0.0 </plus2>
 			</reagent>
@@ -92,12 +102,18 @@
 				<monoisotopicMass> 119.115 </monoisotopicMass>
 				<minus2> 0.14 </minus2>
 				<minus1> 5.66 </minus1>
+				<ref> 100.0 </ref>
 				<plus1> 0.87 </plus1>
 				<plus2> 0.0 </plus2>
 			</reagent>
 			<reagent>
 				<name> iTRAQ 121 </name>
 				<monoisotopicMass> 121.1217 </monoisotopicMass>
+				<minus2> 0.27 </minus2>
+				<minus1> 7.44 </minus1>
+				<ref> 100.0 </ref>
+				<plus1> 0.18 </plus1>
+				<plus2> 0.0 </plus2>
 			</reagent>
 		</reagentList>
 	</reporterMethod>
@@ -109,6 +125,7 @@
 				<monoisotopicMass> 126.127725 </monoisotopicMass>
 				<minus2> 0.0 </minus2>
 				<minus1> 0.0 </minus1>
+				<ref> 100.0 </ref>
 				<plus1> 0.0 </plus1>
 				<plus2> 0.0 </plus2>
 			</reagent>
@@ -117,6 +134,7 @@
 				<monoisotopicMass> 127.131079 </monoisotopicMass>
 				<minus2> 0.0 </minus2>
 				<minus1> 0.0 </minus1>
+				<ref> 100.0 </ref>
 				<plus1> 0.0 </plus1>
 				<plus2> 0.0 </plus2>
 			</reagent>
@@ -130,6 +148,7 @@
 				<monoisotopicMass> 126.127725 </monoisotopicMass>
 				<minus2> 0.0 </minus2>
 				<minus1> 0.0 </minus1>
+				<ref> 100.0 </ref>
 				<plus1> 6.1 </plus1>
 				<plus2> 0.0 </plus2>
 			</reagent>
@@ -138,6 +157,7 @@
 				<monoisotopicMass> 127.124760 </monoisotopicMass>
 				<minus2> 0.0 </minus2>
 				<minus1> 0.5 </minus1>
+				<ref> 100.0 </ref>
 				<plus1> 6.7 </plus1>
 				<plus2> 0.0 </plus2>
 			</reagent>
@@ -146,6 +166,7 @@
 				<monoisotopicMass> 128.134433 </monoisotopicMass>
 				<minus2> 0.0 </minus2>
 				<minus1> 1.1 </minus1>
+				<ref> 100.0 </ref>
 				<plus1> 4.2 </plus1>
 				<plus2> 0.0 </plus2>
 			</reagent>
@@ -154,6 +175,7 @@
 				<monoisotopicMass> 129.131468 </monoisotopicMass>
 				<minus2> 0.0 </minus2>
 				<minus1> 1.7 </minus1>
+				<ref> 100.0 </ref>
 				<plus1> 4.1 </plus1>
 				<plus2> 0.0 </plus2>
 			</reagent>
@@ -162,6 +184,7 @@
 				<monoisotopicMass> 130.141141 </monoisotopicMass>
 				<minus2> 0.0 </minus2>
 				<minus1> 2.8 </minus1>
+				<ref> 100.0 </ref>
 				<plus1> 2.5 </plus1>
 				<plus2> 0.0 </plus2>
 			</reagent>
@@ -170,6 +193,7 @@
 				<monoisotopicMass> 131.138176 </monoisotopicMass>
 				<minus2> 0.2 </minus2>
 				<minus1> 3.2 </minus1>
+				<ref> 100.0 </ref>
 				<plus1> 2.8 </plus1>
 				<plus2> 0.0 </plus2>
 			</reagent>
@@ -183,6 +207,7 @@
 				<monoisotopicMass> 126.127726 </monoisotopicMass>
 				<minus2> 0.0 </minus2>
 				<minus1> 0.0 </minus1>
+				<ref> 100.0 </ref>
 				<plus1> 4.69 </plus1>
 				<plus2> 0.0 </plus2>
 			</reagent>
@@ -191,6 +216,7 @@
 				<monoisotopicMass> 127.124761 </monoisotopicMass>
 				<minus2> 0.0 </minus2>
 				<minus1> 0.4 </minus1>
+				<ref> 100.0 </ref>
 				<plus1> 6.5 </plus1>
 				<plus2> 0.0 </plus2>
 			</reagent>
@@ -199,6 +225,7 @@
 				<monoisotopicMass> 127.131081 </monoisotopicMass>
 				<minus2> 0.0 </minus2>
 				<minus1> 0.2 </minus1>
+				<ref> 100.0 </ref>
 				<plus1> 4.6 </plus1>
 				<plus2> 0.3 </plus2>
 			</reagent>
@@ -207,6 +234,7 @@
 				<monoisotopicMass> 128.128116 </monoisotopicMass>
 				<minus2> 0.0 </minus2>
 				<minus1> 0.9 </minus1>
+				<ref> 100.0 </ref>
 				<plus1> 4.7 </plus1>
 				<plus2> 0.2 </plus2>
 			</reagent>
@@ -215,6 +243,7 @@
 				<monoisotopicMass> 128.134436 </monoisotopicMass>
 				<minus2> 0.1 </minus2>
 				<minus1> 0.53 </minus1>
+				<ref> 100.0 </ref>
 				<plus1> 2.59 </plus1>
 				<plus2> 0.0 </plus2>
 			</reagent>
@@ -223,6 +252,7 @@
 				<monoisotopicMass> 129.131471 </monoisotopicMass>
 				<minus2> 0.0 </minus2>
 				<minus1> 0.73 </minus1>
+				<ref> 100.0 </ref>
 				<plus1> 2.49 </plus1>
 				<plus2> 0.0 </plus2>
 			</reagent>
@@ -231,6 +261,7 @@
 				<monoisotopicMass> 129.137790 </monoisotopicMass>
 				<minus2> 0.0 </minus2>
 				<minus1> 1.3 </minus1>
+				<ref> 100.0 </ref>
 				<plus1> 2.5 </plus1>
 				<plus2> 0.0 </plus2>
 			</reagent>
@@ -239,6 +270,7 @@
 				<monoisotopicMass> 130.134825 </monoisotopicMass>
 				<minus2> 0.0 </minus2>
 				<minus1> 1.2 </minus1>
+				<ref> 100.0 </ref>
 				<plus1> 2.8 </plus1>
 				<plus2> 2.7 </plus2>
 			</reagent>
@@ -247,6 +279,7 @@
 				<monoisotopicMass> 130.141145 </monoisotopicMass>
 				<minus2> 0.1 </minus2>
 				<minus1> 2.9 </minus1>
+				<ref> 100.0 </ref>
 				<plus1> 2.9 </plus1>
 				<plus2> 0.0 </plus2>
 			</reagent>
@@ -255,6 +288,7 @@
 				<monoisotopicMass> 131.138180 </monoisotopicMass>
 				<minus2> 0.0 </minus2>
 				<minus1> 2.36 </minus1>
+				<ref> 100.0 </ref>
 				<plus1> 1.43 </plus1>
 				<plus2> 0.0 </plus2>
 			</reagent>
@@ -268,6 +302,7 @@
 				<monoisotopicMass> 126.127491 </monoisotopicMass>
 				<minus2> 0.0 </minus2>
 				<minus1> 0.0 </minus1>
+				<ref> 100.0 </ref>
 				<plus1> 0.0 </plus1>
 				<plus2> 0.0 </plus2>
 			</reagent>
@@ -276,6 +311,7 @@
 				<monoisotopicMass> 127.1308594 </monoisotopicMass>
 				<minus2> 0.0 </minus2>
 				<minus1> 0.0 </minus1>
+				<ref> 100.0 </ref>
 				<plus1> 0.0 </plus1>
 				<plus2> 0.0 </plus2>
 			</reagent>
@@ -289,6 +325,7 @@
 				<monoisotopicMass> 126.127491 </monoisotopicMass>
 				<minus2> 0.0 </minus2>
 				<minus1> 0.0 </minus1>
+				<ref> 100.0 </ref>
 				<plus1> 0.0 </plus1>
 				<plus2> 0.0 </plus2>
 			</reagent>
@@ -297,6 +334,7 @@
 				<monoisotopicMass> 127.1308594 </monoisotopicMass>
 				<minus2> 0.0 </minus2>
 				<minus1> 0.0 </minus1>
+				<ref> 100.0 </ref>
 				<plus1> 0.0 </plus1>
 				<plus2> 0.0 </plus2>
 			</reagent>
@@ -305,6 +343,7 @@
 				<monoisotopicMass> 128.1341553 </monoisotopicMass>
 				<minus2> 0.0 </minus2>
 				<minus1> 0.0 </minus1>
+				<ref> 100.0 </ref>
 				<plus1> 0.0 </plus1>
 				<plus2> 0.0 </plus2>
 			</reagent>
@@ -313,6 +352,7 @@
 				<monoisotopicMass> 129.1375046 </monoisotopicMass>
 				<minus2> 0.0 </minus2>
 				<minus1> 0.0 </minus1>
+				<ref> 100.0 </ref>
 				<plus1> 0.0 </plus1>
 				<plus2> 0.0 </plus2>
 			</reagent>
@@ -321,6 +361,7 @@
 				<monoisotopicMass> 130.1408768 </monoisotopicMass>
 				<minus2> 0.0 </minus2>
 				<minus1> 0.0 </minus1>
+				<ref> 100.0 </ref>
 				<plus1> 0.0 </plus1>
 				<plus2> 0.0 </plus2>
 			</reagent>
@@ -329,6 +370,7 @@
 				<monoisotopicMass> 131.1444851 </monoisotopicMass>
 				<minus2> 0.0 </minus2>
 				<minus1> 0.0 </minus1>
+				<ref> 100.0 </ref>
 				<plus1> 0.0 </plus1>
 				<plus2> 0.0 </plus2>
 			</reagent>
