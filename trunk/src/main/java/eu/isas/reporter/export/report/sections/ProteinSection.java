@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Set;
 import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
 
 /**
@@ -196,16 +195,16 @@ public class ProteinSection {
                 eu.isas.peptideshaker.export.exportfeatures.ProteinFeatures tempProteinFeatures = (eu.isas.peptideshaker.export.exportfeatures.ProteinFeatures) exportFeature;
                 writer.write(eu.isas.peptideshaker.export.sections.ProteinSection.getFeature(identificationFeaturesGenerator, searchParameters, annotationPreferences, keys, separator, nSurroundingAas, proteinKey, proteinMatch, psParameter, tempProteinFeatures, waitingHandler) + separator);
             }
-            ArrayList<Integer> sampleIndexes = new ArrayList<Integer>(reporterIonQuantification.getSampleIndexes());
+            ArrayList<String> sampleIndexes = new ArrayList<String>(reporterIonQuantification.getSampleIndexes());
             Collections.sort(sampleIndexes);
             for (ExportFeature exportFeature : quantificationFeatures) {
                 ProteinFeatures tempProteinFeatures = (ProteinFeatures) exportFeature;
                 if (tempProteinFeatures.hasChannels()) {
-                    for (int sampleIndex : sampleIndexes) {
+                    for (String sampleIndex : sampleIndexes) {
                         writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, proteinKey, tempProteinFeatures, sampleIndex) + separator);
                     }
                 } else {
-                    writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, proteinKey, tempProteinFeatures, -1) + separator);
+                    writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, proteinKey, tempProteinFeatures, "") + separator);
                 }
             }
             writer.newLine();
@@ -238,7 +237,7 @@ public class ProteinSection {
      * @throws InterruptedException
      * @throws MzMLUnmarshallerException
      */
-    public static String getFeature(QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, String proteinKey, ProteinFeatures proteinFeatures, int sampleIndex) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
+    public static String getFeature(QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, String proteinKey, ProteinFeatures proteinFeatures, String sampleIndex) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
         switch (proteinFeatures) {
             case ratio:
                 ProteinQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(proteinKey);
@@ -259,7 +258,7 @@ public class ProteinSection {
     public void writeHeader(ReporterIonQuantification reporterIonQuantification) throws IOException {
 
         boolean needSecondLine = false;
-        ArrayList<Integer> sampleIndexes = new ArrayList<Integer>(reporterIonQuantification.getSampleIndexes());
+        ArrayList<String> sampleIndexes = new ArrayList<String>(reporterIonQuantification.getSampleIndexes());
         Collections.sort(sampleIndexes);
 
         boolean firstColumn = true;
@@ -310,7 +309,7 @@ public class ProteinSection {
             for (ReporterExportFeature exportFeature : quantificationFeatures) {
                 for (String title : exportFeature.getTitles()) {
                     if (exportFeature.hasChannels()) {
-                        for (int sampleIndex : sampleIndexes) {
+                        for (String sampleIndex : sampleIndexes) {
                             if (firstColumn) {
                                 firstColumn = false;
                             } else {

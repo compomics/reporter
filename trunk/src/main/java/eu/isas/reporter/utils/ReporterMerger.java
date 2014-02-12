@@ -1,5 +1,6 @@
 package eu.isas.reporter.utils;
 
+import com.compomics.util.experiment.identification.matches.ProteinMatch;
 import com.compomics.util.math.BasicMathFunctions;
 import com.compomics.util.math.statistics.Distribution;
 import com.compomics.util.math.statistics.ditributions.NonSymmetricalNormalDistribution;
@@ -14,7 +15,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import org.apache.commons.math.util.FastMath;
-import org.ujmp.core.collections.ArrayIndexList;
 
 /**
  * Merging Reporter protein reports. For testing purposes only!
@@ -45,10 +45,6 @@ public class ReporterMerger {
             int nProteins = 20000;
             int nRatios = 6;
             int ratioIndex = 15;
-            int referenceChannel = 2;
-
-            int minValidatedPeptideCount = 2;
-            int minValidatedSpectrumCount = 2;
 
             String[] orderedExperiments = {"Mix 1", "Mix 2", "Mix 3"};
             HashMap<String, String> fileMap = new HashMap<String, String>(nFiles);
@@ -57,7 +53,6 @@ public class ReporterMerger {
             fileMap.put(orderedExperiments[2], "proteins mix3.txt");
 
             HashMap<String, ArrayList<String>> ratios = new HashMap<String, ArrayList<String>>(nFiles);
-            HashMap<String, String> referenceChannels = new HashMap<String, String>();
 
             HashMap<String, String> keyToMainMatchMap = new HashMap<String, String>(nProteins);
             HashMap<String, String> keyToOtherMatchesMap = new HashMap<String, String>(nProteins);
@@ -368,9 +363,26 @@ public class ReporterMerger {
             }
             writer.close();
 
+            // Import pathway proteins
+            String[] pathwayFiles = {"jak-stat", "stem cell maintenance"};
+            HashMap<String, ArrayList<String>> pathways = new HashMap<String, ArrayList<String>>(nFiles);
+            for (String pathway : pathwayFiles) {
+                ArrayList<String> accessions = new ArrayList<String>();
+                File pathwayFile = new File(path, pathway + ".txt");
+                BufferedReader reader = new BufferedReader(new FileReader(pathwayFile));
+                String line = reader.readLine();
+                while ((line = reader.readLine()) != null) {
+                    String[] content = line.split("\t");
+                    accessions.add(content[1]);
+                }
+                pathways.put(pathway, accessions);
+                reader.close();
+            }
+
             // Get a list of protein matches amendable for quantification, create list of ratios
             ArrayList<String> quantificationMatches = new ArrayList<String>();
             HashMap<String, HashMap<String, ArrayList<Double>>> validatedRatios = new HashMap<String, HashMap<String, ArrayList<Double>>>();
+            HashMap<String, HashMap<String, HashMap<String, HashMap<String, Double>>>> pathwaysRatios = new HashMap<String, HashMap<String, HashMap<String, HashMap<String, Double>>>>(); //Pathway > protein key > experiment > channel > ratio
             for (String key : keyToMainMatchMap.keySet()) {
                 int decoy = decoyMap.get(key);
                 if (decoy == 0) {
@@ -396,6 +408,35 @@ public class ReporterMerger {
                                             tempRatiosMap.put(ratio, tempRatios);
                                         }
                                         tempRatios.add(value);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    for (String accession : ProteinMatch.getAccessions(key)) {
+                        for (String pathway : pathways.keySet()) {
+                            if (pathways.get(pathway).contains(accession)) {
+                                for (String experiment : orderedExperiments) {
+                                    HashMap<String, HashMap<String, HashMap<String, Double>>> pathwayRatios = pathwaysRatios.get(pathway);
+                                    if (pathwayRatios == null) {
+                                        pathwayRatios = new HashMap<String, HashMap<String, HashMap<String, Double>>>();
+                                        pathwaysRatios.put(pathway, pathwayRatios);
+                                    }
+                                    HashMap<String, HashMap<String, Double>> proteinRatios = pathwayRatios.get(key);
+                                    if (proteinRatios == null) {
+                                        proteinRatios = new HashMap<String, HashMap<String, Double>>();
+                                        pathwayRatios.put(key, proteinRatios);
+                                    }
+                                    HashMap<String, Double> tempRatiosMap = proteinRatios.get(experiment);
+                                    if (tempRatiosMap == null) {
+                                        tempRatiosMap = new HashMap<String, Double>();
+                                        proteinRatios.put(experiment, tempRatiosMap);
+                                    }
+                                    for (String ratio : ratios.get(experiment)) {
+                                        Double value = ratiosMap.get(experiment).get(ratio).get(key);
+                                        if (value != null && !value.isNaN()) {
+                                            tempRatiosMap.put(ratio, value);
+                                        }
                                     }
                                 }
                             }
@@ -434,6 +475,7 @@ public class ReporterMerger {
             }
             writer.close();
 
+            // Normalize every column by the median
             HashMap<String, HashMap<String, HashMap<String, Double>>> medianNormalizedValidatedRatiosMap = new HashMap<String, HashMap<String, HashMap<String, Double>>>(nFiles);
             for (String key : quantificationMatches) {
                 HashMap<String, HashMap<String, Double>> proteinRatios = new HashMap<String, HashMap<String, Double>>();
@@ -452,6 +494,7 @@ public class ReporterMerger {
                 }
             }
 
+            // Normalize every line by channels 126 and 127
             HashMap<String, HashMap<String, HashMap<String, Double>>> normalizedValidatedRatiosMap = new HashMap<String, HashMap<String, HashMap<String, Double>>>(nFiles);
             for (String key : quantificationMatches) {
                 HashMap<String, HashMap<String, Double>> proteinRatios = new HashMap<String, HashMap<String, Double>>();
@@ -475,6 +518,57 @@ public class ReporterMerger {
                             if (value != null && !value.isNaN()) {
                                 double normalizedValue = value / normalizationValue;
                                 experimentRatios.put(ratio, normalizedValue);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Normalize the pathway proteins
+            HashMap<String, HashMap<String, HashMap<String, HashMap<String, Double>>>> normalizedPathwaysRatiosMap = new HashMap<String, HashMap<String, HashMap<String, HashMap<String, Double>>>>(nFiles);
+            for (String pathway : pathwaysRatios.keySet()) {
+                for (String key : pathwaysRatios.get(pathway).keySet()) {
+                    for (String experiment : pathwaysRatios.get(pathway).get(key).keySet()) {
+                        ArrayList<Double> controlIntensities = new ArrayList<Double>();
+                        HashMap<String, Double> allIntensities = new HashMap<String, Double>();
+                        for (String channel : pathwaysRatios.get(pathway).get(key).get(experiment).keySet()) {
+                            Double value = pathwaysRatios.get(pathway).get(key).get(experiment).get(channel);
+                            if (value != null && !value.isNaN()) {
+                                double median = medianes.get(experiment).get(channel);
+                                value /= median;
+                                if (channel.contains("126") || channel.contains("127")) {
+                                    controlIntensities.add(value);
+                                }
+                                allIntensities.put(channel, value);
+                            }
+                        }
+                        if (!allIntensities.isEmpty()) {
+                            double normalizationIntensity = 1;
+                            if (!controlIntensities.isEmpty()) {
+                                normalizationIntensity = BasicMathFunctions.median(controlIntensities);
+                            } else {
+                                ArrayList<Double> intensities = new ArrayList<Double>(allIntensities.values());
+                                normalizationIntensity = BasicMathFunctions.median(intensities);
+                            }
+                            HashMap<String, HashMap<String, HashMap<String, Double>>> pathwayRatios = normalizedPathwaysRatiosMap.get(pathway);
+                            if (pathwayRatios == null) {
+                                pathwayRatios = new HashMap<String, HashMap<String, HashMap<String, Double>>>();
+                                normalizedPathwaysRatiosMap.put(pathway, pathwayRatios);
+                            }
+                            HashMap<String, HashMap<String, Double>> proteinRatios = pathwayRatios.get(key);
+                            if (proteinRatios == null) {
+                                proteinRatios = new HashMap<String, HashMap<String, Double>>();
+                                pathwayRatios.put(key, proteinRatios);
+                            }
+                            HashMap<String, Double> experimentRatios = proteinRatios.get(experiment);
+                            if (experimentRatios == null) {
+                                experimentRatios = new HashMap<String, Double>();
+                                proteinRatios.put(experiment, experimentRatios);
+                            }
+                            for (String channel : allIntensities.keySet()) {
+                                double value = allIntensities.get(channel);
+                                value /= normalizationIntensity;
+                                experimentRatios.put(channel, value);
                             }
                         }
                     }
@@ -699,7 +793,7 @@ public class ReporterMerger {
                     }
                 }
 
-                // write the ratios
+                // write the p
                 for (String experiment : orderedExperiments) {
                     Integer nValidatedPeptides = validatedPeptidesMap.get(experiment).get(key);
                     for (String ratio : ratios.get(experiment)) {
@@ -718,6 +812,179 @@ public class ReporterMerger {
                 writer.newLine();
             }
             writer.close();
+
+            // Output pathways
+            for (String pathway : normalizedPathwaysRatiosMap.keySet()) {
+
+                outputFile = new File(path, pathway + "_quantification.txt");
+                writer = new BufferedWriter(new FileWriter(outputFile));
+
+                // first header row
+                writer.write("Protein" + separator + "Description" + separator + "MW" + separator + "Other Protein(s) (alphabetical order)"
+                        + separator + "Complete Protein Group (alphabetical order)" + separator + "Group Class" + separator + "#Peptides");
+                for (int i = 0; i < nFiles; i++) {
+                    writer.write(separator);
+                }
+                writer.write("#Spectra");
+                for (int i = 0; i < nFiles; i++) {
+                    writer.write(separator);
+                }
+                writer.write("#Validated Peptides");
+                for (int i = 0; i < nFiles; i++) {
+                    writer.write(separator);
+                }
+                writer.write("#Validated Spectra");
+                for (int i = 0; i < nFiles; i++) {
+                    writer.write(separator);
+                }
+                writer.write("Confidence");
+                for (int i = 0; i < nFiles; i++) {
+                    writer.write(separator);
+                }
+                writer.write("Validated in mix");
+                for (int i = 0; i < nFiles; i++) {
+                    writer.write(separator);
+                }
+                writer.write("score" + separator + "Overall Confidence" + separator + "Validated" + separator);
+                for (String experiment : orderedExperiments) {
+                    writer.write(experiment + " raw ratios");
+                    for (int i = 0; i < nRatios; i++) {
+                        writer.write(separator);
+                    }
+                }
+                for (String experiment : orderedExperiments) {
+                    writer.write(experiment + " normalized ratios");
+                    for (int i = 0; i < nRatios; i++) {
+                        writer.write(separator);
+                    }
+                }
+                writer.newLine();
+
+                // second header row
+                writer.write(separator + separator + separator + separator + separator + separator);
+                for (String experiment : orderedExperiments) {
+                    writer.write(experiment + separator);
+                }
+                for (String experiment : orderedExperiments) {
+                    writer.write(experiment + separator);
+                }
+                for (String experiment : orderedExperiments) {
+                    writer.write(experiment + separator);
+                }
+                for (String experiment : orderedExperiments) {
+                    writer.write(experiment + separator);
+                }
+                for (String experiment : orderedExperiments) {
+                    writer.write(experiment + separator);
+                }
+                for (String experiment : orderedExperiments) {
+                    writer.write(experiment + separator);
+                }
+                writer.write(separator + separator + separator);
+                for (String experiment : orderedExperiments) {
+                    for (String ratioName : ratios.get(experiment)) {
+                        writer.write(ratioName + separator);
+                    }
+                }
+                for (String experiment : orderedExperiments) {
+                    for (String ratioName : ratios.get(experiment)) {
+                        writer.write(ratioName + separator);
+                    }
+                }
+                writer.newLine();
+
+                // print the protein details
+                for (String key : normalizedPathwaysRatiosMap.get(pathway).keySet()) {
+                    
+                    writer.write(keyToMainMatchMap.get(key) + separator);
+                    writer.write(descriptionMap.get(key) + separator);
+                    writer.write(mwMap.get(key) + separator);
+                    writer.write(keyToOtherMatchesMap.get(key) + separator);
+                    writer.write(key + separator);
+                    writer.write(groupClassMap.get(key) + separator);
+                    for (String experiment : orderedExperiments) {
+                        Object value = peptidesMap.get(experiment).get(key);
+                        if (value != null) {
+                            writer.write(value.toString());
+                        }
+                        writer.write(separator);
+                    }
+                    for (String experiment : orderedExperiments) {
+                        Object value = spectraMap.get(experiment).get(key);
+                        if (value != null) {
+                            writer.write(value.toString());
+                        }
+                        writer.write(separator);
+                    }
+                    for (String experiment : orderedExperiments) {
+                        Object value = validatedPeptidesMap.get(experiment).get(key);
+                        if (value != null) {
+                            writer.write(value.toString());
+                        }
+                        writer.write(separator);
+                    }
+                    for (String experiment : orderedExperiments) {
+                        Object value = validatedSpectraMap.get(experiment).get(key);
+                        if (value != null) {
+                            writer.write(value.toString());
+                        }
+                        writer.write(separator);
+                    }
+                    for (String experiment : orderedExperiments) {
+                        Double value = pepMap.get(experiment).get(key);
+                        if (value != null) {
+                            value = 1 - value;
+                            writer.write(value.toString());
+                        }
+                        writer.write(separator);
+                    }
+                    for (String experiment : orderedExperiments) {
+                        String value = validatedMap.get(experiment).get(key);
+                        if (value != null) {
+                            writer.write(value);
+                        }
+                        writer.write(separator);
+                    }
+                    double score = keyToScoreMap.get(key);
+                    writer.write(score + separator);
+                    double pep = peps.get(score);
+                    double confidence = 1 - pep;
+                    writer.write(confidence + separator);
+                    if (score <= lastValidatedScore) {
+                        writer.write(1 + separator);
+                    } else {
+                        writer.write(0 + separator);
+                    }
+
+                    // write the raw ratios
+                    for (String experiment : orderedExperiments) {
+                        for (String ratio : ratios.get(experiment)) {
+                            Double value = ratiosMap.get(experiment).get(ratio).get(key);
+                            if (value != null && !value.isNaN()) {
+                                writer.write(value.toString());
+                            }
+                            writer.write(separator);
+                        }
+                    }
+
+                    // write the normalized ratios
+                    for (String experiment : orderedExperiments) {
+                        for (String ratio : ratios.get(experiment)) {
+                            if (normalizedPathwaysRatiosMap.get(pathway).get(key).get(experiment) != null) {
+                                Double value = normalizedPathwaysRatiosMap.get(pathway).get(key).get(experiment).get(ratio);
+                                if (value != null && !value.isNaN()) {
+                                    writer.write(value.toString());
+                                }
+                            }
+                            writer.write(separator);
+                        }
+                    }
+
+                    writer.newLine();
+                }
+                writer.close();
+
+            }
 
         } catch (Exception e) {
             e.printStackTrace();

@@ -1,250 +1,337 @@
 <xml>
 	<reporterMethod>
-		<name> iTRAQ 4Plex </name>
-		<reporterIonList>
-			<reporterIon>
+		<name> iTRAQ 4Plex (Default) </name>
+		<reagentList>
+			<reagent>
 				<name> iTRAQ 114 </name>
-				<mass> 114.1106 </mass>
-			</reporterIon>
-			<reporterIon>
-				<name> iTRAQ 115 </name>
-				<mass> 115.1077 </mass>
-			</reporterIon>
-			<reporterIon>
-				<name> iTRAQ 116 </name>
-				<mass> 116.1110 </mass>
-			</reporterIon>
-			<reporterIon>
-				<name> iTRAQ 117 </name>
-				<mass> 117.1144 </mass>
-			</reporterIon>
-		</reporterIonList>
-		<correctionFactorList>
-			<correctionFactor>
-				<ionId> 114 </ionId>
+				<monoisotopicMass> 114.1106 </monoisotopicMass>
 				<minus2> 0.0 </minus2>
 				<minus1> 1.0 </minus1>
 				<plus1> 5.9 </plus1>
 				<plus2> 0.2 </plus2>
-			</correctionFactor>	
-			<correctionFactor>
-				<ionId> 115 </ionId>
+			</reagent>
+			<reagent>
+				<name> iTRAQ 115 </name>
+				<monoisotopicMass> 115.1077 </monoisotopicMass>
 				<minus2> 0.0 </minus2>
 				<minus1> 2.0 </minus1>
 				<plus1> 5.6 </plus1>
 				<plus2> 0.1 </plus2>
-			</correctionFactor>	
-			<correctionFactor>
-				<ionId> 116 </ionId>
+			</reagent>
+			<reagent>
+				<name> iTRAQ 116 </name>
+				<monoisotopicMass> 116.1110 </monoisotopicMass>
 				<minus2> 0.0 </minus2>
 				<minus1> 3.0 </minus1>
 				<plus1> 4.5 </plus1>
 				<plus2> 0.1 </plus2>
-			</correctionFactor>	
-			<correctionFactor>
-				<ionId> 117 </ionId>
+			</reagent>
+			<reagent>
+				<name> iTRAQ 117 </name>
+				<monoisotopicMass> 117.1144 </monoisotopicMass>
 				<minus2> 0.1 </minus2>
 				<minus1> 4.0 </minus1>
 				<plus1> 3.5 </plus1>
 				<plus2> 0.1 </plus2>
-			</correctionFactor>	
-		</correctionFactorList>
+			</reagent>
+		</reagentList>
 	</reporterMethod>
 	<reporterMethod>
-		<name> iTRAQ 8Plex </name>
-		<reporterIonList>
-			<reporterIon>
+		<name> iTRAQ 8Plex (Default) </name>
+		<reagentList>
+			<reagent>
 				<name> iTRAQ 113 </name>
-				<mass> 113.1075 </mass>
-			</reporterIon>
-			<reporterIon>
-				<name> iTRAQ 114 </name>
-				<mass> 114.111 </mass>
-			</reporterIon>
-			<reporterIon>
-				<name> iTRAQ 115 </name>
-				<mass> 115.1079 </mass>
-			</reporterIon>
-			<reporterIon>
-				<name> iTRAQ 116 </name>
-				<mass> 116.1113 </mass>
-			</reporterIon>
-			<reporterIon>
-				<name> iTRAQ 117 </name>
-				<mass> 117.11465 </mass>
-			</reporterIon>
-			<reporterIon>
-				<name> iTRAQ 118 </name>
-				<mass> 118.1117 </mass>
-			</reporterIon>
-			<reporterIon>
-				<name> iTRAQ 119 </name>
-				<mass> 119.115 </mass>
-			</reporterIon>
-			<reporterIon>
-				<name> iTRAQ 121 </name>
-				<mass> 121.1217 </mass>
-			</reporterIon>
-		</reporterIonList>
-		<correctionFactorList>
-			<correctionFactor>
-				<ionId> 113 </ionId>
+				<monoisotopicMass> 113.1075 </monoisotopicMass>
 				<minus2> 0.0 </minus2>
 				<minus1> 0.0 </minus1>
 				<plus1> 6.89 </plus1>
 				<plus2> 0.22 </plus2>
-			</correctionFactor>	
-			<correctionFactor>
-				<ionId> 114 </ionId>
+			</reagent>
+			<reagent>
+				<name> iTRAQ 114 </name>
+				<monoisotopicMass> 114.111 </monoisotopicMass>
 				<minus2> 0.0 </minus2>
 				<minus1> 0.94 </minus1>
 				<plus1> 5.90 </plus1>
 				<plus2> 0.16 </plus2>
-			</correctionFactor>	
-			<correctionFactor>
-				<ionId> 115 </ionId>
+			</reagent>
+			<reagent>
+				<name> iTRAQ 115 </name>
+				<monoisotopicMass> 115.1079 </monoisotopicMass>
 				<minus2> 0.0 </minus2>
 				<minus1> 1.88 </minus1>
 				<plus1> 4.90 </plus1>
 				<plus2> 0.10 </plus2>
-			</correctionFactor>	
-			<correctionFactor>
-				<ionId> 116 </ionId>
+			</reagent>
+			<reagent>
+				<name> iTRAQ 116 </name>
+				<monoisotopicMass> 116.1113 </monoisotopicMass>
 				<minus2> 0.0 </minus2>
 				<minus1> 2.82 </minus1>
 				<plus1> 3.90 </plus1>
 				<plus2> 0.07 </plus2>
-			</correctionFactor>	
-			<correctionFactor>
-				<ionId> 117 </ionId>
+			</reagent>
+			<reagent>
+				<name> iTRAQ 117 </name>
+				<monoisotopicMass> 117.11465 </monoisotopicMass>
 				<minus2> 0.06 </minus2>
 				<minus1> 3.77 </minus1>
 				<plus1> 2.88 </plus1>
 				<plus2> 0.0 </plus2>
-			</correctionFactor>	
-			<correctionFactor>
-				<ionId> 118 </ionId>
+			</reagent>
+			<reagent>
+				<name> iTRAQ 118 </name>
+				<monoisotopicMass> 118.1117 </monoisotopicMass>
 				<minus2> 0.09 </minus2>
 				<minus1> 4.71 </minus1>
 				<plus1> 1.88 </plus1>
 				<plus2> 0.0 </plus2>
-			</correctionFactor>	
-			<correctionFactor>
-				<ionId> 119 </ionId>
+			</reagent>
+			<reagent>
+				<name> iTRAQ 119 </name>
+				<monoisotopicMass> 119.115 </monoisotopicMass>
 				<minus2> 0.14 </minus2>
 				<minus1> 5.66 </minus1>
 				<plus1> 0.87 </plus1>
 				<plus2> 0.0 </plus2>
-			</correctionFactor>	
-			<correctionFactor>
-				<ionId> 121 </ionId>
-				<minus2> 0.27 </minus2>
-				<minus1> 7.44 </minus1>
-				<plus1> 0.18 </plus1>
-				<plus2> 0.0 </plus2>
-			</correctionFactor>	
-		</correctionFactorList>
+			</reagent>
+			<reagent>
+				<name> iTRAQ 121 </name>
+				<monoisotopicMass> 121.1217 </monoisotopicMass>
+			</reagent>
+		</reagentList>
 	</reporterMethod>
 	<reporterMethod>
-		<name> TMT6 </name>
-		<reporterIonList>
-			<reporterIon>
-				<name> TMT0 </name>
-				<mass> 126.127491 </mass>
-			</reporterIon>
-			<reporterIon>
-				<name> TMT1 </name>
-				<mass> 127.1308594 </mass>
-			</reporterIon>
-			<reporterIon>
-				<name> TMT2 </name>
-				<mass> 128.1341553 </mass>
-			</reporterIon>
-			<reporterIon>
-				<name> TMT3 </name>
-				<mass> 129.1375046 </mass>
-			</reporterIon>
-			<reporterIon>
-				<name> TMT4 </name>
-				<mass> 130.1408768 </mass>
-			</reporterIon>
-			<reporterIon>
-				<name> TMT5 </name>
-				<mass> 131.1444851 </mass>
-			</reporterIon>
-		</reporterIonList>
-		<correctionFactorList>
-			<correctionFactor>
-				<ionId> 126 </ionId>
+		<name> TMT2 (Default) </name>
+		<reagentList>
+			<reagent>
+				<name> TMT 126 </name>
+				<monoisotopicMass> 126.127725 </monoisotopicMass>
 				<minus2> 0.0 </minus2>
 				<minus1> 0.0 </minus1>
 				<plus1> 0.0 </plus1>
 				<plus2> 0.0 </plus2>
-			</correctionFactor>	
-			<correctionFactor>
-				<ionId> 127 </ionId>
+			</reagent>
+			<reagent>
+				<name> TMT 127 </name>
+				<monoisotopicMass> 127.131079 </monoisotopicMass>
 				<minus2> 0.0 </minus2>
 				<minus1> 0.0 </minus1>
 				<plus1> 0.0 </plus1>
 				<plus2> 0.0 </plus2>
-			</correctionFactor>	
-			<correctionFactor>
-				<ionId> 128 </ionId>
-				<minus2> 0.0 </minus2>
-				<minus1> 0.0 </minus1>
-				<plus1> 0.0 </plus1>
-				<plus2> 0.0 </plus2>
-			</correctionFactor>	
-			<correctionFactor>
-				<ionId> 129 </ionId>
-				<minus2> 0.0 </minus2>
-				<minus1> 0.0 </minus1>
-				<plus1> 0.0 </plus1>
-				<plus2> 0.0 </plus2>
-			</correctionFactor>	
-			<correctionFactor>
-				<ionId> 130 </ionId>
-				<minus2> 0.0 </minus2>
-				<minus1> 0.0 </minus1>
-				<plus1> 0.0 </plus1>
-				<plus2> 0.0 </plus2>
-			</correctionFactor>	
-			<correctionFactor>
-				<ionId> 131 </ionId>
-				<minus2> 0.0 </minus2>
-				<minus1> 0.0 </minus1>
-				<plus1> 0.0 </plus1>
-				<plus2> 0.0 </plus2>
-			</correctionFactor>	
-		</correctionFactorList>
+			</reagent>
+		</reagentList>
 	</reporterMethod>
 	<reporterMethod>
-		<name> TMT2 </name>
-		<reporterIonList>
-			<reporterIon>
-				<name> TMT0 </name>
-				<mass> 126.127491 </mass>
-			</reporterIon>
-			<reporterIon>
-				<name> TMT1 </name>
-				<mass> 127.1308594 </mass>
-			</reporterIon>
-		</reporterIonList>
-		<correctionFactorList>
-			<correctionFactor>
-				<ionId> 126 </ionId>
+		<name> TMT6 (Default) </name>
+		<reagentList>
+			<reagent>
+				<name> TMT 126 </name>
+				<monoisotopicMass> 126.127725 </monoisotopicMass>
+				<minus2> 0.0 </minus2>
+				<minus1> 0.0 </minus1>
+				<plus1> 6.1 </plus1>
+				<plus2> 0.0 </plus2>
+			</reagent>
+			<reagent>
+				<name> TMT 127 </name>
+				<monoisotopicMass> 127.124760 </monoisotopicMass>
+				<minus2> 0.0 </minus2>
+				<minus1> 0.5 </minus1>
+				<plus1> 6.7 </plus1>
+				<plus2> 0.0 </plus2>
+			</reagent>
+			<reagent>
+				<name> TMT 128 </name>
+				<monoisotopicMass> 128.134433 </monoisotopicMass>
+				<minus2> 0.0 </minus2>
+				<minus1> 1.1 </minus1>
+				<plus1> 4.2 </plus1>
+				<plus2> 0.0 </plus2>
+			</reagent>
+			<reagent>
+				<name> TMT 129 </name>
+				<monoisotopicMass> 129.131468 </monoisotopicMass>
+				<minus2> 0.0 </minus2>
+				<minus1> 1.7 </minus1>
+				<plus1> 4.1 </plus1>
+				<plus2> 0.0 </plus2>
+			</reagent>
+			<reagent>
+				<name> TMT 130 </name>
+				<monoisotopicMass> 130.141141 </monoisotopicMass>
+				<minus2> 0.0 </minus2>
+				<minus1> 2.8 </minus1>
+				<plus1> 2.5 </plus1>
+				<plus2> 0.0 </plus2>
+			</reagent>
+			<reagent>
+				<name> TMT 131 </name>
+				<monoisotopicMass> 131.138176 </monoisotopicMass>
+				<minus2> 0.2 </minus2>
+				<minus1> 3.2 </minus1>
+				<plus1> 2.8 </plus1>
+				<plus2> 0.0 </plus2>
+			</reagent>
+		</reagentList>
+	</reporterMethod>
+	<reporterMethod>
+		<name> TMT10 (Default) </name>
+		<reagentList>
+			<reagent>
+				<name> TMT 126 </name>
+				<monoisotopicMass> 126.127726 </monoisotopicMass>
+				<minus2> 0.0 </minus2>
+				<minus1> 0.0 </minus1>
+				<plus1> 4.69 </plus1>
+				<plus2> 0.0 </plus2>
+			</reagent>
+			<reagent>
+				<name> TMT 127N </name>
+				<monoisotopicMass> 127.124761 </monoisotopicMass>
+				<minus2> 0.0 </minus2>
+				<minus1> 0.4 </minus1>
+				<plus1> 6.5 </plus1>
+				<plus2> 0.0 </plus2>
+			</reagent>
+			<reagent>
+				<name> TMT 127C </name>
+				<monoisotopicMass> 127.131081 </monoisotopicMass>
+				<minus2> 0.0 </minus2>
+				<minus1> 0.2 </minus1>
+				<plus1> 4.6 </plus1>
+				<plus2> 0.3 </plus2>
+			</reagent>
+			<reagent>
+				<name> TMT 128N </name>
+				<monoisotopicMass> 128.128116 </monoisotopicMass>
+				<minus2> 0.0 </minus2>
+				<minus1> 0.9 </minus1>
+				<plus1> 4.7 </plus1>
+				<plus2> 0.2 </plus2>
+			</reagent>
+			<reagent>
+				<name> TMT 128C </name>
+				<monoisotopicMass> 128.134436 </monoisotopicMass>
+				<minus2> 0.1 </minus2>
+				<minus1> 0.53 </minus1>
+				<plus1> 2.59 </plus1>
+				<plus2> 0.0 </plus2>
+			</reagent>
+			<reagent>
+				<name> TMT 129N </name>
+				<monoisotopicMass> 129.131471 </monoisotopicMass>
+				<minus2> 0.0 </minus2>
+				<minus1> 0.73 </minus1>
+				<plus1> 2.49 </plus1>
+				<plus2> 0.0 </plus2>
+			</reagent>
+			<reagent>
+				<name> TMT 129C </name>
+				<monoisotopicMass> 129.137790 </monoisotopicMass>
+				<minus2> 0.0 </minus2>
+				<minus1> 1.3 </minus1>
+				<plus1> 2.5 </plus1>
+				<plus2> 0.0 </plus2>
+			</reagent>
+			<reagent>
+				<name> TMT 130N </name>
+				<monoisotopicMass> 130.134825 </monoisotopicMass>
+				<minus2> 0.0 </minus2>
+				<minus1> 1.2 </minus1>
+				<plus1> 2.8 </plus1>
+				<plus2> 2.7 </plus2>
+			</reagent>
+			<reagent>
+				<name> TMT 130C </name>
+				<monoisotopicMass> 130.141145 </monoisotopicMass>
+				<minus2> 0.1 </minus2>
+				<minus1> 2.9 </minus1>
+				<plus1> 2.9 </plus1>
+				<plus2> 0.0 </plus2>
+			</reagent>
+			<reagent>
+				<name> TMT 131 </name>
+				<monoisotopicMass> 131.138180 </monoisotopicMass>
+				<minus2> 0.0 </minus2>
+				<minus1> 2.36 </minus1>
+				<plus1> 1.43 </plus1>
+				<plus2> 0.0 </plus2>
+			</reagent>
+		</reagentList>
+	</reporterMethod>
+	<reporterMethod>
+		<name> TMT2_OLD (Default) </name>
+		<reagentList>
+			<reagent>
+				<name> TMT 126 </name>
+				<monoisotopicMass> 126.127491 </monoisotopicMass>
 				<minus2> 0.0 </minus2>
 				<minus1> 0.0 </minus1>
 				<plus1> 0.0 </plus1>
 				<plus2> 0.0 </plus2>
-			</correctionFactor>	
-			<correctionFactor>
-				<ionId> 127 </ionId>
+			</reagent>
+			<reagent>
+				<name> TMT 127 </name>
+				<monoisotopicMass> 127.1308594 </monoisotopicMass>
 				<minus2> 0.0 </minus2>
 				<minus1> 0.0 </minus1>
 				<plus1> 0.0 </plus1>
 				<plus2> 0.0 </plus2>
-			</correctionFactor>	
-		</correctionFactorList>
+			</reagent>
+		</reagentList>
+	</reporterMethod>
+	<reporterMethod>
+		<name> TMT6_OLD (Default) </name>
+		<reagentList>
+			<reagent>
+				<name> TMT 126 </name>
+				<monoisotopicMass> 126.127491 </monoisotopicMass>
+				<minus2> 0.0 </minus2>
+				<minus1> 0.0 </minus1>
+				<plus1> 0.0 </plus1>
+				<plus2> 0.0 </plus2>
+			</reagent>
+			<reagent>
+				<name> TMT 127 </name>
+				<monoisotopicMass> 127.1308594 </monoisotopicMass>
+				<minus2> 0.0 </minus2>
+				<minus1> 0.0 </minus1>
+				<plus1> 0.0 </plus1>
+				<plus2> 0.0 </plus2>
+			</reagent>
+			<reagent>
+				<name> TMT 128 </name>
+				<monoisotopicMass> 128.1341553 </monoisotopicMass>
+				<minus2> 0.0 </minus2>
+				<minus1> 0.0 </minus1>
+				<plus1> 0.0 </plus1>
+				<plus2> 0.0 </plus2>
+			</reagent>
+			<reagent>
+				<name> TMT 129 </name>
+				<monoisotopicMass> 129.1375046 </monoisotopicMass>
+				<minus2> 0.0 </minus2>
+				<minus1> 0.0 </minus1>
+				<plus1> 0.0 </plus1>
+				<plus2> 0.0 </plus2>
+			</reagent>
+			<reagent>
+				<name> TMT 130 </name>
+				<monoisotopicMass> 130.1408768 </monoisotopicMass>
+				<minus2> 0.0 </minus2>
+				<minus1> 0.0 </minus1>
+				<plus1> 0.0 </plus1>
+				<plus2> 0.0 </plus2>
+			</reagent>
+			<reagent>
+				<name> TMT 131 </name>
+				<monoisotopicMass> 131.1444851 </monoisotopicMass>
+				<minus2> 0.0 </minus2>
+				<minus1> 0.0 </minus1>
+				<plus1> 0.0 </plus1>
+				<plus2> 0.0 </plus2>
+			</reagent>
+		</reagentList>
 	</reporterMethod>
 </xml>

@@ -1,28 +1,19 @@
 package eu.isas.reporter.export.report.sections;
 
-import com.compomics.util.experiment.biology.PTM;
-import com.compomics.util.experiment.biology.Peptide;
 import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.SearchParameters;
-import com.compomics.util.experiment.identification.matches.ModificationMatch;
 import com.compomics.util.experiment.identification.matches.SpectrumMatch;
-import com.compomics.util.experiment.massspectrometry.Precursor;
 import com.compomics.util.experiment.massspectrometry.Spectrum;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.io.export.ExportFeature;
 import com.compomics.util.preferences.AnnotationPreferences;
 import com.compomics.util.waiting.WaitingHandler;
-import eu.isas.peptideshaker.PeptideShaker;
 import eu.isas.peptideshaker.export.sections.FragmentSection;
 import eu.isas.peptideshaker.myparameters.PSParameter;
-import eu.isas.peptideshaker.myparameters.PSPtmScores;
-import eu.isas.peptideshaker.scoring.PtmScoring;
 import eu.isas.peptideshaker.utils.IdentificationFeaturesGenerator;
 import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
 import eu.isas.reporter.export.report.ReporterExportFeature;
-import eu.isas.reporter.export.report.export_features.ProteinFeatures;
 import eu.isas.reporter.export.report.export_features.PsmFeatures;
-import eu.isas.reporter.quantificationdetails.ProteinQuantificationDetails;
 import eu.isas.reporter.quantificationdetails.PsmQuantificationDetails;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -30,7 +21,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Set;
 import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
 
 /**
@@ -214,16 +204,16 @@ public class PsmSection {
                     eu.isas.peptideshaker.export.exportfeatures.PsmFeatures psmFeature = (eu.isas.peptideshaker.export.exportfeatures.PsmFeatures) exportFeature;
                     writer.write(eu.isas.peptideshaker.export.sections.PsmSection.getFeature(identification, identificationFeaturesGenerator, searchParameters, annotationPreferences, keys, linePrefix, separator, spectrumMatch, psParameter, psmFeature, waitingHandler) + separator);
                 }
-            ArrayList<Integer> sampleIndexes = new ArrayList<Integer>(reporterIonQuantification.getSampleIndexes());
+            ArrayList<String> sampleIndexes = new ArrayList<String>(reporterIonQuantification.getSampleIndexes());
             Collections.sort(sampleIndexes);
                 for (ExportFeature exportFeature : quantificationFeatures) {
                     PsmFeatures psmFeature = (PsmFeatures) exportFeature;
                 if (psmFeature.hasChannels()) {
-                    for (int sampleIndex : sampleIndexes) {
+                    for (String sampleIndex : sampleIndexes) {
                         writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, spectrumKey, psmFeature, sampleIndex)+ separator);
                     }
                 } else {
-                    writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, spectrumKey, psmFeature, -1) + separator);
+                    writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, spectrumKey, psmFeature, "") + separator);
                 }
 
                 }
@@ -263,7 +253,7 @@ public class PsmSection {
      * @throws InterruptedException
      * @throws MzMLUnmarshallerException
      */
-    public static String getFeature(QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, String spectrumKey, PsmFeatures psmFeatures, int sampleIndex) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
+    public static String getFeature(QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, String spectrumKey, PsmFeatures psmFeatures, String sampleIndex) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
         switch (psmFeatures) {
             case ratio:
                 PsmQuantificationDetails psmDetails = quantificationFeaturesGenerator.getPSMQuantificationDetails(spectrumKey);
@@ -284,7 +274,7 @@ public class PsmSection {
     public void writeHeader(ReporterIonQuantification reporterIonQuantification) throws IOException {
 
         boolean needSecondLine = false;
-        ArrayList<Integer> sampleIndexes = new ArrayList<Integer>(reporterIonQuantification.getSampleIndexes());
+        ArrayList<String> sampleIndexes = new ArrayList<String>(reporterIonQuantification.getSampleIndexes());
         Collections.sort(sampleIndexes);
 
         boolean firstColumn = true;
@@ -335,7 +325,7 @@ public class PsmSection {
             for (ReporterExportFeature exportFeature : quantificationFeatures) {
                 for (String title : exportFeature.getTitles()) {
                     if (exportFeature.hasChannels()) {
-                        for (int sampleIndex : sampleIndexes) {
+                        for (String sampleIndex : sampleIndexes) {
                             if (firstColumn) {
                                 firstColumn = false;
                             } else {

@@ -18,26 +18,26 @@ public class PeptideQuantificationDetails {
     /**
      * The reporter raw (not normalised) ratios
      */
-    private HashMap<Integer, Double> rawRatios = null;
+    private HashMap<String, Double> rawRatios = null;
 
     /**
      * Returns the ratio of a given sample normalized if the given reporter ion quantification has normalisation factors. null if not found.
      *
-     * @param sampleIndex the index of sample of interest
+     * @param reporterIonName the index of sample of interest
      * @param reporterIonQuantification the quantification object containing the
      * normalisation factors
      *
      * @return the ratio for this sample, null if not set
      */
-    public Double getRatio(int sampleIndex, ReporterIonQuantification reporterIonQuantification) {
+    public Double getRatio(String reporterIonName, ReporterIonQuantification reporterIonQuantification) {
         if (rawRatios == null) {
             return null;
         }
-        Double ratio = rawRatios.get(sampleIndex);
+        Double ratio = rawRatios.get(reporterIonName);
         if (reporterIonQuantification.hasNormalisationFactors()
                 && ratio != null
                 && ratio != Double.NaN) {
-            ratio /= reporterIonQuantification.getNormalisationFactor(sampleIndex);
+            ratio /= reporterIonQuantification.getNormalisationFactor(reporterIonName);
         }
         return ratio;
     }
@@ -45,28 +45,28 @@ public class PeptideQuantificationDetails {
     /**
      * Sets a raw (not normalised) normalized ratio.
      *
-     * @param sampleIndex the index of the sample
+     * @param reporterIonName the index of the sample
      * @param value the value of the raw (not normalised) ratio
      */
-    public void setRawRatio(int sampleIndex, double value) {
+    public void setRawRatio(String reporterIonName, double value) {
         if (rawRatios == null) {
-            rawRatios = new HashMap<Integer, Double>();
+            rawRatios = new HashMap<String, Double>();
         }
-        rawRatios.put(sampleIndex, value);
+        rawRatios.put(reporterIonName, value);
     }
 
     /**
      * Returns the raw (not normalised) ratio of a given sample. null if not
      * found.
      *
-     * @param sampleIndex the index of sample of interest
+     * @param reporterIonName the index of sample of interest
      *
      * @return the raw (not normalised) ratio for this sample, null if not set
      */
-    public Double getRawRatio(int sampleIndex) {
+    public Double getRawRatio(String reporterIonName) {
         if (rawRatios == null) {
             return null;
         }
-        return rawRatios.get(sampleIndex);
+        return rawRatios.get(reporterIonName);
     }
 }

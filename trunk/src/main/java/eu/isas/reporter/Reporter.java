@@ -36,7 +36,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
-import org.ujmp.core.collections.ArrayIndexList;
 import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
 
 /**
@@ -67,8 +66,8 @@ public class Reporter {
      * @param waitingHandler waiting handler displaying progress to the user
      */
     public static void setNormalizationFactors(ReporterIonQuantification reporterIonQuantification, ReporterPreferences reporterPreferences, Identification identification, QuantificationFeaturesGenerator quantificationFeaturesGenerator, WaitingHandler waitingHandler) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
-        HashMap<Integer, ArrayList<Double>> ratios = new HashMap<Integer, ArrayList<Double>>();
-        for (int sampleIndex : reporterIonQuantification.getSampleIndexes()) {
+        HashMap<String, ArrayList<Double>> ratios = new HashMap<String, ArrayList<Double>>();
+        for (String sampleIndex : reporterIonQuantification.getSampleIndexes()) {
             ratios.put(sampleIndex, new ArrayList<Double>());
         }
         int progress = 0,
@@ -108,7 +107,7 @@ public class Reporter {
             psParameter = (PSParameter) identification.getPeptideMatchParameter(peptideKey, psParameter);
             if (psParameter.getMatchValidationLevel().isValidated()) {
                 PeptideQuantificationDetails matchQuantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideKey);
-                for (int sampleIndex : reporterIonQuantification.getSampleIndexes()) {
+                for (String sampleIndex : reporterIonQuantification.getSampleIndexes()) {
                     Double ratio = matchQuantificationDetails.getRawRatio(sampleIndex);
                     if (QuantificationFilter.isRatioValid(reporterPreferences, ratio) && ratio > 0) {
                         ratios.get(sampleIndex).add(ratio);
@@ -122,7 +121,7 @@ public class Reporter {
                 waitingHandler.increaseSecondaryProgressCounter();
             }
         }
-        for (int sampleIndex : reporterIonQuantification.getSampleIndexes()) {
+        for (String sampleIndex : reporterIonQuantification.getSampleIndexes()) {
             double normalisationFactor = BasicMathFunctions.median(ratios.get(sampleIndex));
             reporterIonQuantification.addNormalisationFactor(sampleIndex, normalisationFactor);
         }
@@ -150,14 +149,14 @@ public class Reporter {
      */
     public static ProteinQuantificationDetails estimateProteinMatchQuantificationDetails(Identification identification, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterPreferences reporterPreferences, ReporterIonQuantification reporterIonQuantification, SearchParameters searchParameters, String matchKey) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
         ProteinQuantificationDetails result = new ProteinQuantificationDetails();
-        HashMap<Integer, ArrayList<Double>> ratios = new HashMap<Integer, ArrayList<Double>>();
+        HashMap<String, ArrayList<Double>> ratios = new HashMap<String, ArrayList<Double>>();
         ProteinMatch proteinMatch = identification.getProteinMatch(matchKey);
-        Set<Integer> indexes = reporterIonQuantification.getSampleIndexes();
+        Set<String> indexes = reporterIonQuantification.getSampleIndexes();
         identification.loadPeptideMatches(proteinMatch.getPeptideMatches(), null);
         identification.loadPeptideMatchParameters(proteinMatch.getPeptideMatches(), new PSParameter(), null);
         for (String peptideKey : proteinMatch.getPeptideMatches()) {
             if (QuantificationFilter.isPeptideValid(reporterPreferences, identification, searchParameters, peptideKey)) {
-                for (int index : indexes) {
+                for (String index : indexes) {
                     PeptideQuantificationDetails peptideQuantification = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideKey);
                     double ratio = peptideQuantification.getRatio(index, reporterIonQuantification);
                     ArrayList<Double> channelRatios = ratios.get(index);
@@ -171,7 +170,7 @@ public class Reporter {
                 }
             }
         }
-        for (int index : indexes) {
+        for (String index : indexes) {
             ArrayList<Double> channelRatios = ratios.get(index);
             result.setRatio(index, RatioEstimator.estimateRatios(reporterPreferences, channelRatios));
         }
@@ -203,9 +202,9 @@ public class Reporter {
      */
     public static PtmSiteQuantificationDetails estimatePTMQuantificationDetails(Identification identification, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterPreferences reporterPreferences, ReporterIonQuantification reporterIonQuantification, SearchParameters searchParameters, String ptmName, String matchKey, int site) throws IllegalArgumentException, SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
         PtmSiteQuantificationDetails result = new PtmSiteQuantificationDetails();
-        HashMap<Integer, ArrayList<Double>> ratios = new HashMap<Integer, ArrayList<Double>>();
+        HashMap<String, ArrayList<Double>> ratios = new HashMap<String, ArrayList<Double>>();
         ProteinMatch proteinMatch = identification.getProteinMatch(matchKey);
-        Set<Integer> indexes = reporterIonQuantification.getSampleIndexes();
+        Set<String> indexes = reporterIonQuantification.getSampleIndexes();
         identification.loadPeptideMatches(proteinMatch.getPeptideMatches(), null);
         identification.loadPeptideMatchParameters(proteinMatch.getPeptideMatches(), new PSParameter(), null);
         for (String peptideKey : proteinMatch.getPeptideMatches()) {
@@ -231,7 +230,7 @@ public class Reporter {
                 }
             }
             if (QuantificationFilter.isPeptideValid(reporterPreferences, identification, searchParameters, peptideKey)) {
-                for (int index : indexes) {
+                for (String index : indexes) {
                     PeptideQuantificationDetails peptideQuantification = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideKey);
                     double ratio = peptideQuantification.getRatio(index, reporterIonQuantification);
                     ArrayList<Double> channelRatios = ratios.get(index);
@@ -245,7 +244,7 @@ public class Reporter {
                 }
             }
         }
-        for (int index : indexes) {
+        for (String index : indexes) {
             ArrayList<Double> channelRatios = ratios.get(index);
             result.setRatio(index, RatioEstimator.estimateRatios(reporterPreferences, channelRatios));
         }
@@ -273,14 +272,14 @@ public class Reporter {
      */
     public static PeptideQuantificationDetails estimatePeptideMatchQuantificationDetails(Identification identification, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterPreferences reporterPreferences, ReporterIonQuantification reporterIonQuantification, String matchKey) throws IOException, MzMLUnmarshallerException, SQLException, ClassNotFoundException, InterruptedException {
         PeptideQuantificationDetails result = new PeptideQuantificationDetails();
-        HashMap<Integer, ArrayList<Double>> ratios = new HashMap<Integer, ArrayList<Double>>();
+        HashMap<String, ArrayList<Double>> ratios = new HashMap<String, ArrayList<Double>>();
         PeptideMatch peptideMatch = identification.getPeptideMatch(matchKey);
-        Set<Integer> indexes = reporterIonQuantification.getSampleIndexes();
+        Set<String> indexes = reporterIonQuantification.getSampleIndexes();
         identification.loadSpectrumMatches(peptideMatch.getSpectrumMatches(), null);
         identification.loadSpectrumMatchParameters(peptideMatch.getSpectrumMatches(), new PSParameter(), null);
         for (String spectrumKey : peptideMatch.getSpectrumMatches()) {
             if (QuantificationFilter.isPsmValid(reporterPreferences, identification, spectrumKey)) {
-                for (int index : indexes) {
+                for (String index : indexes) {
                     PsmQuantificationDetails spectrumQuantification = quantificationFeaturesGenerator.getPSMQuantificationDetails(spectrumKey);
                     double ratio = spectrumQuantification.getRatio(index);
                     ArrayList<Double> channelRatios = ratios.get(index);
@@ -294,7 +293,7 @@ public class Reporter {
                 }
             }
         }
-        for (int index : indexes) {
+        for (String index : indexes) {
             ArrayList<Double> channelRatios = ratios.get(index);
             result.setRawRatio(index, RatioEstimator.estimateRatios(reporterPreferences, channelRatios));
         }
@@ -350,16 +349,16 @@ public class Reporter {
             }
         }
         // Compute spectrum level ratios
-        Set<Integer> indexes = reporterIonQuantification.getSampleIndexes();
-        HashMap<Integer, ArrayList<Double>> ratios = new HashMap<Integer, ArrayList<Double>>();
+        Set<String> indexes = reporterIonQuantification.getSampleIndexes();
+        HashMap<String, ArrayList<Double>> ratios = new HashMap<String, ArrayList<Double>>();
         for (String spectrumKey : spectra) {
             SpectrumQuantificationDetails spectrumQuantification = quantificationFeaturesGenerator.getSpectrumQuantificationDetails(reporterIonQuantification, reporterPreferences, spectrumKey);
-            ArrayList<Integer> controlIndexes = reporterIonQuantification.getControlSamples();
+            ArrayList<String> controlIndexes = reporterIonQuantification.getControlSamples();
             if (controlIndexes == null) {
-                controlIndexes = new ArrayIndexList<Integer>(indexes);
+                controlIndexes = new ArrayList<String>(indexes);
             }
             ArrayList<Double> controlIntensities = new ArrayList<Double>(controlIndexes.size());
-            for (int index : controlIndexes) {
+            for (String index : controlIndexes) {
                 double intensity = spectrumQuantification.getDeisotopedIntensity(index);
                 if (intensity > 0) {
                     controlIntensities.add(intensity);
@@ -369,7 +368,7 @@ public class Reporter {
             if (!controlIntensities.isEmpty()) {
                 normalization = BasicMathFunctions.median(controlIntensities);
             }
-            for (int index : indexes) {
+            for (String index : indexes) {
                 double ratio = 0;
                 if (normalization > 0) {
                     double intensity = spectrumQuantification.getDeisotopedIntensity(index);
@@ -385,7 +384,7 @@ public class Reporter {
                 }
             }
         }
-        for (int index : indexes) {
+        for (String index : indexes) {
             ArrayList<Double> channelRatios = ratios.get(index);
             result.setRatio(index, RatioEstimator.estimateRatios(reporterPreferences, channelRatios));
         }
@@ -416,9 +415,9 @@ public class Reporter {
         SpectrumQuantificationDetails result = new SpectrumQuantificationDetails();
 
         // get reporter intensities
-        HashMap<Integer, IonMatch> matchesMap = new HashMap<Integer, IonMatch>();
-        for (int index : reporterIonQuantification.getSampleIndexes()) {
-            ReporterIon reporterIon = reporterMethod.getReporterIon(index);
+        HashMap<String, IonMatch> matchesMap = new HashMap<String, IonMatch>();
+        for (String ionName : reporterIonQuantification.getSampleIndexes()) {
+            ReporterIon reporterIon = reporterMethod.getReporterIon(ionName);
             ArrayList<IonMatch> ionMatches = SpectrumAnnotator.matchReporterIon(reporterIon, spectrum, reporterPreferences.getReporterIonsMzTolerance());
 
             IonMatch bestMatch = null;
@@ -432,15 +431,15 @@ public class Reporter {
                 }
             }
             if (bestMatch != null) {
-                result.setReporterMatch(index, bestMatch);
-                matchesMap.put(index, bestMatch);
+                result.setReporterMatch(ionName, bestMatch);
+                matchesMap.put(ionName, bestMatch);
             }
         }
 
         // get deisotoped intensities
-        Deisotoper deisotoper = quantificationFeaturesGenerator.getDeisotoper(reporterMethod);
-        HashMap<Integer, Double> deisotoped = deisotoper.deisotope(matchesMap);
-        for (int index : reporterIonQuantification.getSampleIndexes()) {
+        Deisotoper deisotoper = quantificationFeaturesGenerator.getDeisotoper(reporterMethod, reporterPreferences.getReporterIonsMzTolerance());
+        HashMap<String, Double> deisotoped = deisotoper.deisotope(matchesMap);
+        for (String index : reporterIonQuantification.getSampleIndexes()) {
             Double intensity = deisotoped.get(index);
             if (intensity == null || intensity < 0) {
                 intensity = 0.0;

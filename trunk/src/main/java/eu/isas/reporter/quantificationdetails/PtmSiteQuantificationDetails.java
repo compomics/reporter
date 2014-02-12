@@ -18,31 +18,31 @@ public class PtmSiteQuantificationDetails {
     /**
      * The reporter ratios
      */
-    private HashMap<Integer, Double> ratios = null;
+    private HashMap<String, Double> ratios = null;
     /**
      * Sets a ratio.
      *
-     * @param sampleIndex the index of the sample
+     * @param reporterIonName the index of the sample
      * @param value the value of the ratio
      */
-    public void setRatio(int sampleIndex, double value) {
+    public void setRatio(String reporterIonName, double value) {
         if (ratios == null) {
-            ratios = new HashMap<Integer, Double>();
+            ratios = new HashMap<String, Double>();
         }
-        ratios.put(sampleIndex, value);
+        ratios.put(reporterIonName, value);
     }
 
     /**
      * Returns the ratio of a given sample. null if not found.
      *
-     * @param sampleIndex the index of sample of interest
+     * @param reporterIonName the index of sample of interest
      *
      * @return the ratio for this sample, null if not set
      */
-    public Double getRatio(int sampleIndex) {
+    public Double getRatio(int reporterIonName) {
         if (ratios == null) {
             return null;
         }
-        return ratios.get(sampleIndex);
+        return ratios.get(reporterIonName);
     }
 }
