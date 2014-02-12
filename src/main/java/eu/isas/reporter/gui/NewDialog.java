@@ -128,7 +128,7 @@ public class NewDialog extends javax.swing.JDialog {
 
         sameSpectra.setSelected(true);
 
-        if (selectedMethod == null) {
+        if (selectedMethod == null && methodsFactory.getMethodsNames() != null && methodsFactory.getMethodsNames().length > 0) {
             comboMethod2.setSelectedItem(methodsFactory.getMethodsNames()[0]);
             comboMethod1.setSelectedItem(methodsFactory.getMethodsNames()[0]);
         }
@@ -1511,7 +1511,7 @@ public class NewDialog extends javax.swing.JDialog {
      * methods.
      */
     private void importMethodsError() {
-        JOptionPane.showMessageDialog(this, "\"" + METHODS_FILE + "\" could not be found, please select a method file.", "No Spectrum File Selected", JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(this, "\"" + METHODS_FILE + "\" could not be parsed, please select a method file.", "No Spectrum File Selected", JOptionPane.ERROR_MESSAGE);
         JFileChooser fileChooser = new JFileChooser(reporterGui.getLastSelectedFolder());
         fileChooser.setDialogTitle("Select Methods file");
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -1773,15 +1773,15 @@ public class NewDialog extends javax.swing.JDialog {
                 case 1:
                     return "Monoisotopic Mass";
                 case 2:
-                    return "% of -2";
+                    return "-2 [%]";
                 case 3:
-                    return "% of -1";
+                    return "-1 [%]";
                 case 4:
-                    return "       ";
+                    return "Monoisotopic [%]";
                 case 5:
-                    return "% of +1";
+                    return "+1 [%]";
                 case 6:
-                    return "% of +2";
+                    return "+2 [%]";
                 default:
                     return "";
             }
