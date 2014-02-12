@@ -1,7 +1,8 @@
 package eu.isas.reporter.calculation;
 
+import com.compomics.util.experiment.biology.Atom;
 import com.compomics.util.experiment.identification.matches.IonMatch;
-import com.compomics.util.experiment.quantification.reporterion.CorrectionFactor;
+import com.compomics.util.experiment.quantification.reporterion.Reagent;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,9 +17,9 @@ import org.ujmp.core.doublematrix.calculation.general.decomposition.Ginv;
 public class Deisotoper {
 
     /**
-     * The correction matrix (see Pubmed ID: 19953549).
+     * The correction matrix corresponding to every label
      */
-    private double[][] correctionMatrix;
+    private HashMap<String, CorrectionMatrix> correctionMatrices;
     /**
      * the reporter method used.
      */
@@ -28,77 +29,124 @@ public class Deisotoper {
      * Constructor.
      *
      * @param method the reporter method used
+     * @param tolerance the tolerance to use for reporter ions detection
      */
-    public Deisotoper(ReporterMethod method) {
+    public Deisotoper(ReporterMethod method, double tolerance) {
         this.method = method;
-        estimateCorrectionMatrix();
+        estimateCorrectionFactors(tolerance);
     }
 
     /**
-     * Method which estimates the correction factors matrix.
+     * Estimates the correction factors to be applied to every label.
      */
-    private void estimateCorrectionMatrix() {
+    private void estimateCorrectionFactors(double tolerance) {
 
-        ArrayList<CorrectionFactor> correctionFactors = method.getCorrectionFactors();
-        ArrayList<Integer> reporterIonsIndexes = method.getReporterIonIndexes();
-        Collections.sort(reporterIonsIndexes);
-        int dimension = correctionFactors.size();
-        double[][] coefficients = new double[dimension][dimension];
-
-        for (int i = 0; i < dimension; i++) {
-            for (int j = 0; j < dimension; j++) {
-                if (reporterIonsIndexes.get(i) - correctionFactors.get(j).getIonId() == -2) {
-                    coefficients[i][j] = correctionFactors.get(j).getMinus2() / 100.0;
-                } else if (reporterIonsIndexes.get(i) - correctionFactors.get(j).getIonId() == -1) {
-                    coefficients[i][j] = correctionFactors.get(j).getMinus1() / 100.0;
-                } else if (reporterIonsIndexes.get(i) - correctionFactors.get(j).getIonId() == 0) {
-                    coefficients[i][j] = 1 - correctionFactors.get(j).getMinus2() / 100.0
-                            - correctionFactors.get(j).getMinus1() / 100.0
-                            - correctionFactors.get(j).getPlus1() / 100.0
-                            - correctionFactors.get(j).getPlus2() / 100.0;
-                } else if (reporterIonsIndexes.get(i) - correctionFactors.get(j).getIonId() == 1) {
-                    coefficients[i][j] = correctionFactors.get(j).getPlus1() / 100.0;
-                } else if (reporterIonsIndexes.get(i) - correctionFactors.get(j).getIonId() == 2) {
-                    coefficients[i][j] = correctionFactors.get(j).getPlus2() / 100.0;
-                } else {
-                    coefficients[i][j] = 0.0;
+        ArrayList<String> labels = new ArrayList<String>(method.getReagentNames());
+        HashMap<Double, String> massesToLabelMap = new HashMap<Double, String>(labels.size());
+        for (String label : labels) {
+            massesToLabelMap.put(method.getReporterIon(label).getTheoreticMass(), label);
+        }
+        while (!labels.isEmpty()) {
+            Double maxMass = null, minMass = null;
+            for (Double mass : massesToLabelMap.keySet()) {
+                if (labels.contains(massesToLabelMap.get(mass))) {
+                    if (maxMass == null || mass > maxMass) {
+                        maxMass = mass;
+                    }
+                    if (minMass == null || mass < minMass) {
+                        minMass = mass;
+                    }
                 }
             }
+            HashMap<Integer, String> isotopes = new HashMap<Integer, String>();
+            int isotopeCount = 0, isotopeMax = 0;
+            double isotopeMass = minMass;
+            while (isotopeMass <= maxMass) {
+                for (Double mass : massesToLabelMap.keySet()) {
+                    if (labels.contains(massesToLabelMap.get(mass)) && Math.abs(mass - isotopeMass) < tolerance) {
+                        if (isotopes.containsKey(isotopeCount)) {
+                            throw new IllegalArgumentException("More than one reagent correspond to the mass " + isotopeMass + " using the given tolerance (" + tolerance + ")");
+                        }
+                        String label = massesToLabelMap.get(mass);
+                        isotopes.put(isotopeCount, label);
+                        labels.remove(label);
+                        isotopeMax = isotopeCount;
+                    }
+                    isotopeCount++;
+                    isotopeMass += Atom.C.getDifferenceToMonoisotopic(1);
+                }
+            }
+            double[][] coefficients = new double[isotopeMax][isotopeMax];
+            ArrayList<String> matrixLabels = new ArrayList<String>();
+            for (int i = 0; i <= isotopeMax; i++) {
+                String label = isotopes.get(i);
+                if (label != null) {
+                    matrixLabels.add(label);
+                    Reagent reagent = method.getReagent(label);
+                    double totalIntensity = reagent.getMinus2() + reagent.getMinus1() + reagent.getRef() + reagent.getPlus1() + reagent.getPlus2();
+                    if (i >= 2) {
+                        coefficients[i - 2][i] = reagent.getMinus2() / totalIntensity;
+                    }
+                    if (i >= 1) {
+                        coefficients[i - 1][i] = reagent.getMinus1() / totalIntensity;
+                    }
+                    coefficients[i][i] = reagent.getRef() / totalIntensity;
+                    if (i <= isotopeMax - 1) {
+                        coefficients[i + 1][i] = reagent.getPlus1() / totalIntensity;
+                    }
+                    if (i <= isotopeMax - 2) {
+                        coefficients[i + 2][i] = reagent.getPlus2() / totalIntensity;
+                    }
+                }
+            }
+            coefficients = Ginv.inverse(coefficients).toDoubleArray();
+            CorrectionMatrix matrix = new CorrectionMatrix(coefficients, isotopes);
+            for (String label : matrixLabels) {
+                correctionMatrices.put(label, matrix);
+            }
         }
-        correctionMatrix = Ginv.inverse(coefficients).toDoubleArray();
+
     }
 
     /**
      * This method returns deisotoped intensities.
      *
      * @param ionMatches the ion matches to deisotope
+     * 
      * @return a map of the deisotoped intensities (ion index -> intensity)
      */
-    public HashMap<Integer, Double> deisotope(HashMap<Integer, IonMatch> ionMatches) {
+    public HashMap<String, Double> deisotope(HashMap<String, IonMatch> ionMatches) {
 
-        ArrayList<Integer> reporterIonsIndexes = method.getReporterIonIndexes();
-        Collections.sort(reporterIonsIndexes);
-        double[] intensities = new double[reporterIonsIndexes.size()];
-
-        for (int i = 0; i < reporterIonsIndexes.size(); i++) {
-            if (ionMatches.get(reporterIonsIndexes.get(i)) != null) {
-                if (ionMatches.get(reporterIonsIndexes.get(i)).peak != null) {
-                    intensities[i] = ionMatches.get(reporterIonsIndexes.get(i)).peak.intensity;
+        HashMap<String, Double> result = new HashMap<String, Double>();
+        for (String label : method.getReagentNames()) {
+            CorrectionMatrix correctionMatrix = correctionMatrices.get(label);
+            HashMap<Integer, String> involvedReagents = correctionMatrix.getReagentsNames();
+            int dimension = correctionMatrix.getDimension();
+            double[] intensities = new double[dimension];
+            int lineNumber = -1;
+            for (int i = 0; i < dimension; i++) {
+                String reagentName = involvedReagents.get(i);
+                if (reagentName != null) {
+                    if (reagentName.equals(label)) {
+                        lineNumber = i;
+                    }
+                    IonMatch ionMatch = ionMatches.get(reagentName);
+                    if (ionMatch != null) {
+                        intensities[i] = ionMatch.peak.intensity;
+                    }
                 }
             }
-        }
-
-        HashMap<Integer, Double> result = new HashMap<Integer, Double>();
-
-        for (int i = 0; i < correctionMatrix.length; i++) {
+            if (lineNumber == -1) {
+                throw new IllegalArgumentException("Index of reagent " + label + " not found in the correction matrix.");
+            }
             double resultInt = 0;
             for (int j = 0; j < intensities.length; j++) {
-                resultInt += intensities[j] * correctionMatrix[i][j];
+                resultInt += intensities[j] * correctionMatrix.getValueAt(lineNumber, j);
             }
             if (resultInt < 0) {
                 resultInt = 0;
             }
-            result.put(reporterIonsIndexes.get(i), resultInt);
+            result.put(label, resultInt);
         }
         return result;
     }

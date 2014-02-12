@@ -193,12 +193,13 @@ public class QuantificationFeaturesGenerator {
      * Returns the deisotoper corresponding to the given method.
      * 
      * @param reporterMethod the reporter method
+     * @param reporterIonMassAccuracy the mass accuracy in the reporter ion region
      * 
      * @return the deisotoper corresponding to the given method
      */
-    public Deisotoper getDeisotoper(ReporterMethod reporterMethod) {
+    public Deisotoper getDeisotoper(ReporterMethod reporterMethod, double reporterIonMassAccuracy) {
         if (deisotoper == null) {
-            deisotoper = new Deisotoper(reporterMethod);
+            deisotoper = new Deisotoper(reporterMethod, reporterIonMassAccuracy);
         }
         return deisotoper;
     }

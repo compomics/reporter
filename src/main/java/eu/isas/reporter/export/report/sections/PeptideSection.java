@@ -13,16 +13,13 @@ import eu.isas.peptideshaker.utils.IdentificationFeaturesGenerator;
 import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
 import eu.isas.reporter.export.report.ReporterExportFeature;
 import eu.isas.reporter.export.report.export_features.PeptideFeatures;
-import eu.isas.reporter.export.report.export_features.ProteinFeatures;
 import eu.isas.reporter.export.report.export_features.PsmFeatures;
 import eu.isas.reporter.quantificationdetails.PeptideQuantificationDetails;
-import eu.isas.reporter.quantificationdetails.ProteinQuantificationDetails;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Set;
 import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
 
 /**
@@ -179,16 +176,16 @@ public class PeptideSection {
                 writer.write(eu.isas.peptideshaker.export.sections.PeptideSection.getfeature(identification, identificationFeaturesGenerator, searchParameters, annotationPreferences, keys, nSurroundingAA, linePrefix, separator, peptideMatch, psParameter, peptideFeature, waitingHandler) + separator);
             }
 
-            ArrayList<Integer> sampleIndexes = new ArrayList<Integer>(reporterIonQuantification.getSampleIndexes());
+            ArrayList<String> sampleIndexes = new ArrayList<String>(reporterIonQuantification.getSampleIndexes());
             Collections.sort(sampleIndexes);
             for (ExportFeature exportFeature : quantificationFeatures) {
                 PeptideFeatures peptideFeature = (PeptideFeatures) exportFeature;
                 if (peptideFeature.hasChannels()) {
-                    for (int sampleIndex : sampleIndexes) {
+                    for (String sampleIndex : sampleIndexes) {
                         writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, peptideKey, peptideFeature, sampleIndex) + separator);
                     }
                 } else {
-                    writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, peptideKey, peptideFeature, -1) + separator);
+                    writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, peptideKey, peptideFeature, "") + separator);
                 }
             }
 
@@ -227,7 +224,7 @@ public class PeptideSection {
      * @throws InterruptedException
      * @throws MzMLUnmarshallerException
      */
-    public static String getFeature(QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, String peptideKey, PeptideFeatures peptideFeatures, int sampleIndex) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
+    public static String getFeature(QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, String peptideKey, PeptideFeatures peptideFeatures, String sampleIndex) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
         switch (peptideFeatures) {
             case raw_ratio:
                 PeptideQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideKey);
@@ -251,7 +248,7 @@ public class PeptideSection {
     public void writeHeader(ReporterIonQuantification reporterIonQuantification) throws IOException {
 
         boolean needSecondLine = false;
-        ArrayList<Integer> sampleIndexes = new ArrayList<Integer>(reporterIonQuantification.getSampleIndexes());
+        ArrayList<String> sampleIndexes = new ArrayList<String>(reporterIonQuantification.getSampleIndexes());
         Collections.sort(sampleIndexes);
 
         boolean firstColumn = true;
@@ -302,7 +299,7 @@ public class PeptideSection {
             for (ReporterExportFeature exportFeature : quantificationFeatures) {
                 for (String title : exportFeature.getTitles()) {
                     if (exportFeature.hasChannels()) {
-                        for (int sampleIndex : sampleIndexes) {
+                        for (String sampleIndex : sampleIndexes) {
                             if (firstColumn) {
                                 firstColumn = false;
                             } else {
