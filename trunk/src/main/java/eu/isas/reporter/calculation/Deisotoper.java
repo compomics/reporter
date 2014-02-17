@@ -41,10 +41,15 @@ public class Deisotoper {
      */
     private void estimateCorrectionFactors(double tolerance) {
 
+        correctionMatrices = new HashMap<String, CorrectionMatrix>();
         ArrayList<String> labels = new ArrayList<String>(method.getReagentNames());
         HashMap<Double, String> massesToLabelMap = new HashMap<Double, String>(labels.size());
         for (String label : labels) {
-            massesToLabelMap.put(method.getReporterIon(label).getTheoreticMass(), label);
+            double mass = method.getReporterIon(label).getTheoreticMass();
+            if (massesToLabelMap.containsKey(mass)) {
+                throw new IllegalArgumentException("Two labels were found at the same mass (" + mass + ").");
+            }
+            massesToLabelMap.put(mass, label);
         }
         while (!labels.isEmpty()) {
             Double maxMass = null, minMass = null;
@@ -61,8 +66,11 @@ public class Deisotoper {
             HashMap<Integer, String> isotopes = new HashMap<Integer, String>();
             int isotopeCount = 0, isotopeMax = 0;
             double isotopeMass = minMass;
-            while (isotopeMass <= maxMass) {
+            while (isotopeMass <= maxMass + tolerance) {
                 for (Double mass : massesToLabelMap.keySet()) {
+                    if (mass - 130 > 0) {
+                        int debug = 1;
+                    }
                     if (labels.contains(massesToLabelMap.get(mass)) && Math.abs(mass - isotopeMass) < tolerance) {
                         if (isotopes.containsKey(isotopeCount)) {
                             throw new IllegalArgumentException("More than one reagent correspond to the mass " + isotopeMass + " using the given tolerance (" + tolerance + ")");
@@ -72,11 +80,11 @@ public class Deisotoper {
                         labels.remove(label);
                         isotopeMax = isotopeCount;
                     }
-                    isotopeCount++;
-                    isotopeMass += Atom.C.getDifferenceToMonoisotopic(1);
                 }
+                isotopeCount++;
+                isotopeMass += Atom.C.getDifferenceToMonoisotopic(1);
             }
-            double[][] coefficients = new double[isotopeMax][isotopeMax];
+            double[][] coefficients = new double[isotopeCount][isotopeCount];
             ArrayList<String> matrixLabels = new ArrayList<String>();
             for (int i = 0; i <= isotopeMax; i++) {
                 String label = isotopes.get(i);
@@ -112,41 +120,46 @@ public class Deisotoper {
      * This method returns deisotoped intensities.
      *
      * @param ionMatches the ion matches to deisotope
-     * 
+     *
      * @return a map of the deisotoped intensities (ion index -> intensity)
      */
     public HashMap<String, Double> deisotope(HashMap<String, IonMatch> ionMatches) {
 
         HashMap<String, Double> result = new HashMap<String, Double>();
         for (String label : method.getReagentNames()) {
-            CorrectionMatrix correctionMatrix = correctionMatrices.get(label);
-            HashMap<Integer, String> involvedReagents = correctionMatrix.getReagentsNames();
-            int dimension = correctionMatrix.getDimension();
-            double[] intensities = new double[dimension];
-            int lineNumber = -1;
-            for (int i = 0; i < dimension; i++) {
-                String reagentName = involvedReagents.get(i);
-                if (reagentName != null) {
-                    if (reagentName.equals(label)) {
-                        lineNumber = i;
-                    }
-                    IonMatch ionMatch = ionMatches.get(reagentName);
-                    if (ionMatch != null) {
-                        intensities[i] = ionMatch.peak.intensity;
+            IonMatch refMatch = ionMatches.get(label);
+            if (refMatch != null && refMatch.peak.intensity > 0) {
+                CorrectionMatrix correctionMatrix = correctionMatrices.get(label);
+                HashMap<Integer, String> involvedReagents = correctionMatrix.getReagentsNames();
+                int dimension = correctionMatrix.getDimension();
+                double[] intensities = new double[dimension];
+                int lineNumber = -1;
+                for (int i = 0; i < dimension; i++) {
+                    String reagentName = involvedReagents.get(i);
+                    if (reagentName != null) {
+                        if (reagentName.equals(label)) {
+                            lineNumber = i;
+                        }
+                        IonMatch ionMatch = ionMatches.get(reagentName);
+                        if (ionMatch != null) {
+                            intensities[i] = ionMatch.peak.intensity;
+                        }
                     }
                 }
+                if (lineNumber == -1) {
+                    throw new IllegalArgumentException("Index of reagent " + label + " not found in the correction matrix.");
+                }
+                double resultInt = 0;
+                for (int j = 0; j < intensities.length; j++) {
+                    resultInt += intensities[j] * correctionMatrix.getValueAt(lineNumber, j);
+                }
+                if (resultInt < 0) {
+                    resultInt = 0;
+                }
+                result.put(label, resultInt);
+            } else {
+                result.put(label, 0.0);
             }
-            if (lineNumber == -1) {
-                throw new IllegalArgumentException("Index of reagent " + label + " not found in the correction matrix.");
-            }
-            double resultInt = 0;
-            for (int j = 0; j < intensities.length; j++) {
-                resultInt += intensities[j] * correctionMatrix.getValueAt(lineNumber, j);
-            }
-            if (resultInt < 0) {
-                resultInt = 0;
-            }
-            result.put(label, resultInt);
         }
         return result;
     }

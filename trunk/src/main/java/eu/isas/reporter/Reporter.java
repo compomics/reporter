@@ -122,7 +122,12 @@ public class Reporter {
             }
         }
         for (String sampleIndex : reporterIonQuantification.getSampleIndexes()) {
-            double normalisationFactor = BasicMathFunctions.median(ratios.get(sampleIndex));
+            double normalisationFactor;
+            if (ratios.get(sampleIndex) != null && !ratios.get(sampleIndex).isEmpty()) {
+                normalisationFactor = BasicMathFunctions.median(ratios.get(sampleIndex));
+            } else {
+                normalisationFactor = 1;
+            }
             reporterIonQuantification.addNormalisationFactor(sampleIndex, normalisationFactor);
         }
     }
@@ -354,7 +359,7 @@ public class Reporter {
         for (String spectrumKey : spectra) {
             SpectrumQuantificationDetails spectrumQuantification = quantificationFeaturesGenerator.getSpectrumQuantificationDetails(reporterIonQuantification, reporterPreferences, spectrumKey);
             ArrayList<String> controlIndexes = reporterIonQuantification.getControlSamples();
-            if (controlIndexes == null) {
+            if (controlIndexes == null || controlIndexes.isEmpty()) {
                 controlIndexes = new ArrayList<String>(indexes);
             }
             ArrayList<Double> controlIntensities = new ArrayList<Double>(controlIndexes.size());
@@ -418,7 +423,7 @@ public class Reporter {
         HashMap<String, IonMatch> matchesMap = new HashMap<String, IonMatch>();
         for (String ionName : reporterIonQuantification.getSampleIndexes()) {
             ReporterIon reporterIon = reporterMethod.getReporterIon(ionName);
-            ArrayList<IonMatch> ionMatches = SpectrumAnnotator.matchReporterIon(reporterIon, spectrum, reporterPreferences.getReporterIonsMzTolerance());
+            ArrayList<IonMatch> ionMatches = SpectrumAnnotator.matchReporterIon(reporterIon, 1, spectrum, reporterPreferences.getReporterIonsMzTolerance());
 
             IonMatch bestMatch = null;
             double error = reporterPreferences.getReporterIonsMzTolerance();

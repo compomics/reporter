@@ -3,6 +3,7 @@ package eu.isas.reporter.gui;
 import com.compomics.util.db.ObjectsCache;
 import com.compomics.util.experiment.MsExperiment;
 import com.compomics.util.experiment.biology.Sample;
+import com.compomics.util.experiment.biology.ions.ElementaryIon;
 import com.compomics.util.experiment.biology.ions.ReporterIon;
 import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.SearchParameters;
@@ -24,10 +25,12 @@ import java.awt.event.ActionListener;
 import java.io.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
+import no.uib.jsparklines.extra.TrueFalseIconRenderer;
 import org.xmlpull.v1.XmlPullParserException;
 
 /**
@@ -91,7 +94,7 @@ public class NewDialog extends javax.swing.JDialog {
     /**
      * List of control samples.
      */
-    private HashMap<Integer, Boolean> controlSamples = new HashMap<Integer, Boolean>();
+    private ArrayList<String> controlSamples = new ArrayList<String>();
     /**
      * The cache to use for identification and quantification objects.
      */
@@ -119,12 +122,11 @@ public class NewDialog extends javax.swing.JDialog {
         initComponents();
 // load the user preferences
         loadUserPreferences();
+        
         // make sure that the scroll panes are see-through
+        reagentsTableJScrollPane.getViewport().setOpaque(false);
         sampleAssignmentJScrollPane.getViewport().setOpaque(false);
-        isotopeCorrectionJScrollPane.getViewport().setOpaque(false);
 
-        // set the table properties
-        setTableProperties();
 
         sameSpectra.setSelected(true);
 
@@ -144,21 +146,22 @@ public class NewDialog extends javax.swing.JDialog {
         comboMethod2.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 selectedMethod = getMethod((String) comboMethod2.getSelectedItem());
-                reagents = new ArrayList<String>(selectedMethod.getReagentNames());
+                reagents = selectedMethod.getReagentsSortedByMass();
                 refresh();
             }
         });
         comboMethod1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 selectedMethod = getMethod((String) comboMethod1.getSelectedItem());
-                reagents = new ArrayList<String>(selectedMethod.getReagentNames());
+                reagents = selectedMethod.getReagentsSortedByMass();
                 refresh();
             }
         });
 
         txtConfigurationFileLocation.setText(reporterGui.getJarFilePath() + File.separator + METHODS_FILE);
-
-        reagentsTable.getColumnModel().getColumn(0).setMaxWidth(50);
+        
+        refresh();
+        
         pack();
         setLocationRelativeTo(reporterGui);
         setVisible(true);
@@ -168,13 +171,13 @@ public class NewDialog extends javax.swing.JDialog {
      * Set up the properties of the tables.
      */
     private void setTableProperties() {
-//        sampleAssignmentTable.getColumn("Ref").setCellRenderer(new TrueFalseIconRenderer(
-//                new ImageIcon(this.getClass().getResource("/icons/selected_green.png")),
-//                null,
-//                "Reference", null));
-//
-//        sampleAssignmentTable.getColumn("Ref").setMaxWidth(40);
-//        sampleAssignmentTable.getColumn("Ref").setMinWidth(40);
+        sampleAssignmentTable.getColumnModel().getColumn(2).setCellRenderer(new TrueFalseIconRenderer(
+                new ImageIcon(this.getClass().getResource("/icons/selected_green.png")),
+                null,
+                "Yes", "No"));
+        sampleAssignmentTable.getColumnModel().getColumn(2).setMaxWidth(100);
+        sampleAssignmentTable.getColumnModel().getColumn(0).setMaxWidth(100);
+        reagentsTable.getColumnModel().getColumn(0).setMaxWidth(100);
     }
 
     /**
@@ -214,7 +217,7 @@ public class NewDialog extends javax.swing.JDialog {
         comboMethod1 = new javax.swing.JComboBox();
         configPanel = new javax.swing.JPanel();
         isotopeCorrectionPanel = new javax.swing.JPanel();
-        isotopeCorrectionJScrollPane = new javax.swing.JScrollPane();
+        reagentsTableJScrollPane = new javax.swing.JScrollPane();
         reagentsTable = new javax.swing.JTable();
         configFilePanel = new javax.swing.JPanel();
         txtConfigurationFileLocation = new javax.swing.JTextField();
@@ -496,7 +499,7 @@ public class NewDialog extends javax.swing.JDialog {
 
         reagentsTable.setModel(new CorrectionTableModel());
         reagentsTable.setOpaque(false);
-        isotopeCorrectionJScrollPane.setViewportView(reagentsTable);
+        reagentsTableJScrollPane.setViewportView(reagentsTable);
 
         org.jdesktop.layout.GroupLayout isotopeCorrectionPanelLayout = new org.jdesktop.layout.GroupLayout(isotopeCorrectionPanel);
         isotopeCorrectionPanel.setLayout(isotopeCorrectionPanelLayout);
@@ -504,14 +507,14 @@ public class NewDialog extends javax.swing.JDialog {
             isotopeCorrectionPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(isotopeCorrectionPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(isotopeCorrectionJScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 778, Short.MAX_VALUE)
+                .add(reagentsTableJScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 778, Short.MAX_VALUE)
                 .addContainerGap())
         );
         isotopeCorrectionPanelLayout.setVerticalGroup(
             isotopeCorrectionPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(isotopeCorrectionPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(isotopeCorrectionJScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 347, Short.MAX_VALUE)
+                .add(reagentsTableJScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 347, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -860,7 +863,7 @@ public class NewDialog extends javax.swing.JDialog {
                 comboMethod2.setModel(new DefaultComboBoxModel(methodsFactory.getMethodsNames()));
                 comboMethod1.setModel(new DefaultComboBoxModel(methodsFactory.getMethodsNames()));
                 selectedMethod = getMethod((String) comboMethod2.getSelectedItem());
-                reagents = new ArrayList<String>(selectedMethod.getReagentNames());
+                reagents = selectedMethod.getReagentsSortedByMass();
                 refresh();
                 txtConfigurationFileLocation.setText(newFile.getAbsolutePath());
                 reporterGui.setLastSelectedFolder(newFile.getPath());
@@ -919,6 +922,8 @@ public class NewDialog extends javax.swing.JDialog {
                 reporterIonQuantification.assignSample(key, new Sample(sampleNames.get(key)));
             }
             reporterIonQuantification.setMethod(selectedMethod);
+            reporterIonQuantification.setControlSamples(controlSamples);
+            saveUserPreferences();
             dispose();
         }
 
@@ -1113,7 +1118,6 @@ public class NewDialog extends javax.swing.JDialog {
     private javax.swing.JTextField fastaTxt;
     private javax.swing.JPanel fileSelectiontPanel;
     private javax.swing.JTextField ionToleranceTxt;
-    private javax.swing.JScrollPane isotopeCorrectionJScrollPane;
     private javax.swing.JPanel isotopeCorrectionPanel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
@@ -1139,6 +1143,7 @@ public class NewDialog extends javax.swing.JDialog {
     private javax.swing.JPanel projectPanel;
     private javax.swing.JTextField quantificationPreferencesTxt;
     private javax.swing.JTable reagentsTable;
+    private javax.swing.JScrollPane reagentsTableJScrollPane;
     private javax.swing.JTextField replicateNumberTxt;
     private javax.swing.JTextField rtTolTxt;
     private javax.swing.JRadioButton sameSpectra;
@@ -1407,11 +1412,11 @@ public class NewDialog extends javax.swing.JDialog {
                     } else if (ptmName.contains("duplex")) {
                         selectedMethod = getMethod("TMT2 (Default)");
                         break;
-                    } else if (ptmName.contains("TMT6 (Default)")) {
-                        selectedMethod = getMethod("TMT6");
+                    } else if (ptmName.contains("tmt 6")) {
+                        selectedMethod = getMethod("TMT6 (Default)");
                         break;
-                    } else if (ptmName.contains("TMT10 (Default)")) {
-                        selectedMethod = getMethod("TMT10");
+                    } else if (ptmName.contains("tmt 10 (Default)")) {
+                        selectedMethod = getMethod("TMT10 (Default)");
                         break;
                     } else if (ptmName.contains("itraq")) {
                         selectedMethod = getMethod("iTRAQ 4Plex (Default)");
@@ -1425,7 +1430,7 @@ public class NewDialog extends javax.swing.JDialog {
                     comboMethod1.setSelectedItem(methodsFactory.getMethodsNames()[0]);
                 }
 
-                reagents = new ArrayList<String>(selectedMethod.getReagentNames());
+                reagents = selectedMethod.getReagentsSortedByMass();
 
                 mzTolTxt.setText(searchParameters.getPrecursorAccuracy() + "");
                 if (searchParameters.isPrecursorAccuracyTypePpm()) {
@@ -1442,7 +1447,7 @@ public class NewDialog extends javax.swing.JDialog {
             }
         }.start();
     }
-
+    
     /**
      * Returns the project details.
      *
@@ -1560,7 +1565,7 @@ public class NewDialog extends javax.swing.JDialog {
         for (String reagent1 : selectedMethod.getReagentNames()) {
             for (String reagent2 : selectedMethod.getReagentNames()) {
                 if (!reagent1.equals(reagent2) && Math.abs(selectedMethod.getReagent(reagent1).getReporterIon().getTheoreticMass() - selectedMethod.getReagent(reagent2).getReporterIon().getTheoreticMass()) <= ionTolerance) {
-                    JOptionPane.showMessageDialog(this, "Wrong Ion Tolerance.", "The ion tolerance does not allow distinction of " + reagent1 + " and  " + reagent2 + ".", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "The ion tolerance does not allow distinction of " + reagent1 + " and  " + reagent2 + ".", "Wrong Ion Tolerance.", JOptionPane.ERROR_MESSAGE);
                     return false;
                 }
             }
@@ -1695,7 +1700,7 @@ public class NewDialog extends javax.swing.JDialog {
 
         @Override
         public int getColumnCount() {
-            return 2;
+            return 3;
         }
 
         @Override
@@ -1705,6 +1710,8 @@ public class NewDialog extends javax.swing.JDialog {
                     return "Label";
                 case 1:
                     return "Sample";
+                case 2:
+                    return "Control";
                 default:
                     return "";
             }
@@ -1727,6 +1734,8 @@ public class NewDialog extends javax.swing.JDialog {
                         }
                     }
                     return sampleNames.get(reagentName);
+                case 2:
+                    return controlSamples.contains(reagentName);
                 default:
                     return "";
             }
@@ -1734,9 +1743,15 @@ public class NewDialog extends javax.swing.JDialog {
 
         @Override
         public void setValueAt(Object aValue, int row, int column) {
+            String reagentName = reagents.get(row);
             if (column == 1) {
-                String reagentName = reagents.get(row);
                 sampleNames.put(reagentName, aValue.toString());
+            } else if (column == 2) {
+                if (controlSamples.contains(reagentName)) {
+                    controlSamples.remove(reagentName);
+                } else {
+                    controlSamples.add(reagentName);
+                }
             }
             repaint();
         }
@@ -1773,15 +1788,15 @@ public class NewDialog extends javax.swing.JDialog {
                 case 1:
                     return "Monoisotopic Mass";
                 case 2:
-                    return "-2 [%]";
+                    return "-2 C13 [%]";
                 case 3:
-                    return "-1 [%]";
+                    return "-1 C13 [%]";
                 case 4:
                     return "Monoisotopic [%]";
                 case 5:
-                    return "+1 [%]";
+                    return "+1 C13 [%]";
                 case 6:
-                    return "+2 [%]";
+                    return "+2 C13 [%]";
                 default:
                     return "";
             }
@@ -1794,7 +1809,7 @@ public class NewDialog extends javax.swing.JDialog {
                 case 0:
                     return selectedMethod.getReagent(reagentName).getReporterIon().getName();
                 case 1:
-                    return selectedMethod.getReagent(reagentName).getReporterIon().getTheoreticMass();
+                    return selectedMethod.getReagent(reagentName).getReporterIon().getTheoreticMass() + ElementaryIon.proton.getTheoreticMass();
                 case 2:
                     return selectedMethod.getReagent(reagentName).getMinus2();
                 case 3:
