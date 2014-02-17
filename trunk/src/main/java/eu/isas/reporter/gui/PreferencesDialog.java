@@ -1,15 +1,11 @@
 package eu.isas.reporter.gui;
 
 import com.compomics.util.examples.BareBonesBrowserLaunch;
-import com.compomics.util.experiment.biology.PTM;
-import com.compomics.util.experiment.biology.PTMFactory;
 import com.compomics.util.experiment.identification.SearchParameters;
 import eu.isas.peptideshaker.scoring.MatchValidationLevel;
 import eu.isas.reporter.myparameters.ReporterPreferences;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import javax.swing.JOptionPane;
 
 /**

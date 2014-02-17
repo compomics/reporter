@@ -3,7 +3,7 @@ package eu.isas.reporter.utils;
 import com.compomics.util.experiment.identification.matches.ProteinMatch;
 import com.compomics.util.math.BasicMathFunctions;
 import com.compomics.util.math.statistics.Distribution;
-import com.compomics.util.math.statistics.ditributions.NonSymmetricalNormalDistribution;
+import com.compomics.util.math.statistics.distributions.NonSymmetricalNormalDistribution;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -39,7 +39,7 @@ public class ReporterMerger {
     public void testReporterGrouping() throws FileNotFoundException, IOException {
 
         try {
-            String path = "D:\\projects\\Yngvild TMT\\reporter";
+            String path = "C:\\Users\\hba041\\Desktop\\heidrun\\reporter_test\\new_tmt_masses_2";
 
             int nFiles = 3;
             int nProteins = 20000;
@@ -48,9 +48,9 @@ public class ReporterMerger {
 
             String[] orderedExperiments = {"Mix 1", "Mix 2", "Mix 3"};
             HashMap<String, String> fileMap = new HashMap<String, String>(nFiles);
-            fileMap.put(orderedExperiments[0], "proteins mix1.txt");
-            fileMap.put(orderedExperiments[1], "proteins mix2.txt");
-            fileMap.put(orderedExperiments[2], "proteins mix3.txt");
+            fileMap.put(orderedExperiments[0], "Mix1.txt");
+            fileMap.put(orderedExperiments[1], "Mix2.txt");
+            fileMap.put(orderedExperiments[2], "Mix3.txt");
 
             HashMap<String, ArrayList<String>> ratios = new HashMap<String, ArrayList<String>>(nFiles);
 
@@ -445,8 +445,8 @@ public class ReporterMerger {
                 }
             }
 
-            // Output medianes
-            outputFile = new File(path, "medianes.txt");
+            // Output medians
+            outputFile = new File(path, "medians.txt");
             writer = new BufferedWriter(new FileWriter(outputFile));
             writer.write(separator);
             for (String experiment : orderedExperiments) {
