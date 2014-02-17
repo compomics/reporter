@@ -44,6 +44,7 @@ import eu.isas.reporter.export.report.export_features.PsmFeatures;
 import eu.isas.reporter.export.report.sections.PeptideSection;
 import eu.isas.reporter.export.report.sections.ProteinSection;
 import eu.isas.reporter.export.report.sections.PsmSection;
+import eu.isas.reporter.myparameters.ReporterPreferences;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -222,6 +223,7 @@ public class ReporterExportFactory implements ExportFactory {
      * generator (mandatory for the Protein, Peptide and PSM sections)
      * @param quantificationFeaturesGenerator the object generating the quantification features
      * @param reporterIonQuantification the reporter ion quantification object containing the quantification configuration
+     * @param reporterPreferences the reporter preferences
      * @param searchParameters the search parameters (mandatory for the Protein,
      * Peptide, PSM and search parameters sections)
      * @param proteinKeys the protein keys to export (mandatory for the Protein
@@ -251,7 +253,7 @@ public class ReporterExportFactory implements ExportFactory {
      * @throws MzMLUnmarshallerException
      */
     public static void writeExport(ExportScheme exportScheme, File destinationFile, String experiment, String sample, int replicateNumber,
-            ProjectDetails projectDetails, Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification,
+            ProjectDetails projectDetails, Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, ReporterPreferences reporterPreferences,
             SearchParameters searchParameters, ArrayList<String> proteinKeys, ArrayList<String> peptideKeys, ArrayList<String> psmKeys,
             String proteinMatchKey, int nSurroundingAA, AnnotationPreferences annotationPreferences, IdFilter idFilter,
             PTMScoringPreferences ptmcoringPreferences, SpectrumCountingPreferences spectrumCountingPreferences, WaitingHandler waitingHandler)
@@ -288,7 +290,7 @@ public class ReporterExportFactory implements ExportFactory {
                 section.writeSection(identification, identificationFeaturesGenerator, quantificationFeaturesGenerator, reporterIonQuantification, searchParameters, annotationPreferences, psmKeys, nSurroundingAA, waitingHandler);
             } else if (sectionName.equals(PsmFeatures.type)) {
                 PsmSection section = new PsmSection(exportScheme.getExportFeatures(sectionName), exportScheme.getSeparator(), exportScheme.isIndexes(), exportScheme.isHeader(), writer);
-                section.writeSection(identification, identificationFeaturesGenerator, quantificationFeaturesGenerator, reporterIonQuantification, searchParameters, annotationPreferences, psmKeys, "", waitingHandler);
+                section.writeSection(identification, identificationFeaturesGenerator, quantificationFeaturesGenerator, reporterIonQuantification, reporterPreferences, searchParameters, annotationPreferences, psmKeys, "", waitingHandler);
             } else if (sectionName.equals(PtmScoringFeatures.type)) {
                 PtmScoringSection section = new PtmScoringSection(exportScheme.getExportFeatures(sectionName), exportScheme.getSeparator(), exportScheme.isIndexes(), exportScheme.isHeader(), writer);
                 section.writeSection(ptmcoringPreferences, waitingHandler);
@@ -469,6 +471,9 @@ public class ReporterExportFactory implements ExportFactory {
                     exportScheme.addExportFeature(section, PeptideFeatures.normalized_ratio);
                 }
                 if (psm) {
+                    exportScheme.addExportFeature(section, PsmFeatures.reporter_mz);
+                    exportScheme.addExportFeature(section, PsmFeatures.reporter_intensity);
+                    exportScheme.addExportFeature(section, PsmFeatures.deisotoped_intensity);
                     exportScheme.addExportFeature(section, PsmFeatures.ratio);
                 }
             }

@@ -17,7 +17,8 @@ import java.util.ArrayList;
  */
 public enum PsmFeatures implements ReporterExportFeature {
     
-    raw_intensity("Raw Intensity", "The instensities as extracted from the spectrum.", true),
+    reporter_mz("Reporter m/z", "The reporter ions m/z as extracted from the spectrum.", true),
+    reporter_intensity("Reporter Intensity", "The reporter ions instensities as extracted from the spectrum.", true),
     deisotoped_intensity("Deisotoped Intensity", "The instensities after deisotoping.", true),
     ratio("Ratios", "The ratios of this protein group.", true);
 
