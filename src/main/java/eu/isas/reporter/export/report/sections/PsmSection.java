@@ -2,6 +2,7 @@ package eu.isas.reporter.export.report.sections;
 
 import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.SearchParameters;
+import com.compomics.util.experiment.identification.matches.IonMatch;
 import com.compomics.util.experiment.identification.matches.SpectrumMatch;
 import com.compomics.util.experiment.massspectrometry.Spectrum;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
@@ -14,7 +15,9 @@ import eu.isas.peptideshaker.utils.IdentificationFeaturesGenerator;
 import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
 import eu.isas.reporter.export.report.ReporterExportFeature;
 import eu.isas.reporter.export.report.export_features.PsmFeatures;
+import eu.isas.reporter.myparameters.ReporterPreferences;
 import eu.isas.reporter.quantificationdetails.PsmQuantificationDetails;
+import eu.isas.reporter.quantificationdetails.SpectrumQuantificationDetails;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -101,6 +104,7 @@ public class PsmSection {
      * generator containing the quantification information
      * @param reporterIonQuantification the reporter ion quantification object
      * containing the quantification configuration
+     * @param reporterPreferences the reporter preferences
      * @param searchParameters the search parameters of the project
      * @param annotationPreferences the annotation preferences
      * @param keys the keys of the PSM matches to output
@@ -114,7 +118,7 @@ public class PsmSection {
      * @throws InterruptedException
      * @throws MzMLUnmarshallerException
      */
-    public void writeSection(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification,
+    public void writeSection(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, ReporterPreferences reporterPreferences,
             SearchParameters searchParameters, AnnotationPreferences annotationPreferences, ArrayList<String> keys, String linePrefix, WaitingHandler waitingHandler) throws IOException, IllegalArgumentException, SQLException,
             ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
 
@@ -210,10 +214,10 @@ public class PsmSection {
                     PsmFeatures psmFeature = (PsmFeatures) exportFeature;
                 if (psmFeature.hasChannels()) {
                     for (String sampleIndex : sampleIndexes) {
-                        writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, spectrumKey, psmFeature, sampleIndex)+ separator);
+                        writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, reporterPreferences, spectrumKey, psmFeature, sampleIndex)+ separator);
                     }
                 } else {
-                    writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, spectrumKey, psmFeature, "") + separator);
+                    writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, reporterPreferences, spectrumKey, psmFeature, "") + separator);
                 }
 
                 }
@@ -239,6 +243,7 @@ public class PsmSection {
      * generator
      * @param reporterIonQuantification the reporter ion quantification object
      * containing the quantification configuration
+     * @param reporterPreferences the reporter preferences
      * @param spectrumKey the spectrum key
      * @param psmFeatures the PSM feature to export
      * @param sampleIndex the index of the sample in case the feature is channel
@@ -253,11 +258,28 @@ public class PsmSection {
      * @throws InterruptedException
      * @throws MzMLUnmarshallerException
      */
-    public static String getFeature(QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, String spectrumKey, PsmFeatures psmFeatures, String sampleIndex) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
+    public static String getFeature(QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, ReporterPreferences reporterPreferences, String spectrumKey, PsmFeatures psmFeatures, String sampleIndex) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
         switch (psmFeatures) {
             case ratio:
                 PsmQuantificationDetails psmDetails = quantificationFeaturesGenerator.getPSMQuantificationDetails(spectrumKey);
                 return psmDetails.getRatio(sampleIndex).toString();
+            case reporter_intensity:
+                SpectrumQuantificationDetails spectrumDetails = quantificationFeaturesGenerator.getSpectrumQuantificationDetails(reporterIonQuantification, reporterPreferences, spectrumKey);
+                IonMatch ionMatch = spectrumDetails.getRepoterMatch(sampleIndex);
+                if (ionMatch == null) {
+                    return "";
+                }
+                return ionMatch.peak.intensity + "";
+            case reporter_mz:
+                spectrumDetails = quantificationFeaturesGenerator.getSpectrumQuantificationDetails(reporterIonQuantification, reporterPreferences, spectrumKey);
+                ionMatch = spectrumDetails.getRepoterMatch(sampleIndex);
+                if (ionMatch == null) {
+                    return "";
+                }
+                return ionMatch.peak.mz + "";
+            case deisotoped_intensity:
+                spectrumDetails = quantificationFeaturesGenerator.getSpectrumQuantificationDetails(reporterIonQuantification, reporterPreferences, spectrumKey);
+                return spectrumDetails.getDeisotopedIntensity(sampleIndex).toString();
             default:
                 return "Not implemented";
         }
