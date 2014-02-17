@@ -507,7 +507,7 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="isotopeCorrectionJScrollPane" pref="778" max="32767" attributes="0"/>
+                              <Component id="reagentsTableJScrollPane" pref="778" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                           </Group>
                       </Group>
@@ -516,14 +516,14 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="isotopeCorrectionJScrollPane" pref="347" max="32767" attributes="0"/>
+                              <Component id="reagentsTableJScrollPane" pref="347" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
                   </Layout>
                   <SubComponents>
-                    <Container class="javax.swing.JScrollPane" name="isotopeCorrectionJScrollPane">
+                    <Container class="javax.swing.JScrollPane" name="reagentsTableJScrollPane">
                       <AuxValues>
                         <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
                       </AuxValues>
