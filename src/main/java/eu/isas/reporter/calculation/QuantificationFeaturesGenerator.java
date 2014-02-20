@@ -85,6 +85,10 @@ public class QuantificationFeaturesGenerator {
      * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException 
      */
     public ProteinQuantificationDetails getProteinMatchQuantificationDetails(String matchKey) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
+        if (matchKey.equals("P19022")) {
+            int debug = 1;
+        }
+        
         ProteinMatch proteinMatch = identification.getProteinMatch(matchKey);
         int nPeptides = proteinMatch.getPeptideCount();
         ProteinQuantificationDetails result = quantificationFeaturesCache.getProteinMatchQuantificationDetails(nPeptides, matchKey);

@@ -80,7 +80,7 @@ public class RatioEstimator {
             if (ratioRef + halfWindow > lastTest) {
                 double start = Math.max(lastTest, ratioRef - halfWindow);
                 lastTest = ratioRef + halfWindow;
-                for (double r0 = start; r0 <= ratioRef + halfWindow; r0 += 10 * resolution) {
+                for (double r0 = start; r0 <= lastTest; r0 += 10 * resolution) {
                     nRatios = 0;
                     for (double ratio : ratios) {
                         if (Math.abs(ratio - r0) <= halfWindow) {
@@ -108,7 +108,7 @@ public class RatioEstimator {
                     nRatios = 0;
 
                     for (double r : ratios) {
-                        if (Math.abs(r - r0) < halfWindow) {
+                        if (Math.abs(r - r0) <= halfWindow) {
                             nRatios++;
                             integral += (r - r0) * Math.pow(1 - Math.pow((r - r0) / window, 2), 2);
                         }
@@ -127,7 +127,9 @@ public class RatioEstimator {
                 }
             }
         }
-        if (bestRatios.size() == 1) {
+        if (bestRatios.isEmpty()) {
+            throw new IllegalArgumentException("Best ratio not found for the given set of ratios.");
+        } else if (bestRatios.size() == 1) {
             return bestRatios.get(0);
         } else {
             double summ = 0;

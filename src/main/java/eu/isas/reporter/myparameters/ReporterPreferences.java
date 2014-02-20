@@ -28,7 +28,7 @@ public class ReporterPreferences implements UrParameter {
     /*
      * Tolerance for reporter ion matching.
      */
-    private double ReporterIonsMzTolerance = 0.01;
+    private double ReporterIonsMzTolerance = 0.0016;
     /**
      * Quantification and identification are conducted on the same spectra
      * (identification files import only).
@@ -57,7 +57,7 @@ public class ReporterPreferences implements UrParameter {
      * Boolean indicating whether spectra presenting null intensities should be
      * ignored.
      */
-    private boolean ignoreNullIntensities = true;
+    private boolean ignoreNullIntensities = false;
     /**
      * Boolean indicating whether peptides presenting missed cleavages should be
      * ignored.
