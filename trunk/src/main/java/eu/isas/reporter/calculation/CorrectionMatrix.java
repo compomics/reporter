@@ -1,5 +1,6 @@
 package eu.isas.reporter.calculation;
 
+import com.compomics.util.experiment.biology.Atom;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -19,19 +20,33 @@ public class CorrectionMatrix {
      * The name of the reagents affected by this matrix at their index. 0 is the first index.
      */
     private HashMap<Integer, String> reagentNames;
+    /**
+     * The mass affected by the first column of the matrix.
+     */
+    private double refMass;
     
     /**
      * Constructor
      * 
      * @param correctionMatrix the correction matrix
      * @param reagentNames he name of the reagents affected by this matrix 
+     * @param refMass the mass affected by the first column of the matrix
     */
-    public CorrectionMatrix(double[][] correctionMatrix, HashMap<Integer, String> reagentNames) {
+    public CorrectionMatrix(double[][] correctionMatrix, HashMap<Integer, String> reagentNames, double refMass) {
         this.correctionMatrix = correctionMatrix;
         this.reagentNames = reagentNames;
-        if (correctionMatrix.length != reagentNames.size()) {
-            throw new IllegalArgumentException("Correction matrix size (" + correctionMatrix.length + ") does not match the reagent names list size (" + reagentNames.size() + ").");
-        }
+        this.refMass = refMass;
+    }
+    
+    /**
+     * Returns the mass affected by the given column of the matrix.
+     * 
+     * @param isotope the column of the matrix
+     * 
+     * @return the mass affected by the given column of the matrix
+     */
+    public double getReagentMass(int isotope) {
+        return refMass + isotope * Atom.C.getDifferenceToMonoisotopic(1);
     }
     
     /**

@@ -200,7 +200,7 @@
 		</reagentList>
 	</reporterMethod>
 	<reporterMethod>
-		<name> TMT10 HCD (Default) </name>
+		<name> TMT10 (Default) </name>
 		<reagentList>
 			<reagent>
 				<name> TMT 126 </name>

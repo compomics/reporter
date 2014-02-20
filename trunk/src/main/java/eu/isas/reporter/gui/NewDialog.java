@@ -4,6 +4,7 @@ import com.compomics.util.db.ObjectsCache;
 import com.compomics.util.experiment.MsExperiment;
 import com.compomics.util.experiment.biology.Sample;
 import com.compomics.util.experiment.biology.ions.ElementaryIon;
+import com.compomics.util.experiment.biology.ions.PeptideFragmentIon;
 import com.compomics.util.experiment.biology.ions.ReporterIon;
 import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.SearchParameters;
@@ -122,11 +123,10 @@ public class NewDialog extends javax.swing.JDialog {
         initComponents();
 // load the user preferences
         loadUserPreferences();
-        
+
         // make sure that the scroll panes are see-through
         reagentsTableJScrollPane.getViewport().setOpaque(false);
         sampleAssignmentJScrollPane.getViewport().setOpaque(false);
-
 
         sameSpectra.setSelected(true);
 
@@ -159,9 +159,9 @@ public class NewDialog extends javax.swing.JDialog {
         });
 
         txtConfigurationFileLocation.setText(reporterGui.getJarFilePath() + File.separator + METHODS_FILE);
-        
+
         refresh();
-        
+
         pack();
         setLocationRelativeTo(reporterGui);
         setVisible(true);
@@ -1412,11 +1412,22 @@ public class NewDialog extends javax.swing.JDialog {
                     } else if (ptmName.contains("duplex")) {
                         selectedMethod = getMethod("TMT2 (Default)");
                         break;
-                    } else if (ptmName.contains("tmt 6")) {
-                        selectedMethod = getMethod("TMT6 (Default)");
+                    } else if (ptmName.contains("tmt") && ptmName.contains("6")) {
+                        if (searchParameters.getIonSearched1() == PeptideFragmentIon.Y_ION
+                                || searchParameters.getIonSearched2() == PeptideFragmentIon.Y_ION) {
+                            selectedMethod = getMethod("TMT6 HCD (Default)");
+                        } else {
+                            selectedMethod = getMethod("TMT6 ETD (Default)");
+                        }
+                        if (reporterPreferences.getReporterIonsMzTolerance() > 0.0016) {
+                            reporterPreferences.setReporterIonsMzTolerance(0.0016);
+                        }
                         break;
-                    } else if (ptmName.contains("tmt 10 (Default)")) {
+                    } else if (ptmName.contains("tmt") && ptmName.contains("10")) {
                         selectedMethod = getMethod("TMT10 (Default)");
+                        if (reporterPreferences.getReporterIonsMzTolerance() > 0.0016) {
+                            reporterPreferences.setReporterIonsMzTolerance(0.0016);
+                        }
                         break;
                     } else if (ptmName.contains("itraq")) {
                         selectedMethod = getMethod("iTRAQ 4Plex (Default)");
@@ -1447,7 +1458,7 @@ public class NewDialog extends javax.swing.JDialog {
             }
         }.start();
     }
-    
+
     /**
      * Returns the project details.
      *

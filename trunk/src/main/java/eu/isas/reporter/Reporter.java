@@ -369,6 +369,14 @@ public class Reporter {
                     controlIntensities.add(intensity);
                 }
             }
+            if (controlIntensities.isEmpty()) {
+                for (String index : indexes) {
+                    double intensity = spectrumQuantification.getDeisotopedIntensity(index);
+                    if (intensity > 0) {
+                        controlIntensities.add(intensity);
+                    }
+                }
+            }
             double normalization = 0;
             if (!controlIntensities.isEmpty()) {
                 normalization = BasicMathFunctions.median(controlIntensities);
@@ -423,18 +431,7 @@ public class Reporter {
         HashMap<String, IonMatch> matchesMap = new HashMap<String, IonMatch>();
         for (String ionName : reporterIonQuantification.getSampleIndexes()) {
             ReporterIon reporterIon = reporterMethod.getReporterIon(ionName);
-            ArrayList<IonMatch> ionMatches = SpectrumAnnotator.matchReporterIon(reporterIon, 1, spectrum, reporterPreferences.getReporterIonsMzTolerance());
-
-            IonMatch bestMatch = null;
-            double error = reporterPreferences.getReporterIonsMzTolerance();
-            double bestIntensity = 0;
-            for (IonMatch ionMatch : ionMatches) {
-                if (bestMatch == null
-                        || Math.abs(ionMatch.getAbsoluteError()) < error
-                        || ionMatch.getAbsoluteError() == 0 && ionMatch.peak.intensity > bestIntensity) {
-                    bestMatch = ionMatch;
-                }
-            }
+            IonMatch bestMatch = getBestReporterIonMatch(reporterIon, 1, spectrum, reporterPreferences.getReporterIonsMzTolerance());
             if (bestMatch != null) {
                 result.setReporterMatch(ionName, bestMatch);
                 matchesMap.put(ionName, bestMatch);
@@ -443,7 +440,7 @@ public class Reporter {
 
         // get deisotoped intensities
         Deisotoper deisotoper = quantificationFeaturesGenerator.getDeisotoper(reporterMethod, reporterPreferences.getReporterIonsMzTolerance());
-        HashMap<String, Double> deisotoped = deisotoper.deisotope(matchesMap);
+        HashMap<String, Double> deisotoped = deisotoper.deisotope(matchesMap, spectrum, reporterPreferences.getReporterIonsMzTolerance());
         for (String index : reporterIonQuantification.getSampleIndexes()) {
             Double intensity = deisotoped.get(index);
             if (intensity == null || intensity < 0) {
@@ -453,5 +450,31 @@ public class Reporter {
         }
 
         return result;
+    }
+
+    /**
+     * Returns the best reporter ion match based on mass accuracy. Null if none
+     * found
+     *
+     * @param reporterIon the reporter ion to match
+     * @param charge the expected charge
+     * @param spectrum the spectrum inspected
+     * @param mzTolerance the m/z tolerance
+     *
+     * @return the best ion match
+     */
+    public static IonMatch getBestReporterIonMatch(ReporterIon reporterIon, int charge, Spectrum spectrum, double mzTolerance) {
+        ArrayList<IonMatch> ionMatches = SpectrumAnnotator.matchReporterIon(reporterIon, 1, spectrum, mzTolerance);
+        IonMatch bestMatch = null;
+        double error = mzTolerance;
+        double bestIntensity = 0;
+        for (IonMatch ionMatch : ionMatches) {
+            if (bestMatch == null
+                    || Math.abs(ionMatch.getAbsoluteError()) < error
+                    || ionMatch.getAbsoluteError() == 0 && ionMatch.peak.intensity > bestIntensity) {
+                bestMatch = ionMatch;
+            }
+        }
+        return bestMatch;
     }
 }
