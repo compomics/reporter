@@ -38,7 +38,7 @@ public class PeptideSection {
      */
     private ArrayList<ReporterExportFeature> quantificationFeatures = new ArrayList<ReporterExportFeature>();
     /**
-     * The psm subsection if needed.
+     * The PSM subsection if needed.
      */
     private PsmSection psmSection = null;
     /**
@@ -199,6 +199,7 @@ public class PeptideSection {
                 psmSectionPrefix += line + ".";
                 psmSection.writeSection(identification, identificationFeaturesGenerator, searchParameters, annotationPreferences, peptideMatch.getSpectrumMatches(), psmSectionPrefix, null);
             }
+
             line++;
         }
     }
@@ -225,7 +226,8 @@ public class PeptideSection {
      * @throws InterruptedException
      * @throws MzMLUnmarshallerException
      */
-    public static String getFeature(QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, String peptideKey, PeptideFeatures peptideFeatures, String sampleIndex) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
+    public static String getFeature(QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, String peptideKey, 
+            PeptideFeatures peptideFeatures, String sampleIndex) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
         switch (peptideFeatures) {
             case raw_ratio:
                 PeptideQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideKey);
@@ -318,7 +320,7 @@ public class PeptideSection {
                 }
             }
         }
+
         writer.newLine();
     }
-
 }
