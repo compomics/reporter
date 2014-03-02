@@ -163,6 +163,7 @@ public class PeptideSection {
             }
 
             peptideMatch = identification.getPeptideMatch(peptideKey);
+            psParameter = (PSParameter) identification.getPeptideMatchParameter(peptideKey, psParameter);
 
             if (indexes) {
                 if (linePrefix != null) {
