@@ -278,6 +278,13 @@
             <layout>default</layout>
         </repository>
         
+        <!-- EBI repository -->
+        <repository>
+            <id>ebi-repo</id> 
+            <name>The EBI internal repository</name>
+            <url>http://www.ebi.ac.uk/~maven/m2repo</url> 
+        </repository>
+        
         <!-- EBI nexus repository -->
         <repository>
             <id>nexus-ebi-repo</id>
@@ -295,7 +302,7 @@
         <dependency>
             <groupId>com.compomics</groupId>
             <artifactId>utilities</artifactId>
-            <version>3.23.7</version>
+            <version>3.23.18</version>
             <exclusions>
                 <exclusion>
                     <artifactId>commons-math</artifactId>
