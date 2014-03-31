@@ -1377,8 +1377,8 @@ public class NewDialog extends javax.swing.JDialog {
                     progressDialog.setRunFinished();
                     JOptionPane.showMessageDialog(NewDialog.this,
                             "An error occured while reading:\n" + cpsBean.getCpsFile() + ".\n\n"
-                            + "Please verify that the compomics-utilities version used to create\n"
-                            + "the file is compatible with your version of PeptideShaker.",
+                            + "Please verify that the PeptideShaker version used to create\n"
+                            + "the file is compatible with your version of Reporter.",
                             "File Input Error", JOptionPane.ERROR_MESSAGE);
                     e.printStackTrace();
                 }

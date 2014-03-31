@@ -503,9 +503,9 @@ public class PreferencesDialog extends javax.swing.JDialog {
         }
         selectedPTMs.setListData(allModificationsAsArray);
         updateModificationList();
-        proteinValidationCmb.setSelectedIndex(quantificationPreferences.getProteinValidationLevel().getIndex());
-        peptideValidationCmb.setSelectedIndex(quantificationPreferences.getPeptideValidationLevel().getIndex());
-        psmValidationCmb.setSelectedIndex(quantificationPreferences.getPsmValidationLevel().getIndex());
+        proteinValidationCmb.setSelectedIndex(2-quantificationPreferences.getProteinValidationLevel().getIndex());
+        peptideValidationCmb.setSelectedIndex(2-quantificationPreferences.getPeptideValidationLevel().getIndex());
+        psmValidationCmb.setSelectedIndex(2-quantificationPreferences.getPsmValidationLevel().getIndex());
     }
 
     /**
@@ -522,9 +522,9 @@ public class PreferencesDialog extends javax.swing.JDialog {
             name = (String) selectedPTMs.getModel().getElementAt(j);
             quantificationPreferences.addExcludingPtm(name);
         }
-        quantificationPreferences.setProteinValidationLevel(MatchValidationLevel.getMatchValidationLevel(proteinValidationCmb.getSelectedIndex()));
-        quantificationPreferences.setPeptideValidationLevel(MatchValidationLevel.getMatchValidationLevel(peptideValidationCmb.getSelectedIndex()));
-        quantificationPreferences.setPsmValidationLevel(MatchValidationLevel.getMatchValidationLevel(psmValidationCmb.getSelectedIndex()));
+        quantificationPreferences.setProteinValidationLevel(MatchValidationLevel.getMatchValidationLevel(2-proteinValidationCmb.getSelectedIndex()));
+        quantificationPreferences.setPeptideValidationLevel(MatchValidationLevel.getMatchValidationLevel(2-peptideValidationCmb.getSelectedIndex()));
+        quantificationPreferences.setPsmValidationLevel(MatchValidationLevel.getMatchValidationLevel(2-psmValidationCmb.getSelectedIndex()));
     }
 
     /**
