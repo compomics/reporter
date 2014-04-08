@@ -333,7 +333,7 @@ public class Reporter {
         } else {
             SpectrumFactory spectrumFactory = SpectrumFactory.getInstance();
             String refFile = Spectrum.getSpectrumFile(matchKey);
-            Precursor refPrecursor = spectrumFactory.getPrecursor(matchKey);
+            Precursor refPrecursor = spectrumFactory.getPrecursor(matchKey, true);
             // match spectra by mass and retention time
             for (String spectrumTitle : spectrumFactory.getSpectrumTitles(refFile)) {
                 Precursor precursor = spectrumFactory.getPrecursor(refFile, spectrumTitle);
