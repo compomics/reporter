@@ -76,33 +76,34 @@ public class Reporter {
         for (String mgfName : identification.getOrderedSpectrumFileNames()) {
             if (waitingHandler != null) {
                 waitingHandler.setPrimaryProgressCounterIndeterminate(true);
-                waitingHandler.setWaitingText("Loading matches for " + mgfName + " (" + ++progress + "/" + totalProgress + "). Please Wait...");
+                waitingHandler.setWaitingText("Loading matches for " + mgfName + " (step " + ++progress + " of " + totalProgress + "). Please Wait...");
             }
             identification.loadSpectrumMatches(mgfName, waitingHandler);
         }
         if (waitingHandler != null) {
             waitingHandler.setPrimaryProgressCounterIndeterminate(true);
-            waitingHandler.setWaitingText("Loading peptide matches (" + ++progress + "/" + totalProgress + "). Please Wait...");
+            waitingHandler.setWaitingText("Loading peptide matches (step " + ++progress + " of " + totalProgress + "). Please Wait...");
         }
         identification.loadPeptideMatches(waitingHandler);
         for (String mgfName : identification.getOrderedSpectrumFileNames()) {
             if (waitingHandler != null) {
                 waitingHandler.setPrimaryProgressCounterIndeterminate(true);
-                waitingHandler.setWaitingText("Loading match parameters for " + mgfName + " (" + ++progress + "/" + totalProgress + "). Please Wait...");
+                waitingHandler.setWaitingText("Loading match parameters for " + mgfName + " (step " + ++progress + " of " + totalProgress + "). Please Wait...");
             }
             identification.loadSpectrumMatchParameters(mgfName, psParameter, waitingHandler);
         }
         if (waitingHandler != null) {
             waitingHandler.setPrimaryProgressCounterIndeterminate(true);
-            waitingHandler.setWaitingText("Loading peptide details (" + ++progress + "/" + totalProgress + "). Please Wait...");
+            waitingHandler.setWaitingText("Loading peptide details (step " + ++progress + " of " + totalProgress + "). Please Wait...");
         }
         identification.loadPeptideMatchParameters(psParameter, waitingHandler);
         if (waitingHandler != null) {
-            waitingHandler.setWaitingText("Estimating Normalization factors (" + ++progress + "/" + totalProgress + "). Please Wait...");
+            waitingHandler.setWaitingText("Estimating Normalization factors (step " + ++progress + " of " + totalProgress + "). Please Wait...");
             waitingHandler.resetPrimaryProgressCounter();
             waitingHandler.setPrimaryProgressCounterIndeterminate(false);
             waitingHandler.setMaxPrimaryProgressCounter(identification.getPeptideIdentification().size());
         }
+        int nPeptides = identification.getPeptideIdentification().size(), cpt = 0;
         for (String peptideKey : identification.getPeptideIdentification()) {
             psParameter = (PSParameter) identification.getPeptideMatchParameter(peptideKey, psParameter);
             if (psParameter.getMatchValidationLevel().isValidated()) {
@@ -119,6 +120,7 @@ public class Reporter {
                     return;
                 }
                 waitingHandler.increaseSecondaryProgressCounter();
+                waitingHandler.setWaitingText("Estimating Normalization factors (step " + ++progress + " of " + totalProgress + ", peptide " + ++cpt + " of " + nPeptides + "). Please Wait...");
             }
         }
         for (String sampleIndex : reporterIonQuantification.getSampleIndexes()) {

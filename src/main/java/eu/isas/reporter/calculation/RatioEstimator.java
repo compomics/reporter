@@ -41,9 +41,19 @@ public class RatioEstimator {
         }
         double[] logRatios = new double[nLeft];
         int index = nZeros;
+        Double ratioMin = null, ratioMax = null;
         for (int i = 0 ; i < nLeft - nZeros ; i++, index++) {
             double ratio = ratios.get(index);
+            if (ratioMin == null || ratioMin > ratio) {
+                ratioMin = ratio;
+            }
+            if (ratioMax == null || ratioMax < ratio) {
+                ratioMax = ratio;
+            }
             logRatios[i] = FastMath.log10(ratio);
+        }
+        if (ratioMin == ratioMax) {
+            return ratioMin;
         }
         double logResult = mEstimate(reporterPreferences, logRatios);
         double result = FastMath.pow(10, logResult);
