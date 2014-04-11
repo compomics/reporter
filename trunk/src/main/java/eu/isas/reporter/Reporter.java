@@ -104,6 +104,7 @@ public class Reporter {
             waitingHandler.setMaxPrimaryProgressCounter(identification.getPeptideIdentification().size());
         }
         int nPeptides = identification.getPeptideIdentification().size(), cpt = 0;
+        progress++;
         for (String peptideKey : identification.getPeptideIdentification()) {
             psParameter = (PSParameter) identification.getPeptideMatchParameter(peptideKey, psParameter);
             if (psParameter.getMatchValidationLevel().isValidated()) {
@@ -120,7 +121,7 @@ public class Reporter {
                     return;
                 }
                 waitingHandler.increaseSecondaryProgressCounter();
-                waitingHandler.setWaitingText("Estimating Normalization Factors (Step " + ++progress + " of " + totalProgress + ", Peptide " + ++cpt + " of " + nPeptides + "). Please Wait...");
+                waitingHandler.setWaitingText("Estimating Normalization factors (step " + progress + " of " + totalProgress + ", peptide " + ++cpt + " of " + nPeptides + "). Please Wait...");
             }
         }
         for (String sampleIndex : reporterIonQuantification.getSampleIndexes()) {
