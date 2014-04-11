@@ -30,30 +30,43 @@ public class RatioEstimator {
         }
         Collections.sort(ratios);
         int nZeros = 0;
+        Double ratioMin = null, ratioMax = null;
         for (double ratio : ratios) {
             if (ratio == 0) {
                 nZeros++;
+            } else {
+                if (ratioMin == null || ratioMin > ratio) {
+                    ratioMin = ratio;
+                }
+                if (ratioMax == null || ratioMax < ratio) {
+                    ratioMax = ratio;
+                }
             }
         }
-        int nLeft = ratios.size() - 2* nZeros;
+        if (ratioMin == ratioMax) {
+            return ratioMin;
+        }
+        int nLeft = ratios.size() - 2 * nZeros;
         if (nLeft < 6) {
             return BasicMathFunctions.median(ratios);
         }
         double[] logRatios = new double[nLeft];
         int index = nZeros;
-        Double ratioMin = null, ratioMax = null;
-        for (int i = 0 ; i < nLeft - nZeros ; i++, index++) {
+        ratioMin = null;
+        ratioMax = null;
+        for (int i = 0; i < nLeft - nZeros; i++, index++) {
             double ratio = ratios.get(index);
-            if (ratioMin == null || ratioMin > ratio) {
-                ratioMin = ratio;
+            double logRatio = FastMath.log10(ratio);
+            if (ratioMin == null || logRatio < ratioMin) {
+                ratioMin = logRatio;
             }
-            if (ratioMax == null || ratioMax < ratio) {
-                ratioMax = ratio;
+            if (ratioMax == null || logRatio > ratioMax) {
+                ratioMax = logRatio;
             }
-            logRatios[i] = FastMath.log10(ratio);
+            logRatios[i] = logRatio;
         }
-        if (ratioMin == ratioMax) {
-            return ratioMin;
+        if (ratioMax - ratioMin <= reporterPreferences.getRatioResolution()) {
+            return BasicMathFunctions.median(ratios);
         }
         double logResult = mEstimate(reporterPreferences, logRatios);
         double result = FastMath.pow(10, logResult);
@@ -64,10 +77,12 @@ public class RatioEstimator {
      * Returns the compilation of various ratios using a redescending
      * M-estimator.
      *
+     * @param reporterPreferences the reporter quantification preferences
      * @param ratios various imput ratios
+     *
      * @return the resulting ratio
      */
-    private static Double mEstimate(ReporterPreferences reporterPreferences, double[] ratios) {
+    public static Double mEstimate(ReporterPreferences reporterPreferences, double[] ratios) {
 
         double complement = (100 - reporterPreferences.getPercentile()) / 200;
         if (complement < 0 || complement > 100) {
