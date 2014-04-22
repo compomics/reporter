@@ -210,15 +210,15 @@ public class ReporterGUI extends javax.swing.JFrame {
         String path = getJarFilePath();
 
         try {
-            ptmFactory.importModifications(new File(path, Reporter.MODIFICATIONS_FILE), false);
+            ptmFactory.importModifications(new File(path, Reporter.getDefaultModificationFile()), false);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "An error (" + e.getMessage() + ") occured when trying to load the modifications from " + Reporter.MODIFICATIONS_FILE + ".",
+            JOptionPane.showMessageDialog(null, "An error (" + e.getMessage() + ") occured when trying to load the modifications from " + Reporter.getDefaultModificationFile() + ".",
                     "Configuration import Error", JOptionPane.ERROR_MESSAGE);
         }
         try {
-            ptmFactory.importModifications(new File(path, Reporter.USER_MODIFICATIONS_FILE), true);
+            ptmFactory.importModifications(new File(path, Reporter.getUserModificationFile()), true);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "An error (" + e.getMessage() + ") occured when trying to load the modifications from " + Reporter.USER_MODIFICATIONS_FILE + ".",
+            JOptionPane.showMessageDialog(null, "An error (" + e.getMessage() + ") occured when trying to load the modifications from " + Reporter.getUserModificationFile() + ".",
                     "Configuration import Error", JOptionPane.ERROR_MESSAGE);
         }
     }
