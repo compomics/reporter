@@ -49,11 +49,11 @@ public class Reporter {
     /**
      * Modification file.
      */
-    public static final String MODIFICATIONS_FILE = "resources/conf/reporter_mods.xml";
+    private static String MODIFICATIONS_FILE = "resources/conf/reporter_mods.xml";
     /**
      * User modification file.
      */
-    public static final String USER_MODIFICATIONS_FILE = "resources/conf/reporter_usermods.xml";
+    private static String USER_MODIFICATIONS_FILE = "resources/conf/reporter_usermods.xml";
 
     /**
      * Sets the normalization factors in the ReporterIonQuantification object.
@@ -479,5 +479,42 @@ public class Reporter {
             }
         }
         return bestMatch;
+    }
+
+    /**
+     * Returns the file used for default modifications pre-loading.
+     * 
+     * @return the file used for default modifications pre-loading
+     */
+    public static String getDefaultModificationFile() {
+        return MODIFICATIONS_FILE;
+    }
+
+    /**
+     * Sets the file used for default modifications pre-loading.
+     * 
+     * @param modificationFile the file used for default modifications pre-loading
+     */
+    public static void setDefaultModificationFile(String modificationFile) {
+        Reporter.MODIFICATIONS_FILE = modificationFile;
+    }
+
+    /**
+     * Returns the file used for user modifications pre-loading.
+     * 
+     * @return the file used for user modifications pre-loading
+     */
+    public static String getUserModificationFile() {
+        return USER_MODIFICATIONS_FILE;
+    }
+
+
+    /**
+     * Sets the file used for user modifications pre-loading.
+     * 
+     * @param modificationFile the file used for user modifications pre-loading
+     */
+    public static void setUserModificationFile(String modificationFile) {
+        Reporter.USER_MODIFICATIONS_FILE = modificationFile;
     }
 }

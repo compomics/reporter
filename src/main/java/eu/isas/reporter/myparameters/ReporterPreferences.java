@@ -21,7 +21,7 @@ public class ReporterPreferences implements UrParameter {
     /**
      * Location of the user preferences file.
      */
-    public static final String USER_PREFERENCES_FILE = System.getProperty("user.home") + "/.reporter/userpreferences.cup";
+    private static String USER_PREFERENCES_FILE = System.getProperty("user.home") + "/.reporter/reporter_user_preferences.cup";
     /////////////////////
     // Import parameters
     /////////////////////
@@ -404,6 +404,34 @@ public class ReporterPreferences implements UrParameter {
      */
     public void setPsmValidationLevel(MatchValidationLevel matchValidationLevel) {
         this.psmValidation = matchValidationLevel;
+    }
+
+    /**
+     * Returns the file used to save the user preferences
+     * 
+     * @return the file used to save the user preferences
+     */
+    public static String getUserPreferencesFile() {
+        return USER_PREFERENCES_FILE;
+    }
+
+    /**
+     * Returns the folder used to save the user preferences
+     * 
+     * @return the folder used to save the user preferences
+     */
+    public static String getUserPreferencesFolder() {
+        File tempFile = new File(getUserPreferencesFile());
+        return tempFile.getParent();
+    }
+
+    /**
+     * Sets the folder used to save the user preferences.
+     * 
+     * @param userPreferencesFile the folder used to save the user preferences
+     */
+    public static void setUserPreferencesFolder(String userPreferencesFile) {
+        ReporterPreferences.USER_PREFERENCES_FILE = userPreferencesFile + "/reporter_user_preferences.cup";
     }
 
     @Override
