@@ -2,9 +2,7 @@ package eu.isas.reporter.preferences;
 
 import com.compomics.util.preferences.UtilitiesPathPreferences;
 import eu.isas.peptideshaker.preferences.PeptideShakerPathPreferences;
-import eu.isas.reporter.Reporter;
 import eu.isas.reporter.export.report.ReporterExportFactory;
-import eu.isas.reporter.myparameters.ReporterPreferences;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -12,30 +10,29 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import javax.swing.JFrame;
 
 /**
- * This class sets the path preferences for the files to read/write
+ * This class sets the path preferences for the files to read/write.
  *
- * @author Marc
+ * @author Marc Vaudel
  */
 public class ReporterPathPreferences {
 
     /**
-     * Enum of the paths which can be set in Reporter
+     * Enum of the paths which can be set in Reporter.
      */
     public enum ReporterPathKey {
 
         /**
-         * Folder containing the user custom exports file
+         * Folder containing the user custom exports file.
          */
         reporterExports("reporter_exports", "Folder containing the user custom exports file.", "", true);
         /**
-         * The key used to refer to this path
+         * The key used to refer to this path.
          */
         private String id;
         /**
-         * The description of the path usage
+         * The description of the path usage.
          */
         private String description;
         /**
@@ -44,12 +41,12 @@ public class ReporterPathPreferences {
          */
         private String defaultSubDirectory;
         /**
-         * Indicates whether the path should be a folder
+         * Indicates whether the path should be a folder.
          */
         private boolean isDirectory;
 
         /**
-         * Constructor
+         * Constructor.
          *
          * @param id the id used to refer to this path key
          * @param description the description of the path usage
@@ -124,7 +121,7 @@ public class ReporterPathPreferences {
     }
 
     /**
-     * Loads a path to be set from a line
+     * Loads a path to be set from a line.
      *
      * @param line the line where to read the path from
      * @throws java.io.FileNotFoundException
@@ -151,7 +148,7 @@ public class ReporterPathPreferences {
     }
 
     /**
-     * Sets the path according to the given key and path
+     * Sets the path according to the given key and path.
      *
      * @param reporterPathKey the key of the path
      * @param path the path to be set
@@ -205,8 +202,9 @@ public class ReporterPathPreferences {
     }
 
     /**
-     *
-     * @param bw the writer to use for writing
+     * Writes the configurations file using the provided buffered writer.
+     * 
+     * @param bw the writer to use for writing.
      *
      * @throws IOException
      */
@@ -236,5 +234,4 @@ public class ReporterPathPreferences {
         }
         bw.newLine();
     }
-
 }

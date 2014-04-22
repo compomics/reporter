@@ -1896,5 +1896,4 @@ public class NewDialog extends javax.swing.JDialog {
     public ReporterIonQuantification getReporterIonQuantification() {
         return reporterIonQuantification;
     }
-
 }

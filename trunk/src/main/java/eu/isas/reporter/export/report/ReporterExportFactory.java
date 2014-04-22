@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package eu.isas.reporter.export.report;
 
 import com.compomics.util.experiment.identification.Identification;
@@ -56,11 +50,12 @@ import java.util.HashMap;
 import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
 
 /**
- * The reporter export factory manages the reports available from Reporter
+ * The reporter export factory manages the reports available from Reporter.
  *
- * @author Marc
+ * @author Marc Vaudel
  */
 public class ReporterExportFactory implements ExportFactory {
+
     /**
      * The instance of the factory.
      */
@@ -221,8 +216,10 @@ public class ReporterExportFactory implements ExportFactory {
      * Peptide and PSM sections)
      * @param identificationFeaturesGenerator the identification features
      * generator (mandatory for the Protein, Peptide and PSM sections)
-     * @param quantificationFeaturesGenerator the object generating the quantification features
-     * @param reporterIonQuantification the reporter ion quantification object containing the quantification configuration
+     * @param quantificationFeaturesGenerator the object generating the
+     * quantification features
+     * @param reporterIonQuantification the reporter ion quantification object
+     * containing the quantification configuration
      * @param reporterPreferences the reporter preferences
      * @param searchParameters the search parameters (mandatory for the Protein,
      * Peptide, PSM and search parameters sections)
@@ -253,7 +250,8 @@ public class ReporterExportFactory implements ExportFactory {
      * @throws MzMLUnmarshallerException
      */
     public static void writeExport(ExportScheme exportScheme, File destinationFile, String experiment, String sample, int replicateNumber,
-            ProjectDetails projectDetails, Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, ReporterPreferences reporterPreferences,
+            ProjectDetails projectDetails, Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, 
+            QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, ReporterPreferences reporterPreferences,
             SearchParameters searchParameters, ArrayList<String> proteinKeys, ArrayList<String> peptideKeys, ArrayList<String> psmKeys,
             String proteinMatchKey, int nSurroundingAA, AnnotationPreferences annotationPreferences, IdFilter idFilter,
             PTMScoringPreferences ptmcoringPreferences, SpectrumCountingPreferences spectrumCountingPreferences, WaitingHandler waitingHandler)
@@ -387,7 +385,7 @@ public class ReporterExportFactory implements ExportFactory {
 
     /**
      * Returns the default file name for the export of a report based on the
-     * project details
+     * project details.
      *
      * @param experiment the experiment of the project
      * @param sample the sample of the project
@@ -439,14 +437,15 @@ public class ReporterExportFactory implements ExportFactory {
     }
 
     /**
-     * Returns the default schemes available. The default schemes are here the PeptideShaker default schemes with ratios.
+     * Returns the default schemes available. The default schemes are here the
+     * PeptideShaker default schemes with ratios.
      *
      * @return a list containing the default schemes
      */
     private static HashMap<String, ExportScheme> getDefaultExportSchemes() {
 
         HashMap<String, ExportScheme> defaultSchemes = new HashMap<String, ExportScheme>();
-        
+
         for (String schemeName : PSExportFactory.getDefaultExportSchemesNames()) {
             // Add ratios to the default PeptideShaker reports
             ExportScheme exportScheme = PSExportFactory.getDefaultExportScheme(schemeName);
@@ -500,7 +499,7 @@ public class ReporterExportFactory implements ExportFactory {
 
     /**
      * Returns the file where to save the implemented export schemes.
-     * 
+     *
      * @return the file where to save the implemented export schemes
      */
     public static String getSerializationFile() {
@@ -509,7 +508,7 @@ public class ReporterExportFactory implements ExportFactory {
 
     /**
      * Returns the folder where to save the implemented export schemes.
-     * 
+     *
      * @return the folder where to save the implemented export schemes
      */
     public static String getSerializationFolder() {
@@ -519,8 +518,9 @@ public class ReporterExportFactory implements ExportFactory {
 
     /**
      * Sets the folder where to save the implemented export schemes.
-     * 
-     * @param serializationFolder the folder where to save the implemented export schemes
+     *
+     * @param serializationFolder the folder where to save the implemented
+     * export schemes
      */
     public static void setSerializationFolder(String serializationFolder) {
         ReporterExportFactory.SERIALIZATION_FILE = serializationFolder + "/reporter_exportFactory.cus";

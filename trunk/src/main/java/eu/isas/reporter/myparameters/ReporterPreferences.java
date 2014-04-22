@@ -15,7 +15,7 @@ import java.util.ArrayList;
 public class ReporterPreferences implements UrParameter {
 
     /**
-     * fixed serial number for serialization backward compatibility
+     * Fixed serial number for serialization backward compatibility.
      */
     static final long serialVersionUID = 3054710627326315328L;
     /**
@@ -41,7 +41,7 @@ public class ReporterPreferences implements UrParameter {
      */
     private double precursorMzTolerance = 1;
     /**
-     * Indicates if the precursor mz tolerance in ppm
+     * Indicates if the precursor mz tolerance in ppm.
      */
     private boolean precursorMzPpm;
     /**
@@ -73,20 +73,20 @@ public class ReporterPreferences implements UrParameter {
      */
     private double ratioResolution = 0.01;
     /**
-     * List of PTMs to exclude. Peptides presenting these ptms will not be
+     * List of PTMs to exclude. Peptides presenting these PTMs will not be
      * accounted for during quantification.
      */
     private ArrayList<String> excludingPTM = new ArrayList<String>();
     /**
-     * The validation threshold to use for protein quantification
+     * The validation threshold to use for protein quantification.
      */
     private MatchValidationLevel proteinValidation = MatchValidationLevel.confident;
     /**
-     * The validation threshold to use for peptide quantification
+     * The validation threshold to use for peptide quantification.
      */
     private MatchValidationLevel peptideValidation = MatchValidationLevel.confident;
     /**
-     * The validation threshold to use for psm quantification
+     * The validation threshold to use for PSM quantification.
      */
     private MatchValidationLevel psmValidation = MatchValidationLevel.confident;
 
@@ -407,7 +407,7 @@ public class ReporterPreferences implements UrParameter {
     }
 
     /**
-     * Returns the file used to save the user preferences
+     * Returns the file used to save the user preferences.
      * 
      * @return the file used to save the user preferences
      */
@@ -416,7 +416,7 @@ public class ReporterPreferences implements UrParameter {
     }
 
     /**
-     * Returns the folder used to save the user preferences
+     * Returns the folder used to save the user preferences.
      * 
      * @return the folder used to save the user preferences
      */
