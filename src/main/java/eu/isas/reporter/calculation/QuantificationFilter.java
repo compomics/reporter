@@ -34,7 +34,7 @@ public class QuantificationFilter {
      * according to the user settings
      */
     public static boolean isRatioValid(ReporterPreferences reporterPreferences, Double ratio) {
-        return ratio.isNaN() && (!reporterPreferences.isIgnoreNullIntensities() || ratio > 0);
+        return !ratio.isNaN() && (!reporterPreferences.isIgnoreNullIntensities() || ratio > 0);
     }
 
     /**

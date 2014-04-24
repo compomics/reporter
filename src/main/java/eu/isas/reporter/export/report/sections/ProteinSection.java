@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
+import org.apache.commons.math.MathException;
 import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
 
 /**
@@ -128,7 +129,7 @@ public class ProteinSection {
      */
     public void writeSection(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification,
             SearchParameters searchParameters, AnnotationPreferences annotationPreferences, ArrayList<String> keys, int nSurroundingAas, WaitingHandler waitingHandler)
-            throws IOException, IllegalArgumentException, SQLException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
+            throws IOException, IllegalArgumentException, SQLException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException, MathException {
 
         if (waitingHandler != null) {
             waitingHandler.setSecondaryProgressCounterIndeterminate(true);
