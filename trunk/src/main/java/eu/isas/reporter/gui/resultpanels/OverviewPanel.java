@@ -31,7 +31,7 @@ public class OverviewPanel extends javax.swing.JPanel {
      */
     private ArrayList<String> proteinTableToolTips;
     /**
-     * The main gui class
+     * The main gui class.
      */
     private ReporterGUI reporterGUI;
     /**
@@ -40,7 +40,7 @@ public class OverviewPanel extends javax.swing.JPanel {
     private ProgressDialogX progressDialog;
     
     /**
-     * Creates new form OverviewPanel
+     * Creates a new OverviewPanel.
      * 
      * @param reporterGUI 
      */
@@ -236,9 +236,9 @@ public class OverviewPanel extends javax.swing.JPanel {
      * Set up the properties of the protein table.
      */
     private void setProteinTableProperties() {
-
-        ProteinTableModel.setProteinTableProperties(proteinTable, reporterGUI.getSparklineColor(), reporterGUI.getSparklineColorNonValidated(), reporterGUI.getSparklineColorNotFound(), reporterGUI.getScoreAndConfidenceDecimalFormat(), this.getClass(), reporterGUI.getMetrics().getMaxProteinKeyLength());
-    
+        ProteinTableModel.setProteinTableProperties(proteinTable, reporterGUI.getSparklineColor(), reporterGUI.getSparklineColorNonValidated(), 
+                reporterGUI.getSparklineColorNotFound(), reporterGUI.getSparklineColorDoubtful(), reporterGUI.getScoreAndConfidenceDecimalFormat(), 
+                this.getClass(), reporterGUI.getMetrics().getMaxProteinKeyLength());
     }
 
     /**

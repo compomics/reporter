@@ -2,7 +2,6 @@ package eu.isas.reporter.gui;
 
 import com.compomics.software.CompomicsWrapper;
 import com.compomics.util.Util;
-import com.compomics.util.db.ObjectsCache;
 import com.compomics.util.experiment.MsExperiment;
 import com.compomics.util.experiment.biology.PTMFactory;
 import com.compomics.util.experiment.biology.Sample;
@@ -124,6 +123,7 @@ public class ReporterGUI extends javax.swing.JFrame {
      * The horizontal padding used before and after the text in the titled
      * borders. (Needed to make it look as good in Java 7 as it did in Java
      * 6...)
+     *
      * @TODO: move to utilities?
      */
     public static String TITLED_BORDER_HORIZONTAL_PADDING = "";
@@ -294,7 +294,7 @@ public class ReporterGUI extends javax.swing.JFrame {
             }
         }.start();
     }
-    
+
     /**
      * Sets the display preferences based on the currently loaded cps file
      */
@@ -328,10 +328,10 @@ public class ReporterGUI extends javax.swing.JFrame {
     public QuantificationFeaturesGenerator getQuantificationFeaturesGenerator() {
         return quantificationFeaturesGenerator;
     }
-    
+
     /**
      * Returns the reporter ion quantification.
-     * 
+     *
      * @return the reporter ion quantification
      */
     public ReporterIonQuantification getReporterIonQuantification() {
@@ -350,16 +350,16 @@ public class ReporterGUI extends javax.swing.JFrame {
 
     /**
      * Returns the reporter preferences.
-     * 
+     *
      * @return the reporter preferences
      */
     public ReporterPreferences getReporterPreferences() {
         return reporterPreferences;
     }
-    
+
     /**
      * Returns the identification of the cps file. Null if none loaded.
-     * 
+     *
      * @return the identification of the cps file
      */
     public Identification getIdentification() {
@@ -416,10 +416,10 @@ public class ReporterGUI extends javax.swing.JFrame {
         }
         return cpsBean.getProjectDetails();
     }
-    
+
     /**
      * returns the identification display preferences
-     * 
+     *
      * @return the identification display preferences
      */
     public eu.isas.peptideshaker.preferences.DisplayPreferences getIdentificationDisplayPreferences() {
@@ -464,10 +464,11 @@ public class ReporterGUI extends javax.swing.JFrame {
         }
         return cpsBean.getPtmScoringPreferences();
     }
-    
+
     /**
-     * Returns the identification parameters of the cps file. Null if none loaded.
-     * 
+     * Returns the identification parameters of the cps file. Null if none
+     * loaded.
+     *
      * @return the identification parameters of the cps file
      */
     public SearchParameters getSearchParameters() {
@@ -479,16 +480,16 @@ public class ReporterGUI extends javax.swing.JFrame {
 
     /**
      * Returns the exception handler.
-     * 
+     *
      * @return the exception handler
      */
     public ExceptionHandler getExceptionHandler() {
         return exceptionHandler;
     }
-    
+
     /**
      * Returns the spectrum counting preferences.
-     * 
+     *
      * @return the spectrum counting preferences
      */
     public SpectrumCountingPreferences getSpectrumCountingPreferences() {
@@ -497,16 +498,16 @@ public class ReporterGUI extends javax.swing.JFrame {
 
     /**
      * Returns the display preferences.
-     * 
+     *
      * @return the display preferences
      */
     public DisplayPreferences getDisplayPreferences() {
         return displayPreferences;
     }
-    
+
     /**
      * Returns the filter preferences.
-     * 
+     *
      * @return the filter preferences
      */
     public FilterPreferences getFilterPreferences() {
@@ -538,6 +539,15 @@ public class ReporterGUI extends javax.swing.JFrame {
      */
     public Color getSparklineColorNotFound() {
         return utilitiesUserPreferences.getSparklineColorNotFound();
+    }
+
+    /**
+     * Get the not doubtful sparklines color.
+     *
+     * @return the doubtful sparklineColor
+     */
+    public Color getSparklineColorDoubtful() {
+        return utilitiesUserPreferences.getSparklineColorDoubtful();
     }
 
     /**
