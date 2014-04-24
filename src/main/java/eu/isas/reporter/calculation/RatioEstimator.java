@@ -43,6 +43,9 @@ public class RatioEstimator {
                 }
             }
         }
+        if (nZeros == ratios.size()) {
+            return 0.0;
+        }
         if (ratioMin == ratioMax) {
             return ratioMin;
         }
@@ -54,7 +57,7 @@ public class RatioEstimator {
         int index = nZeros;
         ratioMin = null;
         ratioMax = null;
-        for (int i = 0; i < nLeft - nZeros; i++, index++) {
+        for (int i = 0; i < nLeft; i++, index++) {
             double ratio = ratios.get(index);
             double logRatio = FastMath.log10(ratio);
             if (ratioMin == null || logRatio < ratioMin) {
@@ -101,11 +104,12 @@ public class RatioEstimator {
         // Check how many ratios we can get in the window
         double lastTest = ratios[0] - halfWindow;
         int nRatios, nRatiosMax = 0;
+        double step = Math.min(0.01 * window, resolution);
         for (double ratioRef : ratios) {
             if (ratioRef + halfWindow > lastTest) {
                 double start = Math.max(lastTest, ratioRef - halfWindow);
                 lastTest = ratioRef + halfWindow;
-                for (double r0 = start; r0 <= lastTest; r0 += 10 * resolution) {
+                for (double r0 = start; r0 <= lastTest; r0 += step) {
                     nRatios = 0;
                     for (double ratio : ratios) {
                         if (Math.abs(ratio - r0) <= halfWindow) {
@@ -127,7 +131,8 @@ public class RatioEstimator {
             if (ratioRef + halfWindow > lastTest) {
                 double start = Math.max(lastTest, ratioRef - halfWindow);
                 lastTest = ratioRef + halfWindow;
-                for (double r0 = start; r0 <= lastTest; r0 += resolution) {
+                
+                for (double r0 = start; r0 <= lastTest; r0 += step) {
 
                     double integral = 0;
                     nRatios = 0;
