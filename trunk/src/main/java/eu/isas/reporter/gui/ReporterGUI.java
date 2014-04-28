@@ -11,6 +11,7 @@ import com.compomics.util.experiment.identification.SequenceFactory;
 import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.general.ExceptionHandler;
+import com.compomics.util.gui.PrivacySettingsDialog;
 import com.compomics.util.gui.UtilitiesGUIDefaults;
 import com.compomics.util.gui.error_handlers.BugReport;
 import com.compomics.util.gui.error_handlers.HelpDialog;
@@ -345,7 +346,7 @@ public class ReporterGUI extends javax.swing.JFrame {
         if (!reporterIonQuantification.hasNormalisationFactors()) {
             Reporter.setNormalizationFactors(reporterIonQuantification, reporterPreferences, cpsBean.getIdentification(), quantificationFeaturesGenerator, progressDialog);
         }
-        overviewPanel.updateDisplay();
+//        overviewPanel.updateDisplay();
     }
 
     /**
@@ -594,6 +595,9 @@ public class ReporterGUI extends javax.swing.JFrame {
         jMenuItem1 = new javax.swing.JMenuItem();
         quantificationOptionsMenu = new javax.swing.JMenu();
         quantificationOptionsMenuItem = new javax.swing.JMenuItem();
+        jSeparator4 = new javax.swing.JPopupMenu.Separator();
+        javaOptionsMenuItem = new javax.swing.JMenuItem();
+        privacyMenuItem = new javax.swing.JMenuItem();
         helpMenu = new javax.swing.JMenu();
         helpMenuItem = new javax.swing.JMenuItem();
         jSeparator17 = new javax.swing.JPopupMenu.Separator();
@@ -693,6 +697,18 @@ public class ReporterGUI extends javax.swing.JFrame {
             }
         });
         quantificationOptionsMenu.add(quantificationOptionsMenuItem);
+        quantificationOptionsMenu.add(jSeparator4);
+
+        javaOptionsMenuItem.setText("Java Options");
+        quantificationOptionsMenu.add(javaOptionsMenuItem);
+
+        privacyMenuItem.setText("Privacy Settings");
+        privacyMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                privacyMenuItemActionPerformed(evt);
+            }
+        });
+        quantificationOptionsMenu.add(privacyMenuItem);
 
         menuBar.add(quantificationOptionsMenu);
 
@@ -827,6 +843,10 @@ public class ReporterGUI extends javax.swing.JFrame {
                 "About ReporterGUI");
     }//GEN-LAST:event_aboutMenuItemActionPerformed
 
+    private void privacyMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_privacyMenuItemActionPerformed
+        new PrivacySettingsDialog(this, Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")));
+    }//GEN-LAST:event_privacyMenuItemActionPerformed
+
     /**
      * Closes Reporter.
      */
@@ -929,11 +949,14 @@ public class ReporterGUI extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator17;
     private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
+    private javax.swing.JPopupMenu.Separator jSeparator4;
+    private javax.swing.JMenuItem javaOptionsMenuItem;
     private javax.swing.JMenuItem logReportMenu;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JMenuItem newMenuItem;
     private javax.swing.JMenuItem openMenuItem;
     private javax.swing.JPanel overviewJPanel;
+    private javax.swing.JMenuItem privacyMenuItem;
     private javax.swing.JMenu quantificationOptionsMenu;
     private javax.swing.JMenuItem quantificationOptionsMenuItem;
     private javax.swing.JMenuItem saveMenuItem;

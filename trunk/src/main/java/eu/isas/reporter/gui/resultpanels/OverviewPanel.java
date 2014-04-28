@@ -1,11 +1,15 @@
 package eu.isas.reporter.gui.resultpanels;
 
+import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.gui.GuiUtilities;
 import com.compomics.util.gui.error_handlers.HelpDialog;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
 import eu.isas.peptideshaker.gui.tablemodels.ProteinTableModel;
+import eu.isas.peptideshaker.myparameters.PSParameter;
 import eu.isas.peptideshaker.preferences.SpectrumCountingPreferences.SpectralCountingMethod;
+import eu.isas.peptideshaker.utils.IdentificationFeaturesGenerator;
 import eu.isas.reporter.gui.ReporterGUI;
+import java.awt.Color;
 import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -35,6 +39,14 @@ public class OverviewPanel extends javax.swing.JPanel {
      */
     private ReporterGUI reporterGUI;
     /**
+     * Utilities Identification containing the identification objects
+     */
+    private Identification identification;
+    /**
+     * PeptideShaker identification features generator
+     */
+    private IdentificationFeaturesGenerator identificationFeaturesGenerator;
+    /**
      * A simple progress dialog.
      */
     private ProgressDialogX progressDialog;
@@ -47,7 +59,6 @@ public class OverviewPanel extends javax.swing.JPanel {
     public OverviewPanel(ReporterGUI reporterGUI) {
         initComponents();
         this.reporterGUI = reporterGUI;
-        
         setUpGui();
         formComponentResized(null);
     }
@@ -99,6 +110,8 @@ public class OverviewPanel extends javax.swing.JPanel {
      */
     public void updateDisplay() {
         
+        identification = reporterGUI.getIdentification();
+        identificationFeaturesGenerator = reporterGUI.getIdentificationFeaturesGenerator();
 
         progressDialog = new ProgressDialogX(reporterGUI,
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
@@ -127,11 +140,13 @@ public class OverviewPanel extends javax.swing.JPanel {
                     progressDialog.setTitle("Preparing Overview. Please Wait...");
 
                        ArrayList<String> proteinKeys = reporterGUI.getIdentificationFeaturesGenerator().getProcessedProteinKeys(progressDialog, reporterGUI.getFilterPreferences());
+                       identification.loadProteinMatches(proteinKeys, progressDialog);
+                       identification.loadProteinMatchParameters(proteinKeys, new PSParameter(), progressDialog);
                     // update the table model
                     if (proteinTable.getRowCount() > 0) {
-                        ((ProteinTableModel) proteinTable.getModel()).updateDataModel(reporterGUI.getIdentification(), reporterGUI.getIdentificationFeaturesGenerator(), reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getSearchParameters(), reporterGUI.getExceptionHandler(), proteinKeys);
+                        ((ProteinTableModel) proteinTable.getModel()).updateDataModel(identification, identificationFeaturesGenerator, reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getSearchParameters(), reporterGUI.getExceptionHandler(), proteinKeys);
                     } else {
-                        ProteinTableModel proteinTableModel = new ProteinTableModel(reporterGUI.getIdentification(), reporterGUI.getIdentificationFeaturesGenerator(), reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getSearchParameters(), reporterGUI.getExceptionHandler(), proteinKeys);
+                        ProteinTableModel proteinTableModel = new ProteinTableModel(identification, identificationFeaturesGenerator, reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getSearchParameters(), reporterGUI.getExceptionHandler(), proteinKeys);
                         proteinTable.setModel(proteinTableModel);
                     }
 
@@ -157,8 +172,8 @@ public class OverviewPanel extends javax.swing.JPanel {
                     
                     String title = ReporterGUI.TITLED_BORDER_HORIZONTAL_PADDING + "Proteins (";
                     try {
-                        int nValidated = reporterGUI.getIdentificationFeaturesGenerator().getNValidatedProteins();
-                        int nConfident = reporterGUI.getIdentificationFeaturesGenerator().getNConfidentProteins();
+                        int nValidated = identificationFeaturesGenerator.getNValidatedProteins();
+                        int nConfident = identificationFeaturesGenerator.getNConfidentProteins();
                         int nProteins = proteinTable.getRowCount();
                         if (nConfident > 0) {
                             title += nValidated + "/" + nProteins + " - " + nConfident + " confident, " + (nValidated - nConfident) + " doubtful";
