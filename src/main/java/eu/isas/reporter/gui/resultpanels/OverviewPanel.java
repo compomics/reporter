@@ -9,7 +9,6 @@ import eu.isas.peptideshaker.myparameters.PSParameter;
 import eu.isas.peptideshaker.preferences.SpectrumCountingPreferences.SpectralCountingMethod;
 import eu.isas.peptideshaker.utils.IdentificationFeaturesGenerator;
 import eu.isas.reporter.gui.ReporterGUI;
-import java.awt.Color;
 import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -39,22 +38,22 @@ public class OverviewPanel extends javax.swing.JPanel {
      */
     private ReporterGUI reporterGUI;
     /**
-     * Utilities Identification containing the identification objects
+     * Utilities Identification containing the identification objects.
      */
     private Identification identification;
     /**
-     * PeptideShaker identification features generator
+     * PeptideShaker identification features generator.
      */
     private IdentificationFeaturesGenerator identificationFeaturesGenerator;
     /**
      * A simple progress dialog.
      */
     private ProgressDialogX progressDialog;
-    
+
     /**
      * Creates a new OverviewPanel.
-     * 
-     * @param reporterGUI 
+     *
+     * @param reporterGUI
      */
     public OverviewPanel(ReporterGUI reporterGUI) {
         initComponents();
@@ -62,21 +61,21 @@ public class OverviewPanel extends javax.swing.JPanel {
         setUpGui();
         formComponentResized(null);
     }
-    
+
     /**
-     * Sets up the GUI components
+     * Sets up the GUI components.
      */
     private void setUpGui() {
         // set main table properties
         proteinTable.getTableHeader().setReorderingAllowed(false);
-        
+
         // correct the color for the upper right corner
         JPanel proteinCorner = new JPanel();
         proteinCorner.setBackground(proteinTable.getTableHeader().getBackground());
         proteinScrollPane.setCorner(ScrollPaneConstants.UPPER_RIGHT_CORNER, proteinCorner);
-        
+
         proteinTable.setAutoCreateRowSorter(true);
-        
+
         // make sure that the user is made aware that the tool is doing something during sorting of the protein table
         proteinTable.getRowSorter().addRowSorterListener(new RowSorterListener() {
 
@@ -98,18 +97,18 @@ public class OverviewPanel extends javax.swing.JPanel {
                 }
             }
         });
-        
+
         // make sure that the scroll panes are see-through
         proteinScrollPane.getViewport().setOpaque(false);
-        
+
         setUpTableHeaderToolTips();
     }
-    
+
     /**
      * Updates the display with the underlying data
      */
     public void updateDisplay() {
-        
+
         identification = reporterGUI.getIdentification();
         identificationFeaturesGenerator = reporterGUI.getIdentificationFeaturesGenerator();
 
@@ -135,13 +134,13 @@ public class OverviewPanel extends javax.swing.JPanel {
             public void run() {
 
                 try {
-                    
+
                     progressDialog.setPrimaryProgressCounterIndeterminate(true);
                     progressDialog.setTitle("Preparing Overview. Please Wait...");
 
-                       ArrayList<String> proteinKeys = reporterGUI.getIdentificationFeaturesGenerator().getProcessedProteinKeys(progressDialog, reporterGUI.getFilterPreferences());
-                       identification.loadProteinMatches(proteinKeys, progressDialog);
-                       identification.loadProteinMatchParameters(proteinKeys, new PSParameter(), progressDialog);
+                    ArrayList<String> proteinKeys = reporterGUI.getIdentificationFeaturesGenerator().getProcessedProteinKeys(progressDialog, reporterGUI.getFilterPreferences());
+                    identification.loadProteinMatches(proteinKeys, progressDialog);
+                    identification.loadProteinMatchParameters(proteinKeys, new PSParameter(), progressDialog);
                     // update the table model
                     if (proteinTable.getRowCount() > 0) {
                         ((ProteinTableModel) proteinTable.getModel()).updateDataModel(identification, identificationFeaturesGenerator, reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getSearchParameters(), reporterGUI.getExceptionHandler(), proteinKeys);
@@ -151,7 +150,7 @@ public class OverviewPanel extends javax.swing.JPanel {
                     }
 
                     setTableProperties();
-                    
+
                     ((DefaultTableModel) proteinTable.getModel()).fireTableDataChanged();
 
                     // update spectrum counting column header tooltip
@@ -169,7 +168,6 @@ public class OverviewPanel extends javax.swing.JPanel {
                         proteinTableToolTips.set(proteinTable.getColumnCount() - 2, "Protein Confidence");
                     }
 
-                    
                     String title = ReporterGUI.TITLED_BORDER_HORIZONTAL_PADDING + "Proteins (";
                     try {
                         int nValidated = identificationFeaturesGenerator.getNValidatedProteins();
@@ -189,7 +187,6 @@ public class OverviewPanel extends javax.swing.JPanel {
                     proteinsLayeredPanel.repaint();
 
                     // updateProteinTableCellRenderers();
-
                     // enable the contextual export options
                     exportProteinsJButton.setEnabled(true);
 
@@ -204,7 +201,6 @@ public class OverviewPanel extends javax.swing.JPanel {
 //                            proteinTable.requestFocus();
 //                        }
 //                    }, "UpdateSelectionThread").start();
-
                 } catch (Exception e) {
                     reporterGUI.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
                     reporterGUI.catchException(e);
@@ -213,8 +209,7 @@ public class OverviewPanel extends javax.swing.JPanel {
             }
         }.start();
     }
-    
-    
+
     /**
      * Sets up the table header tooltips.
      */
@@ -251,8 +246,8 @@ public class OverviewPanel extends javax.swing.JPanel {
      * Set up the properties of the protein table.
      */
     private void setProteinTableProperties() {
-        ProteinTableModel.setProteinTableProperties(proteinTable, reporterGUI.getSparklineColor(), reporterGUI.getSparklineColorNonValidated(), 
-                reporterGUI.getSparklineColorNotFound(), reporterGUI.getSparklineColorDoubtful(), reporterGUI.getScoreAndConfidenceDecimalFormat(), 
+        ProteinTableModel.setProteinTableProperties(proteinTable, reporterGUI.getSparklineColor(), reporterGUI.getSparklineColorNonValidated(),
+                reporterGUI.getSparklineColorNotFound(), reporterGUI.getSparklineColorDoubtful(), reporterGUI.getScoreAndConfidenceDecimalFormat(),
                 this.getClass(), reporterGUI.getMetrics().getMaxProteinKeyLength());
     }
 
@@ -774,8 +769,8 @@ public class OverviewPanel extends javax.swing.JPanel {
 
     private void proteinsHelpJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_proteinsHelpJButtonActionPerformed
         setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
-        new HelpDialog(reporterGUI, getClass().getResource("/helpFiles/OverviewTab.html"), null,  // @TODO: write help
-                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/help.GIF")), 
+        new HelpDialog(reporterGUI, getClass().getResource("/helpFiles/OverviewTab.html"), null, // @TODO: write help
+                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/help.GIF")),
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
                 "Proteins Help");
 
@@ -805,7 +800,6 @@ public class OverviewPanel extends javax.swing.JPanel {
     private void hideProteinsJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hideProteinsJButtonActionPerformed
 
         // @TODO: reimplement me!
-        
 //        displayProteins = false;
 //        peptideShakerGUI.setDisplayOptions(displayProteins, displayPeptidesAndPSMs, displayCoverage, displaySpectrum);
     }//GEN-LAST:event_hideProteinsJButtonActionPerformed
@@ -820,8 +814,8 @@ public class OverviewPanel extends javax.swing.JPanel {
 
     private void ratioPLotHelpJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ratioPLotHelpJButtonActionPerformed
         setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
-        new HelpDialog(reporterGUI, getClass().getResource("/helpFiles/OverviewTab.html"), null,  // @TODO: write help
-                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/help.GIF")), 
+        new HelpDialog(reporterGUI, getClass().getResource("/helpFiles/OverviewTab.html"), null, // @TODO: write help
+                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/help.GIF")),
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
                 "Plot Help");
         setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
@@ -881,13 +875,12 @@ public class OverviewPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_ratioPlotOptionsJButtonMouseReleased
 
     private void formComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_formComponentResized
-        
+
         // resize the background panel
         backgroundLayeredPane.getComponent(0).setBounds(0, 0, backgroundLayeredPane.getWidth(), backgroundLayeredPane.getHeight());
         backgroundLayeredPane.revalidate();
         backgroundLayeredPane.repaint();
 
-        
         // resize the layered panels
         SwingUtilities.invokeLater(new Runnable() {
 
@@ -922,9 +915,6 @@ public class OverviewPanel extends javax.swing.JPanel {
                 proteinsLayeredPane.getComponent(4).setBounds(0, 0, proteinsLayeredPane.getWidth(), proteinsLayeredPane.getHeight());
                 proteinsLayeredPane.revalidate();
                 proteinsLayeredPane.repaint();
-
-
-
 
                 // move the icons
                 ratioPlotsLayeredPane.getComponent(0).setBounds(
@@ -963,7 +953,7 @@ public class OverviewPanel extends javax.swing.JPanel {
                 ratioPlotsLayeredPane.repaint();
             }
         });
-        
+
     }//GEN-LAST:event_formComponentResized
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -990,5 +980,4 @@ public class OverviewPanel extends javax.swing.JPanel {
     private javax.swing.JPanel ratioPlotsTitledPanel;
     // End of variables declaration//GEN-END:variables
 
-    
 }
