@@ -827,7 +827,7 @@ public class ReporterGUI extends javax.swing.JFrame {
      */
     private void logReportMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logReportMenuActionPerformed
         new BugReport(this, lastSelectedFolder, "ReporterGUI", "reporter",
-                new Properties().getVersion(),
+                new Properties().getVersion(), "peptide-shaker", "PeptideShaker", // @TODO: create Reporter google group?
                 new File(getJarFilePath() + "/resources/ReporterGUI.log"));
     }//GEN-LAST:event_logReportMenuActionPerformed
 
