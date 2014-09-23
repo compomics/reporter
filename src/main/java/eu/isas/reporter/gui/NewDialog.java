@@ -62,12 +62,7 @@ public class NewDialog extends javax.swing.JDialog {
     /**
      * The cps parent used to manage the data.
      */
-    private CpsParent cpsBean = new CpsParent() {
-        @Override
-        public String getJarFilePath() {
-            return reporterGui.getJarFilePath();
-        }
-    };
+    private CpsParent cpsBean = new CpsParent();
     /**
      * The mgf files loaded.
      */

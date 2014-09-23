@@ -12,6 +12,7 @@ import com.compomics.util.experiment.identification.matches.PeptideMatch;
 import com.compomics.util.experiment.identification.matches.ProteinMatch;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
+import com.compomics.util.preferences.SequenceMatchingPreferences;
 import eu.isas.reporter.Reporter;
 import eu.isas.reporter.myparameters.ReporterPreferences;
 import eu.isas.reporter.quantificationdetails.PeptideQuantificationDetails;
@@ -55,6 +56,10 @@ public class QuantificationFeaturesGenerator {
      */
     private SearchParameters searchParameters;
     /**
+     * The sequence matching preferences
+     */
+    private SequenceMatchingPreferences sequenceMatchingPreferences;
+    /**
      * Constructor
      * 
      * @param quantificationFeaturesCache the cache to use to store quantification results
@@ -62,13 +67,15 @@ public class QuantificationFeaturesGenerator {
      * @param reporterPreferences the user quantification preferences
      * @param reporterIonQuantification the reporter ion quantification settings
      * @param searchParameters the identification parameters used for the identification of spectra
+     * @param sequenceMatchingPreferences the sequence matching preferences
      */
-    public QuantificationFeaturesGenerator(QuantificationFeaturesCache quantificationFeaturesCache, Identification identification, ReporterPreferences reporterPreferences, ReporterIonQuantification reporterIonQuantification, SearchParameters searchParameters) {
+    public QuantificationFeaturesGenerator(QuantificationFeaturesCache quantificationFeaturesCache, Identification identification, ReporterPreferences reporterPreferences, ReporterIonQuantification reporterIonQuantification, SearchParameters searchParameters, SequenceMatchingPreferences sequenceMatchingPreferences) {
         this.quantificationFeaturesCache = quantificationFeaturesCache;
         this.identification = identification;
         this.reporterPreferences = reporterPreferences;
         this.reporterIonQuantification = reporterIonQuantification;
         this.searchParameters = searchParameters;
+        this.sequenceMatchingPreferences = sequenceMatchingPreferences;
     }
     
     /**
@@ -117,7 +124,7 @@ public class QuantificationFeaturesGenerator {
     public PtmSiteQuantificationDetails getPTMQuantificationDetails(String ptmName, String matchKey, int site) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
         PtmSiteQuantificationDetails result = quantificationFeaturesCache.getPtmQuantificationDetails(ptmName, matchKey, site);
         if (result == null) {
-            result = Reporter.estimatePTMQuantificationDetails(identification, this, reporterPreferences, reporterIonQuantification, searchParameters, ptmName, matchKey, site);
+            result = Reporter.estimatePTMQuantificationDetails(identification, this, reporterPreferences, reporterIonQuantification, searchParameters, sequenceMatchingPreferences, ptmName, matchKey, site);
             quantificationFeaturesCache.addPtmQuantificationDetails(ptmName, matchKey, site, result);
         }
         return result;

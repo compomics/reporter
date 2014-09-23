@@ -18,6 +18,7 @@ import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
 import com.compomics.util.math.BasicMathFunctions;
+import com.compomics.util.preferences.SequenceMatchingPreferences;
 import com.compomics.util.waiting.WaitingHandler;
 import eu.isas.peptideshaker.PeptideShaker;
 import eu.isas.peptideshaker.myparameters.PSParameter;
@@ -196,6 +197,7 @@ public class Reporter {
      * @param reporterPreferences the quantification user settings
      * @param reporterIonQuantification the reporter quantification settings
      * @param searchParameters the identification settings used
+     * @param sequenceMatchingPreferences the sequence matching preferences
      * @param ptmName the name of the PTM
      * @param matchKey the key of the match of interest
      * @param site the site of the PTM on the protein sequence
@@ -208,7 +210,7 @@ public class Reporter {
      * @throws java.lang.InterruptedException
      * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException
      */
-    public static PtmSiteQuantificationDetails estimatePTMQuantificationDetails(Identification identification, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterPreferences reporterPreferences, ReporterIonQuantification reporterIonQuantification, SearchParameters searchParameters, String ptmName, String matchKey, int site) throws IllegalArgumentException, SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
+    public static PtmSiteQuantificationDetails estimatePTMQuantificationDetails(Identification identification, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterPreferences reporterPreferences, ReporterIonQuantification reporterIonQuantification, SearchParameters searchParameters, SequenceMatchingPreferences sequenceMatchingPreferences, String ptmName, String matchKey, int site) throws IllegalArgumentException, SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
         PtmSiteQuantificationDetails result = new PtmSiteQuantificationDetails();
         HashMap<String, ArrayList<Double>> ratios = new HashMap<String, ArrayList<Double>>();
         ProteinMatch proteinMatch = identification.getProteinMatch(matchKey);
@@ -224,8 +226,7 @@ public class Reporter {
                     String leadingAccession = proteinMatch.getMainMatch();
                     Protein leadingProtein = SequenceFactory.getInstance().getProtein(leadingAccession);
                     ArrayList<Integer> peptideIndexes = leadingProtein.getPeptideStart(peptide.getSequence(),
-                            PeptideShaker.MATCHING_TYPE,
-                            searchParameters.getFragmentIonAccuracy());
+                            sequenceMatchingPreferences);
                     for (int index : peptideIndexes) {
                         if (index + modificationMatch.getModificationSite() == site) {
                             modified = true;

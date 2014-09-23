@@ -295,7 +295,7 @@ public class ReportDialog extends javax.swing.JDialog {
                                 reporterGUI.getProjectDetails(), reporterGUI.getIdentification(), reporterGUI.getIdentificationFeaturesGenerator(),
                                 reporterGUI.getQuantificationFeaturesGenerator(), reporterGUI.getReporterIonQuantification(), reporterGUI.getReporterPreferences(), reporterGUI.getSearchParameters(),
                                 null, null, null, null, reporterGUI.getIdentificationDisplayPreferences().getnAASurroundingPeptides(),
-                                reporterGUI.getAnnotationPreferences(), reporterGUI.getIdFilter(),
+                                reporterGUI.getAnnotationPreferences(), reporterGUI.getSequenceMatchingPreferences(), reporterGUI.getIdFilter(),
                                 reporterGUI.getPtmScoringPreferences(), reporterGUI.getSpectrumCountingPreferences(), progressDialog);
 
                         boolean processCancelled = progressDialog.isRunCanceled();
