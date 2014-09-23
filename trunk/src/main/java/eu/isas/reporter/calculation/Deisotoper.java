@@ -9,7 +9,6 @@ import com.compomics.util.experiment.quantification.reporterion.Reagent;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
 import eu.isas.reporter.Reporter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import org.ujmp.core.doublematrix.calculation.general.decomposition.Ginv;
 
@@ -21,7 +20,7 @@ import org.ujmp.core.doublematrix.calculation.general.decomposition.Ginv;
 public class Deisotoper {
 
     /**
-     * The correction matrix corresponding to every label
+     * The correction matrix corresponding to every label.
      */
     private HashMap<String, CorrectionMatrix> correctionMatrices;
     /**

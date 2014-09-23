@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package eu.isas.reporter.calculation;
 
 import com.compomics.util.experiment.massspectrometry.Spectrum;
@@ -15,9 +10,9 @@ import java.util.Collections;
 import java.util.HashMap;
 
 /**
- * The quantification features cache stores quantification features
+ * The quantification features cache stores quantification features.
  *
- * @author Marc
+ * @author Marc Vaudel
  */
 public class QuantificationFeaturesCache {
 
@@ -27,37 +22,36 @@ public class QuantificationFeaturesCache {
     private double memoryShare = 0.99;
     /**
      * The protein quantification details in a map: number of peptides > protein
-     * match key > match quantification details
+     * match key > match quantification details.
      */
     private HashMap<Integer, HashMap<String, ProteinQuantificationDetails>> proteinRatios = new HashMap<Integer, HashMap<String, ProteinQuantificationDetails>>();
     /**
-     * The protein level ptm quantification details in a map: ptm name > protein
-     * match key > site > match quantification details
+     * The protein level PTM quantification details in a map: PTM name > protein
+     * match key > site > match quantification details.
      */
     private HashMap<String, HashMap<String, HashMap<Integer, PtmSiteQuantificationDetails>>> proteinPtmRatios = new HashMap<String, HashMap<String, HashMap<Integer, PtmSiteQuantificationDetails>>>();
     /**
-     * The peptide quantification details in a map: number of psms > peptide
-     * match key > match quantification details
+     * The peptide quantification details in a map: number of PSMs > peptide
+     * match key > match quantification details.
      */
     private HashMap<Integer, HashMap<String, PeptideQuantificationDetails>> peptideRatios = new HashMap<Integer, HashMap<String, PeptideQuantificationDetails>>();
     /**
      * The PSM quantification details in a map: Spectrum file name > spectrum
-     * key > match quantification details
+     * key > match quantification details.
      */
     private HashMap<String, HashMap<String, PsmQuantificationDetails>> psmRatios = new HashMap<String, HashMap<String, PsmQuantificationDetails>>();
     /**
      * The spectrum quantification details in a map: Spectrum file name >
      * spectrum key > match quantification details Note: this is used in
      * precursor matching mode only, otherwise the spectrum ratios are the same
-     * as the psm ratios
+     * as the PSM ratios.
      */
     private HashMap<String, HashMap<String, SpectrumQuantificationDetails>> spectrumRatios = new HashMap<String, HashMap<String, SpectrumQuantificationDetails>>();
 
     /**
-     * Constructor
+     * Constructor.
      */
     public QuantificationFeaturesCache() {
-
     }
 
     /**

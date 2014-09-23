@@ -17,7 +17,7 @@ import javax.swing.JOptionPane;
 public class PreferencesDialog extends javax.swing.JDialog {
 
     /**
-     * The Reproter GUI parent.
+     * The Reporter GUI parent.
      */
     private ReporterGUI reporterGui;
     /**
@@ -38,7 +38,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
     private final String USER_MODIFICATIONS_FILE = "resources/conf/reporter_usermods.xml";
 
     /**
-     * Creates new form PreferencesDialog
+     * Creates a new PreferencesDialog.
      * 
      * @param reporterGui reference to the ReporterGUI
      * @param quantificationPreferences the quantification preferences
