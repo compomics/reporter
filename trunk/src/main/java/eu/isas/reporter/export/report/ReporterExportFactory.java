@@ -10,34 +10,35 @@ import com.compomics.util.io.export.ExportScheme;
 import com.compomics.util.preferences.AnnotationPreferences;
 import com.compomics.util.preferences.IdFilter;
 import com.compomics.util.preferences.PTMScoringPreferences;
+import com.compomics.util.preferences.SequenceMatchingPreferences;
 import com.compomics.util.waiting.WaitingHandler;
 import eu.isas.peptideshaker.export.PSExportFactory;
-import eu.isas.peptideshaker.export.exportfeatures.AnnotationFeatures;
-import eu.isas.peptideshaker.export.exportfeatures.FragmentFeatures;
-import eu.isas.peptideshaker.export.exportfeatures.InputFilterFeatures;
-import eu.isas.peptideshaker.export.exportfeatures.ProjectFeatures;
-import eu.isas.peptideshaker.export.exportfeatures.PtmScoringFeatures;
-import eu.isas.peptideshaker.export.exportfeatures.SearchFeatures;
-import eu.isas.peptideshaker.export.exportfeatures.SpectrumCountingFeatures;
-import eu.isas.peptideshaker.export.exportfeatures.ValidationFeatures;
-import eu.isas.peptideshaker.export.sections.AnnotationSection;
-import eu.isas.peptideshaker.export.sections.InputFilterSection;
-import eu.isas.peptideshaker.export.sections.ProjectSection;
-import eu.isas.peptideshaker.export.sections.PtmScoringSection;
-import eu.isas.peptideshaker.export.sections.SearchParametersSection;
-import eu.isas.peptideshaker.export.sections.SpectrumCountingSection;
-import eu.isas.peptideshaker.export.sections.ValidationSection;
+import eu.isas.peptideshaker.export.exportfeatures.PsAnnotationFeature;
+import eu.isas.peptideshaker.export.exportfeatures.PsFragmentFeature;
+import eu.isas.peptideshaker.export.exportfeatures.PsInputFilterFeature;
+import eu.isas.peptideshaker.export.exportfeatures.PsProjectFeature;
+import eu.isas.peptideshaker.export.exportfeatures.PsPtmScoringFeature;
+import eu.isas.peptideshaker.export.exportfeatures.PsSearchFeature;
+import eu.isas.peptideshaker.export.exportfeatures.PsSpectrumCountingFeature;
+import eu.isas.peptideshaker.export.exportfeatures.PsValidationFeature;
+import eu.isas.peptideshaker.export.sections.PsAnnotationSection;
+import eu.isas.peptideshaker.export.sections.PsInputFilterSection;
+import eu.isas.peptideshaker.export.sections.PsProjectSection;
+import eu.isas.peptideshaker.export.sections.PsPtmScoringSection;
+import eu.isas.peptideshaker.export.sections.PsSearchParametersSection;
+import eu.isas.peptideshaker.export.sections.PsSpectrumCountingSection;
+import eu.isas.peptideshaker.export.sections.PsValidationSection;
 import eu.isas.peptideshaker.myparameters.PSMaps;
 import eu.isas.peptideshaker.preferences.ProjectDetails;
 import eu.isas.peptideshaker.preferences.SpectrumCountingPreferences;
 import eu.isas.peptideshaker.utils.IdentificationFeaturesGenerator;
 import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
-import eu.isas.reporter.export.report.export_features.PeptideFeatures;
-import eu.isas.reporter.export.report.export_features.ProteinFeatures;
-import eu.isas.reporter.export.report.export_features.PsmFeatures;
-import eu.isas.reporter.export.report.sections.PeptideSection;
-import eu.isas.reporter.export.report.sections.ProteinSection;
-import eu.isas.reporter.export.report.sections.PsmSection;
+import eu.isas.reporter.export.report.export_features.ReporterPeptideFeature;
+import eu.isas.reporter.export.report.export_features.ReporterProteinFeatures;
+import eu.isas.reporter.export.report.export_features.ReporterPsmFeatures;
+import eu.isas.reporter.export.report.sections.ReporterPeptideSection;
+import eu.isas.reporter.export.report.sections.ReporterProteinSection;
+import eu.isas.reporter.export.report.sections.ReporterPsmSection;
 import eu.isas.reporter.myparameters.ReporterPreferences;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -148,42 +149,42 @@ public class ReporterExportFactory implements ExportFactory {
     @Override
     public ArrayList<String> getImplementedSections() {
         ArrayList<String> result = new ArrayList<String>();
-        result.add(AnnotationFeatures.type);
-        result.add(InputFilterFeatures.type);
-        result.add(ProteinFeatures.type);
-        result.add(PeptideFeatures.type);
-        result.add(PsmFeatures.type);
-        result.add(FragmentFeatures.type);
-        result.add(ProjectFeatures.type);
-        result.add(PtmScoringFeatures.type);
-        result.add(SearchFeatures.type);
-        result.add(SpectrumCountingFeatures.type);
-        result.add(ValidationFeatures.type);
+        result.add(PsAnnotationFeature.type);
+        result.add(PsInputFilterFeature.type);
+        result.add(ReporterProteinFeatures.type);
+        result.add(ReporterPeptideFeature.type);
+        result.add(ReporterPsmFeatures.type);
+        result.add(PsFragmentFeature.type);
+        result.add(PsProjectFeature.type);
+        result.add(PsPtmScoringFeature.type);
+        result.add(PsSearchFeature.type);
+        result.add(PsSpectrumCountingFeature.type);
+        result.add(PsValidationFeature.type);
         return result;
     }
 
     @Override
-    public ArrayList<ExportFeature> getExportFeatures(String sectionName) {
-        if (sectionName.equals(AnnotationFeatures.type)) {
-            return AnnotationFeatures.values()[0].getExportFeatures();
-        } else if (sectionName.equals(InputFilterFeatures.type)) {
-            return InputFilterFeatures.values()[0].getExportFeatures();
-        } else if (sectionName.equals(PeptideFeatures.type)) {
-            return PeptideFeatures.values()[0].getExportFeatures();
-        } else if (sectionName.equals(ProjectFeatures.type)) {
-            return ProjectFeatures.values()[0].getExportFeatures();
-        } else if (sectionName.equals(ProteinFeatures.type)) {
-            return ProteinFeatures.values()[0].getExportFeatures();
-        } else if (sectionName.equals(PsmFeatures.type)) {
-            return PsmFeatures.values()[0].getExportFeatures();
-        } else if (sectionName.equals(PtmScoringFeatures.type)) {
-            return PtmScoringFeatures.values()[0].getExportFeatures();
-        } else if (sectionName.equals(SearchFeatures.type)) {
-            return SearchFeatures.values()[0].getExportFeatures();
-        } else if (sectionName.equals(SpectrumCountingFeatures.type)) {
-            return SpectrumCountingFeatures.values()[0].getExportFeatures();
-        } else if (sectionName.equals(ValidationFeatures.type)) {
-            return ValidationFeatures.values()[0].getExportFeatures();
+    public ArrayList<ExportFeature> getExportFeatures(String sectionName, boolean includeSubFeatures) {
+        if (sectionName.equals(PsAnnotationFeature.type)) {
+            return PsAnnotationFeature.values()[0].getExportFeatures(includeSubFeatures);
+        } else if (sectionName.equals(PsInputFilterFeature.type)) {
+            return PsInputFilterFeature.values()[0].getExportFeatures(includeSubFeatures);
+        } else if (sectionName.equals(ReporterPeptideFeature.type)) {
+            return ReporterPeptideFeature.values()[0].getExportFeatures(includeSubFeatures);
+        } else if (sectionName.equals(PsProjectFeature.type)) {
+            return PsProjectFeature.values()[0].getExportFeatures(includeSubFeatures);
+        } else if (sectionName.equals(ReporterProteinFeatures.type)) {
+            return ReporterProteinFeatures.values()[0].getExportFeatures(includeSubFeatures);
+        } else if (sectionName.equals(ReporterPsmFeatures.type)) {
+            return ReporterPsmFeatures.values()[0].getExportFeatures(includeSubFeatures);
+        } else if (sectionName.equals(PsPtmScoringFeature.type)) {
+            return PsPtmScoringFeature.values()[0].getExportFeatures(includeSubFeatures);
+        } else if (sectionName.equals(PsSearchFeature.type)) {
+            return PsSearchFeature.values()[0].getExportFeatures(includeSubFeatures);
+        } else if (sectionName.equals(PsSpectrumCountingFeature.type)) {
+            return PsSpectrumCountingFeature.values()[0].getExportFeatures(includeSubFeatures);
+        } else if (sectionName.equals(PsValidationFeature.type)) {
+            return PsValidationFeature.values()[0].getExportFeatures(includeSubFeatures);
         }
         return new ArrayList<ExportFeature>();
     }
@@ -236,6 +237,7 @@ public class ReporterExportFactory implements ExportFactory {
      * (mandatory for the Peptide section)
      * @param annotationPreferences the annotation preferences (mandatory for
      * the Annotation section)
+     * @param sequenceMatchingPreferences the sequence matching preferences
      * @param idFilter the identification filer (mandatory for the Input Filter
      * section)
      * @param ptmcoringPreferences the PTM scoring preferences (mandatory for
@@ -255,7 +257,7 @@ public class ReporterExportFactory implements ExportFactory {
             ProjectDetails projectDetails, Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, 
             QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, ReporterPreferences reporterPreferences,
             SearchParameters searchParameters, ArrayList<String> proteinKeys, ArrayList<String> peptideKeys, ArrayList<String> psmKeys,
-            String proteinMatchKey, int nSurroundingAA, AnnotationPreferences annotationPreferences, IdFilter idFilter,
+            String proteinMatchKey, int nSurroundingAA, AnnotationPreferences annotationPreferences, SequenceMatchingPreferences sequenceMatchingPreferences, IdFilter idFilter,
             PTMScoringPreferences ptmcoringPreferences, SpectrumCountingPreferences spectrumCountingPreferences, WaitingHandler waitingHandler)
             throws IOException, IllegalArgumentException, SQLException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException, MathException {
 
@@ -273,35 +275,35 @@ public class ReporterExportFactory implements ExportFactory {
                 writer.write(sectionName);
                 writer.newLine();
             }
-            if (sectionName.equals(AnnotationFeatures.type)) {
-                AnnotationSection section = new AnnotationSection(exportScheme.getExportFeatures(sectionName), exportScheme.getSeparator(), exportScheme.isIndexes(), exportScheme.isHeader(), writer);
+            if (sectionName.equals(PsAnnotationFeature.type)) {
+                PsAnnotationSection section = new PsAnnotationSection(exportScheme.getExportFeatures(sectionName), exportScheme.getSeparator(), exportScheme.isIndexes(), exportScheme.isHeader(), writer);
                 section.writeSection(annotationPreferences, waitingHandler);
-            } else if (sectionName.equals(InputFilterFeatures.type)) {
-                InputFilterSection section = new InputFilterSection(exportScheme.getExportFeatures(sectionName), exportScheme.getSeparator(), exportScheme.isIndexes(), exportScheme.isHeader(), writer);
+            } else if (sectionName.equals(PsInputFilterFeature.type)) {
+                PsInputFilterSection section = new PsInputFilterSection(exportScheme.getExportFeatures(sectionName), exportScheme.getSeparator(), exportScheme.isIndexes(), exportScheme.isHeader(), writer);
                 section.writeSection(idFilter, waitingHandler);
-            } else if (sectionName.equals(PeptideFeatures.type)) {
-                PeptideSection section = new PeptideSection(exportScheme.getExportFeatures(sectionName), exportScheme.getSeparator(), exportScheme.isIndexes(), exportScheme.isHeader(), writer);
-                section.writeSection(identification, identificationFeaturesGenerator, quantificationFeaturesGenerator, reporterIonQuantification, searchParameters, annotationPreferences, peptideKeys, nSurroundingAA, "", waitingHandler);
-            } else if (sectionName.equals(ProjectFeatures.type)) {
-                ProjectSection section = new ProjectSection(exportScheme.getExportFeatures(sectionName), exportScheme.getSeparator(), exportScheme.isIndexes(), exportScheme.isHeader(), writer);
+            } else if (sectionName.equals(ReporterPeptideFeature.type)) {
+                ReporterPeptideSection section = new ReporterPeptideSection(exportScheme.getExportFeatures(sectionName), exportScheme.getSeparator(), exportScheme.isIndexes(), exportScheme.isHeader(), writer);
+                section.writeSection(identification, identificationFeaturesGenerator, quantificationFeaturesGenerator, reporterIonQuantification, searchParameters, annotationPreferences, sequenceMatchingPreferences, peptideKeys, nSurroundingAA, "", exportScheme.isValidatedOnly(), exportScheme.isIncludeDecoy(), waitingHandler);
+            } else if (sectionName.equals(PsProjectFeature.type)) {
+                PsProjectSection section = new PsProjectSection(exportScheme.getExportFeatures(sectionName), exportScheme.getSeparator(), exportScheme.isIndexes(), exportScheme.isHeader(), writer);
                 section.writeSection(experiment, sample, replicateNumber, projectDetails, waitingHandler);
-            } else if (sectionName.equals(ProteinFeatures.type)) {
-                ProteinSection section = new ProteinSection(exportScheme.getExportFeatures(sectionName), exportScheme.getSeparator(), exportScheme.isIndexes(), exportScheme.isHeader(), writer);
-                section.writeSection(identification, identificationFeaturesGenerator, quantificationFeaturesGenerator, reporterIonQuantification, searchParameters, annotationPreferences, psmKeys, nSurroundingAA, waitingHandler);
-            } else if (sectionName.equals(PsmFeatures.type)) {
-                PsmSection section = new PsmSection(exportScheme.getExportFeatures(sectionName), exportScheme.getSeparator(), exportScheme.isIndexes(), exportScheme.isHeader(), writer);
-                section.writeSection(identification, identificationFeaturesGenerator, quantificationFeaturesGenerator, reporterIonQuantification, reporterPreferences, searchParameters, annotationPreferences, psmKeys, "", waitingHandler);
-            } else if (sectionName.equals(PtmScoringFeatures.type)) {
-                PtmScoringSection section = new PtmScoringSection(exportScheme.getExportFeatures(sectionName), exportScheme.getSeparator(), exportScheme.isIndexes(), exportScheme.isHeader(), writer);
+            } else if (sectionName.equals(ReporterProteinFeatures.type)) {
+                ReporterProteinSection section = new ReporterProteinSection(exportScheme.getExportFeatures(sectionName), exportScheme.getSeparator(), exportScheme.isIndexes(), exportScheme.isHeader(), writer);
+                section.writeSection(identification, identificationFeaturesGenerator, quantificationFeaturesGenerator, reporterIonQuantification, searchParameters, annotationPreferences, sequenceMatchingPreferences, psmKeys, nSurroundingAA, exportScheme.isValidatedOnly(), exportScheme.isIncludeDecoy(), waitingHandler);
+            } else if (sectionName.equals(ReporterPsmFeatures.type)) {
+                ReporterPsmSection section = new ReporterPsmSection(exportScheme.getExportFeatures(sectionName), exportScheme.getSeparator(), exportScheme.isIndexes(), exportScheme.isHeader(), writer);
+                section.writeSection(identification, identificationFeaturesGenerator, quantificationFeaturesGenerator, reporterIonQuantification, reporterPreferences, searchParameters, annotationPreferences, sequenceMatchingPreferences, psmKeys, "", exportScheme.isValidatedOnly(), exportScheme.isIncludeDecoy(), waitingHandler);
+            } else if (sectionName.equals(PsPtmScoringFeature.type)) {
+                PsPtmScoringSection section = new PsPtmScoringSection(exportScheme.getExportFeatures(sectionName), exportScheme.getSeparator(), exportScheme.isIndexes(), exportScheme.isHeader(), writer);
                 section.writeSection(ptmcoringPreferences, waitingHandler);
-            } else if (sectionName.equals(SearchFeatures.type)) {
-                SearchParametersSection section = new SearchParametersSection(exportScheme.getExportFeatures(sectionName), exportScheme.getSeparator(), exportScheme.isIndexes(), exportScheme.isHeader(), writer);
+            } else if (sectionName.equals(PsSearchFeature.type)) {
+                PsSearchParametersSection section = new PsSearchParametersSection(exportScheme.getExportFeatures(sectionName), exportScheme.getSeparator(), exportScheme.isIndexes(), exportScheme.isHeader(), writer);
                 section.writeSection(searchParameters, waitingHandler);
-            } else if (sectionName.equals(SpectrumCountingFeatures.type)) {
-                SpectrumCountingSection section = new SpectrumCountingSection(exportScheme.getExportFeatures(sectionName), exportScheme.getSeparator(), exportScheme.isIndexes(), exportScheme.isHeader(), writer);
+            } else if (sectionName.equals(PsSpectrumCountingFeature.type)) {
+                PsSpectrumCountingSection section = new PsSpectrumCountingSection(exportScheme.getExportFeatures(sectionName), exportScheme.getSeparator(), exportScheme.isIndexes(), exportScheme.isHeader(), writer);
                 section.writeSection(spectrumCountingPreferences, waitingHandler);
-            } else if (sectionName.equals(ValidationFeatures.type)) {
-                ValidationSection section = new ValidationSection(exportScheme.getExportFeatures(sectionName), exportScheme.getSeparator(), exportScheme.isIndexes(), exportScheme.isHeader(), writer);
+            } else if (sectionName.equals(PsValidationFeature.type)) {
+                PsValidationSection section = new PsValidationSection(exportScheme.getExportFeatures(sectionName), exportScheme.getSeparator(), exportScheme.isIndexes(), exportScheme.isHeader(), writer);
                 PSMaps psMaps = new PSMaps();
                 psMaps = (PSMaps) identification.getUrParam(psMaps);
                 section.writeSection(psMaps, waitingHandler);
@@ -456,42 +458,42 @@ public class ReporterExportFactory implements ExportFactory {
                         peptide = false,
                         psm = false;
                 for (ExportFeature exportFeature : exportScheme.getExportFeatures(section)) {
-                    if (exportFeature instanceof eu.isas.peptideshaker.export.exportfeatures.ProteinFeatures) {
+                    if (exportFeature instanceof eu.isas.peptideshaker.export.exportfeatures.PsProteinFeature) {
                         protein = true;
-                    } else if (exportFeature instanceof eu.isas.peptideshaker.export.exportfeatures.PeptideFeatures) {
+                    } else if (exportFeature instanceof eu.isas.peptideshaker.export.exportfeatures.PsPeptideFeature) {
                         peptide = true;
-                    } else if (exportFeature instanceof eu.isas.peptideshaker.export.exportfeatures.PsmFeatures) {
+                    } else if (exportFeature instanceof eu.isas.peptideshaker.export.exportfeatures.PsPsmFeature) {
                         psm = true;
                     }
                 }
                 if (protein) {
-                    exportScheme.addExportFeature(section, ProteinFeatures.ratio);
+                    exportScheme.addExportFeature(section, ReporterProteinFeatures.ratio);
                 }
                 if (peptide) {
-                    exportScheme.addExportFeature(section, PeptideFeatures.raw_ratio);
-                    exportScheme.addExportFeature(section, PeptideFeatures.normalized_ratio);
+                    exportScheme.addExportFeature(section, ReporterPeptideFeature.raw_ratio);
+                    exportScheme.addExportFeature(section, ReporterPeptideFeature.normalized_ratio);
                 }
                 if (psm) {
-                    exportScheme.addExportFeature(section, PsmFeatures.reporter_mz);
-                    exportScheme.addExportFeature(section, PsmFeatures.reporter_intensity);
-                    exportScheme.addExportFeature(section, PsmFeatures.deisotoped_intensity);
-                    exportScheme.addExportFeature(section, PsmFeatures.ratio);
+                    exportScheme.addExportFeature(section, ReporterPsmFeatures.reporter_mz);
+                    exportScheme.addExportFeature(section, ReporterPsmFeatures.reporter_intensity);
+                    exportScheme.addExportFeature(section, ReporterPsmFeatures.deisotoped_intensity);
+                    exportScheme.addExportFeature(section, ReporterPsmFeatures.ratio);
                 }
             }
             // rename the PSM, Peptide and protein sections
-            String psSection = eu.isas.peptideshaker.export.exportfeatures.ProteinFeatures.type;
+            String psSection = eu.isas.peptideshaker.export.exportfeatures.PsProteinFeature.type;
             if (exportScheme.getSections().contains(psSection)) {
-                exportScheme.setExportFeatures(ProteinFeatures.type, exportScheme.getExportFeatures(psSection));
+                exportScheme.setExportFeatures(ReporterProteinFeatures.type, exportScheme.getExportFeatures(psSection));
                 exportScheme.removeSection(psSection);
             }
-            psSection = eu.isas.peptideshaker.export.exportfeatures.PeptideFeatures.type;
+            psSection = eu.isas.peptideshaker.export.exportfeatures.PsPeptideFeature.type;
             if (exportScheme.getSections().contains(psSection)) {
-                exportScheme.setExportFeatures(PeptideFeatures.type, exportScheme.getExportFeatures(psSection));
+                exportScheme.setExportFeatures(ReporterPeptideFeature.type, exportScheme.getExportFeatures(psSection));
                 exportScheme.removeSection(psSection);
             }
-            psSection = eu.isas.peptideshaker.export.exportfeatures.PsmFeatures.type;
+            psSection = eu.isas.peptideshaker.export.exportfeatures.PsPsmFeature.type;
             if (exportScheme.getSections().contains(psSection)) {
-                exportScheme.setExportFeatures(PsmFeatures.type, exportScheme.getExportFeatures(psSection));
+                exportScheme.setExportFeatures(ReporterPsmFeatures.type, exportScheme.getExportFeatures(psSection));
                 exportScheme.removeSection(psSection);
             }
             defaultSchemes.put(schemeName, exportScheme);

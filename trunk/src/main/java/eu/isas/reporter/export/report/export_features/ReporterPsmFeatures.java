@@ -7,6 +7,7 @@
 package eu.isas.reporter.export.report.export_features;
 
 import com.compomics.util.io.export.ExportFeature;
+import eu.isas.peptideshaker.export.exportfeatures.PsPsmFeature;
 import eu.isas.reporter.export.report.ReporterExportFeature;
 import java.util.ArrayList;
 
@@ -15,12 +16,12 @@ import java.util.ArrayList;
  *
  * @author Marc
  */
-public enum PsmFeatures implements ReporterExportFeature {
+public enum ReporterPsmFeatures implements ReporterExportFeature {
     
-    reporter_mz("Reporter m/z", "The reporter ions m/z as extracted from the spectrum.", true),
-    reporter_intensity("Reporter Intensity", "The reporter ions instensities as extracted from the spectrum.", true),
-    deisotoped_intensity("Deisotoped Intensity", "The instensities after deisotoping.", true),
-    ratio("Ratios", "The ratios of this protein group.", true);
+    reporter_mz("Reporter m/z", "The reporter ions m/z as extracted from the spectrum.", true, true),
+    reporter_intensity("Reporter Intensity", "The reporter ions instensities as extracted from the spectrum.", true, true),
+    deisotoped_intensity("Deisotoped Intensity", "The instensities after deisotoping.", true, true),
+    ratio("Ratios", "The ratios of this protein group.", true, false);
 
     /**
      * The title of the feature which will be used for column heading.
@@ -38,6 +39,10 @@ public enum PsmFeatures implements ReporterExportFeature {
      * The type of export feature.
      */
     public final static String type = "PSM Reporter Quantification Summary";
+    /**
+     * Indicates whether a feature is for advanced user only.
+     */
+    private final boolean advanced;
 
     /**
      * Constructor.
@@ -45,11 +50,13 @@ public enum PsmFeatures implements ReporterExportFeature {
      * @param title title of the feature
      * @param description description of the feature
      * @param hasChannels indicates whether the feature is channel dependent
+     * @param advanced indicates whether a feature is for advanced user only
      */
-    private PsmFeatures(String title, String description, boolean hasChannels) {
+    private ReporterPsmFeatures(String title, String description, boolean hasChannels, boolean advanced) {
         this.title = title;
         this.description = description;
         this.hasChannels = hasChannels;
+        this.advanced = advanced;
     }
 
     @Override
@@ -68,8 +75,8 @@ public enum PsmFeatures implements ReporterExportFeature {
     }
 
     @Override
-    public ArrayList<ExportFeature> getExportFeatures() {
-        ArrayList<ExportFeature> result = eu.isas.peptideshaker.export.exportfeatures.PsmFeatures.accessions.getExportFeatures();
+    public ArrayList<ExportFeature> getExportFeatures(boolean includeSubFeatures) {
+        ArrayList<ExportFeature> result = PsPsmFeature.values()[0].getExportFeatures(includeSubFeatures);
         result.add(ratio);
         return result;
     }
@@ -77,6 +84,11 @@ public enum PsmFeatures implements ReporterExportFeature {
     @Override
     public boolean hasChannels() {
         return hasChannels;
+    }
+
+    @Override
+    public boolean isAdvanced() {
+        return advanced;
     }
     
 }

@@ -19,6 +19,7 @@ import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
 import com.compomics.util.preferences.AnnotationPreferences;
 import com.compomics.util.preferences.IdFilter;
 import com.compomics.util.preferences.PTMScoringPreferences;
+import com.compomics.util.preferences.SequenceMatchingPreferences;
 import com.compomics.util.preferences.UtilitiesUserPreferences;
 import eu.isas.peptideshaker.preferences.FilterPreferences;
 import eu.isas.peptideshaker.preferences.ProjectDetails;
@@ -276,14 +277,14 @@ public class ReporterGUI extends javax.swing.JFrame {
                     NewDialog newDialog = new NewDialog(ReporterGUI.this);
                     if (!newDialog.isCancelled()) {
                         cpsBean = newDialog.getCpsBean();
-                        identificationFeaturesGenerator = new IdentificationFeaturesGenerator(cpsBean.getIdentification(), cpsBean.getSearchParameters(), cpsBean.getIdFilter(), cpsBean.getMetrics(), cpsBean.getSpectrumCountingPreferences());
+                        identificationFeaturesGenerator = new IdentificationFeaturesGenerator(cpsBean.getIdentification(), cpsBean.getSearchParameters(), cpsBean.getIdFilter(), cpsBean.getMetrics(), cpsBean.getSpectrumCountingPreferences(), cpsBean.getSequenceMatchingPreferences());
                         displayFeaturesGenerator = new DisplayFeaturesGenerator(cpsBean.getSearchParameters().getModificationProfile(), exceptionHandler);
                         displayFeaturesGenerator.setDisplayedPTMs(cpsBean.getDisplayPreferences().getDisplayedPtms());
                         reporterPreferences = newDialog.getReporterPreferences();
                         setDisplayPreferencesFromShakerProject();
                         reporterIonQuantification = newDialog.getReporterIonQuantification();
                         projectSaved = false;
-                        quantificationFeaturesGenerator = new QuantificationFeaturesGenerator(new QuantificationFeaturesCache(), cpsBean.getIdentification(), reporterPreferences, reporterIonQuantification, cpsBean.getSearchParameters());
+                        quantificationFeaturesGenerator = new QuantificationFeaturesGenerator(new QuantificationFeaturesCache(), cpsBean.getIdentification(), reporterPreferences, reporterIonQuantification, cpsBean.getSearchParameters(), cpsBean.getSequenceMatchingPreferences());
                         displayResults();
                     }
                 } catch (Exception e) {
@@ -477,6 +478,18 @@ public class ReporterGUI extends javax.swing.JFrame {
             return null;
         }
         return cpsBean.getSearchParameters();
+    }
+    
+    /**
+     * Returns the sequence matching preferences.
+     * 
+     * @return the sequence matching preferences
+     */
+    public SequenceMatchingPreferences getSequenceMatchingPreferences() {
+        if (cpsBean == null) {
+            return null;
+        }
+        return cpsBean.getSequenceMatchingPreferences();
     }
 
     /**
