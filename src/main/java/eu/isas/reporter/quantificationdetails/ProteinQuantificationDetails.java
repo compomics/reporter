@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package eu.isas.reporter.quantificationdetails;
 
 import java.util.HashMap;
@@ -11,14 +5,15 @@ import java.util.HashMap;
 /**
  * This class contains the quantitative information at the protein level.
  *
- * @author Marc
+ * @author Marc Vaudel
  */
 public class ProteinQuantificationDetails {
-    
+
     /**
-     * The reporter ratios
+     * The reporter ratios.
      */
     private HashMap<String, Double> ratios = null;
+
     /**
      * Sets a ratio.
      *

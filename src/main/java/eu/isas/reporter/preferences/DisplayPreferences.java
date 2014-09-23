@@ -1,9 +1,9 @@
 package eu.isas.reporter.preferences;
 
 /**
- * Reporter display preferences
+ * Reporter display preferences.
  *
- * @author Marc
+ * @author Marc Vaudel
  */
 public class DisplayPreferences {
 

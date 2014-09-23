@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package eu.isas.reporter.quantificationdetails;
 
 import java.util.HashMap;
@@ -11,14 +5,15 @@ import java.util.HashMap;
 /**
  * This class contains the quantitative information at the PSM level.
  *
- * @author Marc
+ * @author Marc Vaudel
  */
 public class PsmQuantificationDetails {
-    
+
     /**
-     * The reporter ratios
+     * The reporter ratios.
      */
     private HashMap<String, Double> ratios = null;
+
     /**
      * Sets a ratio.
      *
@@ -33,7 +28,8 @@ public class PsmQuantificationDetails {
     }
 
     /**
-     * Returns the ratio of a given sample. null if not found. null if not found.
+     * Returns the ratio of a given sample. null if not found. null if not
+     * found.
      *
      * @param reporterIonName the index of sample of interest
      *

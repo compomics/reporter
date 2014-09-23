@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package eu.isas.reporter.quantificationdetails;
 
 import com.compomics.util.experiment.identification.matches.IonMatch;
@@ -12,22 +6,23 @@ import java.util.HashMap;
 /**
  * This class contains the quantitative information at the spectrum level.
  *
- * @author Marc
+ * @author Marc Vaudel
  */
 public class SpectrumQuantificationDetails {
-    
+
     /**
-     * The reporter ratios
+     * The reporter ratios.
      */
     private HashMap<String, Double> ratios = null;
     /**
-     * The reporter ion matches
+     * The reporter ion matches.
      */
     private HashMap<String, IonMatch> reporterMatches = null;
     /**
-     * The deisotoped reporter intensities
+     * The deisotoped reporter intensities.
      */
     private HashMap<String, Double> deisotopedIntensities = null;
+
     /**
      * Sets a ratio.
      *

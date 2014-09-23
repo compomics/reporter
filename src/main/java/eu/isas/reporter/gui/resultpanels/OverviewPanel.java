@@ -23,7 +23,8 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 
 /**
- *
+ * The Overview tab.
+ * 
  * @author Harald Barsnes
  * @author Marc Vaudel
  */
@@ -34,7 +35,7 @@ public class OverviewPanel extends javax.swing.JPanel {
      */
     private ArrayList<String> proteinTableToolTips;
     /**
-     * The main gui class.
+     * The main GUI class.
      */
     private ReporterGUI reporterGUI;
     /**
@@ -105,7 +106,7 @@ public class OverviewPanel extends javax.swing.JPanel {
     }
 
     /**
-     * Updates the display with the underlying data
+     * Updates the display with the underlying data.
      */
     public void updateDisplay() {
 

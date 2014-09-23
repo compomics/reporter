@@ -26,7 +26,6 @@ import java.awt.event.ActionListener;
 import java.io.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -96,11 +95,11 @@ public class NewDialog extends javax.swing.JDialog {
      */
     private ObjectsCache cache;
     /**
-     * Boolean indicating whether the user cancelled the project creation
+     * Boolean indicating whether the user canceled the project creation
      */
     private boolean cancelled = false;
     /**
-     * a reporter ion quantification object containing the input from the user
+     * A reporter ion quantification object containing the input from the user.
      */
     private ReporterIonQuantification reporterIonQuantification = null;
 
@@ -116,7 +115,7 @@ public class NewDialog extends javax.swing.JDialog {
 
         importMethods();
         initComponents();
-// load the user preferences
+        // load the user preferences
         loadUserPreferences();
 
         // make sure that the scroll panes are see-through
@@ -1272,7 +1271,6 @@ public class NewDialog extends javax.swing.JDialog {
             public void run() {
 
                 try {
-
                     cpsBean.setCpsFile(psFile);
 
                     try {
@@ -1344,8 +1342,8 @@ public class NewDialog extends javax.swing.JDialog {
                             progressDialog.setRunFinished();
                             return;
                         }
-
                     }
+
                     editPreferencesButton.setEnabled(true);
                     progressDialog.setPrimaryProgressCounterIndeterminate(true);
                     progressDialog.setRunFinished();
@@ -1512,7 +1510,7 @@ public class NewDialog extends javax.swing.JDialog {
      * Imports the gene mapping.
      */
     private void loadGeneMappings() {
-        if (!cpsBean.loadGeneMappings(progressDialog)) {
+        if (!cpsBean.loadGeneMappings(progressDialog)) { // @TODO: this cannot be hardcoded to peptideshaker!!
             JOptionPane.showMessageDialog(this, "Unable to load the gene/GO mapping file.", "File Error", JOptionPane.ERROR_MESSAGE);
         }
     }

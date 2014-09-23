@@ -22,6 +22,7 @@ public class RatioEstimator {
      * @return the resulting ratio
      */
     public static Double estimateRatios(ReporterPreferences reporterPreferences, ArrayList<Double> ratios) {
+
         if (ratios == null || ratios.isEmpty()) {
             return Double.NaN;
         }
