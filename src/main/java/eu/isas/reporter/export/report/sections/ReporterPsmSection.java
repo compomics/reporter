@@ -72,7 +72,7 @@ public class ReporterPsmSection {
      */
     private ExportWriter writer;
     /**
-     * Style for the reporter output
+     * Style for the reporter output.
      */
     private ReporterReportStyle reporterStyle;
 

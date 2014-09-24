@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package eu.isas.reporter.export.report.export_features;
 
 import com.compomics.util.io.export.ExportFeature;
@@ -12,9 +6,10 @@ import eu.isas.reporter.export.report.ReporterExportFeature;
 import java.util.ArrayList;
 
 /**
- * This enum lists all the protein export features available from reporter complementarily to the ones available in PeptideShaker
+ * This enum lists all the protein export features available from reporter
+ * complementarily to the ones available in PeptideShaker.
  *
- * @author Marc
+ * @author Marc Vaudel
  */
 public enum ReporterProteinFeatures implements ReporterExportFeature {
 
@@ -30,7 +25,7 @@ public enum ReporterProteinFeatures implements ReporterExportFeature {
      */
     private String description;
     /**
-     * Indicates whether the feature is channel dependent
+     * Indicates whether the feature is channel dependent.
      */
     private boolean hasChannels;
     /**
@@ -61,7 +56,7 @@ public enum ReporterProteinFeatures implements ReporterExportFeature {
     public String[] getTitles() {
         return new String[]{title};
     }
-    
+
     @Override
     public String getDescription() {
         return description;
@@ -82,7 +77,7 @@ public enum ReporterProteinFeatures implements ReporterExportFeature {
         }
         return result;
     }
-    
+
     @Override
     public boolean hasChannels() {
         return hasChannels;
@@ -92,5 +87,4 @@ public enum ReporterProteinFeatures implements ReporterExportFeature {
     public boolean isAdvanced() {
         return advanced;
     }
-    
 }

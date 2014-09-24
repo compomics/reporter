@@ -13,7 +13,7 @@ import org.apache.poi.ss.usermodel.Font;
 /**
  * This class contains the style for a Reporter excel export.
  *
- * @author Marc
+ * @author Marc Vaudel
  */
 public class ReporterReportStyle implements WorkbookStyle {
 
@@ -34,15 +34,16 @@ public class ReporterReportStyle implements WorkbookStyle {
      */
     private HashMap<Integer, CellStyle> hierarchicalHeaders = new HashMap<Integer, CellStyle>();
     /**
-     * Map of the different styles available
+     * Map of the different styles available.
      */
     private final static HashMap<HSSFWorkbook, ReporterReportStyle> styles = new HashMap<HSSFWorkbook, ReporterReportStyle>();
 
     /**
-     * Returns the style attached to that writer or create a new one if none found
-     * 
+     * Returns the style attached to that writer or create a new one if none
+     * found.
+     *
      * @param excelWriter the writer of interest
-     * 
+     *
      * @return the style attached to that writer
      */
     public static ReporterReportStyle getReportStyle(ExcelWriter excelWriter) {
@@ -54,6 +55,7 @@ public class ReporterReportStyle implements WorkbookStyle {
         }
         return result;
     }
+
     /**
      * Constructor.
      *
@@ -65,7 +67,7 @@ public class ReporterReportStyle implements WorkbookStyle {
     }
 
     /**
-     * Sets the cell styles
+     * Sets the cell styles.
      */
     private void setCellStyles() {
 
@@ -102,10 +104,10 @@ public class ReporterReportStyle implements WorkbookStyle {
                 (byte) 200,
                 (byte) 200
         );
-        
+
         // Hierarchical headers
         hierarchicalHeaders.put(0, standardHeader);
-        
+
         CellStyle subHeader = workbook.createCellStyle();
         subHeader.setFont(f);
         subHeader.setBorderBottom(CellStyle.BORDER_THIN);
@@ -122,7 +124,7 @@ public class ReporterReportStyle implements WorkbookStyle {
         );
         subHeader.setFillPattern(HSSFCellStyle.SOLID_FOREGROUND);
         hierarchicalHeaders.put(1, subHeader);
-        
+
         subHeader = workbook.createCellStyle();
         subHeader.setFont(f);
         subHeader.setBorderBottom(CellStyle.BORDER_THIN);
@@ -139,7 +141,7 @@ public class ReporterReportStyle implements WorkbookStyle {
         );
         subHeader.setFillPattern(HSSFCellStyle.SOLID_FOREGROUND);
         hierarchicalHeaders.put(2, subHeader);
-        
+
         subHeader = workbook.createCellStyle();
         subHeader.setFont(f);
         subHeader.setBorderBottom(CellStyle.BORDER_THIN);
@@ -155,8 +157,8 @@ public class ReporterReportStyle implements WorkbookStyle {
                 (byte) 240
         );
         subHeader.setFillPattern(HSSFCellStyle.SOLID_FOREGROUND);
-        for (int i = 3 ; i < 100 ; i++) {
-        hierarchicalHeaders.put(i, subHeader);
+        for (int i = 3; i < 100; i++) {
+            hierarchicalHeaders.put(i, subHeader);
         }
     }
 
