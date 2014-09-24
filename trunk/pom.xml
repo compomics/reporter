@@ -302,7 +302,7 @@
         <dependency>
             <groupId>com.compomics</groupId>
             <artifactId>utilities</artifactId>
-            <version>3.37.6</version>
+            <version>3.37.7</version>
             <exclusions>
                 <exclusion>
                     <artifactId>commons-math</artifactId>
@@ -441,6 +441,14 @@
             <version>0.4-oberzalek</version>
             <type>jar</type>
         </dependency>
+
+        <!-- use for creating excel files -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi</artifactId>
+            <version>3.9</version>
+        </dependency>
+        
     </dependencies>
 
 

@@ -7,6 +7,7 @@
 package eu.isas.reporter.gui.export;
 
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
+import com.compomics.util.io.export.ExportFormat;
 import com.compomics.util.io.export.ExportScheme;
 import eu.isas.reporter.export.report.ReporterExportFactory;
 import eu.isas.reporter.gui.ReporterGUI;
@@ -261,7 +262,9 @@ public class ReportDialog extends javax.swing.JDialog {
     private void writeSelectedReport() {
 
         // get the file to send the output to
-        final File selectedFile = reporterGUI.getUserSelectedFile(".txt", "Tab separated text file (.txt)", "Export...", false);
+        final File selectedFile = reporterGUI.getUserSelectedFile(".xls", "Microsoft Excel (.xls)", "Export...", false);
+//        final File selectedFile = peptideShakerGUI.getUserSelectedFile(".txt", "Tab separated text file (.txt)", "Export...", false); //@TODO: allow selecting multiple formats using com.compomics.util.io.export.ExportFormat
+        final ExportFormat exportFormat = ExportFormat.excel;
 
         if (selectedFile != null) {
             progressDialog = new ProgressDialogX(this, reporterGUI,
@@ -290,7 +293,7 @@ public class ReportDialog extends javax.swing.JDialog {
                         String schemeName = (String) reportsTable.getValueAt(reportsTable.getSelectedRow(), 1);
                         ExportScheme exportScheme = exportFactory.getExportScheme(schemeName);
                         progressDialog.setTitle("Exporting. Please Wait...");
-                        ReporterExportFactory.writeExport(exportScheme, selectedFile, reporterGUI.getExperiment().getReference(),
+                        ReporterExportFactory.writeExport(exportScheme, selectedFile, exportFormat, reporterGUI.getExperiment().getReference(),
                                 reporterGUI.getSample().getReference(), reporterGUI.getReplicateNumber(),
                                 reporterGUI.getProjectDetails(), reporterGUI.getIdentification(), reporterGUI.getIdentificationFeaturesGenerator(),
                                 reporterGUI.getQuantificationFeaturesGenerator(), reporterGUI.getReporterIonQuantification(), reporterGUI.getReporterPreferences(), reporterGUI.getSearchParameters(),
