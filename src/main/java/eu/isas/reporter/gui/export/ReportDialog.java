@@ -1,11 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package eu.isas.reporter.gui.export;
 
+import com.compomics.util.gui.ExportFormatSelectionDialog;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
 import com.compomics.util.io.export.ExportFormat;
 import com.compomics.util.io.export.ExportScheme;
@@ -20,18 +15,19 @@ import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
 /**
- * This dialog allows the user to select, add and edit reports
+ * This dialog allows the user to select, add and edit reports.
  *
- * @author Marc
+ * @author Marc Vaudel
+ * @author Harald Barsnes
  */
 public class ReportDialog extends javax.swing.JDialog {
-    
+
     /**
-     * The export factory
+     * The export factory.
      */
     private ReporterExportFactory exportFactory = ReporterExportFactory.getInstance();
     /**
-     * The main gui instance
+     * The main GUI instance.
      */
     private ReporterGUI reporterGUI;
     /**
@@ -39,23 +35,34 @@ public class ReportDialog extends javax.swing.JDialog {
      */
     private static ProgressDialogX progressDialog;
     /**
-     * List of the available export schemes
+     * List of the available export schemes.
      */
     private ArrayList<String> exportSchemesNames;
+
     /**
-     * Constructor 
-     * 
-     * @param reporterGUI the main gui instance
+     * Constructor.
+     *
+     * @param reporterGUI the main GUI instance
      */
     public ReportDialog(ReporterGUI reporterGUI) {
         super(reporterGUI, true);
         this.reporterGUI = reporterGUI;
         updateReportsList();
         initComponents();
+        setUpGUI();
         setLocationRelativeTo(reporterGUI);
         setVisible(true);
     }
-    
+
+    /**
+     * Set up the GUI.
+     */
+    private void setUpGUI() {
+        reportsTableScrollPane.getViewport().setOpaque(false);
+        reportsTable.getTableHeader().setReorderingAllowed(false);
+        reportsTable.getColumn(" ").setMaxWidth(50);
+        reportsTable.getColumn(" ").setMinWidth(50);
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -66,19 +73,19 @@ public class ReportDialog extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jPanel1 = new javax.swing.JPanel();
+        backgroundPanel = new javax.swing.JPanel();
         exitButton = new javax.swing.JButton();
         customReportsPanel = new javax.swing.JPanel();
         reportsTableScrollPane = new javax.swing.JScrollPane();
         reportsTable = new javax.swing.JTable();
         exportReportButton = new javax.swing.JButton();
-        selectReportTypeLabel = new javax.swing.JLabel();
         helpLabel = new javax.swing.JLabel();
         addReportLabel = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Export Ratios");
 
-        jPanel1.setBackground(new java.awt.Color(230, 230, 230));
+        backgroundPanel.setBackground(new java.awt.Color(230, 230, 230));
 
         exitButton.setText("Exit");
         exitButton.addActionListener(new java.awt.event.ActionListener() {
@@ -112,8 +119,6 @@ public class ReportDialog extends javax.swing.JDialog {
             }
         });
 
-        selectReportTypeLabel.setText("Select a Report Type");
-
         helpLabel.setFont(helpLabel.getFont().deriveFont((helpLabel.getFont().getStyle() | java.awt.Font.ITALIC)));
         helpLabel.setText("Right click on a row in the table for additional options.");
 
@@ -144,19 +149,14 @@ public class ReportDialog extends javax.swing.JDialog {
                         .addGap(18, 18, 18)
                         .addComponent(helpLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 101, Short.MAX_VALUE)
-                        .addComponent(exportReportButton))
-                    .addGroup(customReportsPanelLayout.createSequentialGroup()
-                        .addComponent(selectReportTypeLabel)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addComponent(exportReportButton)))
                 .addContainerGap())
         );
         customReportsPanelLayout.setVerticalGroup(
             customReportsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(customReportsPanelLayout.createSequentialGroup()
-                .addGap(20, 20, 20)
-                .addComponent(selectReportTypeLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(reportsTableScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 213, Short.MAX_VALUE)
+                .addContainerGap()
+                .addComponent(reportsTableScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 242, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(customReportsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(exportReportButton)
@@ -165,20 +165,20 @@ public class ReportDialog extends javax.swing.JDialog {
                 .addContainerGap())
         );
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
+        javax.swing.GroupLayout backgroundPanelLayout = new javax.swing.GroupLayout(backgroundPanel);
+        backgroundPanel.setLayout(backgroundPanelLayout);
+        backgroundPanelLayout.setHorizontalGroup(
+            backgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(backgroundPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addGroup(backgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(exitButton)
                     .addComponent(customReportsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+        backgroundPanelLayout.setVerticalGroup(
+            backgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, backgroundPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(customReportsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -190,16 +190,21 @@ public class ReportDialog extends javax.swing.JDialog {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(backgroundPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(backgroundPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    /**
+     * Close the dialog.
+     *
+     * @param evt
+     */
     private void exitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitButtonActionPerformed
         try {
             exportFactory.saveFactory();
@@ -239,10 +244,20 @@ public class ReportDialog extends javax.swing.JDialog {
 //        addReportMenuItemActionPerformed(null);
     }//GEN-LAST:event_addReportLabelMouseClicked
 
+    /**
+     * Change the cursor to a hand cursor.
+     *
+     * @param evt
+     */
     private void addReportLabelMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_addReportLabelMouseEntered
         this.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
     }//GEN-LAST:event_addReportLabelMouseEntered
 
+    /**
+     * Change the cursor back to the default cursor.
+     *
+     * @param evt
+     */
     private void addReportLabelMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_addReportLabelMouseExited
         this.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_addReportLabelMouseExited
@@ -256,70 +271,81 @@ public class ReportDialog extends javax.swing.JDialog {
         exportSchemesNames.addAll(exportFactory.getDefaultExportSchemesNames());
         exportSchemesNames.addAll(exportFactory.getUserSchemesNames());
     }
+
     /**
      * Writes the selected report into a file.
      */
     private void writeSelectedReport() {
 
-        // get the file to send the output to
-        final File selectedFile = reporterGUI.getUserSelectedFile(".xls", "Microsoft Excel (.xls)", "Export...", false);
-//        final File selectedFile = peptideShakerGUI.getUserSelectedFile(".txt", "Tab separated text file (.txt)", "Export...", false); //@TODO: allow selecting multiple formats using com.compomics.util.io.export.ExportFormat
-        final ExportFormat exportFormat = ExportFormat.excel;
+        ExportFormatSelectionDialog exportFormatSelectionDialog = new ExportFormatSelectionDialog(this, true);
 
-        if (selectedFile != null) {
-            progressDialog = new ProgressDialogX(this, reporterGUI,
-                    Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/peptide-shaker.gif")),
-                    Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/peptide-shaker-orange.gif")),
-                    true);
-            progressDialog.setTitle("Exporting Report. Please Wait...");
+        if (!exportFormatSelectionDialog.isCanceled()) {
 
-            final String filePath = selectedFile.getPath();
+            final File selectedFile;
+            final ExportFormat exportFormat = exportFormatSelectionDialog.getFormat();
 
-            new Thread(new Runnable() {
-                public void run() {
-                    try {
-                        progressDialog.setVisible(true);
-                    } catch (IndexOutOfBoundsException e) {
-                        // ignore
-                    }
-                }
-            }, "ProgressDialog").start();
+            // get the file to send the output to
+            if (exportFormat == ExportFormat.text) {
+                selectedFile = reporterGUI.getUserSelectedFile(".txt", "Tab separated text file (.txt)", "Export...", false);
+            } else {
+                selectedFile = reporterGUI.getUserSelectedFile(".xls", "Excel Workbook (.xls)", "Export...", false);
+            }
 
-            new Thread("ExportThread") {
-                @Override
-                public void run() {
+            if (selectedFile != null) {
+                progressDialog = new ProgressDialogX(this, reporterGUI,
+                        Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/peptide-shaker.gif")),
+                        Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/peptide-shaker-orange.gif")),
+                        true);
+                progressDialog.setTitle("Exporting Report. Please Wait...");
 
-                    try {
-                        String schemeName = (String) reportsTable.getValueAt(reportsTable.getSelectedRow(), 1);
-                        ExportScheme exportScheme = exportFactory.getExportScheme(schemeName);
-                        progressDialog.setTitle("Exporting. Please Wait...");
-                        ReporterExportFactory.writeExport(exportScheme, selectedFile, exportFormat, reporterGUI.getExperiment().getReference(),
-                                reporterGUI.getSample().getReference(), reporterGUI.getReplicateNumber(),
-                                reporterGUI.getProjectDetails(), reporterGUI.getIdentification(), reporterGUI.getIdentificationFeaturesGenerator(),
-                                reporterGUI.getQuantificationFeaturesGenerator(), reporterGUI.getReporterIonQuantification(), reporterGUI.getReporterPreferences(), reporterGUI.getSearchParameters(),
-                                null, null, null, null, reporterGUI.getIdentificationDisplayPreferences().getnAASurroundingPeptides(),
-                                reporterGUI.getAnnotationPreferences(), reporterGUI.getSequenceMatchingPreferences(), reporterGUI.getIdFilter(),
-                                reporterGUI.getPtmScoringPreferences(), reporterGUI.getSpectrumCountingPreferences(), progressDialog);
+                final String filePath = selectedFile.getPath();
 
-                        boolean processCancelled = progressDialog.isRunCanceled();
-                        progressDialog.setRunFinished();
-
-                        if (!processCancelled) {
-                            JOptionPane.showMessageDialog(reporterGUI, "Data copied to file:\n" + filePath, "Data Exported.", JOptionPane.INFORMATION_MESSAGE);
+                new Thread(new Runnable() {
+                    public void run() {
+                        try {
+                            progressDialog.setVisible(true);
+                        } catch (IndexOutOfBoundsException e) {
+                            // ignore
                         }
-                    } catch (FileNotFoundException e) {
-                        progressDialog.setRunFinished();
-                        JOptionPane.showMessageDialog(reporterGUI,
-                                "An error occurred while generating the output. Please make sure "
-                                + "that the detination file is not opened by another application.", "Output Error.", JOptionPane.ERROR_MESSAGE);
-                        e.printStackTrace();
-                    } catch (Exception e) {
-                        progressDialog.setRunFinished();
-                        JOptionPane.showMessageDialog(reporterGUI, "An error occurred while generating the output.", "Output Error.", JOptionPane.ERROR_MESSAGE);
-                        e.printStackTrace();
                     }
-                }
-            }.start();
+                }, "ProgressDialog").start();
+
+                new Thread("ExportThread") {
+                    @Override
+                    public void run() {
+
+                        try {
+                            String schemeName = (String) reportsTable.getValueAt(reportsTable.getSelectedRow(), 1);
+                            ExportScheme exportScheme = exportFactory.getExportScheme(schemeName);
+                            progressDialog.setTitle("Exporting. Please Wait...");
+                            ReporterExportFactory.writeExport(exportScheme, selectedFile, exportFormat, reporterGUI.getExperiment().getReference(),
+                                    reporterGUI.getSample().getReference(), reporterGUI.getReplicateNumber(),
+                                    reporterGUI.getProjectDetails(), reporterGUI.getIdentification(), reporterGUI.getIdentificationFeaturesGenerator(),
+                                    reporterGUI.getQuantificationFeaturesGenerator(), reporterGUI.getReporterIonQuantification(), reporterGUI.getReporterPreferences(), reporterGUI.getSearchParameters(),
+                                    null, null, null, null, reporterGUI.getIdentificationDisplayPreferences().getnAASurroundingPeptides(),
+                                    reporterGUI.getAnnotationPreferences(), reporterGUI.getSequenceMatchingPreferences(), reporterGUI.getIdFilter(),
+                                    reporterGUI.getPtmScoringPreferences(), reporterGUI.getSpectrumCountingPreferences(), progressDialog);
+
+                            boolean processCancelled = progressDialog.isRunCanceled();
+                            progressDialog.setRunFinished();
+
+                            if (!processCancelled) {
+                                JOptionPane.showMessageDialog(reporterGUI, "Data copied to file:\n" + filePath, "Data Exported.", JOptionPane.INFORMATION_MESSAGE);
+                            }
+                        } catch (FileNotFoundException e) {
+                            progressDialog.setRunFinished();
+                            JOptionPane.showMessageDialog(reporterGUI,
+                                    "An error occurred while generating the output. Please make sure "
+                                    + "that the detination file is not opened by another application.", "Output Error.", JOptionPane.ERROR_MESSAGE);
+                            e.printStackTrace();
+                        } catch (Exception e) {
+                            progressDialog.setRunFinished();
+                            JOptionPane.showMessageDialog(reporterGUI, "An error occurred while generating the output.", "Output Error.", JOptionPane.ERROR_MESSAGE);
+                            e.printStackTrace();
+                        }
+                    }
+                }.start();
+            }
         }
     }
 
@@ -433,13 +459,12 @@ public class ReportDialog extends javax.swing.JDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel addReportLabel;
+    private javax.swing.JPanel backgroundPanel;
     private javax.swing.JPanel customReportsPanel;
     private javax.swing.JButton exitButton;
     private javax.swing.JButton exportReportButton;
     private javax.swing.JLabel helpLabel;
-    private javax.swing.JPanel jPanel1;
     private javax.swing.JTable reportsTable;
     private javax.swing.JScrollPane reportsTableScrollPane;
-    private javax.swing.JLabel selectReportTypeLabel;
     // End of variables declaration//GEN-END:variables
 }

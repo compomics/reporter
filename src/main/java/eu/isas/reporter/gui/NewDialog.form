@@ -164,7 +164,7 @@
                               <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="sampleNameTxt" max="32767" attributes="0"/>
-                                  <Component id="experimentTxt" max="32767" attributes="0"/>
+                                  <Component id="projectTxt" max="32767" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" pref="26" max="-2" attributes="0"/>
                               <Component id="jLabel25" min="-2" max="-2" attributes="0"/>
@@ -179,7 +179,7 @@
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
-                                  <Component id="experimentTxt" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="projectTxt" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
@@ -195,13 +195,13 @@
                     </DimensionLayout>
                   </Layout>
                   <SubComponents>
-                    <Component class="javax.swing.JTextField" name="experimentTxt">
+                    <Component class="javax.swing.JTextField" name="projectTxt">
                       <Properties>
                         <Property name="editable" type="boolean" value="false"/>
                         <Property name="horizontalAlignment" type="int" value="0"/>
                       </Properties>
                       <Events>
-                        <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="experimentTxtKeyReleased"/>
+                        <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="projectTxtKeyReleased"/>
                       </Events>
                     </Component>
                     <Component class="javax.swing.JLabel" name="jLabel1">
@@ -233,6 +233,9 @@
                         <Property name="editable" type="boolean" value="false"/>
                         <Property name="horizontalAlignment" type="int" value="0"/>
                       </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="replicateNumberTxtActionPerformed"/>
+                      </Events>
                     </Component>
                   </SubComponents>
                 </Container>
@@ -837,6 +840,7 @@
                     </Component>
                     <Component class="javax.swing.JTextField" name="rtTolTxt">
                       <Properties>
+                        <Property name="horizontalAlignment" type="int" value="0"/>
                         <Property name="text" type="java.lang.String" value="10"/>
                       </Properties>
                       <Events>
@@ -844,6 +848,9 @@
                       </Events>
                     </Component>
                     <Component class="javax.swing.JTextField" name="mzTolTxt">
+                      <Properties>
+                        <Property name="horizontalAlignment" type="int" value="0"/>
+                      </Properties>
                     </Component>
                     <Component class="javax.swing.JLabel" name="jLabel22">
                       <Properties>

@@ -79,7 +79,7 @@ public class Reporter {
             ratios.put(sampleIndex, new ArrayList<Double>());
         }
         int progress = 0;
-        int totalProgress = 2 * identification.getSpectrumFiles().size() + 3;
+        int totalProgress = 2 * identification.getSpectrumFiles().size() + 4;
         PSParameter psParameter = new PSParameter();
         for (String mgfName : identification.getOrderedSpectrumFileNames()) {
             if (waitingHandler != null) {
@@ -129,7 +129,7 @@ public class Reporter {
                     return;
                 }
                 waitingHandler.increaseSecondaryProgressCounter();
-                waitingHandler.setWaitingText("Estimating Normalization factors (step " + progress + " of " + totalProgress + ", peptide " + ++cpt + " of " + nPeptides + "). Please Wait...");
+                waitingHandler.setWaitingText("Estimating Normalization Factors (Step " + progress + " of " + totalProgress + ", peptide " + ++cpt + " of " + nPeptides + "). Please Wait...");
             }
         }
         for (String sampleIndex : reporterIonQuantification.getSampleIndexes()) {

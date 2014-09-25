@@ -154,6 +154,8 @@ public class NewDialog extends javax.swing.JDialog {
 
         txtConfigurationFileLocation.setText(reporterGui.getJarFilePath() + File.separator + METHODS_FILE);
 
+        reporterGui.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")));
+
         refresh();
 
         pack();
@@ -188,7 +190,7 @@ public class NewDialog extends javax.swing.JDialog {
         tabbedPane = new javax.swing.JTabbedPane();
         processingPanel = new javax.swing.JPanel();
         projectPanel = new javax.swing.JPanel();
-        experimentTxt = new javax.swing.JTextField();
+        projectTxt = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         jLabel24 = new javax.swing.JLabel();
         sampleNameTxt = new javax.swing.JTextField();
@@ -268,11 +270,11 @@ public class NewDialog extends javax.swing.JDialog {
         projectPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Project Details"));
         projectPanel.setOpaque(false);
 
-        experimentTxt.setEditable(false);
-        experimentTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        experimentTxt.addKeyListener(new java.awt.event.KeyAdapter() {
+        projectTxt.setEditable(false);
+        projectTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        projectTxt.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
-                experimentTxtKeyReleased(evt);
+                projectTxtKeyReleased(evt);
             }
         });
 
@@ -292,6 +294,11 @@ public class NewDialog extends javax.swing.JDialog {
 
         replicateNumberTxt.setEditable(false);
         replicateNumberTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        replicateNumberTxt.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                replicateNumberTxtActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout projectPanelLayout = new org.jdesktop.layout.GroupLayout(projectPanel);
         projectPanel.setLayout(projectPanelLayout);
@@ -305,7 +312,7 @@ public class NewDialog extends javax.swing.JDialog {
                 .add(20, 20, 20)
                 .add(projectPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(sampleNameTxt)
-                    .add(experimentTxt))
+                    .add(projectTxt))
                 .add(26, 26, 26)
                 .add(jLabel25)
                 .add(18, 18, 18)
@@ -317,7 +324,7 @@ public class NewDialog extends javax.swing.JDialog {
             .add(projectPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(projectPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(experimentTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(projectTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel1))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(projectPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
@@ -645,12 +652,15 @@ public class NewDialog extends javax.swing.JDialog {
 
         jLabel20.setText("RT tolerance");
 
+        rtTolTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         rtTolTxt.setText("10");
         rtTolTxt.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 rtTolTxtActionPerformed(evt);
             }
         });
+
+        mzTolTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
 
         jLabel22.setText("s");
 
@@ -838,6 +848,11 @@ public class NewDialog extends javax.swing.JDialog {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    /**
+     * Opens a file chooser for selecting the configuration file.
+     *
+     * @param evt
+     */
     private void browseConfigButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseConfigButtonActionPerformed
 
         if (txtConfigurationFileLocation.getText().length() > 0) {
@@ -845,7 +860,7 @@ public class NewDialog extends javax.swing.JDialog {
         }
 
         JFileChooser fileChooser = new JFileChooser(reporterGui.getLastSelectedFolder());
-        fileChooser.setDialogTitle("Select Configuration file");
+        fileChooser.setDialogTitle("Select Configuration File");
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fileChooser.setMultiSelectionEnabled(false);
 
@@ -868,11 +883,16 @@ public class NewDialog extends javax.swing.JDialog {
             } catch (XmlPullParserException e) {
                 JOptionPane.showMessageDialog(null,
                         "An error occured while parsing " + METHODS_FILE + " at line " + e.getLineNumber() + ".",
-                        "Parsing error", JOptionPane.WARNING_MESSAGE);
+                        "Parsing Error", JOptionPane.WARNING_MESSAGE);
             }
         }
 }//GEN-LAST:event_browseConfigButtonActionPerformed
 
+    /**
+     * Opens a file chooser for adding identification files.
+     *
+     * @param evt
+     */
     private void addIdFilesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addIdFilesButtonActionPerformed
 
         JFileChooser fileChooser = new JFileChooser(reporterGui.getLastSelectedFolder());
@@ -908,8 +928,12 @@ public class NewDialog extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_addIdFilesButtonActionPerformed
 
+    /**
+     * Start loading the data.
+     * 
+     * @param evt 
+     */
     private void startButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startButtonActionPerformed
-
         if (validateInput()) {
             reporterIonQuantification = new ReporterIonQuantification(Quantification.QuantificationMethod.REPORTER_IONS);
             for (String key : sampleNames.keySet()) {
@@ -920,17 +944,31 @@ public class NewDialog extends javax.swing.JDialog {
             saveUserPreferences();
             dispose();
         }
-
     }//GEN-LAST:event_startButtonActionPerformed
 
+    /**
+     * Set the precursor matching type.
+     * 
+     * @param evt 
+     */
     private void sameSpectraActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sameSpectraActionPerformed
         precursorMatching.setSelected(!sameSpectra.isSelected());
     }//GEN-LAST:event_sameSpectraActionPerformed
 
+    /**
+     * Set the precursor matching type.
+     * 
+     * @param evt 
+     */
     private void precursorMatchingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_precursorMatchingActionPerformed
         sameSpectra.setSelected(!precursorMatching.isSelected());
     }//GEN-LAST:event_precursorMatchingActionPerformed
 
+    /**
+     * Open a file chooser for adding specturm files.
+     * 
+     * @param evt 
+     */
     private void addSpectraFilesJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addSpectraFilesJButtonActionPerformed
 
         // @TODO: add mgf validation etc like for PeptideShaker
@@ -955,7 +993,6 @@ public class NewDialog extends javax.swing.JDialog {
         int returnVal = fileChooser.showDialog(this.getParent(), "Add");
 
         try {
-
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 for (File newFile : fileChooser.getSelectedFiles()) {
                     if (newFile.isDirectory()) {
@@ -990,8 +1027,13 @@ public class NewDialog extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_addSpectraFilesJButtonActionPerformed
 
+    /**
+     * Validate the retention time input.
+     * 
+     * @param evt 
+     */
     private void rtTolTxtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rtTolTxtActionPerformed
-        // TODO add your handling code here:
+        // @TODO: validate the input
     }//GEN-LAST:event_rtTolTxtActionPerformed
 
     /**
@@ -1004,18 +1046,27 @@ public class NewDialog extends javax.swing.JDialog {
         this.dispose();
     }//GEN-LAST:event_exitJButtonActionPerformed
 
+    /**
+     * Open the PreferencesDialog.
+     * 
+     * @param evt 
+     */
     private void editPreferencesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editPreferencesButtonActionPerformed
         new PreferencesDialog(reporterGui, reporterPreferences, cpsBean.getSearchParameters());
         quantificationPreferencesTxt.setText("User Settings");
     }//GEN-LAST:event_editPreferencesButtonActionPerformed
 
+    /**
+     * Clear the sample names.
+     * 
+     * @param evt 
+     */
     private void comboMethod1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboMethod1ActionPerformed
         sampleNames = new HashMap<String, String>();
     }//GEN-LAST:event_comboMethod1ActionPerformed
 
     /**
-     * Opens a file chooser where the user can select the database FASTA file to
-     * use.
+     * Opens a file chooser for selecting the database FASTA file.
      *
      * @param evt
      */
@@ -1087,13 +1138,32 @@ public class NewDialog extends javax.swing.JDialog {
         exitJButtonActionPerformed(null);
     }//GEN-LAST:event_formWindowClosing
 
+    /**
+     * Validate the sample name.
+     * 
+     * @param evt 
+     */
     private void sampleNameTxtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sampleNameTxtActionPerformed
-
+        // @TODO: validate the input
     }//GEN-LAST:event_sampleNameTxtActionPerformed
 
-    private void experimentTxtKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_experimentTxtKeyReleased
+    /**
+     * Validate the project name.
+     * 
+     * @param evt 
+     */
+    private void projectTxtKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_projectTxtKeyReleased
+        // @TODO: validate the input
+    }//GEN-LAST:event_projectTxtKeyReleased
 
-    }//GEN-LAST:event_experimentTxtKeyReleased
+    /**
+     * Validate the input.
+     * 
+     * @param evt 
+     */
+    private void replicateNumberTxtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_replicateNumberTxtActionPerformed
+        validateInput();
+    }//GEN-LAST:event_replicateNumberTxtActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addDbButton;
@@ -1108,7 +1178,6 @@ public class NewDialog extends javax.swing.JDialog {
     private javax.swing.JPanel configPanel;
     private javax.swing.JButton editPreferencesButton;
     private javax.swing.JButton exitJButton;
-    private javax.swing.JTextField experimentTxt;
     private javax.swing.JTextField fastaTxt;
     private javax.swing.JPanel fileSelectiontPanel;
     private javax.swing.JTextField ionToleranceTxt;
@@ -1135,6 +1204,7 @@ public class NewDialog extends javax.swing.JDialog {
     private javax.swing.JRadioButton precursorMatching;
     private javax.swing.JPanel processingPanel;
     private javax.swing.JPanel projectPanel;
+    private javax.swing.JTextField projectTxt;
     private javax.swing.JTextField quantificationPreferencesTxt;
     private javax.swing.JTable reagentsTable;
     private javax.swing.JScrollPane reagentsTableJScrollPane;
@@ -1384,7 +1454,7 @@ public class NewDialog extends javax.swing.JDialog {
                 txtSpectraFileLocation.setText(cpsBean.getIdentification().getSpectrumFiles().size() + " files loaded."); //@TODO: allow editing
                 fastaTxt.setText(cpsBean.getSearchParameters().getFastaFile().getName());
 
-                experimentTxt.setText(getExperiment().getReference());
+                projectTxt.setText(getExperiment().getReference());
                 sampleNameTxt.setText(getSample().getReference());
                 replicateNumberTxt.setText(getReplicateNumber() + "");
                 txtIdFileLocation.setText(cpsBean.getCpsFile().getName());
@@ -1510,7 +1580,7 @@ public class NewDialog extends javax.swing.JDialog {
      * Imports the gene mapping.
      */
     private void loadGeneMappings() {
-        if (!cpsBean.loadGeneMappings(progressDialog)) { // @TODO: this cannot be hardcoded to peptideshaker!!
+        if (!cpsBean.loadGeneMappings(progressDialog)) {
             JOptionPane.showMessageDialog(this, "Unable to load the gene/GO mapping file.", "File Error", JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -1559,17 +1629,17 @@ public class NewDialog extends javax.swing.JDialog {
         try {
             ionTolerance = new Double(ionToleranceTxt.getText().trim());
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Wrong Ion Tolerance.", "Please input a number for the ion tolerance.", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Please input a number for the ion tolerance.", "Ion Tolerance Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
         if (ionTolerance <= 0) {
-            JOptionPane.showMessageDialog(this, "Wrong Ion Tolerance.", "Please input a positive number for the ion tolerance.", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Please input a positive number for the ion tolerance.", "Ion Tolerance Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
         for (String reagent1 : selectedMethod.getReagentNames()) {
             for (String reagent2 : selectedMethod.getReagentNames()) {
                 if (!reagent1.equals(reagent2) && Math.abs(selectedMethod.getReagent(reagent1).getReporterIon().getTheoreticMass() - selectedMethod.getReagent(reagent2).getReporterIon().getTheoreticMass()) <= ionTolerance) {
-                    JOptionPane.showMessageDialog(this, "The ion tolerance does not allow distinction of " + reagent1 + " and  " + reagent2 + ".", "Wrong Ion Tolerance.", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "The ion tolerance does not allow distinction of " + reagent1 + " and  " + reagent2 + ".", "Ion Tolerance Error", JOptionPane.ERROR_MESSAGE);
                     return false;
                 }
             }
@@ -1579,20 +1649,20 @@ public class NewDialog extends javax.swing.JDialog {
             try {
                 new Double(mzTolTxt.getText().trim());
             } catch (Exception e) {
-                JOptionPane.showMessageDialog(this, "Wrong spectrum matching m/z tolerance.", "Please input a number for precursor m/z tolerance.", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Please input a number for precursor m/z tolerance.", "Matching Tolerance Error", JOptionPane.ERROR_MESSAGE);
                 return false;
             }
             try {
                 new Double(rtTolTxt.getText().trim());
             } catch (Exception e) {
-                JOptionPane.showMessageDialog(this, "Wrong spectrum matching RT tolerance.", "Please input a number for precursor RT tolerance.", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Please input a number for precursor RT tolerance.", "RT Tolerance Error", JOptionPane.ERROR_MESSAGE);
                 return false;
             }
         }
         try {
             new Integer(replicateNumberTxt.getText().trim());
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Wrong replicate number.", "Please input a number for replicate number.", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Please input a number for replicate number.", "Replicate Number Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
         return true;
@@ -1841,9 +1911,9 @@ public class NewDialog extends javax.swing.JDialog {
     }
 
     /**
-     * Indicates whether the user cancelled the project creation.
+     * Indicates whether the user canceled the project creation.
      *
-     * @return a boolean indicating whether the user cancelled the project
+     * @return a boolean indicating whether the user canceled the project
      * creation
      */
     public boolean isCancelled() {
