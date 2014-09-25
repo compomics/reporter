@@ -210,6 +210,7 @@ public class ReporterExportFactory implements ExportFactory {
      *
      * @param exportScheme the scheme of the export
      * @param destinationFile the destination file
+     * @param exportFormat the export format
      * @param experiment the experiment corresponding to this project (mandatory
      * for the Project section)
      * @param sample the sample of the project (mandatory for the Project

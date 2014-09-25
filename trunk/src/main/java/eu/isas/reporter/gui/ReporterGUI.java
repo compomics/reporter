@@ -251,7 +251,7 @@ public class ReporterGUI extends javax.swing.JFrame {
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
         progressDialog.setPrimaryProgressCounterIndeterminate(true);
-        progressDialog.setTitle("Quantifying proteins. Please Wait...");
+        progressDialog.setTitle("Quantifying Proteins. Please Wait...");
 
         new Thread(new Runnable() {
             public void run() {
@@ -347,7 +347,7 @@ public class ReporterGUI extends javax.swing.JFrame {
         if (!reporterIonQuantification.hasNormalisationFactors()) {
             Reporter.setNormalizationFactors(reporterIonQuantification, reporterPreferences, cpsBean.getIdentification(), quantificationFeaturesGenerator, progressDialog);
         }
-//        overviewPanel.updateDisplay();
+        overviewPanel.updateDisplay();
     }
 
     /**
