@@ -53,8 +53,8 @@ public enum ReporterProteinFeatures implements ReporterExportFeature {
     }
 
     @Override
-    public String[] getTitles() {
-        return new String[]{title};
+    public String getTitle() {
+        return title;
     }
 
     @Override

@@ -354,45 +354,57 @@ public class ReportDialog extends javax.swing.JDialog {
      */
     private void writeDocumentationOfSelectedReport() {
 
-        // get the file to send the output to
-        final File selectedFile = reporterGUI.getUserSelectedFile(".txt", "Tab separated text file (.txt)", "Export Documentation...", false);
+        ExportFormatSelectionDialog exportFormatSelectionDialog = new ExportFormatSelectionDialog(this, true);
 
-        if (selectedFile != null) {
-            progressDialog = new ProgressDialogX(this, reporterGUI,
-                    Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/peptide-shaker.gif")),
-                    Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/peptide-shaker-orange.gif")),
-                    true);
+        if (!exportFormatSelectionDialog.isCanceled()) {
 
-            new Thread(new Runnable() {
-                public void run() {
-                    try {
-                        progressDialog.setVisible(true);
-                    } catch (IndexOutOfBoundsException e) {
-                        // ignore
+            final File selectedFile;
+            final ExportFormat exportFormat = exportFormatSelectionDialog.getFormat();
+
+            // get the file to send the output to
+            if (exportFormat == ExportFormat.text) {
+                selectedFile = reporterGUI.getUserSelectedFile(".txt", "Tab separated text file (.txt)", "Export...", false);
+            } else {
+                selectedFile = reporterGUI.getUserSelectedFile(".xls", "Excel Workbook (.xls)", "Export...", false);
+            }
+
+            if (selectedFile != null) {
+                progressDialog = new ProgressDialogX(this, reporterGUI,
+                        Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/peptide-shaker.gif")),
+                        Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/peptide-shaker-orange.gif")),
+                        true);
+
+                new Thread(new Runnable() {
+                    public void run() {
+                        try {
+                            progressDialog.setVisible(true);
+                        } catch (IndexOutOfBoundsException e) {
+                            // ignore
+                        }
                     }
-                }
-            }, "ProgressDialog").start();
+                }, "ProgressDialog").start();
 
-            new Thread("ExportThread") {
-                @Override
-                public void run() {
-                    boolean error = false;
-                    try {
-                        String schemeName = (String) reportsTable.getValueAt(reportsTable.getSelectedRow(), 1);
-                        ExportScheme exportScheme = exportFactory.getExportScheme(schemeName);
-                        ReporterExportFactory.writeDocumentation(exportScheme, selectedFile);
-                    } catch (Exception e) {
-                        error = true;
-                        reporterGUI.catchException(e);
-                    }
-                    progressDialog.setRunFinished();
+                new Thread("ExportThread") {
+                    @Override
+                    public void run() {
+                        boolean error = false;
+                        try {
+                            String schemeName = (String) reportsTable.getValueAt(reportsTable.getSelectedRow(), 1);
+                            ExportScheme exportScheme = exportFactory.getExportScheme(schemeName);
+                            ReporterExportFactory.writeDocumentation(exportScheme, exportFormat, selectedFile);
+                        } catch (Exception e) {
+                            error = true;
+                            reporterGUI.catchException(e);
+                        }
+                        progressDialog.setRunFinished();
 
-                    if (!error) {
-                        JOptionPane.showMessageDialog(reporterGUI, "Documentation saved to \'" + selectedFile.getAbsolutePath() + "\'.",
-                                "Documentation Saved", JOptionPane.INFORMATION_MESSAGE);
+                        if (!error) {
+                            JOptionPane.showMessageDialog(reporterGUI, "Documentation saved to \'" + selectedFile.getAbsolutePath() + "\'.",
+                                    "Documentation Saved", JOptionPane.INFORMATION_MESSAGE);
+                        }
                     }
-                }
-            }.start();
+                }.start();
+            }
         }
     }
 

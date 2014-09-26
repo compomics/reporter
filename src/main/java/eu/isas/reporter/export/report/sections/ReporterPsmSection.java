@@ -372,24 +372,20 @@ public class ReporterPsmSection {
             writer.addSeparator();
         }
         for (ExportFeature exportFeature : identificationAlgorithmMatchesFeatures) {
-            for (String title : exportFeature.getTitles()) {
-                if (firstColumn) {
-                    firstColumn = false;
-                } else {
-                    writer.addSeparator();
-                }
-                writer.write(title);
+            if (firstColumn) {
+                firstColumn = false;
+            } else {
+                writer.addSeparator();
             }
+            writer.write(exportFeature.getTitle());
         }
         for (ExportFeature exportFeature : psmFeatures) {
-            for (String title : exportFeature.getTitles()) {
-                if (firstColumn) {
-                    firstColumn = false;
-                } else {
-                    writer.addSeparator();
-                }
-                writer.write(title);
+            if (firstColumn) {
+                firstColumn = false;
+            } else {
+                writer.addSeparator();
             }
+            writer.write(exportFeature.getTitle());
         }
         for (ReporterExportFeature exportFeature : quantificationFeatures) {
             if (firstColumn) {
@@ -397,15 +393,13 @@ public class ReporterPsmSection {
             } else {
                 writer.addSeparator();
             }
-            for (String title : exportFeature.getTitles()) {
-                writer.writeHeaderText(title, reporterStyle);
-                if (exportFeature.hasChannels()) {
-                    for (int i = 1; i < sampleIndexes.size(); i++) {
-                        writer.writeHeaderText("", reporterStyle);
-                        writer.addSeparator();
-                    }
-                    needSecondLine = true;
+            writer.writeHeaderText(exportFeature.getTitle(), reporterStyle);
+            if (exportFeature.hasChannels()) {
+                for (int i = 1; i < sampleIndexes.size(); i++) {
+                    writer.writeHeaderText("", reporterStyle);
+                    writer.addSeparator();
                 }
+                needSecondLine = true;
             }
         }
         if (needSecondLine) {
@@ -416,43 +410,37 @@ public class ReporterPsmSection {
                 writer.addSeparator();
             }
             for (ExportFeature exportFeature : identificationAlgorithmMatchesFeatures) {
-                for (String title : exportFeature.getTitles()) {
-                    if (firstColumn) {
-                        firstColumn = false;
-                    } else {
-                        writer.writeHeaderText("");
-                        writer.addSeparator();
-                    }
+                if (firstColumn) {
+                    firstColumn = false;
+                } else {
+                    writer.writeHeaderText("");
+                    writer.addSeparator();
                 }
             }
             for (ExportFeature exportFeature : psmFeatures) {
-                for (String title : exportFeature.getTitles()) {
-                    if (firstColumn) {
-                        firstColumn = false;
-                    } else {
-                        writer.writeHeaderText("");
-                        writer.addSeparator();
-                    }
+                if (firstColumn) {
+                    firstColumn = false;
+                } else {
+                    writer.writeHeaderText("");
+                    writer.addSeparator();
                 }
             }
             for (ReporterExportFeature exportFeature : quantificationFeatures) {
-                for (String title : exportFeature.getTitles()) {
-                    if (exportFeature.hasChannels()) {
-                        for (String sampleIndex : sampleIndexes) {
-                            if (firstColumn) {
-                                firstColumn = false;
-                            } else {
-                                writer.addSeparator();
-                            }
-                            writer.writeHeaderText(reporterIonQuantification.getSample(sampleIndex).getReference(), reporterStyle);
-                        }
-                    } else {
+                if (exportFeature.hasChannels()) {
+                    for (String sampleIndex : sampleIndexes) {
                         if (firstColumn) {
                             firstColumn = false;
                         } else {
-                            writer.writeHeaderText("", reporterStyle);
                             writer.addSeparator();
                         }
+                        writer.writeHeaderText(reporterIonQuantification.getSample(sampleIndex).getReference(), reporterStyle);
+                    }
+                } else {
+                    if (firstColumn) {
+                        firstColumn = false;
+                    } else {
+                        writer.writeHeaderText("", reporterStyle);
+                        writer.addSeparator();
                     }
                 }
             }
