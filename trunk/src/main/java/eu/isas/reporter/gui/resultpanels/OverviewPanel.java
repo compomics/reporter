@@ -144,9 +144,9 @@ public class OverviewPanel extends javax.swing.JPanel {
                     identification.loadProteinMatchParameters(proteinKeys, new PSParameter(), progressDialog);
                     // update the table model
                     if (proteinTable.getRowCount() > 0) {
-                        ((ProteinTableModel) proteinTable.getModel()).updateDataModel(identification, identificationFeaturesGenerator, reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getSearchParameters(), reporterGUI.getExceptionHandler(), proteinKeys);
+                        ((ProteinTableModel) proteinTable.getModel()).updateDataModel(identification, identificationFeaturesGenerator, reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getExceptionHandler(), proteinKeys);
                     } else {
-                        ProteinTableModel proteinTableModel = new ProteinTableModel(identification, identificationFeaturesGenerator, reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getSearchParameters(), reporterGUI.getExceptionHandler(), proteinKeys);
+                        ProteinTableModel proteinTableModel = new ProteinTableModel(identification, identificationFeaturesGenerator, reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getExceptionHandler(), proteinKeys);
                         proteinTable.setModel(proteinTableModel);
                     }
 
