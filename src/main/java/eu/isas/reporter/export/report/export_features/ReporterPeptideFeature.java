@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package eu.isas.reporter.export.report.export_features;
 
 import com.compomics.util.io.export.ExportFeature;
@@ -12,12 +6,13 @@ import eu.isas.reporter.export.report.ReporterExportFeature;
 import java.util.ArrayList;
 
 /**
- * This enum lists all the peptide export features available from reporter complementarily to the ones available in PeptideShaker
+ * This enum lists all the peptide export features available from reporter
+ * complementarily to the ones available in PeptideShaker.
  *
- * @author Marc
+ * @author Marc Vaudel
  */
 public enum ReporterPeptideFeature implements ReporterExportFeature {
-    
+
     raw_ratio("Raw Ratios", "The ratios of this peptide.", true, true),
     spread("Spread", "The spread of the PSM ratios of this peptide.", true, false),
     normalized_ratio("Normalized Ratios", "The normalized ratios of this peptide.", true, false);
@@ -31,7 +26,7 @@ public enum ReporterPeptideFeature implements ReporterExportFeature {
      */
     public String description;
     /**
-     * Indicates whether the feature is channel dependent
+     * Indicates whether the feature is channel dependent.
      */
     private boolean hasChannels;
     /**
