@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package eu.isas.reporter.export.report.export_features;
 
 import com.compomics.util.io.export.ExportFeature;
@@ -12,12 +6,13 @@ import eu.isas.reporter.export.report.ReporterExportFeature;
 import java.util.ArrayList;
 
 /**
- * This enum lists all the PSM export features available from reporter complementarily to the ones available in PeptideShaker
+ * This enum lists all the PSM export features available from reporter
+ * complementarily to the ones available in PeptideShaker.
  *
- * @author Marc
+ * @author Marc Vaudel
  */
 public enum ReporterPsmFeatures implements ReporterExportFeature {
-    
+
     reporter_mz("Reporter m/z", "The reporter ions m/z as extracted from the spectrum.", true, true),
     reporter_intensity("Reporter Intensity", "The reporter ions instensities as extracted from the spectrum.", true, true),
     deisotoped_intensity("Deisotoped Intensity", "The instensities after deisotoping.", true, true),
@@ -32,7 +27,7 @@ public enum ReporterPsmFeatures implements ReporterExportFeature {
      */
     public String description;
     /**
-     * Indicates whether the feature is channel dependent
+     * Indicates whether the feature is channel dependent.
      */
     private boolean hasChannels;
     /**
@@ -90,5 +85,4 @@ public enum ReporterPsmFeatures implements ReporterExportFeature {
     public boolean isAdvanced() {
         return advanced;
     }
-    
 }

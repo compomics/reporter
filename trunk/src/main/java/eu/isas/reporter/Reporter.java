@@ -129,7 +129,7 @@ public class Reporter {
                     return;
                 }
                 waitingHandler.increaseSecondaryProgressCounter();
-                waitingHandler.setWaitingText("Estimating Normalization Factors (Step " + progress + " of " + totalProgress + ", peptide " + ++cpt + " of " + nPeptides + "). Please Wait...");
+                waitingHandler.setWaitingText("Estimating Normalization Factors (Step " + progress + " of " + totalProgress + " - Peptide " + ++cpt + " of " + nPeptides + "). Please Wait...");
             }
         }
         for (String sampleIndex : reporterIonQuantification.getSampleIndexes()) {
