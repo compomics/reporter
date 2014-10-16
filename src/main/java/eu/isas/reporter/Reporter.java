@@ -172,10 +172,10 @@ public class Reporter {
         HashMap<String, ArrayList<Double>> ratios = new HashMap<String, ArrayList<Double>>();
         ProteinMatch proteinMatch = identification.getProteinMatch(matchKey);
         Set<String> indexes = reporterIonQuantification.getSampleIndexes();
-        identification.loadPeptideMatches(proteinMatch.getPeptideMatches(), null);
-        identification.loadPeptideMatchParameters(proteinMatch.getPeptideMatches(), new PSParameter(), null);
+        identification.loadPeptideMatches(proteinMatch.getPeptideMatchesKeys(), null);
+        identification.loadPeptideMatchParameters(proteinMatch.getPeptideMatchesKeys(), new PSParameter(), null);
 
-        for (String peptideKey : proteinMatch.getPeptideMatches()) {
+        for (String peptideKey : proteinMatch.getPeptideMatchesKeys()) {
             if (QuantificationFilter.isPeptideValid(reporterPreferences, identification, searchParameters, peptideKey)) {
                 for (String index : indexes) {
                     PeptideQuantificationDetails peptideQuantification = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideKey);
@@ -234,10 +234,10 @@ public class Reporter {
         HashMap<String, ArrayList<Double>> ratios = new HashMap<String, ArrayList<Double>>();
         ProteinMatch proteinMatch = identification.getProteinMatch(matchKey);
         Set<String> indexes = reporterIonQuantification.getSampleIndexes();
-        identification.loadPeptideMatches(proteinMatch.getPeptideMatches(), null);
-        identification.loadPeptideMatchParameters(proteinMatch.getPeptideMatches(), new PSParameter(), null);
+        identification.loadPeptideMatches(proteinMatch.getPeptideMatchesKeys(), null);
+        identification.loadPeptideMatchParameters(proteinMatch.getPeptideMatchesKeys(), new PSParameter(), null);
 
-        for (String peptideKey : proteinMatch.getPeptideMatches()) {
+        for (String peptideKey : proteinMatch.getPeptideMatchesKeys()) {
             PeptideMatch peptideMatch = identification.getPeptideMatch(peptideKey);
             Peptide peptide = peptideMatch.getTheoreticPeptide();
             boolean modified = false;

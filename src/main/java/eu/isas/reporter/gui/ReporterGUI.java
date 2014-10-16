@@ -10,7 +10,8 @@ import com.compomics.util.experiment.identification.SearchParameters;
 import com.compomics.util.experiment.identification.SequenceFactory;
 import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
-import com.compomics.util.general.ExceptionHandler;
+import com.compomics.util.exceptions.ExceptionHandler;
+import com.compomics.util.exceptions.exception_handlers.FrameExceptionHandler;
 import com.compomics.util.gui.PrivacySettingsDialog;
 import com.compomics.util.gui.UtilitiesGUIDefaults;
 import com.compomics.util.gui.error_handlers.BugReport;
@@ -81,7 +82,7 @@ public class ReporterGUI extends javax.swing.JFrame {
     /**
      * The exception handler
      */
-    private ExceptionHandler exceptionHandler = new ExceptionHandler(this, "http://code.google.com/p/reporter/issues/list");
+    private ExceptionHandler exceptionHandler = new FrameExceptionHandler(this, "http://code.google.com/p/reporter/issues/list");
     /**
      * The compomics PTM factory.
      */
