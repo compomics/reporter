@@ -235,10 +235,9 @@ public class ReporterPeptideSection {
                         psmSection.writeSection(identification, identificationFeaturesGenerator, searchParameters, annotationPreferences, sequenceMatchingPreferences, peptideMatch.getSpectrumMatches(), psmSectionPrefix, validatedOnly, decoys, null);
                     }
                     line++;
+                    writer.newLine();
                 }
-            }
-
-            writer.newLine();
+            }  
         }
     }
 
