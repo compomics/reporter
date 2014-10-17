@@ -3,6 +3,7 @@ package eu.isas.reporter.gui.resultpanels;
 import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.gui.GuiUtilities;
 import com.compomics.util.gui.error_handlers.HelpDialog;
+import com.compomics.util.gui.tablemodels.SelfUpdatingTableModel;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
 import eu.isas.peptideshaker.gui.tablemodels.ProteinTableModel;
 import eu.isas.peptideshaker.myparameters.PSParameter;
@@ -17,8 +18,6 @@ import javax.swing.JTable;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.RowSorterEvent;
-import javax.swing.event.RowSorterListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 
@@ -75,30 +74,15 @@ public class OverviewPanel extends javax.swing.JPanel {
         proteinCorner.setBackground(proteinTable.getTableHeader().getBackground());
         proteinScrollPane.setCorner(ScrollPaneConstants.UPPER_RIGHT_CORNER, proteinCorner);
 
-        proteinTable.setAutoCreateRowSorter(true);
+        // add table sorting listeners
+        SelfUpdatingTableModel.addSortListener(proteinTable, new ProgressDialogX(reporterGUI,
+                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
+                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")),
+                true));
 
-        // make sure that the user is made aware that the tool is doing something during sorting of the protein table
-        proteinTable.getRowSorter().addRowSorterListener(new RowSorterListener() {
-
-            @Override
-            public void sorterChanged(RowSorterEvent e) {
-
-                if (e.getType() == RowSorterEvent.Type.SORT_ORDER_CHANGED) {
-                    reporterGUI.setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
-                    proteinTable.getTableHeader().setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
-
-                    // change the peptide shaker icon to a "waiting version"
-                    reporterGUI.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")));
-                } else if (e.getType() == RowSorterEvent.Type.SORTED) {
-                    reporterGUI.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-                    proteinTable.getTableHeader().setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-
-                    // change the peptide shaker icon to a "waiting version"
-                    reporterGUI.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")));
-                }
-            }
-        });
-
+        // add table scrolling listeners
+        SelfUpdatingTableModel.addScrollListeners(proteinTable, proteinScrollPane, proteinScrollPane.getVerticalScrollBar());
+        
         // make sure that the scroll panes are see-through
         proteinScrollPane.getViewport().setOpaque(false);
 
@@ -221,9 +205,10 @@ public class OverviewPanel extends javax.swing.JPanel {
         proteinTableToolTips.add("Protein Inference Class");
         proteinTableToolTips.add("Protein Accession Number");
         proteinTableToolTips.add("Protein Description");
-        proteinTableToolTips.add("Protein Seqeunce Coverage (%) (Observed / Possible)");
-        proteinTableToolTips.add("Number of Peptides (Validated / Total)");
-        proteinTableToolTips.add("Number of Spectra (Validated / Total)");
+        proteinTableToolTips.add("Chromosome Number");
+        proteinTableToolTips.add("Protein Sequence Coverage (%) (Confident / Doubtful / Not Validated / Possible)");
+        proteinTableToolTips.add("Number of Peptides (Confident / Doubtful / Not Validated)");
+        proteinTableToolTips.add("Number of Spectra (Confident / Doubtful / Not Validated)");
         proteinTableToolTips.add("MS2 Quantification");
         proteinTableToolTips.add("Protein Molecular Weight (kDa)");
 
