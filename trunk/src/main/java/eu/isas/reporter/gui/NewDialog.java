@@ -27,6 +27,7 @@ import java.io.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
@@ -1105,7 +1106,7 @@ public class NewDialog extends javax.swing.JDialog {
             File fastaFile = fileChooser.getSelectedFile();
             setLastSelectedFolder(fastaFile.getAbsolutePath());
             try {
-                SequenceFactory.getInstance().loadFastaFile(fastaFile);
+                SequenceFactory.getInstance().loadFastaFile(fastaFile, null); // @TODO: use waiting handler
                 getSearchParameters().setFastaFile(fastaFile);
                 fastaTxt.setText(fastaFile.getName());
             } catch (FileNotFoundException ex) {
@@ -1344,7 +1345,7 @@ public class NewDialog extends javax.swing.JDialog {
                     cpsBean.setCpsFile(psFile);
 
                     try {
-                        cpsBean.loadCpsFile(progressDialog);
+                        cpsBean.loadCpsFile(progressDialog); // @TODO: should set the matches folder! (if not it ends up in the lib/resources)
                     } catch (SQLException e) {
                         e.printStackTrace();
                         JOptionPane.showMessageDialog(NewDialog.this,
@@ -1356,6 +1357,37 @@ public class NewDialog extends javax.swing.JDialog {
 
                     progressDialog.setTitle("Loading Gene Mappings. Please Wait...");
                     loadGeneMappings(); // have to load the new gene mappings
+                    
+                    // backwards compatibility fix for gene and go references using only latin names
+                    boolean genesRemapped = false;
+                    String selectedSpecies = cpsBean.getGenePreferences().getCurrentSpecies();
+                    if (selectedSpecies != null) {
+
+                        HashMap<String, HashMap<String, String>> allSpecies = cpsBean.getGenePreferences().getAllSpeciesMap();
+                        HashMap<String, String> tempSpecies = allSpecies.get(cpsBean.getGenePreferences().getCurrentSpeciesType());
+
+                        if (!tempSpecies.containsKey(selectedSpecies)) {
+
+                            Iterator<String> iterator = tempSpecies.keySet().iterator();
+                            boolean keyFound = false;
+
+                            while (iterator.hasNext() && !keyFound) {
+                                String tempSpeciesKey = iterator.next();
+                                if (tempSpeciesKey.contains(selectedSpecies)) {
+                                    cpsBean.getGenePreferences().setCurrentSpecies(tempSpeciesKey);
+                                    keyFound = true;
+                                } else if (selectedSpecies.contains(tempSpeciesKey)) { // strange backwards compatibility fix, should not be needed
+                                    cpsBean.getGenePreferences().setCurrentSpecies(tempSpeciesKey);
+                                    keyFound = true;
+                                }
+                            }
+                            
+                            if (keyFound) {
+                                loadGeneMappings(); // have to re-load the gene mappings now that we have the correct species name
+                                genesRemapped = true;
+                            }
+                        }
+                    }
 
                     // @TODO: check if the used gene mapping files are available and download if not?
                     if (progressDialog.isRunCanceled()) {
@@ -1580,7 +1612,7 @@ public class NewDialog extends javax.swing.JDialog {
      * Imports the gene mapping.
      */
     private void loadGeneMappings() {
-        if (!cpsBean.loadGeneMappings(progressDialog)) {
+        if (!cpsBean.loadGeneMappings(reporterGui.getJarFilePath(), progressDialog)) {
             JOptionPane.showMessageDialog(this, "Unable to load the gene/GO mapping file.", "File Error", JOptionPane.ERROR_MESSAGE);
         }
     }

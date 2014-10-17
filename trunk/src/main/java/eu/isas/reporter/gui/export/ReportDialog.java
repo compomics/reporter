@@ -1,6 +1,7 @@
 package eu.isas.reporter.gui.export;
 
 import com.compomics.util.gui.ExportFormatSelectionDialog;
+import com.compomics.util.gui.export.report.ReportEditor;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
 import com.compomics.util.io.export.ExportFormat;
 import com.compomics.util.io.export.ExportScheme;
@@ -73,6 +74,12 @@ public class ReportDialog extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        reportDocumentationPopupMenu = new javax.swing.JPopupMenu();
+        addReportMenuItem = new javax.swing.JMenuItem();
+        removeReportMenuItem = new javax.swing.JMenuItem();
+        editReportMenuItem = new javax.swing.JMenuItem();
+        reportPopUpMenuSeparator = new javax.swing.JPopupMenu.Separator();
+        reportDocumentationMenuItem = new javax.swing.JMenuItem();
         backgroundPanel = new javax.swing.JPanel();
         exitButton = new javax.swing.JButton();
         customReportsPanel = new javax.swing.JPanel();
@@ -82,8 +89,46 @@ public class ReportDialog extends javax.swing.JDialog {
         helpLabel = new javax.swing.JLabel();
         addReportLabel = new javax.swing.JLabel();
 
+        addReportMenuItem.setText("Add");
+        addReportMenuItem.setToolTipText("Add a new report type");
+        addReportMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addReportMenuItemActionPerformed(evt);
+            }
+        });
+        reportDocumentationPopupMenu.add(addReportMenuItem);
+
+        removeReportMenuItem.setText("Remove");
+        removeReportMenuItem.setToolTipText("Remove the report type");
+        removeReportMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeReportMenuItemActionPerformed(evt);
+            }
+        });
+        reportDocumentationPopupMenu.add(removeReportMenuItem);
+
+        editReportMenuItem.setText("Edit");
+        editReportMenuItem.setToolTipText("Edit the report");
+        editReportMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editReportMenuItemActionPerformed(evt);
+            }
+        });
+        reportDocumentationPopupMenu.add(editReportMenuItem);
+        reportDocumentationPopupMenu.add(reportPopUpMenuSeparator);
+
+        reportDocumentationMenuItem.setText("Documentation");
+        reportDocumentationMenuItem.setToolTipText("Export the report documentation to file");
+        reportDocumentationMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                reportDocumentationMenuItemActionPerformed(evt);
+            }
+        });
+        reportDocumentationPopupMenu.add(reportDocumentationMenuItem);
+
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Export Ratios");
+        setMinimumSize(new java.awt.Dimension(600, 350));
 
         backgroundPanel.setBackground(new java.awt.Color(230, 230, 230));
 
@@ -173,17 +218,17 @@ public class ReportDialog extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(backgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(exitButton)
-                    .addComponent(customReportsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(customReportsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         backgroundPanelLayout.setVerticalGroup(
             backgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, backgroundPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(customReportsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(customReportsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(exitButton)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -215,6 +260,11 @@ public class ReportDialog extends javax.swing.JDialog {
         dispose();
     }//GEN-LAST:event_exitButtonActionPerformed
 
+    /**
+     * Export the given report or show its details.
+     *
+     * @param evt
+     */
     private void reportsTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_reportsTableMouseClicked
 
         if (evt != null && reportsTable.rowAtPoint(evt.getPoint()) != -1) {
@@ -224,24 +274,43 @@ public class ReportDialog extends javax.swing.JDialog {
         if (evt != null && evt.getButton() == MouseEvent.BUTTON3 && reportsTable.getSelectedRow() != -1) {
             String schemeName = (String) reportsTable.getValueAt(reportsTable.getSelectedRow(), 1);
             ExportScheme exportScheme = exportFactory.getExportScheme(schemeName);
-//            editReportMenuItem.setVisible(exportScheme.isEditable());
-//            removeReportMenuItem.setVisible(exportScheme.isEditable());
-//            reportDocumentationPopupMenu.show(reportsTable, evt.getX(), evt.getY());
+            editReportMenuItem.setVisible(exportScheme.isEditable());
+            removeReportMenuItem.setVisible(exportScheme.isEditable());
+            reportDocumentationPopupMenu.show(reportsTable, evt.getX(), evt.getY());
+        }
+        
+        if (evt != null && evt.getButton() == MouseEvent.BUTTON1 && evt.getClickCount() == 2) {
+            writeSelectedReport();
         }
 
         exportReportButton.setEnabled(reportsTable.getSelectedRow() != -1);
     }//GEN-LAST:event_reportsTableMouseClicked
 
+    /**
+     * Enable/disable the export and delete buttons.
+     *
+     * @param evt
+     */
     private void reportsTableKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_reportsTableKeyReleased
         reportsTableMouseClicked(null);
     }//GEN-LAST:event_reportsTableKeyReleased
 
+    /**
+     * Export the selected report to file.
+     *
+     * @param evt
+     */
     private void exportReportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportReportButtonActionPerformed
         writeSelectedReport();
     }//GEN-LAST:event_exportReportButtonActionPerformed
 
+    /**
+     * Add a new report type.
+     *
+     * @param evt
+     */
     private void addReportLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_addReportLabelMouseClicked
-//        addReportMenuItemActionPerformed(null);
+        addReportMenuItemActionPerformed(null);
     }//GEN-LAST:event_addReportLabelMouseClicked
 
     /**
@@ -261,6 +330,61 @@ public class ReportDialog extends javax.swing.JDialog {
     private void addReportLabelMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_addReportLabelMouseExited
         this.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_addReportLabelMouseExited
+
+    /**
+     * Add a new report type.
+     *
+     * @param evt
+     */
+    private void addReportMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addReportMenuItemActionPerformed
+        new ReportEditor(reporterGUI, exportFactory);
+        int selectedRow = reportsTable.getSelectedRow();
+        updateReportsList();
+        ((DefaultTableModel) reportsTable.getModel()).fireTableDataChanged();
+        if (selectedRow != -1) {
+            reportsTable.setRowSelectionInterval(selectedRow, selectedRow);
+        }
+        reportsTableMouseClicked(null);
+    }//GEN-LAST:event_addReportMenuItemActionPerformed
+
+    /**
+     * Delete the currently selected report.
+     *
+     * @param evt
+     */
+    private void removeReportMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeReportMenuItemActionPerformed
+        String reportName = (String) reportsTable.getValueAt(reportsTable.getSelectedRow(), 1);
+        exportFactory.removeExportScheme(reportName);
+        updateReportsList();
+        ((DefaultTableModel) reportsTable.getModel()).fireTableDataChanged();
+        reportsTableMouseClicked(null);
+    }//GEN-LAST:event_removeReportMenuItemActionPerformed
+
+    /**
+     * Edit the selected report.
+     *
+     * @param evt
+     */
+    private void editReportMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editReportMenuItemActionPerformed
+        String reportName = (String) reportsTable.getValueAt(reportsTable.getSelectedRow(), 1);
+        new ReportEditor(reporterGUI, exportFactory, reportName, true);
+        int selectedRow = reportsTable.getSelectedRow();
+        updateReportsList();
+        ((DefaultTableModel) reportsTable.getModel()).fireTableDataChanged();
+        if (selectedRow != -1) {
+            reportsTable.setRowSelectionInterval(selectedRow, selectedRow);
+        }
+        reportsTableMouseClicked(null);
+    }//GEN-LAST:event_editReportMenuItemActionPerformed
+
+    /**
+     * Export the report documentation to file.
+     *
+     * @param evt
+     */
+    private void reportDocumentationMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reportDocumentationMenuItemActionPerformed
+        writeDocumentationOfSelectedReport();
+    }//GEN-LAST:event_reportDocumentationMenuItemActionPerformed
 
     /**
      * Updates the reports list based on the information stored in the export
@@ -471,11 +595,17 @@ public class ReportDialog extends javax.swing.JDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel addReportLabel;
+    private javax.swing.JMenuItem addReportMenuItem;
     private javax.swing.JPanel backgroundPanel;
     private javax.swing.JPanel customReportsPanel;
+    private javax.swing.JMenuItem editReportMenuItem;
     private javax.swing.JButton exitButton;
     private javax.swing.JButton exportReportButton;
     private javax.swing.JLabel helpLabel;
+    private javax.swing.JMenuItem removeReportMenuItem;
+    private javax.swing.JMenuItem reportDocumentationMenuItem;
+    private javax.swing.JPopupMenu reportDocumentationPopupMenu;
+    private javax.swing.JPopupMenu.Separator reportPopUpMenuSeparator;
     private javax.swing.JTable reportsTable;
     private javax.swing.JScrollPane reportsTableScrollPane;
     // End of variables declaration//GEN-END:variables

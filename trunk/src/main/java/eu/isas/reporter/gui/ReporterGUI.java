@@ -1,6 +1,8 @@
 package eu.isas.reporter.gui;
 
 import com.compomics.software.CompomicsWrapper;
+import com.compomics.software.dialogs.JavaMemoryDialogParent;
+import com.compomics.software.dialogs.JavaSettingsDialog;
 import com.compomics.util.Util;
 import com.compomics.util.experiment.MsExperiment;
 import com.compomics.util.experiment.biology.PTMFactory;
@@ -30,6 +32,7 @@ import eu.isas.peptideshaker.utils.DisplayFeaturesGenerator;
 import eu.isas.peptideshaker.utils.IdentificationFeaturesGenerator;
 import eu.isas.peptideshaker.utils.Metrics;
 import eu.isas.reporter.Reporter;
+import eu.isas.reporter.ReporterWrapper;
 import eu.isas.reporter.calculation.QuantificationFeaturesCache;
 import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
 import eu.isas.reporter.gui.export.ReportDialog;
@@ -38,6 +41,7 @@ import eu.isas.reporter.gui.resultpanels.OverviewPanel;
 import eu.isas.reporter.preferences.DisplayPreferences;
 import eu.isas.reporter.utils.Properties;
 import java.awt.Color;
+import java.awt.Frame;
 import java.awt.Toolkit;
 import java.io.*;
 import java.sql.SQLException;
@@ -53,7 +57,7 @@ import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
  * @author Marc Vaudel
  * @author Harald Barsnes
  */
-public class ReporterGUI extends javax.swing.JFrame {
+public class ReporterGUI extends javax.swing.JFrame implements JavaMemoryDialogParent {
 
     /**
      * If set to true all messages will be sent to a log file.
@@ -606,7 +610,7 @@ public class ReporterGUI extends javax.swing.JFrame {
         exitMenuItem = new javax.swing.JMenuItem();
         exportMenu = new javax.swing.JMenu();
         exportQuantificationFeaturesMenuItem = new javax.swing.JMenuItem();
-        jMenuItem1 = new javax.swing.JMenuItem();
+        exportFollowUpJMenuItem = new javax.swing.JMenuItem();
         quantificationOptionsMenu = new javax.swing.JMenu();
         quantificationOptionsMenuItem = new javax.swing.JMenuItem();
         jSeparator4 = new javax.swing.JPopupMenu.Separator();
@@ -663,12 +667,14 @@ public class ReporterGUI extends javax.swing.JFrame {
         openMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
         openMenuItem.setMnemonic('O');
         openMenuItem.setText("Open");
+        openMenuItem.setEnabled(false);
         fileMenu.add(openMenuItem);
         fileMenu.add(jSeparator2);
 
         saveMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
         saveMenuItem.setMnemonic('S');
         saveMenuItem.setText("Save");
+        saveMenuItem.setEnabled(false);
         fileMenu.add(saveMenuItem);
         fileMenu.add(jSeparator3);
 
@@ -695,8 +701,9 @@ public class ReporterGUI extends javax.swing.JFrame {
         });
         exportMenu.add(exportQuantificationFeaturesMenuItem);
 
-        jMenuItem1.setText("Follow-up");
-        exportMenu.add(jMenuItem1);
+        exportFollowUpJMenuItem.setText("Follow Up Analysis");
+        exportFollowUpJMenuItem.setEnabled(false);
+        exportMenu.add(exportFollowUpJMenuItem);
 
         menuBar.add(exportMenu);
 
@@ -713,7 +720,12 @@ public class ReporterGUI extends javax.swing.JFrame {
         quantificationOptionsMenu.add(quantificationOptionsMenuItem);
         quantificationOptionsMenu.add(jSeparator4);
 
-        javaOptionsMenuItem.setText("Java Options");
+        javaOptionsMenuItem.setText("Java Settings");
+        javaOptionsMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                javaOptionsMenuItemActionPerformed(evt);
+            }
+        });
         quantificationOptionsMenu.add(javaOptionsMenuItem);
 
         privacyMenuItem.setText("Privacy Settings");
@@ -862,6 +874,15 @@ public class ReporterGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_privacyMenuItemActionPerformed
 
     /**
+     * Open the Java Settings dialog.
+     *
+     * @param evt
+     */
+    private void javaOptionsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_javaOptionsMenuItemActionPerformed
+        new JavaSettingsDialog(this, this, null, "Reporter", true);
+    }//GEN-LAST:event_javaOptionsMenuItemActionPerformed
+
+    /**
      * Closes Reporter.
      */
     private void closeReporter() {
@@ -952,12 +973,12 @@ public class ReporterGUI extends javax.swing.JFrame {
     private javax.swing.JMenuItem aboutMenuItem;
     private javax.swing.JPanel backgroundPanel;
     private javax.swing.JMenuItem exitMenuItem;
+    private javax.swing.JMenuItem exportFollowUpJMenuItem;
     private javax.swing.JMenu exportMenu;
     private javax.swing.JMenuItem exportQuantificationFeaturesMenuItem;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenu helpMenu;
     private javax.swing.JMenuItem helpMenuItem;
-    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator16;
     private javax.swing.JPopupMenu.Separator jSeparator17;
@@ -1098,5 +1119,65 @@ public class ReporterGUI extends javax.swing.JFrame {
                 e.printStackTrace();
             }
         }
+    }
+
+    /**
+     * Closes and restarts Reporter. Does not work inside the IDE of
+     * course.
+     */
+    public void restart() {
+        if (this.getExtendedState() == Frame.ICONIFIED || !this.isActive()) {
+            this.setExtendedState(Frame.MAXIMIZED_BOTH);
+        }
+        
+        // @TODO: ask if the user wants to save unsaved data
+        
+        progressDialog = new ProgressDialogX(this,
+                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
+                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")),
+                true);
+        progressDialog.getProgressBar().setStringPainted(false);
+        progressDialog.getProgressBar().setIndeterminate(true);
+        progressDialog.setTitle("Closing. Please Wait...");
+
+        new Thread(new Runnable() {
+            public void run() {
+                try {
+                    progressDialog.setVisible(true);
+                } catch (IndexOutOfBoundsException e) {
+                    // ignore
+                }
+            }
+        }, "ProgressDialog").start();
+
+        new Thread("RestartThread") {
+            @Override
+            public void run() {
+                try {
+                    spectrumFactory.closeFiles();
+                    sequenceFactory.closeFile();
+                    //cpsBean.saveUserPreferences();
+                    //PeptideShakerGUI.this.clearData(true, true); // @TODO: clear data
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    catchException(e);
+                }
+                progressDialog.setRunFinished();
+                ReporterGUI.this.dispose();
+
+                // @TODO: pass the current project to the new instance of Reporter.
+                new ReporterWrapper();
+                System.exit(0); // have to close the current java process (as a new one is started on the line above)
+            }
+        }.start();
+    }
+
+    /**
+     * Returns the user preferences.
+     *
+     * @return the user preferences
+     */
+    public UtilitiesUserPreferences getUtilitiesUserPreferences() {
+        return utilitiesUserPreferences;
     }
 }

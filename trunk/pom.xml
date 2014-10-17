@@ -352,6 +352,10 @@
                     <artifactId>xsdlib</artifactId>
                     <groupId>msv</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>jmzidentml</artifactId>
+                    <groupId>uk.ac.ebi.jmzidml</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
 
@@ -395,6 +399,18 @@
                 <exclusion>
                     <artifactId>charts4j</artifactId>
                     <groupId>com.googlecode.charts4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jmzml</artifactId>
+                    <groupId>uk.ac.ebi.jmzml</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>web-service-model</artifactId>
+                    <groupId>uk.ac.ebi.pride.archive</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>xmlSchemaValidator</artifactId>
+                    <groupId>uk.ac.ebi.pride.tools</groupId>
                 </exclusion>
             </exclusions>
         </dependency>

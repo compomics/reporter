@@ -107,7 +107,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
         miscleavageCheck.setOpaque(false);
 
         jLabel1.setFont(jLabel1.getFont().deriveFont((jLabel1.getFont().getStyle() | java.awt.Font.ITALIC)));
-        jLabel1.setText("Ignore peptides presenting the following PTMS:");
+        jLabel1.setText("Ignore peptides presenting the following PTMS");
 
         selectedPtmsScrollPane.setViewportView(selectedPTMs);
 
@@ -119,7 +119,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
         allPtmsScrollPane.setViewportView(allPTMs);
 
         jLabel8.setFont(jLabel8.getFont().deriveFont((jLabel8.getFont().getStyle() | java.awt.Font.ITALIC)));
-        jLabel8.setText("Available PTMs:");
+        jLabel8.setText("Available PTMs");
 
         addModifications.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/arrowUp_grey.png"))); // NOI18N
         addModifications.setText("Add");
@@ -177,7 +177,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
                 .addGap(23, 23, 23)
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(selectedPtmsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE)
+                .addComponent(selectedPtmsScrollPane)
                 .addGroup(idSelectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(idSelectionPanelLayout.createSequentialGroup()
                         .addGap(36, 36, 36)
@@ -188,7 +188,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
                             .addComponent(removeModification, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(addModifications, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(allPtmsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE)
+                .addComponent(allPtmsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 133, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -199,9 +199,9 @@ public class PreferencesDialog extends javax.swing.JDialog {
         nullIntensitiesCheck.setIconTextGap(10);
         nullIntensitiesCheck.setOpaque(false);
 
-        jLabel4.setText("Resolution:");
+        jLabel4.setText("Resolution");
 
-        jLabel5.setText("Window Width:");
+        jLabel5.setText("Window Width");
 
         jLabel6.setText("%");
 
@@ -209,11 +209,11 @@ public class PreferencesDialog extends javax.swing.JDialog {
 
         resolutionTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
 
-        jLabel2.setText("Proteins:");
+        jLabel2.setText("Proteins");
 
-        jLabel3.setText("Peptides:");
+        jLabel3.setText("Peptides");
 
-        jLabel7.setText("PSMs:");
+        jLabel7.setText("PSMs");
 
         peptideValidationCmb.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Confident Only", "Validated Only", "All" }));
 
@@ -231,7 +231,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
                     .addGroup(ratioEstimationsPanelLayout.createSequentialGroup()
                         .addComponent(jLabel2)
                         .addGap(12, 12, 12)
-                        .addComponent(proteinValidationCmb, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(proteinValidationCmb, 0, 200, Short.MAX_VALUE))
                     .addGroup(ratioEstimationsPanelLayout.createSequentialGroup()
                         .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel3)
@@ -249,11 +249,10 @@ public class PreferencesDialog extends javax.swing.JDialog {
                             .addComponent(jLabel5))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addGroup(ratioEstimationsPanelLayout.createSequentialGroup()
-                                .addComponent(widthTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 165, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel6))
-                            .addComponent(resolutionTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addComponent(widthTxt, javax.swing.GroupLayout.DEFAULT_SIZE, 165, Short.MAX_VALUE)
+                            .addComponent(resolutionTxt))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel6)))
                 .addGap(6, 6, 6))
         );
         ratioEstimationsPanelLayout.setVerticalGroup(
@@ -265,14 +264,14 @@ public class PreferencesDialog extends javax.swing.JDialog {
                     .addComponent(jLabel4)
                     .addComponent(jLabel2)
                     .addComponent(proteinValidationCmb, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel6)
                     .addComponent(widthTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel5)
                     .addComponent(jLabel3)
                     .addComponent(peptideValidationCmb, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(nullIntensitiesCheck)
                     .addComponent(jLabel7)
@@ -290,7 +289,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
         helpLabel.setFont(helpLabel.getFont().deriveFont((helpLabel.getFont().getStyle() | java.awt.Font.ITALIC)));
         helpLabel.setText("For ratio estimation help see:");
 
-        helpLinkLabel.setText("<html> <a href=\\\"dummy_link\">Burkhart et al.  (2011) [ PMID: 21328540]</a></html>");
+        helpLinkLabel.setText("<html> <a href=\\\"dummy_link\">Burkhart et al.  (2011) [PMID: 21328540]</a>.</html>");
         helpLinkLabel.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 helpLinkLabelMouseClicked(evt);
@@ -322,7 +321,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
                         .addComponent(helpLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(helpLinkLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 66, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 65, Short.MAX_VALUE)
                         .addComponent(okButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(cancelButton))
@@ -346,7 +345,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
                     .addComponent(helpLinkLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(cancelButton)
                     .addComponent(okButton))
-                .addGap(18, 18, 18))
+                .addContainerGap())
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -363,6 +362,11 @@ public class PreferencesDialog extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    /**
+     * Close the dialog.
+     * 
+     * @param evt 
+     */
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         dispose();
     }//GEN-LAST:event_cancelButtonActionPerformed
@@ -396,6 +400,11 @@ public class PreferencesDialog extends javax.swing.JDialog {
         this.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_helpLinkLabelMouseClicked
 
+    /**
+     * Add a modification to the list.
+     * 
+     * @param evt 
+     */
     private void addModificationsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addModificationsActionPerformed
 
         int nSelected = selectedPTMs.getModel().getSize();
@@ -408,7 +417,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
             cpt++;
         }
         boolean found;
-        for (Object selection : allPTMs.getSelectedValues()) {
+        for (Object selection : allPTMs.getSelectedValuesList()) {
             String name = (String) selection;
             found = false;
             for (int i = 0; i < selectedPTMs.getModel().getSize(); i++) {
@@ -426,6 +435,11 @@ public class PreferencesDialog extends javax.swing.JDialog {
         updateModificationList();
     }//GEN-LAST:event_addModificationsActionPerformed
 
+    /**
+     * Remove a modification from the list.
+     * 
+     * @param evt 
+     */
     private void removeModificationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeModificationActionPerformed
 
         int nSelected = selectedPTMs.getModel().getSize();
@@ -435,7 +449,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
         boolean found;
         for (int i = 0; i < selectedPTMs.getModel().getSize(); i++) {
             found = false;
-            for (Object selection : selectedPTMs.getSelectedValues()) {
+            for (Object selection : selectedPTMs.getSelectedValuesList()) {
                 if (((String) selectedPTMs.getModel().getElementAt(i)).equals((String) selection)) {
                     found = true;
                     break;
@@ -450,6 +464,11 @@ public class PreferencesDialog extends javax.swing.JDialog {
         updateModificationList();
     }//GEN-LAST:event_removeModificationActionPerformed
 
+    /**
+     * Save the data and close the dialog.
+     * 
+     * @param evt 
+     */
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
         if (validateInput()) {
             saveValues();
@@ -534,15 +553,14 @@ public class PreferencesDialog extends javax.swing.JDialog {
      * @return true if the input can be processed
      */
     private boolean validateInput() {
-        double test;
         try {
-            test = new Double(widthTxt.getText());
+            new Double(widthTxt.getText());
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "please enter a correct window width.", "Window width error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
         try {
-            test = new Double(resolutionTxt.getText());
+            new Double(resolutionTxt.getText());
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "please enter a correct ratio resolution.", "Ratio resolution error", JOptionPane.ERROR_MESSAGE);
             return false;
@@ -558,10 +576,8 @@ public class PreferencesDialog extends javax.swing.JDialog {
         int nSelected = selectedPTMs.getModel().getSize();
         ArrayList<String> allModifications = new ArrayList<String>();
 
-        boolean found = false;
-
         for (String name : allModificationsList) {
-            found = false;
+            boolean found = false;
             for (int j = 0; j < nSelected; j++) {
                 if (((String) selectedPTMs.getModel().getElementAt(j)).equals(name)) {
                     found = true;
