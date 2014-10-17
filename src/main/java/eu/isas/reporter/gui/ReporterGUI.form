@@ -31,6 +31,7 @@
                 </Property>
                 <Property name="mnemonic" type="int" value="79"/>
                 <Property name="text" type="java.lang.String" value="Open"/>
+                <Property name="enabled" type="boolean" value="false"/>
               </Properties>
             </MenuItem>
             <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator2">
@@ -42,6 +43,7 @@
                 </Property>
                 <Property name="mnemonic" type="int" value="83"/>
                 <Property name="text" type="java.lang.String" value="Save"/>
+                <Property name="enabled" type="boolean" value="false"/>
               </Properties>
             </MenuItem>
             <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator3">
@@ -72,9 +74,10 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportQuantificationFeaturesMenuItemActionPerformed"/>
               </Events>
             </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="jMenuItem1">
+            <MenuItem class="javax.swing.JMenuItem" name="exportFollowUpJMenuItem">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Follow-up"/>
+                <Property name="text" type="java.lang.String" value="Follow Up Analysis"/>
+                <Property name="enabled" type="boolean" value="false"/>
               </Properties>
             </MenuItem>
           </SubComponents>
@@ -98,8 +101,11 @@
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="javaOptionsMenuItem">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Java Options"/>
+                <Property name="text" type="java.lang.String" value="Java Settings"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="javaOptionsMenuItemActionPerformed"/>
+              </Events>
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="privacyMenuItem">
               <Properties>
