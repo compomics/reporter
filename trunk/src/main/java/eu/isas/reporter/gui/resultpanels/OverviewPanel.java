@@ -1,5 +1,6 @@
 package eu.isas.reporter.gui.resultpanels;
 
+import com.compomics.util.examples.BareBonesBrowserLaunch;
 import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.gui.GuiUtilities;
 import com.compomics.util.gui.error_handlers.HelpDialog;
@@ -10,9 +11,14 @@ import eu.isas.peptideshaker.myparameters.PSParameter;
 import eu.isas.peptideshaker.preferences.SpectrumCountingPreferences.SpectralCountingMethod;
 import eu.isas.peptideshaker.utils.IdentificationFeaturesGenerator;
 import eu.isas.reporter.gui.ReporterGUI;
+import eu.isas.reporter.quantificationdetails.ProteinQuantificationDetails;
+import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Toolkit;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Collections;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.ScrollPaneConstants;
@@ -20,6 +26,19 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.labels.StandardCategoryToolTipGenerator;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.renderer.category.BarRenderer3D;
+import org.jfree.chart.renderer.category.CategoryItemRenderer;
+import org.jfree.chart.renderer.category.LineAndShapeRenderer;
+import org.jfree.chart.renderer.xy.StandardXYBarPainter;
+import org.jfree.chart.renderer.xy.XYBarRenderer;
+import org.jfree.data.category.DefaultCategoryDataset;
 
 /**
  * The Overview tab.
@@ -28,6 +47,13 @@ import javax.swing.table.JTableHeader;
  * @author Marc Vaudel
  */
 public class OverviewPanel extends javax.swing.JPanel {
+
+    /**
+     * Turns of the gradient painting for the bar charts.
+     */
+    static {
+        XYBarRenderer.setDefaultBarPainter(new StandardXYBarPainter());
+    }
 
     /**
      * The protein table column header tooltips.
@@ -49,6 +75,14 @@ public class OverviewPanel extends javax.swing.JPanel {
      * A simple progress dialog.
      */
     private ProgressDialogX progressDialog;
+    /**
+     * A list of proteins in the protein table.
+     */
+    private ArrayList<String> proteinKeys = new ArrayList<String>();
+    /**
+     * The default line width for the line plots.
+     */
+    public static final float LINE_WIDTH = 4;
 
     /**
      * Creates a new OverviewPanel.
@@ -123,7 +157,8 @@ public class OverviewPanel extends javax.swing.JPanel {
                     progressDialog.setPrimaryProgressCounterIndeterminate(true);
                     progressDialog.setTitle("Preparing Overview. Please Wait...");
 
-                    ArrayList<String> proteinKeys = reporterGUI.getIdentificationFeaturesGenerator().getProcessedProteinKeys(progressDialog, reporterGUI.getFilterPreferences());
+                    reporterGUI.getIdentificationFeaturesGenerator().setProteinKeys(reporterGUI.getMetrics().getProteinKeys());
+                    proteinKeys = reporterGUI.getIdentificationFeaturesGenerator().getProcessedProteinKeys(progressDialog, reporterGUI.getFilterPreferences());
                     identification.loadProteinMatches(proteinKeys, progressDialog);
                     identification.loadProteinMatchParameters(proteinKeys, new PSParameter(), progressDialog);
                     // update the table model
@@ -137,6 +172,14 @@ public class OverviewPanel extends javax.swing.JPanel {
                     setTableProperties();
 
                     ((DefaultTableModel) proteinTable.getModel()).fireTableDataChanged();
+
+                    // select the first row
+                    if (proteinTable.getRowCount() > 0) {
+                        proteinTable.setRowSelectionInterval(0, 0);
+                    }
+                    
+                    // update the ratio plot
+                    updateQuantificationDataPlot();
 
                     // update spectrum counting column header tooltip
                     if (reporterGUI.getSpectrumCountingPreferences().getSelectedMethod() == SpectralCountingMethod.EMPAI) {
@@ -193,6 +236,167 @@ public class OverviewPanel extends javax.swing.JPanel {
                 }
             }
         }.start();
+    }
+
+    /**
+     * Update the ratio plot.
+     */
+    private void updateQuantificationDataPlot() {
+
+        ArrayList<String> sampleIndexes = new ArrayList<String>(reporterGUI.getReporterIonQuantification().getSampleIndexes());
+        Collections.sort(sampleIndexes);
+
+        try {
+            if (proteinTable.getSelectedRows().length == 1) {
+
+                SelfUpdatingTableModel tableModel = (SelfUpdatingTableModel) proteinTable.getModel();
+                int proteinIndex = tableModel.getViewIndex(proteinTable.getSelectedRow());
+
+                if (proteinIndex != -1) {
+                    String proteinKey = proteinKeys.get(proteinIndex);
+                    ProteinQuantificationDetails quantificationDetails = reporterGUI.getQuantificationFeaturesGenerator().getProteinMatchQuantificationDetails(proteinKey);
+
+                    DefaultCategoryDataset ratioLog2Dataset = new DefaultCategoryDataset();
+                    ArrayList<Color> barColors = new ArrayList<Color>();
+
+                    for (int i = 0; i < sampleIndexes.size(); i++) {
+                        String sampleIndex = sampleIndexes.get(i);
+                        Double ratio = quantificationDetails.getRatio(sampleIndex);
+                        if (ratio != null) {
+                            ratio = Math.log(ratio) / Math.log(2);
+                            ratioLog2Dataset.addValue(ratio, proteinKey, sampleIndex);
+                        }
+                        barColors.add(Color.red);
+                    }
+
+                    insertChart(true, ratioLog2Dataset, barColors);
+
+                    // update the border title
+                    ((TitledBorder) ratioPlotsTitledPanel.getBorder()).setTitle("Quantification Data (" + proteinKey + ")");
+                    ratioPlotsTitledPanel.repaint();
+                }
+            } else if (proteinTable.getSelectedRows().length > 1) {
+
+                int[] selectedRows = proteinTable.getSelectedRows();
+                
+                DefaultCategoryDataset ratioLog2Dataset = new DefaultCategoryDataset();
+                ArrayList<Color> lineColors = new ArrayList<Color>();
+
+                for (int i = 0; i < selectedRows.length; i++) {
+
+                    SelfUpdatingTableModel tableModel = (SelfUpdatingTableModel) proteinTable.getModel();
+                    int proteinIndex = tableModel.getViewIndex(selectedRows[i]);
+
+                    if (proteinIndex != -1) {
+
+                        String proteinKey = proteinKeys.get(proteinIndex);
+                        ProteinQuantificationDetails quantificationDetails = reporterGUI.getQuantificationFeaturesGenerator().getProteinMatchQuantificationDetails(proteinKey);
+
+                        for (int j = 0; j < sampleIndexes.size(); j++) {
+                            String sampleIndex = sampleIndexes.get(j);
+                            Double ratio = quantificationDetails.getRatio(sampleIndex);
+                            if (ratio != null) {
+                                ratio = Math.log(ratio) / Math.log(2);
+                                ratioLog2Dataset.addValue(ratio, proteinKey, sampleIndex);
+                            }
+                            lineColors.add(Color.RED);
+                        }
+                    }
+                }
+                
+                insertChart(false, ratioLog2Dataset, lineColors);
+
+                // update the border title
+                ((TitledBorder) ratioPlotsTitledPanel.getBorder()).setTitle("Quantification Data");
+                ratioPlotsTitledPanel.repaint();
+            } else {
+                // no rows selected
+                ratioPlotsInnerPanel.removeAll();
+                ratioPlotsInnerPanel.validate();
+                
+                // update the border title
+                ((TitledBorder) ratioPlotsTitledPanel.getBorder()).setTitle("Quantification Data");
+                ratioPlotsTitledPanel.repaint();
+            }
+        } catch (Exception e) {
+            reporterGUI.catchException(e);
+        }
+    }
+
+    /**
+     * Insert the chart.
+     *
+     * @param dataset the dataset
+     */
+    private void insertChart(boolean barChart, DefaultCategoryDataset dataset, ArrayList<Color> colors) {
+
+        JFreeChart chart;
+
+        if (barChart) {
+            chart = ChartFactory.createBarChart(
+                    null, // chart title
+                    null, // domain axis label
+                    "log2", // range axis label
+                    dataset, // data
+                    PlotOrientation.VERTICAL, // the plot orientation
+                    false, // include legend
+                    true, // tooltips
+                    false); // urls
+        } else {
+            chart = ChartFactory.createLineChart(
+                    null, // chart title
+                    null, // domain axis label
+                    "log2", // range axis label
+                    dataset, // data
+                    PlotOrientation.VERTICAL, // the plot orientation
+                    false, // include legend
+                    true, // tooltips
+                    false); // urls
+        }
+
+        // set the background and gridline colors
+        CategoryPlot plot = chart.getCategoryPlot();
+        plot.setBackgroundPaint(Color.WHITE);
+        plot.setRangeGridlinePaint(Color.BLACK);
+
+        // set the bar renderer
+        CategoryItemRenderer renderer;
+        if (!barChart) {
+            renderer = new LineAndShapeRenderer(true, false);
+            renderer.setBaseToolTipGenerator(new StandardCategoryToolTipGenerator());
+            for (int i = 0; i < dataset.getRowCount(); i++) {
+                renderer.setSeriesStroke(i, new BasicStroke(LINE_WIDTH, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                //renderer.setSeriesPaint(i, colors.get(i));
+            }
+        } else {
+            renderer = new BarRenderer3D(0, 0);
+            //renderer = new BarChartColorRenderer(colors);
+        }
+        plot.setRenderer(renderer);
+
+        // change the margin at the top and bottom of the range axis
+        final ValueAxis rangeAxis = plot.getRangeAxis();
+        rangeAxis.setLowerMargin(0.15);
+        rangeAxis.setUpperMargin(0.15);
+
+        double lowerBound = rangeAxis.getLowerBound();
+        double upperBound = rangeAxis.getUpperBound();
+
+        // make sure that the ratio bar chart has a symmetrical y-axis
+        if (Math.abs(lowerBound) > Math.abs(upperBound)) {
+            rangeAxis.setUpperBound(Math.abs(lowerBound));
+        } else {
+            rangeAxis.setLowerBound(-Math.abs(upperBound));
+        }
+
+        // add a second axis on the right, identical to the left one
+        ValueAxis rangeAxis2 = chart.getCategoryPlot().getRangeAxis();
+        plot.setRangeAxis(1, rangeAxis2);
+
+        ChartPanel chartPanel = new ChartPanel(chart);
+        ratioPlotsInnerPanel.removeAll();
+        ratioPlotsInnerPanel.add(chartPanel);
+        ratioPlotsInnerPanel.validate();
     }
 
     /**
@@ -309,11 +513,11 @@ public class OverviewPanel extends javax.swing.JPanel {
         proteinTable.setOpaque(false);
         proteinTable.setSelectionMode(javax.swing.ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         proteinTable.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                proteinTableMouseExited(evt);
-            }
             public void mouseReleased(java.awt.event.MouseEvent evt) {
                 proteinTableMouseReleased(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                proteinTableMouseExited(evt);
             }
         });
         proteinTable.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
@@ -456,7 +660,7 @@ public class OverviewPanel extends javax.swing.JPanel {
         ratioPlotsJPanel.setOpaque(false);
 
         ratioPlotsTitledPanel.setBackground(new java.awt.Color(255, 255, 255));
-        ratioPlotsTitledPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Ratio Plots"));
+        ratioPlotsTitledPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Quantification Data"));
         ratioPlotsTitledPanel.setOpaque(false);
 
         ratioPlotsInnerPanel.setBackground(new java.awt.Color(255, 255, 255));
@@ -658,75 +862,50 @@ public class OverviewPanel extends javax.swing.JPanel {
      */
     private void proteinTableMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_proteinTableMouseReleased
 
-//        if (evt != null) {
-//            peptideShakerGUI.resetSelectedItems();
-//        }
-//
-//        int row = proteinTable.getSelectedRow();
-//        int column = proteinTable.getSelectedColumn();
-//
-//        int proteinIndex = -1;
-//
-//        if (row != -1) {
-//            proteinIndex = proteinTable.convertRowIndexToModel(row);
-//        }
-//
-//        if (evt == null || (evt.getButton() == MouseEvent.BUTTON1 && (proteinIndex != -1 && column != -1))) {
-//
-//            if (proteinIndex != -1) {
-//
-//                this.setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
-//
-//                // update the peptide selection
-//                updatedPeptideSelection(proteinIndex);
-//
-//                // update the sequence coverage map
-//                //updateSequenceCoverageMap(proteinIndex); // @TODO: will be called when a psm is selected anyway??
-//
-//                // remember the selection
-//                newItemSelection();
-//
-//                this.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-//
-//                if (column == proteinTable.getColumn("  ").getModelIndex()) {
-//                    String proteinKey = proteinKeys.get(proteinIndex);
-//                    PSParameter psParameter = new PSParameter();
-//                    try {
-//                        psParameter = (PSParameter) peptideShakerGUI.getIdentification().getProteinMatchParameter(proteinKey, new PSParameter());
-//                    } catch (Exception e) {
-//                        peptideShakerGUI.catchException(e);
-//                    }
-//                    if (!psParameter.isStarred()) {
-//                        peptideShakerGUI.getStarHider().starProtein(proteinKey);
-//                    } else {
-//                        peptideShakerGUI.getStarHider().unStarProtein(proteinKey);
-//                    }
-//                }
-//
-//                // open protein link in web browser
-//                if (column == proteinTable.getColumn("Accession").getModelIndex() && evt != null && evt.getButton() == MouseEvent.BUTTON1
-//                        && ((String) proteinTable.getValueAt(row, column)).lastIndexOf("<html>") != -1) {
-//
-//                    String link = (String) proteinTable.getValueAt(row, column);
-//                    link = link.substring(link.indexOf("\"") + 1);
-//                    link = link.substring(0, link.indexOf("\""));
-//
-//                    this.setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
-//                    BareBonesBrowserLaunch.openURL(link);
-//                    this.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-//                }
-//
-//                // open the protein inference dialog
+        int row = proteinTable.getSelectedRow();
+        int column = proteinTable.getSelectedColumn();
+
+        int proteinIndex = -1;
+
+        if (row != -1) {
+            proteinIndex = proteinTable.convertRowIndexToModel(row);
+        }
+
+        if (evt == null || (evt.getButton() == MouseEvent.BUTTON1 && (proteinIndex != -1 && column != -1))) {
+
+            if (proteinIndex != -1) {
+
+                this.setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
+
+                // update the plot
+                updateQuantificationDataPlot();
+
+                this.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+
+                // open protein link in web browser
+                if (column == proteinTable.getColumn("Accession").getModelIndex() && evt != null && evt.getButton() == MouseEvent.BUTTON1
+                        && ((String) proteinTable.getValueAt(row, column)).lastIndexOf("<html>") != -1) {
+
+                    String link = (String) proteinTable.getValueAt(row, column);
+                    link = link.substring(link.indexOf("\"") + 1);
+                    link = link.substring(0, link.indexOf("\""));
+
+                    this.setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
+                    BareBonesBrowserLaunch.openURL(link);
+                    this.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+                }
+
+                // open the protein inference dialog
 //                if (column == proteinTable.getColumn("PI").getModelIndex() && evt != null && evt.getButton() == MouseEvent.BUTTON1) {
 //                    String proteinKey = proteinKeys.get(proteinIndex);
 //                    new ProteinInferenceDialog(peptideShakerGUI, proteinKey, peptideShakerGUI.getIdentification());
 //                }
-//            }
-//        } else if (evt.getButton() == MouseEvent.BUTTON3) {
-//            if (proteinTable.columnAtPoint(evt.getPoint()) == proteinTable.getColumn("  ").getModelIndex()) {
-//                selectJPopupMenu.show(proteinTable, evt.getX(), evt.getY());
-//            }
-//        }
+            }
+        } else if (evt.getButton() == MouseEvent.BUTTON3) {
+            if (proteinTable.columnAtPoint(evt.getPoint()) == proteinTable.getColumn("  ").getModelIndex()) {
+                //selectJPopupMenu.show(proteinTable, evt.getX(), evt.getY());
+            }
+        }
     }//GEN-LAST:event_proteinTableMouseReleased
 
     /**
@@ -764,21 +943,20 @@ public class OverviewPanel extends javax.swing.JPanel {
 
     /**
      * Update the protein selection.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void proteinTableKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_proteinTableKeyReleased
-//        if (evt.getKeyCode() == KeyEvent.VK_UP || evt.getKeyCode() == KeyEvent.VK_DOWN
-//                || evt.getKeyCode() == KeyEvent.VK_PAGE_UP || evt.getKeyCode() == KeyEvent.VK_PAGE_DOWN) {
-//            peptideShakerGUI.resetSelectedItems();
-//            proteinTableMouseReleased(null);
-//        }
+        if (evt.getKeyCode() == KeyEvent.VK_UP || evt.getKeyCode() == KeyEvent.VK_DOWN
+                || evt.getKeyCode() == KeyEvent.VK_PAGE_UP || evt.getKeyCode() == KeyEvent.VK_PAGE_DOWN) {
+            proteinTableMouseReleased(null);
+        }
     }//GEN-LAST:event_proteinTableKeyReleased
 
     /**
      * Change the cursor to a hand cursor.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void proteinsHelpJButtonMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_proteinsHelpJButtonMouseEntered
         setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
@@ -795,8 +973,8 @@ public class OverviewPanel extends javax.swing.JPanel {
 
     /**
      * Open the protein table help.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void proteinsHelpJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_proteinsHelpJButtonActionPerformed
         setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
@@ -810,8 +988,8 @@ public class OverviewPanel extends javax.swing.JPanel {
 
     /**
      * Change the cursor to a hand cursor.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void exportProteinsJButtonMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_exportProteinsJButtonMouseEntered
         setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
@@ -828,8 +1006,8 @@ public class OverviewPanel extends javax.swing.JPanel {
 
     /**
      * Export the protein table to file.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void exportProteinsJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportProteinsJButtonActionPerformed
         //copyTableContentToClipboardOrFile(TableIndex.PROTEIN_TABLE); // @TODO: reimplement me!
@@ -837,8 +1015,8 @@ public class OverviewPanel extends javax.swing.JPanel {
 
     /**
      * Change the cursor to a hand cursor.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void hideProteinsJButtonMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_hideProteinsJButtonMouseEntered
         setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
@@ -855,8 +1033,8 @@ public class OverviewPanel extends javax.swing.JPanel {
 
     /**
      * Hide the protein table.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void hideProteinsJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hideProteinsJButtonActionPerformed
         // @TODO: reimplement me!
@@ -866,8 +1044,8 @@ public class OverviewPanel extends javax.swing.JPanel {
 
     /**
      * Change the cursor to a hand cursor.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void ratioPlotHelpJButtonMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ratioPlotHelpJButtonMouseEntered
         setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
@@ -884,8 +1062,8 @@ public class OverviewPanel extends javax.swing.JPanel {
 
     /**
      * Open the ratio plot help.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void ratioPlotHelpJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ratioPlotHelpJButtonActionPerformed
         setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
@@ -898,8 +1076,8 @@ public class OverviewPanel extends javax.swing.JPanel {
 
     /**
      * Change the cursor to a hand cursor.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void exportRatioPlotContextJButtonMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_exportRatioPlotContextJButtonMouseEntered
         setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
@@ -916,8 +1094,8 @@ public class OverviewPanel extends javax.swing.JPanel {
 
     /**
      * Export the plot to file.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void exportRatioPlotContextJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportRatioPlotContextJButtonActionPerformed
 //        try {
@@ -941,8 +1119,8 @@ public class OverviewPanel extends javax.swing.JPanel {
 
     /**
      * Change the cursor to a hand cursor.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void hideRatioPlotJButtonMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_hideRatioPlotJButtonMouseEntered
         setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
@@ -959,8 +1137,8 @@ public class OverviewPanel extends javax.swing.JPanel {
 
     /**
      * Hide the ratio plot.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void hideRatioPlotJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hideRatioPlotJButtonActionPerformed
 //        displayCoverage = false;
@@ -969,8 +1147,8 @@ public class OverviewPanel extends javax.swing.JPanel {
 
     /**
      * Change the cursor to a hand cursor.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void ratioPlotOptionsJButtonMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ratioPlotOptionsJButtonMouseEntered
         setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
@@ -987,8 +1165,8 @@ public class OverviewPanel extends javax.swing.JPanel {
 
     /**
      * Show the contextual options for the ratio plots.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void ratioPlotOptionsJButtonMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ratioPlotOptionsJButtonMouseReleased
 //        sequenceCoverageJPopupMenu.show(sequenceCoverageOptionsJButton, evt.getX(), evt.getY());
@@ -996,8 +1174,8 @@ public class OverviewPanel extends javax.swing.JPanel {
 
     /**
      * Resize the components of the frame size changes.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void formComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_formComponentResized
 

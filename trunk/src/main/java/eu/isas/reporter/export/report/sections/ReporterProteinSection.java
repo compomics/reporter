@@ -85,7 +85,8 @@ public class ReporterProteinSection {
         for (ExportFeature exportFeature : exportFeatures) {
             if (exportFeature instanceof ReporterProteinFeatures) {
                 quantificationFeatures.add((ReporterExportFeature) exportFeature);
-            } else if (exportFeature instanceof ReporterPeptideFeature || exportFeature instanceof ReporterPsmFeatures
+            } else if (exportFeature instanceof ReporterPeptideFeature
+                    || exportFeature instanceof ReporterPsmFeatures
                     || exportFeature instanceof PsPeptideFeature
                     || exportFeature instanceof PsPsmFeature
                     || exportFeature instanceof PsIdentificationAlgorithmMatchesFeature
@@ -155,7 +156,6 @@ public class ReporterProteinSection {
         }
         int line = 1;
         PSParameter psParameter = new PSParameter();
-        ProteinMatch proteinMatch = null;
 
         if (peptideSection != null) {
             if (waitingHandler != null) {
@@ -209,7 +209,7 @@ public class ReporterProteinSection {
                         first = false;
                     }
 
-                    proteinMatch = identification.getProteinMatch(proteinKey);
+                    ProteinMatch proteinMatch = identification.getProteinMatch(proteinKey);
 
                     for (ExportFeature exportFeature : identificationFeatures) {
                         if (!first) {
@@ -218,10 +218,13 @@ public class ReporterProteinSection {
                             first = false;
                         }
                         PsProteinFeature tempProteinFeatures = (PsProteinFeature) exportFeature;
-                        writer.write(PsProteinSection.getFeature(identificationFeaturesGenerator, searchParameters, annotationPreferences, keys, nSurroundingAas, proteinKey, proteinMatch, psParameter, tempProteinFeatures, waitingHandler));
+                        writer.write(PsProteinSection.getFeature(identificationFeaturesGenerator, searchParameters, annotationPreferences,
+                                keys, nSurroundingAas, proteinKey, proteinMatch, psParameter, tempProteinFeatures, waitingHandler));
                     }
+
                     ArrayList<String> sampleIndexes = new ArrayList<String>(reporterIonQuantification.getSampleIndexes());
                     Collections.sort(sampleIndexes);
+
                     for (ExportFeature exportFeature : quantificationFeatures) {
                         ReporterProteinFeatures tempProteinFeatures = (ReporterProteinFeatures) exportFeature;
                         if (tempProteinFeatures.hasChannels()) {
@@ -242,6 +245,7 @@ public class ReporterProteinSection {
                             writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, proteinKey, tempProteinFeatures, ""), reporterStyle);
                         }
                     }
+
                     writer.newLine();
                     if (peptideSection != null) {
                         peptideSection.writeSection(identification, identificationFeaturesGenerator, searchParameters, annotationPreferences, sequenceMatchingPreferences, proteinMatch.getPeptideMatchesKeys(), nSurroundingAas, line + ".", validatedOnly, decoys, null);
@@ -274,7 +278,8 @@ public class ReporterProteinSection {
      * @throws InterruptedException
      * @throws MzMLUnmarshallerException
      */
-    public static String getFeature(QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, String proteinKey, ReporterProteinFeatures proteinFeatures, String sampleIndex) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
+    public static String getFeature(QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, String proteinKey,
+            ReporterProteinFeatures proteinFeatures, String sampleIndex) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
         switch (proteinFeatures) {
             case ratio:
                 ProteinQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(proteinKey);

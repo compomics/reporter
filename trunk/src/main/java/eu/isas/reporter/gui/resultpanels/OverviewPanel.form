@@ -195,8 +195,8 @@
                                     </Property>
                                   </Properties>
                                   <Events>
-                                    <EventHandler event="mouseExited" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="proteinTableMouseExited"/>
                                     <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="proteinTableMouseReleased"/>
+                                    <EventHandler event="mouseExited" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="proteinTableMouseExited"/>
                                     <EventHandler event="mouseMoved" listener="java.awt.event.MouseMotionListener" parameters="java.awt.event.MouseEvent" handler="proteinTableMouseMoved"/>
                                     <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="proteinTableKeyReleased"/>
                                   </Events>
@@ -367,7 +367,7 @@
                             </Property>
                             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                               <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                                <TitledBorder title="Ratio Plots"/>
+                                <TitledBorder title="Quantification Data"/>
                               </Border>
                             </Property>
                             <Property name="opaque" type="boolean" value="false"/>
