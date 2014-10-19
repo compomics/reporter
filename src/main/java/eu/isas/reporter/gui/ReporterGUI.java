@@ -86,7 +86,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaMemoryDialogP
      */
     private SequenceFactory sequenceFactory = SequenceFactory.getInstance(100000);
     /**
-     * The exception handler
+     * The exception handler.
      */
     private ExceptionHandler exceptionHandler = new FrameExceptionHandler(this, "http://code.google.com/p/reporter/issues/list");
     /**
@@ -98,34 +98,34 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaMemoryDialogP
      */
     private CpsParent cpsBean = null;
     /**
-     * The reporter preferences
+     * The reporter preferences.
      */
     private ReporterPreferences reporterPreferences;
     /**
-     * The reporter ion quantification containing the quantification parameters
+     * The reporter ion quantification containing the quantification parameters.
      */
     private ReporterIonQuantification reporterIonQuantification;
     /**
      * The identification features generator provides identification related
-     * metrics on the identified matches
+     * metrics on the identified matches.
      */
     private IdentificationFeaturesGenerator identificationFeaturesGenerator;
     /**
      * The display features generator provides display features for the
-     * identified matches
+     * identified matches.
      */
     private DisplayFeaturesGenerator displayFeaturesGenerator;
     /**
      * The quantification features generator provides quantification features on
-     * the identified matches
+     * the identified matches.
      */
     private QuantificationFeaturesGenerator quantificationFeaturesGenerator;
     /**
-     * Boolean indicating whether the project has been saved
+     * Boolean indicating whether the project has been saved.
      */
     private boolean projectSaved = true;
     /**
-     * The display preferences
+     * The display preferences.
      */
     private DisplayPreferences displayPreferences = new DisplayPreferences();
     /**
@@ -346,7 +346,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaMemoryDialogP
     }
 
     /**
-     * displays the results on the gui
+     * Displays the results on the GUI.
      */
     private void displayResults() throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
         if (!reporterIonQuantification.hasNormalisationFactors()) {

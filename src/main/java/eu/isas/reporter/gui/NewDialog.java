@@ -1816,7 +1816,7 @@ public class NewDialog extends javax.swing.JDialog {
                 case 1:
                     return "Sample";
                 case 2:
-                    return "Control";
+                    return "Ref";
                 default:
                     return "";
             }
