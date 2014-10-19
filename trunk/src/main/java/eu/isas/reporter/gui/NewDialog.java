@@ -463,8 +463,8 @@ public class NewDialog extends javax.swing.JDialog {
                 .add(samplePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel5)
                     .add(comboMethod1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(18, 18, 18)
-                .add(sampleAssignmentJScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 211, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(sampleAssignmentJScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 218, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -1345,7 +1345,7 @@ public class NewDialog extends javax.swing.JDialog {
                     cpsBean.setCpsFile(psFile);
 
                     try {
-                        cpsBean.loadCpsFile(progressDialog); // @TODO: should set the matches folder! (if not it ends up in the lib/resources)
+                        cpsBean.loadCpsFile(reporterGui.getJarFilePath(), progressDialog);
                     } catch (SQLException e) {
                         e.printStackTrace();
                         JOptionPane.showMessageDialog(NewDialog.this,
@@ -1549,7 +1549,6 @@ public class NewDialog extends javax.swing.JDialog {
                 refresh();
 
                 progressDialog.setRunFinished();
-
             }
         }.start();
     }
