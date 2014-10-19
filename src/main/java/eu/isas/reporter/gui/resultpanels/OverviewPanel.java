@@ -23,7 +23,7 @@ import javax.swing.table.JTableHeader;
 
 /**
  * The Overview tab.
- * 
+ *
  * @author Harald Barsnes
  * @author Marc Vaudel
  */
@@ -82,7 +82,7 @@ public class OverviewPanel extends javax.swing.JPanel {
 
         // add table scrolling listeners
         SelfUpdatingTableModel.addScrollListeners(proteinTable, proteinScrollPane, proteinScrollPane.getVerticalScrollBar());
-        
+
         // make sure that the scroll panes are see-through
         proteinScrollPane.getViewport().setOpaque(false);
 
@@ -274,7 +274,7 @@ public class OverviewPanel extends javax.swing.JPanel {
         ratioPlotsLayeredPane = new javax.swing.JLayeredPane();
         ratioPlotsTitledPanel = new javax.swing.JPanel();
         ratioPlotsInnerPanel = new javax.swing.JPanel();
-        ratioPLotHelpJButton = new javax.swing.JButton();
+        ratioPlotHelpJButton = new javax.swing.JButton();
         exportRatioPlotContextJButton = new javax.swing.JButton();
         hideRatioPlotJButton = new javax.swing.JButton();
         ratioPlotOptionsJButton = new javax.swing.JButton();
@@ -349,8 +349,8 @@ public class OverviewPanel extends javax.swing.JPanel {
                     .addContainerGap()))
         );
 
+        proteinsLayeredPane.add(proteinsLayeredPanel);
         proteinsLayeredPanel.setBounds(0, 0, 950, 300);
-        proteinsLayeredPane.add(proteinsLayeredPanel, javax.swing.JLayeredPane.DEFAULT_LAYER);
 
         proteinsHelpJButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/help_no_frame_grey.png"))); // NOI18N
         proteinsHelpJButton.setToolTipText("Help");
@@ -371,8 +371,9 @@ public class OverviewPanel extends javax.swing.JPanel {
                 proteinsHelpJButtonActionPerformed(evt);
             }
         });
+        proteinsLayeredPane.add(proteinsHelpJButton);
         proteinsHelpJButton.setBounds(930, 0, 10, 19);
-        proteinsLayeredPane.add(proteinsHelpJButton, javax.swing.JLayeredPane.POPUP_LAYER);
+        proteinsLayeredPane.setLayer(proteinsHelpJButton, javax.swing.JLayeredPane.POPUP_LAYER);
 
         exportProteinsJButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/export_no_frame_grey.png"))); // NOI18N
         exportProteinsJButton.setToolTipText("Copy to File");
@@ -395,8 +396,9 @@ public class OverviewPanel extends javax.swing.JPanel {
                 exportProteinsJButtonActionPerformed(evt);
             }
         });
+        proteinsLayeredPane.add(exportProteinsJButton);
         exportProteinsJButton.setBounds(920, 0, 10, 19);
-        proteinsLayeredPane.add(exportProteinsJButton, javax.swing.JLayeredPane.POPUP_LAYER);
+        proteinsLayeredPane.setLayer(exportProteinsJButton, javax.swing.JLayeredPane.POPUP_LAYER);
 
         hideProteinsJButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/hide_grey.png"))); // NOI18N
         hideProteinsJButton.setToolTipText("Hide Proteins (Shift+Ctrl+P)");
@@ -417,8 +419,9 @@ public class OverviewPanel extends javax.swing.JPanel {
                 hideProteinsJButtonActionPerformed(evt);
             }
         });
+        proteinsLayeredPane.add(hideProteinsJButton);
         hideProteinsJButton.setBounds(910, 0, 10, 19);
-        proteinsLayeredPane.add(hideProteinsJButton, javax.swing.JLayeredPane.POPUP_LAYER);
+        proteinsLayeredPane.setLayer(hideProteinsJButton, javax.swing.JLayeredPane.POPUP_LAYER);
 
         contextMenuProteinsBackgroundPanel.setBackground(new java.awt.Color(255, 255, 255));
 
@@ -433,8 +436,9 @@ public class OverviewPanel extends javax.swing.JPanel {
             .addGap(0, 19, Short.MAX_VALUE)
         );
 
+        proteinsLayeredPane.add(contextMenuProteinsBackgroundPanel);
         contextMenuProteinsBackgroundPanel.setBounds(910, 0, 40, 19);
-        proteinsLayeredPane.add(contextMenuProteinsBackgroundPanel, javax.swing.JLayeredPane.POPUP_LAYER);
+        proteinsLayeredPane.setLayer(contextMenuProteinsBackgroundPanel, javax.swing.JLayeredPane.POPUP_LAYER);
 
         javax.swing.GroupLayout proteinsJPanelLayout = new javax.swing.GroupLayout(proteinsJPanel);
         proteinsJPanel.setLayout(proteinsJPanelLayout);
@@ -475,30 +479,31 @@ public class OverviewPanel extends javax.swing.JPanel {
                 .addGap(7, 7, 7))
         );
 
+        ratioPlotsLayeredPane.add(ratioPlotsTitledPanel);
         ratioPlotsTitledPanel.setBounds(0, 0, 950, 460);
-        ratioPlotsLayeredPane.add(ratioPlotsTitledPanel, javax.swing.JLayeredPane.DEFAULT_LAYER);
 
-        ratioPLotHelpJButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/help_no_frame_grey.png"))); // NOI18N
-        ratioPLotHelpJButton.setToolTipText("Help");
-        ratioPLotHelpJButton.setBorder(null);
-        ratioPLotHelpJButton.setBorderPainted(false);
-        ratioPLotHelpJButton.setContentAreaFilled(false);
-        ratioPLotHelpJButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/help_no_frame.png"))); // NOI18N
-        ratioPLotHelpJButton.addMouseListener(new java.awt.event.MouseAdapter() {
+        ratioPlotHelpJButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/help_no_frame_grey.png"))); // NOI18N
+        ratioPlotHelpJButton.setToolTipText("Help");
+        ratioPlotHelpJButton.setBorder(null);
+        ratioPlotHelpJButton.setBorderPainted(false);
+        ratioPlotHelpJButton.setContentAreaFilled(false);
+        ratioPlotHelpJButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/help_no_frame.png"))); // NOI18N
+        ratioPlotHelpJButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
-                ratioPLotHelpJButtonMouseEntered(evt);
+                ratioPlotHelpJButtonMouseEntered(evt);
             }
             public void mouseExited(java.awt.event.MouseEvent evt) {
-                ratioPLotHelpJButtonMouseExited(evt);
+                ratioPlotHelpJButtonMouseExited(evt);
             }
         });
-        ratioPLotHelpJButton.addActionListener(new java.awt.event.ActionListener() {
+        ratioPlotHelpJButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ratioPLotHelpJButtonActionPerformed(evt);
+                ratioPlotHelpJButtonActionPerformed(evt);
             }
         });
-        ratioPLotHelpJButton.setBounds(930, 0, 10, 19);
-        ratioPlotsLayeredPane.add(ratioPLotHelpJButton, javax.swing.JLayeredPane.POPUP_LAYER);
+        ratioPlotsLayeredPane.add(ratioPlotHelpJButton);
+        ratioPlotHelpJButton.setBounds(930, 0, 10, 19);
+        ratioPlotsLayeredPane.setLayer(ratioPlotHelpJButton, javax.swing.JLayeredPane.POPUP_LAYER);
 
         exportRatioPlotContextJButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/export_no_frame_grey.png"))); // NOI18N
         exportRatioPlotContextJButton.setToolTipText("Copy to Clipboard");
@@ -521,8 +526,9 @@ public class OverviewPanel extends javax.swing.JPanel {
                 exportRatioPlotContextJButtonActionPerformed(evt);
             }
         });
+        ratioPlotsLayeredPane.add(exportRatioPlotContextJButton);
         exportRatioPlotContextJButton.setBounds(920, 0, 10, 19);
-        ratioPlotsLayeredPane.add(exportRatioPlotContextJButton, javax.swing.JLayeredPane.POPUP_LAYER);
+        ratioPlotsLayeredPane.setLayer(exportRatioPlotContextJButton, javax.swing.JLayeredPane.POPUP_LAYER);
 
         hideRatioPlotJButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/hide_grey.png"))); // NOI18N
         hideRatioPlotJButton.setToolTipText("Hide Coverage (Shift+Ctrl+E)");
@@ -543,8 +549,9 @@ public class OverviewPanel extends javax.swing.JPanel {
                 hideRatioPlotJButtonActionPerformed(evt);
             }
         });
+        ratioPlotsLayeredPane.add(hideRatioPlotJButton);
         hideRatioPlotJButton.setBounds(910, 0, 10, 19);
-        ratioPlotsLayeredPane.add(hideRatioPlotJButton, javax.swing.JLayeredPane.POPUP_LAYER);
+        ratioPlotsLayeredPane.setLayer(hideRatioPlotJButton, javax.swing.JLayeredPane.POPUP_LAYER);
 
         ratioPlotOptionsJButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/contextual_menu_gray.png"))); // NOI18N
         ratioPlotOptionsJButton.setToolTipText("Coverage Options");
@@ -563,8 +570,9 @@ public class OverviewPanel extends javax.swing.JPanel {
                 ratioPlotOptionsJButtonMouseReleased(evt);
             }
         });
+        ratioPlotsLayeredPane.add(ratioPlotOptionsJButton);
         ratioPlotOptionsJButton.setBounds(895, 5, 10, 19);
-        ratioPlotsLayeredPane.add(ratioPlotOptionsJButton, javax.swing.JLayeredPane.POPUP_LAYER);
+        ratioPlotsLayeredPane.setLayer(ratioPlotOptionsJButton, javax.swing.JLayeredPane.POPUP_LAYER);
 
         contextMenuRatioPlotBackgroundPanel.setBackground(new java.awt.Color(255, 255, 255));
 
@@ -579,8 +587,9 @@ public class OverviewPanel extends javax.swing.JPanel {
             .addGap(0, 19, Short.MAX_VALUE)
         );
 
+        ratioPlotsLayeredPane.add(contextMenuRatioPlotBackgroundPanel);
         contextMenuRatioPlotBackgroundPanel.setBounds(890, 0, 50, 19);
-        ratioPlotsLayeredPane.add(contextMenuRatioPlotBackgroundPanel, javax.swing.JLayeredPane.POPUP_LAYER);
+        ratioPlotsLayeredPane.setLayer(contextMenuRatioPlotBackgroundPanel, javax.swing.JLayeredPane.POPUP_LAYER);
 
         javax.swing.GroupLayout ratioPlotsJPanelLayout = new javax.swing.GroupLayout(ratioPlotsJPanel);
         ratioPlotsJPanel.setLayout(ratioPlotsJPanelLayout);
@@ -612,8 +621,8 @@ public class OverviewPanel extends javax.swing.JPanel {
                 .addContainerGap())
         );
 
+        backgroundLayeredPane.add(overviewJPanel);
         overviewJPanel.setBounds(0, 0, 990, 780);
-        backgroundLayeredPane.add(overviewJPanel, javax.swing.JLayeredPane.DEFAULT_LAYER);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -633,10 +642,20 @@ public class OverviewPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    /**
+     * Change the cursor back to the default cursor.
+     *
+     * @param evt
+     */
     private void proteinTableMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_proteinTableMouseExited
         this.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_proteinTableMouseExited
 
+    /**
+     * Update the protein selection.
+     *
+     * @param evt
+     */
     private void proteinTableMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_proteinTableMouseReleased
 
 //        if (evt != null) {
@@ -710,6 +729,12 @@ public class OverviewPanel extends javax.swing.JPanel {
 //        }
     }//GEN-LAST:event_proteinTableMouseReleased
 
+    /**
+     * Show a hand cursor if over a column with an HTML link or show the
+     * complete protein description if over the protein description column.
+     *
+     * @param evt
+     */
     private void proteinTableMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_proteinTableMouseMoved
         int row = proteinTable.rowAtPoint(evt.getPoint());
         int column = proteinTable.columnAtPoint(evt.getPoint());
@@ -737,6 +762,11 @@ public class OverviewPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_proteinTableMouseMoved
 
+    /**
+     * Update the protein selection.
+     * 
+     * @param evt 
+     */
     private void proteinTableKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_proteinTableKeyReleased
 //        if (evt.getKeyCode() == KeyEvent.VK_UP || evt.getKeyCode() == KeyEvent.VK_DOWN
 //                || evt.getKeyCode() == KeyEvent.VK_PAGE_UP || evt.getKeyCode() == KeyEvent.VK_PAGE_DOWN) {
@@ -745,14 +775,29 @@ public class OverviewPanel extends javax.swing.JPanel {
 //        }
     }//GEN-LAST:event_proteinTableKeyReleased
 
+    /**
+     * Change the cursor to a hand cursor.
+     * 
+     * @param evt 
+     */
     private void proteinsHelpJButtonMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_proteinsHelpJButtonMouseEntered
         setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
     }//GEN-LAST:event_proteinsHelpJButtonMouseEntered
 
+    /**
+     * Change the cursor back to the default cursor.
+     *
+     * @param evt
+     */
     private void proteinsHelpJButtonMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_proteinsHelpJButtonMouseExited
         setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_proteinsHelpJButtonMouseExited
 
+    /**
+     * Open the protein table help.
+     * 
+     * @param evt 
+     */
     private void proteinsHelpJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_proteinsHelpJButtonActionPerformed
         setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
         new HelpDialog(reporterGUI, getClass().getResource("/helpFiles/OverviewTab.html"), null, // @TODO: write help
@@ -763,58 +808,117 @@ public class OverviewPanel extends javax.swing.JPanel {
         setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_proteinsHelpJButtonActionPerformed
 
+    /**
+     * Change the cursor to a hand cursor.
+     * 
+     * @param evt 
+     */
     private void exportProteinsJButtonMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_exportProteinsJButtonMouseEntered
         setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
     }//GEN-LAST:event_exportProteinsJButtonMouseEntered
 
+    /**
+     * Change the cursor back to the default cursor.
+     *
+     * @param evt
+     */
     private void exportProteinsJButtonMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_exportProteinsJButtonMouseExited
         setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_exportProteinsJButtonMouseExited
 
+    /**
+     * Export the protein table to file.
+     * 
+     * @param evt 
+     */
     private void exportProteinsJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportProteinsJButtonActionPerformed
         //copyTableContentToClipboardOrFile(TableIndex.PROTEIN_TABLE); // @TODO: reimplement me!
     }//GEN-LAST:event_exportProteinsJButtonActionPerformed
 
+    /**
+     * Change the cursor to a hand cursor.
+     * 
+     * @param evt 
+     */
     private void hideProteinsJButtonMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_hideProteinsJButtonMouseEntered
         setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
     }//GEN-LAST:event_hideProteinsJButtonMouseEntered
 
+    /**
+     * Change the cursor back to the default cursor.
+     *
+     * @param evt
+     */
     private void hideProteinsJButtonMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_hideProteinsJButtonMouseExited
         setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_hideProteinsJButtonMouseExited
 
+    /**
+     * Hide the protein table.
+     * 
+     * @param evt 
+     */
     private void hideProteinsJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hideProteinsJButtonActionPerformed
-
         // @TODO: reimplement me!
 //        displayProteins = false;
 //        peptideShakerGUI.setDisplayOptions(displayProteins, displayPeptidesAndPSMs, displayCoverage, displaySpectrum);
     }//GEN-LAST:event_hideProteinsJButtonActionPerformed
 
-    private void ratioPLotHelpJButtonMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ratioPLotHelpJButtonMouseEntered
+    /**
+     * Change the cursor to a hand cursor.
+     * 
+     * @param evt 
+     */
+    private void ratioPlotHelpJButtonMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ratioPlotHelpJButtonMouseEntered
         setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-    }//GEN-LAST:event_ratioPLotHelpJButtonMouseEntered
+    }//GEN-LAST:event_ratioPlotHelpJButtonMouseEntered
 
-    private void ratioPLotHelpJButtonMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ratioPLotHelpJButtonMouseExited
+    /**
+     * Change the cursor back to the default cursor.
+     *
+     * @param evt
+     */
+    private void ratioPlotHelpJButtonMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ratioPlotHelpJButtonMouseExited
         setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-    }//GEN-LAST:event_ratioPLotHelpJButtonMouseExited
+    }//GEN-LAST:event_ratioPlotHelpJButtonMouseExited
 
-    private void ratioPLotHelpJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ratioPLotHelpJButtonActionPerformed
+    /**
+     * Open the ratio plot help.
+     * 
+     * @param evt 
+     */
+    private void ratioPlotHelpJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ratioPlotHelpJButtonActionPerformed
         setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
         new HelpDialog(reporterGUI, getClass().getResource("/helpFiles/OverviewTab.html"), null, // @TODO: write help
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/help.GIF")),
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
                 "Plot Help");
         setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-    }//GEN-LAST:event_ratioPLotHelpJButtonActionPerformed
+    }//GEN-LAST:event_ratioPlotHelpJButtonActionPerformed
 
+    /**
+     * Change the cursor to a hand cursor.
+     * 
+     * @param evt 
+     */
     private void exportRatioPlotContextJButtonMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_exportRatioPlotContextJButtonMouseEntered
         setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
     }//GEN-LAST:event_exportRatioPlotContextJButtonMouseEntered
 
+    /**
+     * Change the cursor back to the default cursor.
+     *
+     * @param evt
+     */
     private void exportRatioPlotContextJButtonMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_exportRatioPlotContextJButtonMouseExited
         setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_exportRatioPlotContextJButtonMouseExited
 
+    /**
+     * Export the plot to file.
+     * 
+     * @param evt 
+     */
     private void exportRatioPlotContextJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportRatioPlotContextJButtonActionPerformed
 //        try {
 //            if (proteinTable.getSelectedRow() != -1) {
@@ -835,31 +939,66 @@ public class OverviewPanel extends javax.swing.JPanel {
 //        }
     }//GEN-LAST:event_exportRatioPlotContextJButtonActionPerformed
 
+    /**
+     * Change the cursor to a hand cursor.
+     * 
+     * @param evt 
+     */
     private void hideRatioPlotJButtonMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_hideRatioPlotJButtonMouseEntered
         setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
     }//GEN-LAST:event_hideRatioPlotJButtonMouseEntered
 
+    /**
+     * Change the cursor back to the default cursor.
+     *
+     * @param evt
+     */
     private void hideRatioPlotJButtonMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_hideRatioPlotJButtonMouseExited
         setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_hideRatioPlotJButtonMouseExited
 
+    /**
+     * Hide the ratio plot.
+     * 
+     * @param evt 
+     */
     private void hideRatioPlotJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hideRatioPlotJButtonActionPerformed
 //        displayCoverage = false;
 //        peptideShakerGUI.setDisplayOptions(displayProteins, displayPeptidesAndPSMs, displayCoverage, displaySpectrum);
     }//GEN-LAST:event_hideRatioPlotJButtonActionPerformed
 
+    /**
+     * Change the cursor to a hand cursor.
+     * 
+     * @param evt 
+     */
     private void ratioPlotOptionsJButtonMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ratioPlotOptionsJButtonMouseEntered
         setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
     }//GEN-LAST:event_ratioPlotOptionsJButtonMouseEntered
 
+    /**
+     * Change the cursor back to the default cursor.
+     *
+     * @param evt
+     */
     private void ratioPlotOptionsJButtonMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ratioPlotOptionsJButtonMouseExited
         setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_ratioPlotOptionsJButtonMouseExited
 
+    /**
+     * Show the contextual options for the ratio plots.
+     * 
+     * @param evt 
+     */
     private void ratioPlotOptionsJButtonMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ratioPlotOptionsJButtonMouseReleased
 //        sequenceCoverageJPopupMenu.show(sequenceCoverageOptionsJButton, evt.getX(), evt.getY());
     }//GEN-LAST:event_ratioPlotOptionsJButtonMouseReleased
 
+    /**
+     * Resize the components of the frame size changes.
+     * 
+     * @param evt 
+     */
     private void formComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_formComponentResized
 
         // resize the background panel
@@ -958,7 +1097,7 @@ public class OverviewPanel extends javax.swing.JPanel {
     private javax.swing.JPanel proteinsJPanel;
     private javax.swing.JLayeredPane proteinsLayeredPane;
     private javax.swing.JPanel proteinsLayeredPanel;
-    private javax.swing.JButton ratioPLotHelpJButton;
+    private javax.swing.JButton ratioPlotHelpJButton;
     private javax.swing.JButton ratioPlotOptionsJButton;
     private javax.swing.JPanel ratioPlotsInnerPanel;
     private javax.swing.JPanel ratioPlotsJPanel;
@@ -966,4 +1105,12 @@ public class OverviewPanel extends javax.swing.JPanel {
     private javax.swing.JPanel ratioPlotsTitledPanel;
     // End of variables declaration//GEN-END:variables
 
+    /**
+     * Deactivates the self updating tables.
+     */
+    public void deactivateSelfUpdatingTableModels() {
+        if (proteinTable.getModel() instanceof SelfUpdatingTableModel) {
+            ((SelfUpdatingTableModel) proteinTable.getModel()).setSelfUpdating(false);
+        }
+    }
 }

@@ -4,6 +4,7 @@ import com.compomics.software.CompomicsWrapper;
 import com.compomics.software.dialogs.JavaMemoryDialogParent;
 import com.compomics.software.dialogs.JavaSettingsDialog;
 import com.compomics.util.Util;
+import com.compomics.util.db.DerbyUtil;
 import com.compomics.util.experiment.MsExperiment;
 import com.compomics.util.experiment.biology.PTMFactory;
 import com.compomics.util.experiment.biology.Sample;
@@ -24,6 +25,7 @@ import com.compomics.util.preferences.IdFilter;
 import com.compomics.util.preferences.PTMScoringPreferences;
 import com.compomics.util.preferences.SequenceMatchingPreferences;
 import com.compomics.util.preferences.UtilitiesUserPreferences;
+import eu.isas.peptideshaker.PeptideShaker;
 import eu.isas.peptideshaker.preferences.FilterPreferences;
 import eu.isas.peptideshaker.preferences.ProjectDetails;
 import eu.isas.peptideshaker.preferences.SpectrumCountingPreferences;
@@ -130,10 +132,8 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaMemoryDialogP
      * The horizontal padding used before and after the text in the titled
      * borders. (Needed to make it look as good in Java 7 as it did in Java
      * 6...)
-     *
-     * @TODO: move to utilities?
      */
-    public static String TITLED_BORDER_HORIZONTAL_PADDING = "";
+    public static String TITLED_BORDER_HORIZONTAL_PADDING = ""; // @TODO: move to utilities?
     /**
      * the overview panel
      */
@@ -484,10 +484,10 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaMemoryDialogP
         }
         return cpsBean.getSearchParameters();
     }
-    
+
     /**
      * Returns the sequence matching preferences.
-     * 
+     *
      * @return the sequence matching preferences
      */
     public SequenceMatchingPreferences getSequenceMatchingPreferences() {
@@ -911,6 +911,9 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaMemoryDialogP
             @Override
             public void run() {
                 try {
+                    // turn off the self updating table models
+                    overviewPanel.deactivateSelfUpdatingTableModels();
+
                     closeOpenedProject();
 
                     if (progressDialog.isRunCanceled()) {
@@ -929,6 +932,9 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaMemoryDialogP
                     // hide the gui
                     finalRef.setVisible(false);
 
+                    // clear the data and database folder
+                    clearData(true);
+
                     // close the jvm
                     System.exit(0);
 
@@ -941,10 +947,86 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaMemoryDialogP
     }
 
     /**
-     * Closes the opened project
+     * Closes the opened project.
      */
     private void closeOpenedProject() {
         //@TODO: check whether the project is saved and close all connections
+    }
+
+    /**
+     * Clear the data from the previous experiment.
+     *
+     * @param clearDatabaseFolder decides if the database folder is to be
+     * cleared or not
+     */
+    public void clearData(boolean clearDatabaseFolder) {
+
+        if (cpsBean != null) {
+            cpsBean.setProjectDetails(null);
+        }
+
+        try {
+            spectrumFactory.closeFiles();
+            sequenceFactory.closeFile();
+            spectrumFactory.clearFactory();
+            sequenceFactory.clearFactory();
+        } catch (Exception e) {
+            e.printStackTrace();
+            catchException(e);
+        }
+
+        if (clearDatabaseFolder) {
+            clearDatabaseFolder();
+        }
+
+        if (cpsBean != null) {
+            cpsBean.setCpsFile(null);
+        }
+    }
+
+    /**
+     * Clears the database folder.
+     */
+    private void clearDatabaseFolder() {
+
+        boolean databaseClosed = true;
+
+        // closeFiles the database connection
+        if (getIdentification() != null) {
+
+            try {
+                getIdentification().close();
+                cpsBean.setIdentification(null);
+            } catch (SQLException e) {
+                databaseClosed = false;
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(null, "Failed to close the database.", "Database Error", JOptionPane.WARNING_MESSAGE);
+            }
+        }
+
+        // empty the matches folder
+        if (databaseClosed) {
+
+            File matchFolder = PeptideShaker.getSerializationDirectory(getJarFilePath());
+
+            if (matchFolder.exists()) {
+
+                DerbyUtil.closeConnection();
+
+                File[] tempFiles = matchFolder.listFiles();
+
+                if (tempFiles != null) {
+                    for (File currentFile : tempFiles) {
+                        Util.deleteDir(currentFile);
+                    }
+                }
+
+                if (matchFolder.listFiles() != null && matchFolder.listFiles().length > 0) {
+                    JOptionPane.showMessageDialog(null, "Failed to empty the database folder:\n" + matchFolder.getPath() + ".",
+                            "Database Cleanup Failed", JOptionPane.WARNING_MESSAGE);
+                }
+            }
+        }
     }
 
     /**
@@ -1122,16 +1204,14 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaMemoryDialogP
     }
 
     /**
-     * Closes and restarts Reporter. Does not work inside the IDE of
-     * course.
+     * Closes and restarts Reporter. Does not work inside the IDE of course.
      */
     public void restart() {
         if (this.getExtendedState() == Frame.ICONIFIED || !this.isActive()) {
             this.setExtendedState(Frame.MAXIMIZED_BOTH);
         }
-        
+
         // @TODO: ask if the user wants to save unsaved data
-        
         progressDialog = new ProgressDialogX(this,
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")),
