@@ -11,6 +11,7 @@ import eu.isas.peptideshaker.myparameters.PSParameter;
 import eu.isas.peptideshaker.preferences.SpectrumCountingPreferences.SpectralCountingMethod;
 import eu.isas.peptideshaker.utils.IdentificationFeaturesGenerator;
 import eu.isas.reporter.gui.ReporterGUI;
+import eu.isas.reporter.quantificationdetails.PeptideQuantificationDetails;
 import eu.isas.reporter.quantificationdetails.ProteinQuantificationDetails;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -19,6 +20,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.ScrollPaneConstants;
@@ -39,6 +41,8 @@ import org.jfree.chart.renderer.category.LineAndShapeRenderer;
 import org.jfree.chart.renderer.xy.StandardXYBarPainter;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.statistics.BoxAndWhiskerCategoryDataset;
+import org.jfree.data.statistics.DefaultBoxAndWhiskerCategoryDataset;
 
 /**
  * The Overview tab.
@@ -83,6 +87,10 @@ public class OverviewPanel extends javax.swing.JPanel {
      * The default line width for the line plots.
      */
     public static final float LINE_WIDTH = 4;
+    /**
+     * The maximum number of elements in a legend.
+     */
+    private int maxLegendSize = 20;
 
     /**
      * Creates a new OverviewPanel.
@@ -177,7 +185,7 @@ public class OverviewPanel extends javax.swing.JPanel {
                     if (proteinTable.getRowCount() > 0) {
                         proteinTable.setRowSelectionInterval(0, 0);
                     }
-                    
+
                     // update the ratio plot
                     updateQuantificationDataPlot();
 
@@ -253,23 +261,59 @@ public class OverviewPanel extends javax.swing.JPanel {
                 int proteinIndex = tableModel.getViewIndex(proteinTable.getSelectedRow());
 
                 if (proteinIndex != -1) {
+
                     String proteinKey = proteinKeys.get(proteinIndex);
-                    ProteinQuantificationDetails quantificationDetails = reporterGUI.getQuantificationFeaturesGenerator().getProteinMatchQuantificationDetails(proteinKey);
 
-                    DefaultCategoryDataset ratioLog2Dataset = new DefaultCategoryDataset();
-                    ArrayList<Color> barColors = new ArrayList<Color>();
+                    if (boxPlotRadioButton.isSelected()) {
 
-                    for (int i = 0; i < sampleIndexes.size(); i++) {
-                        String sampleIndex = sampleIndexes.get(i);
-                        Double ratio = quantificationDetails.getRatio(sampleIndex);
-                        if (ratio != null) {
-                            ratio = Math.log(ratio) / Math.log(2);
-                            ratioLog2Dataset.addValue(ratio, proteinKey, sampleIndex);
+                        DefaultBoxAndWhiskerCategoryDataset dataset = new DefaultBoxAndWhiskerCategoryDataset();
+                        HashMap<String, ArrayList<Double>> values = new HashMap<String, ArrayList<Double>>();
+
+                        for (String peptideKey : identification.getProteinMatch(proteinKey).getPeptideMatchesKeys()) {
+                            PeptideQuantificationDetails peptideQuantificationDetails = reporterGUI.getQuantificationFeaturesGenerator().getPeptideMatchQuantificationDetails(peptideKey);
+
+                            for (int i = 0; i < sampleIndexes.size(); i++) {
+                                String sampleIndex = sampleIndexes.get(i);
+                                Double ratio = peptideQuantificationDetails.getRatio(sampleIndex, reporterGUI.getReporterIonQuantification());
+                                if (ratio != null) {
+                                    if (ratio != 0) {
+                                        ratio = Math.log(ratio) / Math.log(2);
+                                    }
+                                    ArrayList<Double> tempValues = values.get(sampleIndex);
+                                    if (tempValues == null) {
+                                        tempValues = new ArrayList<Double>();
+                                    }
+                                    tempValues.add(ratio);
+                                    values.put(sampleIndex, tempValues);
+                                }
+                            }
                         }
-                        barColors.add(Color.red);
-                    }
 
-                    insertChart(true, ratioLog2Dataset, barColors);
+                        for (int i = 0; i < sampleIndexes.size(); i++) {
+                            String sampleIndex = sampleIndexes.get(i);
+                            dataset.add(values.get(sampleIndex), proteinKey, sampleIndex);
+                        }
+
+                        insertBoxPlots(dataset);
+
+                    } else {
+
+                        ProteinQuantificationDetails quantificationDetails = reporterGUI.getQuantificationFeaturesGenerator().getProteinMatchQuantificationDetails(proteinKey);
+                        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+
+                        for (int i = 0; i < sampleIndexes.size(); i++) {
+                            String sampleIndex = sampleIndexes.get(i);
+                            Double ratio = quantificationDetails.getRatio(sampleIndex);
+                            if (ratio != null) {
+                                if (ratio != 0) {
+                                    ratio = Math.log(ratio) / Math.log(2);
+                                }
+                                dataset.addValue(ratio, proteinKey, sampleIndex);
+                            }
+                        }
+
+                        insertBarOrLineChart(dataset);
+                    }
 
                     // update the border title
                     ((TitledBorder) ratioPlotsTitledPanel.getBorder()).setTitle("Quantification Data (" + proteinKey + ")");
@@ -278,33 +322,76 @@ public class OverviewPanel extends javax.swing.JPanel {
             } else if (proteinTable.getSelectedRows().length > 1) {
 
                 int[] selectedRows = proteinTable.getSelectedRows();
-                
-                DefaultCategoryDataset ratioLog2Dataset = new DefaultCategoryDataset();
-                ArrayList<Color> lineColors = new ArrayList<Color>();
 
-                for (int i = 0; i < selectedRows.length; i++) {
+                if (boxPlotRadioButton.isSelected()) {
 
-                    SelfUpdatingTableModel tableModel = (SelfUpdatingTableModel) proteinTable.getModel();
-                    int proteinIndex = tableModel.getViewIndex(selectedRows[i]);
+                    DefaultBoxAndWhiskerCategoryDataset dataset = new DefaultBoxAndWhiskerCategoryDataset();
 
-                    if (proteinIndex != -1) {
+                    for (int i = 0; i < selectedRows.length; i++) {
 
+                        SelfUpdatingTableModel tableModel = (SelfUpdatingTableModel) proteinTable.getModel();
+                        int proteinIndex = tableModel.getViewIndex(selectedRows[i]);
                         String proteinKey = proteinKeys.get(proteinIndex);
-                        ProteinQuantificationDetails quantificationDetails = reporterGUI.getQuantificationFeaturesGenerator().getProteinMatchQuantificationDetails(proteinKey);
+
+                        HashMap<String, ArrayList<Double>> values = new HashMap<String, ArrayList<Double>>();
+
+                        for (String peptideKey : identification.getProteinMatch(proteinKey).getPeptideMatchesKeys()) {
+                            PeptideQuantificationDetails peptideQuantificationDetails = reporterGUI.getQuantificationFeaturesGenerator().getPeptideMatchQuantificationDetails(peptideKey);
+
+                            for (int j = 0; j < sampleIndexes.size(); j++) {
+                                String sampleIndex = sampleIndexes.get(j);
+                                Double ratio = peptideQuantificationDetails.getRatio(sampleIndex, reporterGUI.getReporterIonQuantification());
+                                if (ratio != null) {
+                                    if (ratio != 0) {
+                                        ratio = Math.log(ratio) / Math.log(2);
+                                    }
+                                    ArrayList<Double> tempValues = values.get(sampleIndex);
+                                    if (tempValues == null) {
+                                        tempValues = new ArrayList<Double>();
+                                    }
+                                    tempValues.add(ratio);
+                                    values.put(sampleIndex, tempValues);
+                                }
+                            }
+                        }
 
                         for (int j = 0; j < sampleIndexes.size(); j++) {
                             String sampleIndex = sampleIndexes.get(j);
-                            Double ratio = quantificationDetails.getRatio(sampleIndex);
-                            if (ratio != null) {
-                                ratio = Math.log(ratio) / Math.log(2);
-                                ratioLog2Dataset.addValue(ratio, proteinKey, sampleIndex);
-                            }
-                            lineColors.add(Color.RED);
+                            dataset.add(values.get(sampleIndex), proteinKey, sampleIndex);
                         }
                     }
+
+                    insertBoxPlots(dataset);
+
+                } else {
+
+                    DefaultCategoryDataset ratioLog2Dataset = new DefaultCategoryDataset();
+
+                    for (int i = 0; i < selectedRows.length; i++) {
+
+                        SelfUpdatingTableModel tableModel = (SelfUpdatingTableModel) proteinTable.getModel();
+                        int proteinIndex = tableModel.getViewIndex(selectedRows[i]);
+
+                        if (proteinIndex != -1) {
+
+                            String proteinKey = proteinKeys.get(proteinIndex);
+                            ProteinQuantificationDetails quantificationDetails = reporterGUI.getQuantificationFeaturesGenerator().getProteinMatchQuantificationDetails(proteinKey);
+
+                            for (int j = 0; j < sampleIndexes.size(); j++) {
+                                String sampleIndex = sampleIndexes.get(j);
+                                Double ratio = quantificationDetails.getRatio(sampleIndex);
+                                if (ratio != null) {
+                                    if (ratio != 0) {
+                                        ratio = Math.log(ratio) / Math.log(2);
+                                    }
+                                    ratioLog2Dataset.addValue(ratio, proteinKey, sampleIndex);
+                                }
+                            }
+                        }
+                    }
+
+                    insertBarOrLineChart(ratioLog2Dataset);
                 }
-                
-                insertChart(false, ratioLog2Dataset, lineColors);
 
                 // update the border title
                 ((TitledBorder) ratioPlotsTitledPanel.getBorder()).setTitle("Quantification Data");
@@ -313,7 +400,7 @@ public class OverviewPanel extends javax.swing.JPanel {
                 // no rows selected
                 ratioPlotsInnerPanel.removeAll();
                 ratioPlotsInnerPanel.validate();
-                
+
                 // update the border title
                 ((TitledBorder) ratioPlotsTitledPanel.getBorder()).setTitle("Quantification Data");
                 ratioPlotsTitledPanel.repaint();
@@ -324,22 +411,22 @@ public class OverviewPanel extends javax.swing.JPanel {
     }
 
     /**
-     * Insert the chart.
+     * Insert the bar or line chart.
      *
      * @param dataset the dataset
      */
-    private void insertChart(boolean barChart, DefaultCategoryDataset dataset, ArrayList<Color> colors) {
+    private void insertBarOrLineChart(DefaultCategoryDataset dataset) {
 
         JFreeChart chart;
 
-        if (barChart) {
+        if (barChartRadioButton.isSelected()) {
             chart = ChartFactory.createBarChart(
                     null, // chart title
                     null, // domain axis label
                     "log2", // range axis label
                     dataset, // data
                     PlotOrientation.VERTICAL, // the plot orientation
-                    false, // include legend
+                    dataset.getRowCount() > 1 && dataset.getRowCount() <= maxLegendSize, // include legend
                     true, // tooltips
                     false); // urls
         } else {
@@ -349,7 +436,7 @@ public class OverviewPanel extends javax.swing.JPanel {
                     "log2", // range axis label
                     dataset, // data
                     PlotOrientation.VERTICAL, // the plot orientation
-                    false, // include legend
+                    dataset.getRowCount() > 1 && dataset.getRowCount() <= maxLegendSize, // include legend
                     true, // tooltips
                     false); // urls
         }
@@ -361,7 +448,7 @@ public class OverviewPanel extends javax.swing.JPanel {
 
         // set the bar renderer
         CategoryItemRenderer renderer;
-        if (!barChart) {
+        if (lineChartRadioButton.isSelected()) {
             renderer = new LineAndShapeRenderer(true, false);
             renderer.setBaseToolTipGenerator(new StandardCategoryToolTipGenerator());
             for (int i = 0; i < dataset.getRowCount(); i++) {
@@ -370,6 +457,7 @@ public class OverviewPanel extends javax.swing.JPanel {
             }
         } else {
             renderer = new BarRenderer3D(0, 0);
+            renderer.setBaseToolTipGenerator(new StandardCategoryToolTipGenerator());
             //renderer = new BarChartColorRenderer(colors);
         }
         plot.setRenderer(renderer);
@@ -382,7 +470,60 @@ public class OverviewPanel extends javax.swing.JPanel {
         double lowerBound = rangeAxis.getLowerBound();
         double upperBound = rangeAxis.getUpperBound();
 
-        // make sure that the ratio bar chart has a symmetrical y-axis
+        // make sure that the chart has a symmetrical y-axis
+        if (Math.abs(lowerBound) > Math.abs(upperBound)) {
+            rangeAxis.setUpperBound(Math.abs(lowerBound));
+        } else {
+            rangeAxis.setLowerBound(-Math.abs(upperBound));
+        }
+
+        // add a second axis on the right, identical to the left one
+        ValueAxis rangeAxis2 = chart.getCategoryPlot().getRangeAxis();
+        plot.setRangeAxis(1, rangeAxis2);
+
+        ChartPanel chartPanel = new ChartPanel(chart);
+        ratioPlotsInnerPanel.removeAll();
+        ratioPlotsInnerPanel.add(chartPanel);
+        ratioPlotsInnerPanel.validate();
+    }
+
+    /**
+     * Insert the box plot.
+     *
+     * @param dataset
+     */
+    private void insertBoxPlots(BoxAndWhiskerCategoryDataset dataset) {
+
+        JFreeChart chart = ChartFactory.createBoxAndWhiskerChart(null, null, "log2", dataset, dataset.getRowCount() > 1 && dataset.getRowCount() <= maxLegendSize);
+
+        // set the background and gridline colors
+        CategoryPlot plot = chart.getCategoryPlot();
+        plot.setBackgroundPaint(Color.WHITE);
+        plot.setRangeGridlinePaint(Color.BLACK);
+
+        // set the bar renderer
+//        CategoryItemRenderer renderer;
+//        if (!barChart) {
+//            renderer = new LineAndShapeRenderer(true, false);
+//            renderer.setBaseToolTipGenerator(new StandardCategoryToolTipGenerator());
+//            for (int i = 0; i < dataset.getRowCount(); i++) {
+//                renderer.setSeriesStroke(i, new BasicStroke(LINE_WIDTH, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+//                //renderer.setSeriesPaint(i, colors.get(i));
+//            }
+//        } else {
+//            renderer = new BarRenderer3D(0, 0);
+//            //renderer = new BarChartColorRenderer(colors);
+//        }
+//        plot.setRenderer(renderer);
+        // change the margin at the top and bottom of the range axis
+        final ValueAxis rangeAxis = plot.getRangeAxis();
+        rangeAxis.setLowerMargin(0.15);
+        rangeAxis.setUpperMargin(0.15);
+
+        double lowerBound = rangeAxis.getLowerBound();
+        double upperBound = rangeAxis.getUpperBound();
+
+        // make sure that the chart has a symmetrical y-axis
         if (Math.abs(lowerBound) > Math.abs(upperBound)) {
             rangeAxis.setUpperBound(Math.abs(lowerBound));
         } else {
@@ -450,6 +591,7 @@ public class OverviewPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        chartTypeButtonGroup = new javax.swing.ButtonGroup();
         backgroundLayeredPane = new javax.swing.JLayeredPane();
         overviewJPanel = new javax.swing.JPanel();
         overviewJSplitPane = new javax.swing.JSplitPane();
@@ -476,13 +618,17 @@ public class OverviewPanel extends javax.swing.JPanel {
         contextMenuProteinsBackgroundPanel = new javax.swing.JPanel();
         ratioPlotsJPanel = new javax.swing.JPanel();
         ratioPlotsLayeredPane = new javax.swing.JLayeredPane();
-        ratioPlotsTitledPanel = new javax.swing.JPanel();
-        ratioPlotsInnerPanel = new javax.swing.JPanel();
         ratioPlotHelpJButton = new javax.swing.JButton();
         exportRatioPlotContextJButton = new javax.swing.JButton();
         hideRatioPlotJButton = new javax.swing.JButton();
         ratioPlotOptionsJButton = new javax.swing.JButton();
         contextMenuRatioPlotBackgroundPanel = new javax.swing.JPanel();
+        plotTypePanel = new javax.swing.JPanel();
+        barChartRadioButton = new javax.swing.JRadioButton();
+        lineChartRadioButton = new javax.swing.JRadioButton();
+        boxPlotRadioButton = new javax.swing.JRadioButton();
+        ratioPlotsTitledPanel = new javax.swing.JPanel();
+        ratioPlotsInnerPanel = new javax.swing.JPanel();
 
         setBackground(new java.awt.Color(255, 255, 255));
         addComponentListener(new java.awt.event.ComponentAdapter() {
@@ -659,33 +805,6 @@ public class OverviewPanel extends javax.swing.JPanel {
 
         ratioPlotsJPanel.setOpaque(false);
 
-        ratioPlotsTitledPanel.setBackground(new java.awt.Color(255, 255, 255));
-        ratioPlotsTitledPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Quantification Data"));
-        ratioPlotsTitledPanel.setOpaque(false);
-
-        ratioPlotsInnerPanel.setBackground(new java.awt.Color(255, 255, 255));
-        ratioPlotsInnerPanel.setLayout(new javax.swing.BoxLayout(ratioPlotsInnerPanel, javax.swing.BoxLayout.LINE_AXIS));
-
-        javax.swing.GroupLayout ratioPlotsTitledPanelLayout = new javax.swing.GroupLayout(ratioPlotsTitledPanel);
-        ratioPlotsTitledPanel.setLayout(ratioPlotsTitledPanelLayout);
-        ratioPlotsTitledPanelLayout.setHorizontalGroup(
-            ratioPlotsTitledPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(ratioPlotsTitledPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(ratioPlotsInnerPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 918, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        ratioPlotsTitledPanelLayout.setVerticalGroup(
-            ratioPlotsTitledPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(ratioPlotsTitledPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(ratioPlotsInnerPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE)
-                .addGap(7, 7, 7))
-        );
-
-        ratioPlotsLayeredPane.add(ratioPlotsTitledPanel);
-        ratioPlotsTitledPanel.setBounds(0, 0, 950, 460);
-
         ratioPlotHelpJButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/help_no_frame_grey.png"))); // NOI18N
         ratioPlotHelpJButton.setToolTipText("Help");
         ratioPlotHelpJButton.setBorder(null);
@@ -794,6 +913,94 @@ public class OverviewPanel extends javax.swing.JPanel {
         ratioPlotsLayeredPane.add(contextMenuRatioPlotBackgroundPanel);
         contextMenuRatioPlotBackgroundPanel.setBounds(890, 0, 50, 19);
         ratioPlotsLayeredPane.setLayer(contextMenuRatioPlotBackgroundPanel, javax.swing.JLayeredPane.POPUP_LAYER);
+
+        plotTypePanel.setOpaque(false);
+
+        chartTypeButtonGroup.add(barChartRadioButton);
+        barChartRadioButton.setSelected(true);
+        barChartRadioButton.setText("Bar Chart");
+        barChartRadioButton.setIconTextGap(10);
+        barChartRadioButton.setOpaque(false);
+        barChartRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                barChartRadioButtonActionPerformed(evt);
+            }
+        });
+
+        chartTypeButtonGroup.add(lineChartRadioButton);
+        lineChartRadioButton.setText("Line Chart");
+        lineChartRadioButton.setIconTextGap(10);
+        lineChartRadioButton.setOpaque(false);
+        lineChartRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                lineChartRadioButtonActionPerformed(evt);
+            }
+        });
+
+        chartTypeButtonGroup.add(boxPlotRadioButton);
+        boxPlotRadioButton.setText("Box Plot");
+        boxPlotRadioButton.setIconTextGap(10);
+        boxPlotRadioButton.setOpaque(false);
+        boxPlotRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                boxPlotRadioButtonActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout plotTypePanelLayout = new javax.swing.GroupLayout(plotTypePanel);
+        plotTypePanel.setLayout(plotTypePanelLayout);
+        plotTypePanelLayout.setHorizontalGroup(
+            plotTypePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(plotTypePanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(barChartRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 81, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(lineChartRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(boxPlotRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 81, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        plotTypePanelLayout.setVerticalGroup(
+            plotTypePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(plotTypePanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(plotTypePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(barChartRadioButton)
+                    .addComponent(lineChartRadioButton)
+                    .addComponent(boxPlotRadioButton))
+                .addContainerGap(9, Short.MAX_VALUE))
+        );
+
+        ratioPlotsLayeredPane.add(plotTypePanel);
+        plotTypePanel.setBounds(670, 400, 259, 39);
+        ratioPlotsLayeredPane.setLayer(plotTypePanel, javax.swing.JLayeredPane.POPUP_LAYER);
+
+        ratioPlotsTitledPanel.setBackground(new java.awt.Color(255, 255, 255));
+        ratioPlotsTitledPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Quantification Data"));
+        ratioPlotsTitledPanel.setOpaque(false);
+
+        ratioPlotsInnerPanel.setBackground(new java.awt.Color(255, 255, 255));
+        ratioPlotsInnerPanel.setLayout(new javax.swing.BoxLayout(ratioPlotsInnerPanel, javax.swing.BoxLayout.LINE_AXIS));
+
+        javax.swing.GroupLayout ratioPlotsTitledPanelLayout = new javax.swing.GroupLayout(ratioPlotsTitledPanel);
+        ratioPlotsTitledPanel.setLayout(ratioPlotsTitledPanelLayout);
+        ratioPlotsTitledPanelLayout.setHorizontalGroup(
+            ratioPlotsTitledPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(ratioPlotsTitledPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(ratioPlotsInnerPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 918, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        ratioPlotsTitledPanelLayout.setVerticalGroup(
+            ratioPlotsTitledPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(ratioPlotsTitledPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(ratioPlotsInnerPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE)
+                .addGap(7, 7, 7))
+        );
+
+        ratioPlotsLayeredPane.add(ratioPlotsTitledPanel);
+        ratioPlotsTitledPanel.setBounds(0, 0, 950, 460);
 
         javax.swing.GroupLayout ratioPlotsJPanelLayout = new javax.swing.GroupLayout(ratioPlotsJPanel);
         ratioPlotsJPanel.setLayout(ratioPlotsJPanelLayout);
@@ -1250,25 +1457,63 @@ public class OverviewPanel extends javax.swing.JPanel {
                         ratioPlotsLayeredPane.getComponent(4).getWidth(),
                         ratioPlotsLayeredPane.getComponent(4).getHeight());
 
+                // move the chart option menu
+                ratioPlotsLayeredPane.getComponent(5).setBounds(
+                        ratioPlotsLayeredPane.getWidth() - ratioPlotsLayeredPane.getComponent(5).getWidth() - 20,
+                        ratioPlotsLayeredPane.getHeight() - ratioPlotsLayeredPane.getComponent(5).getHeight() + 10,
+                        ratioPlotsLayeredPane.getComponent(5).getWidth() + 10,
+                        ratioPlotsLayeredPane.getComponent(5).getHeight());
+
                 // resize the plot area
-                ratioPlotsLayeredPane.getComponent(5).setBounds(0, 0, ratioPlotsLayeredPane.getWidth(), ratioPlotsLayeredPane.getHeight());
+                ratioPlotsLayeredPane.getComponent(6).setBounds(0, 0, ratioPlotsLayeredPane.getWidth(), ratioPlotsLayeredPane.getHeight() - ratioPlotsLayeredPane.getComponent(5).getHeight() + 10);
                 ratioPlotsLayeredPane.revalidate();
                 ratioPlotsLayeredPane.repaint();
             }
         });
-
     }//GEN-LAST:event_formComponentResized
+
+    /**
+     * Update the chart.
+     *
+     * @param evt
+     */
+    private void barChartRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_barChartRadioButtonActionPerformed
+        updateQuantificationDataPlot();
+    }//GEN-LAST:event_barChartRadioButtonActionPerformed
+
+    /**
+     * Update the chart.
+     *
+     * @param evt
+     */
+    private void lineChartRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lineChartRadioButtonActionPerformed
+        updateQuantificationDataPlot();
+    }//GEN-LAST:event_lineChartRadioButtonActionPerformed
+
+    /**
+     * Update the chart.
+     *
+     * @param evt
+     */
+    private void boxPlotRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_boxPlotRadioButtonActionPerformed
+        updateQuantificationDataPlot();
+    }//GEN-LAST:event_boxPlotRadioButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLayeredPane backgroundLayeredPane;
+    private javax.swing.JRadioButton barChartRadioButton;
+    private javax.swing.JRadioButton boxPlotRadioButton;
+    private javax.swing.ButtonGroup chartTypeButtonGroup;
     private javax.swing.JPanel contextMenuProteinsBackgroundPanel;
     private javax.swing.JPanel contextMenuRatioPlotBackgroundPanel;
     private javax.swing.JButton exportProteinsJButton;
     private javax.swing.JButton exportRatioPlotContextJButton;
     private javax.swing.JButton hideProteinsJButton;
     private javax.swing.JButton hideRatioPlotJButton;
+    private javax.swing.JRadioButton lineChartRadioButton;
     private javax.swing.JPanel overviewJPanel;
     private javax.swing.JSplitPane overviewJSplitPane;
+    private javax.swing.JPanel plotTypePanel;
     private javax.swing.JScrollPane proteinScrollPane;
     private javax.swing.JTable proteinTable;
     private javax.swing.JButton proteinsHelpJButton;
