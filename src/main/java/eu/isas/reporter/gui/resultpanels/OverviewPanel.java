@@ -32,10 +32,12 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.labels.BoxAndWhiskerToolTipGenerator;
 import org.jfree.chart.labels.StandardCategoryToolTipGenerator;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.BarRenderer3D;
+import org.jfree.chart.renderer.category.BoxAndWhiskerRenderer;
 import org.jfree.chart.renderer.category.CategoryItemRenderer;
 import org.jfree.chart.renderer.category.LineAndShapeRenderer;
 import org.jfree.chart.renderer.xy.StandardXYBarPainter;
@@ -446,7 +448,7 @@ public class OverviewPanel extends javax.swing.JPanel {
         plot.setBackgroundPaint(Color.WHITE);
         plot.setRangeGridlinePaint(Color.BLACK);
 
-        // set the bar renderer
+        // set the renderer
         CategoryItemRenderer renderer;
         if (lineChartRadioButton.isSelected()) {
             renderer = new LineAndShapeRenderer(true, false);
@@ -501,20 +503,10 @@ public class OverviewPanel extends javax.swing.JPanel {
         plot.setBackgroundPaint(Color.WHITE);
         plot.setRangeGridlinePaint(Color.BLACK);
 
-        // set the bar renderer
-//        CategoryItemRenderer renderer;
-//        if (!barChart) {
-//            renderer = new LineAndShapeRenderer(true, false);
-//            renderer.setBaseToolTipGenerator(new StandardCategoryToolTipGenerator());
-//            for (int i = 0; i < dataset.getRowCount(); i++) {
-//                renderer.setSeriesStroke(i, new BasicStroke(LINE_WIDTH, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-//                //renderer.setSeriesPaint(i, colors.get(i));
-//            }
-//        } else {
-//            renderer = new BarRenderer3D(0, 0);
-//            //renderer = new BarChartColorRenderer(colors);
-//        }
-//        plot.setRenderer(renderer);
+        // set the renderer
+        BoxAndWhiskerRenderer boxPlotRenderer = new BoxAndWhiskerRenderer();
+        boxPlotRenderer.setBaseToolTipGenerator(new BoxAndWhiskerToolTipGenerator());
+
         // change the margin at the top and bottom of the range axis
         final ValueAxis rangeAxis = plot.getRangeAxis();
         rangeAxis.setLowerMargin(0.15);
