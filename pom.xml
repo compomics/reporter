@@ -8,6 +8,7 @@
     <version>1.5.0-beta</version>
     <name>Reporter</name>
     <url>http://reporter.googlecode.com</url>
+    <description>Protein quantification based on reporter ions</description>
 
     <!-- Licence -->
     <licenses>
@@ -306,7 +307,7 @@
         <dependency>
             <groupId>com.compomics</groupId>
             <artifactId>utilities</artifactId>
-            <version>3.40.0</version>
+            <version>3.42.0</version>
             <exclusions>
                 <exclusion>
                     <artifactId>commons-math</artifactId>
