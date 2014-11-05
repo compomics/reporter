@@ -161,7 +161,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaMemoryDialogP
         try {
             utilitiesUserPreferences = UtilitiesUserPreferences.loadUserPreferences();
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "An error occured when reading the user preferences.", "File Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "An error occurred when reading the user preferences.", "File Error", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }
 
@@ -219,13 +219,13 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaMemoryDialogP
         try {
             ptmFactory.importModifications(new File(path, Reporter.getDefaultModificationFile()), false);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "An error (" + e.getMessage() + ") occured when trying to load the modifications from " + Reporter.getDefaultModificationFile() + ".",
+            JOptionPane.showMessageDialog(null, "An error (" + e.getMessage() + ") occurred when trying to load the modifications from " + Reporter.getDefaultModificationFile() + ".",
                     "Configuration import Error", JOptionPane.ERROR_MESSAGE);
         }
         try {
             ptmFactory.importModifications(new File(path, Reporter.getUserModificationFile()), true);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "An error (" + e.getMessage() + ") occured when trying to load the modifications from " + Reporter.getUserModificationFile() + ".",
+            JOptionPane.showMessageDialog(null, "An error (" + e.getMessage() + ") occurred when trying to load the modifications from " + Reporter.getUserModificationFile() + ".",
                     "Configuration import Error", JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -1166,7 +1166,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaMemoryDialogP
             }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(
-                    null, "An error occured when trying to create the Reporter log file.",
+                    null, "An error occurred when trying to create the Reporter log file.",
                     "Error Creating Log File", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }

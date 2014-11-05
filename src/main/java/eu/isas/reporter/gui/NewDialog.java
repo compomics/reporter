@@ -883,7 +883,7 @@ public class NewDialog extends javax.swing.JDialog {
                         "Methods file not found", JOptionPane.WARNING_MESSAGE);
             } catch (XmlPullParserException e) {
                 JOptionPane.showMessageDialog(null,
-                        "An error occured while parsing " + METHODS_FILE + " at line " + e.getLineNumber() + ".",
+                        "An error occurred while parsing " + METHODS_FILE + " at line " + e.getLineNumber() + ".",
                         "Parsing Error", JOptionPane.WARNING_MESSAGE);
             }
         }
@@ -1349,7 +1349,7 @@ public class NewDialog extends javax.swing.JDialog {
                     } catch (SQLException e) {
                         e.printStackTrace();
                         JOptionPane.showMessageDialog(NewDialog.this,
-                                "An error occured while reading:\n" + cpsBean.getCpsFile() + ".\n\n"
+                                "An error occurred while reading:\n" + cpsBean.getCpsFile() + ".\n\n"
                                 + "It looks like another instance of PeptideShaker is still connected to the file.\n"
                                 + "Please close all instances of PeptideShaker and try again.",
                                 "File Input Error", JOptionPane.ERROR_MESSAGE);
@@ -1406,7 +1406,7 @@ public class NewDialog extends javax.swing.JDialog {
 
                     if (!fileFound) {
                         JOptionPane.showMessageDialog(NewDialog.this,
-                                "An error occured while reading:\n" + getSearchParameters().getFastaFile() + "."
+                                "An error occurred while reading:\n" + getSearchParameters().getFastaFile() + "."
                                 + "\n\nPlease select the file manually.",
                                 "File Input Error", JOptionPane.ERROR_MESSAGE);
                     }
@@ -1464,14 +1464,14 @@ public class NewDialog extends javax.swing.JDialog {
                 } catch (EOFException e) {
                     progressDialog.setRunFinished();
                     JOptionPane.showMessageDialog(NewDialog.this,
-                            "An error occured while reading:\n" + cpsBean.getCpsFile() + ".\n\n"
+                            "An error occurred while reading:\n" + cpsBean.getCpsFile() + ".\n\n"
                             + "The file is corrupted and cannot be opened anymore.",
                             "File Input Error", JOptionPane.ERROR_MESSAGE);
                     e.printStackTrace();
                 } catch (Exception e) {
                     progressDialog.setRunFinished();
                     JOptionPane.showMessageDialog(NewDialog.this,
-                            "An error occured while reading:\n" + cpsBean.getCpsFile() + ".\n\n"
+                            "An error occurred while reading:\n" + cpsBean.getCpsFile() + ".\n\n"
                             + "Please verify that the PeptideShaker version used to create\n"
                             + "the file is compatible with your version of Reporter.",
                             "File Input Error", JOptionPane.ERROR_MESSAGE);
@@ -1640,7 +1640,7 @@ public class NewDialog extends javax.swing.JDialog {
                 importMethodsError();
             } catch (XmlPullParserException e) {
                 JOptionPane.showMessageDialog(this,
-                        "An error occured while parsing " + METHODS_FILE + " at line " + e.getLineNumber() + ".",
+                        "An error occurred while parsing " + METHODS_FILE + " at line " + e.getLineNumber() + ".",
                         "Parsing error", JOptionPane.WARNING_MESSAGE);
                 importMethodsError();
             }
