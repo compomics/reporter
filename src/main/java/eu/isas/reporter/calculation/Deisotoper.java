@@ -24,7 +24,7 @@ public class Deisotoper {
      */
     private HashMap<String, CorrectionMatrix> correctionMatrices;
     /**
-     * the reporter method used.
+     * The reporter method used.
      */
     private ReporterMethod method;
 
@@ -116,7 +116,7 @@ public class Deisotoper {
      * @param spectrum the spectrum to search the isotopic intensities in
      * @param mzTolerance the MS2 m/z tolerance
      *
-     * @return a map of the deisotoped intensities (ion index -> intensity)
+     * @return a map of the deisotoped intensities (ion index &gt; intensity)
      */
     public HashMap<String, Double> deisotope(HashMap<String, IonMatch> ionMatches, Spectrum spectrum, double mzTolerance) {
 
