@@ -133,7 +133,7 @@
                         <manifest>
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                             <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-                            <mainClass>eu.isas.reporter.ReporterWrapper</mainClass>
+                            <mainClass>eu.isas.reporter.ReporterZipFileChecker</mainClass>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib</classpathPrefix>
                         </manifest>
