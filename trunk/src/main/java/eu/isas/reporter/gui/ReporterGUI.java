@@ -1246,7 +1246,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaMemoryDialogP
                 ReporterGUI.this.dispose();
 
                 // @TODO: pass the current project to the new instance of Reporter.
-                new ReporterWrapper();
+                new ReporterWrapper(null);
                 System.exit(0); // have to close the current java process (as a new one is started on the line above)
             }
         }.start();

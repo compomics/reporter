@@ -15,36 +15,46 @@ public class ReporterWrapper extends CompomicsWrapper {
     /**
      * Starts the launcher by calling the launch method. Use this as the main
      * class in the jar file.
+     *
+     * @param args the arguments to pass to the tool
      */
-    public ReporterWrapper() {
+    public ReporterWrapper(String[] args) {
 
         // get the version number set in the pom file
         String jarFileName = "Reporter-" + new Properties().getVersion() + ".jar";
-        String path = this.getClass().getResource("ReporterWrapper.class").getPath();
-        // remove starting 'file:' tag if there
-        if (path.startsWith("file:")) {
-            path = path.substring("file:".length(), path.indexOf(jarFileName));
-        } else {
-            path = path.substring(0, path.indexOf(jarFileName));
-        }
-        path = path.replace("%20", " ");
-        path = path.replace("%5b", "[");
-        path = path.replace("%5d", "]");
+        String path = getJarFilePath();
         File jarFile = new File(path, jarFileName);
+
         // get the splash 
         String splash = "reporter-splash.png";
         String mainClass = "eu.isas.reporter.gui.ReporterGUI";
 
-        launchTool("Reporter", jarFile, splash, mainClass);
+        // set path for utilities preferences
+        try {
+            //setPathConfiguration(); // @TODO: implement..?
+        } catch (Exception e) {
+            System.out.println("Impossible to load path configuration, default will be used.");
+        }
+
+        launchTool("Reporter", jarFile, splash, mainClass, args);
+    }
+
+    /**
+     * Returns the path to the jar file.
+     *
+     * @return the path to the jar file
+     */
+    public String getJarFilePath() {
+        return CompomicsWrapper.getJarFilePath(this.getClass().getResource("ReporterWrapper.class").getPath(), "Reporter");
     }
 
     /**
      * Starts the launcher by calling the launch method. Use this as the main
      * class in the jar file.
      *
-     * @param args
+     * @param args the command line arguments
      */
     public static void main(String[] args) {
-        new ReporterWrapper();
+        new ReporterWrapper(args);
     }
 }
