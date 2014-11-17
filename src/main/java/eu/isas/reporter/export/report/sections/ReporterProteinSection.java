@@ -15,7 +15,6 @@ import eu.isas.peptideshaker.export.exportfeatures.PsIdentificationAlgorithmMatc
 import eu.isas.peptideshaker.export.exportfeatures.PsPeptideFeature;
 import eu.isas.peptideshaker.export.exportfeatures.PsProteinFeature;
 import eu.isas.peptideshaker.export.exportfeatures.PsPsmFeature;
-import eu.isas.peptideshaker.export.sections.PsPeptideSection;
 import eu.isas.peptideshaker.export.sections.PsProteinSection;
 import eu.isas.peptideshaker.myparameters.PSParameter;
 import eu.isas.peptideshaker.utils.IdentificationFeaturesGenerator;
@@ -52,7 +51,7 @@ public class ReporterProteinSection {
     /**
      * The peptide subsection if any.
      */
-    private PsPeptideSection peptideSection = null;
+    private ReporterPeptideSection peptideSection = null;
     /**
      * Boolean indicating whether the line shall be indexed.
      */
@@ -99,7 +98,7 @@ public class ReporterProteinSection {
             }
         }
         if (!peptideFeatures.isEmpty()) {
-            peptideSection = new PsPeptideSection(peptideFeatures, indexes, header, writer);
+            peptideSection = new ReporterPeptideSection(peptideFeatures, indexes, header, writer);
         }
         this.indexes = indexes;
         this.header = header;
@@ -248,7 +247,11 @@ public class ReporterProteinSection {
 
                     writer.newLine();
                     if (peptideSection != null) {
-                        peptideSection.writeSection(identification, identificationFeaturesGenerator, searchParameters, annotationPreferences, sequenceMatchingPreferences, proteinMatch.getPeptideMatchesKeys(), nSurroundingAas, line + ".", validatedOnly, decoys, null);
+                        writer.increaseDepth();
+                        peptideSection.writeSection(identification, identificationFeaturesGenerator, quantificationFeaturesGenerator, reporterIonQuantification, 
+                                searchParameters, annotationPreferences, sequenceMatchingPreferences, proteinMatch.getPeptideMatchesKeys(), nSurroundingAas, 
+                                line + ".", validatedOnly, decoys, null);
+                        writer.decreseDepth();
                     }
                     line++;
                 }
