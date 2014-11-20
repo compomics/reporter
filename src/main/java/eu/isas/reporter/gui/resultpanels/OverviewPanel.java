@@ -28,6 +28,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
+import no.uib.jsparklines.renderers.JSparklinesArrayListBarChartTableCellRenderer;
+import no.uib.jsparklines.renderers.JSparklinesBarChartTableCellRenderer;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -224,7 +226,8 @@ public class OverviewPanel extends javax.swing.JPanel {
                     ((TitledBorder) proteinsLayeredPanel.getBorder()).setTitle(title);
                     proteinsLayeredPanel.repaint();
 
-                    // updateProteinTableCellRenderers();
+                    updateProteinTableCellRenderers();
+
                     // enable the contextual export options
                     exportProteinsJButton.setEnabled(true);
 
@@ -274,8 +277,7 @@ public class OverviewPanel extends javax.swing.JPanel {
                         for (String peptideKey : identification.getProteinMatch(proteinKey).getPeptideMatchesKeys()) {
                             PeptideQuantificationDetails peptideQuantificationDetails = reporterGUI.getQuantificationFeaturesGenerator().getPeptideMatchQuantificationDetails(peptideKey);
 
-                            for (int i = 0; i < sampleIndexes.size(); i++) {
-                                String sampleIndex = sampleIndexes.get(i);
+                            for (String sampleIndex : sampleIndexes) {
                                 Double ratio = peptideQuantificationDetails.getRatio(sampleIndex, reporterGUI.getReporterIonQuantification());
                                 if (ratio != null) {
                                     if (ratio != 0) {
@@ -291,8 +293,7 @@ public class OverviewPanel extends javax.swing.JPanel {
                             }
                         }
 
-                        for (int i = 0; i < sampleIndexes.size(); i++) {
-                            String sampleIndex = sampleIndexes.get(i);
+                        for (String sampleIndex : sampleIndexes) {
                             dataset.add(values.get(sampleIndex), proteinKey, sampleIndex);
                         }
 
@@ -303,8 +304,7 @@ public class OverviewPanel extends javax.swing.JPanel {
                         ProteinQuantificationDetails quantificationDetails = reporterGUI.getQuantificationFeaturesGenerator().getProteinMatchQuantificationDetails(proteinKey);
                         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 
-                        for (int i = 0; i < sampleIndexes.size(); i++) {
-                            String sampleIndex = sampleIndexes.get(i);
+                        for (String sampleIndex : sampleIndexes) {
                             Double ratio = quantificationDetails.getRatio(sampleIndex);
                             if (ratio != null) {
                                 if (ratio != 0) {
@@ -340,8 +340,7 @@ public class OverviewPanel extends javax.swing.JPanel {
                         for (String peptideKey : identification.getProteinMatch(proteinKey).getPeptideMatchesKeys()) {
                             PeptideQuantificationDetails peptideQuantificationDetails = reporterGUI.getQuantificationFeaturesGenerator().getPeptideMatchQuantificationDetails(peptideKey);
 
-                            for (int j = 0; j < sampleIndexes.size(); j++) {
-                                String sampleIndex = sampleIndexes.get(j);
+                            for (String sampleIndex : sampleIndexes) {
                                 Double ratio = peptideQuantificationDetails.getRatio(sampleIndex, reporterGUI.getReporterIonQuantification());
                                 if (ratio != null) {
                                     if (ratio != 0) {
@@ -357,8 +356,7 @@ public class OverviewPanel extends javax.swing.JPanel {
                             }
                         }
 
-                        for (int j = 0; j < sampleIndexes.size(); j++) {
-                            String sampleIndex = sampleIndexes.get(j);
+                        for (String sampleIndex : sampleIndexes) {
                             dataset.add(values.get(sampleIndex), proteinKey, sampleIndex);
                         }
                     }
@@ -379,8 +377,7 @@ public class OverviewPanel extends javax.swing.JPanel {
                             String proteinKey = proteinKeys.get(proteinIndex);
                             ProteinQuantificationDetails quantificationDetails = reporterGUI.getQuantificationFeaturesGenerator().getProteinMatchQuantificationDetails(proteinKey);
 
-                            for (int j = 0; j < sampleIndexes.size(); j++) {
-                                String sampleIndex = sampleIndexes.get(j);
+                            for (String sampleIndex : sampleIndexes) {
                                 Double ratio = quantificationDetails.getRatio(sampleIndex);
                                 if (ratio != null) {
                                     if (ratio != 0) {
@@ -1526,6 +1523,26 @@ public class OverviewPanel extends javax.swing.JPanel {
     public void deactivateSelfUpdatingTableModels() {
         if (proteinTable.getModel() instanceof SelfUpdatingTableModel) {
             ((SelfUpdatingTableModel) proteinTable.getModel()).setSelfUpdating(false);
+        }
+    }
+
+    /**
+     * Update the protein table cell renderers.
+     */
+    private void updateProteinTableCellRenderers() {
+
+        if (reporterGUI.getIdentification() != null) {
+
+            ((JSparklinesArrayListBarChartTableCellRenderer) proteinTable.getColumn("#Peptides").getCellRenderer()).setMaxValue(reporterGUI.getMetrics().getMaxNPeptides());
+            ((JSparklinesArrayListBarChartTableCellRenderer) proteinTable.getColumn("#Spectra").getCellRenderer()).setMaxValue(reporterGUI.getMetrics().getMaxNSpectra());
+            ((JSparklinesBarChartTableCellRenderer) proteinTable.getColumn("MS2 Quant.").getCellRenderer()).setMaxValue(reporterGUI.getMetrics().getMaxSpectrumCounting());
+            ((JSparklinesBarChartTableCellRenderer) proteinTable.getColumn("MW").getCellRenderer()).setMaxValue(reporterGUI.getMetrics().getMaxMW());
+
+            try {
+                ((JSparklinesBarChartTableCellRenderer) proteinTable.getColumn("Confidence").getCellRenderer()).setMaxValue(100.0);
+            } catch (IllegalArgumentException e) {
+                ((JSparklinesBarChartTableCellRenderer) proteinTable.getColumn("Score").getCellRenderer()).setMaxValue(100.0);
+            }
         }
     }
 }

@@ -445,10 +445,9 @@ public class ReportDialog extends javax.swing.JDialog {
                             ReporterExportFactory.writeExport(exportScheme, selectedFile, exportFormat, reporterGUI.getExperiment().getReference(),
                                     reporterGUI.getSample().getReference(), reporterGUI.getReplicateNumber(),
                                     reporterGUI.getProjectDetails(), reporterGUI.getIdentification(), reporterGUI.getIdentificationFeaturesGenerator(),
-                                    reporterGUI.getQuantificationFeaturesGenerator(), reporterGUI.getReporterIonQuantification(), reporterGUI.getReporterPreferences(), reporterGUI.getSearchParameters(),
-                                    null, null, null, null, reporterGUI.getIdentificationDisplayPreferences().getnAASurroundingPeptides(),
-                                    reporterGUI.getAnnotationPreferences(), reporterGUI.getSequenceMatchingPreferences(), reporterGUI.getIdFilter(),
-                                    reporterGUI.getPtmScoringPreferences(), reporterGUI.getSpectrumCountingPreferences(), progressDialog);
+                                    reporterGUI.getQuantificationFeaturesGenerator(), reporterGUI.getReporterIonQuantification(), reporterGUI.getReporterPreferences(), reporterGUI.getShotgunProtocol(),
+                                    reporterGUI.getIdentificationParameters(), null, null, null, null, reporterGUI.getIdentificationDisplayPreferences().getnAASurroundingPeptides(),
+                                    reporterGUI.getSpectrumCountingPreferences(), progressDialog);
 
                             boolean processCancelled = progressDialog.isRunCanceled();
                             progressDialog.setRunFinished();
