@@ -857,10 +857,10 @@ public class NewDialog extends javax.swing.JDialog {
     private void browseConfigButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseConfigButtonActionPerformed
 
         if (txtConfigurationFileLocation.getText().length() > 0) {
-            reporterGui.setLastSelectedFolder(txtConfigurationFileLocation.getText());
+            reporterGui.getLastSelectedFolder().setLastSelectedFolder(txtConfigurationFileLocation.getText());
         }
 
-        JFileChooser fileChooser = new JFileChooser(reporterGui.getLastSelectedFolder());
+        JFileChooser fileChooser = new JFileChooser(reporterGui.getLastSelectedFolder().getLastSelectedFolder());
         fileChooser.setDialogTitle("Select Configuration File");
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fileChooser.setMultiSelectionEnabled(false);
@@ -876,7 +876,7 @@ public class NewDialog extends javax.swing.JDialog {
                 reagents = selectedMethod.getReagentsSortedByMass();
                 refresh();
                 txtConfigurationFileLocation.setText(newFile.getAbsolutePath());
-                reporterGui.setLastSelectedFolder(newFile.getPath());
+                reporterGui.getLastSelectedFolder().setLastSelectedFolder(newFile.getPath());
             } catch (IOException e) {
                 JOptionPane.showMessageDialog(null,
                         "File " + METHODS_FILE + " not found in conf folder.",
@@ -896,7 +896,7 @@ public class NewDialog extends javax.swing.JDialog {
      */
     private void addIdFilesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addIdFilesButtonActionPerformed
 
-        JFileChooser fileChooser = new JFileChooser(reporterGui.getLastSelectedFolder());
+        JFileChooser fileChooser = new JFileChooser(reporterGui.getLastSelectedFolder().getLastSelectedFolder());
         fileChooser.setDialogTitle("Select Identification File(s)");
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fileChooser.setMultiSelectionEnabled(false);
@@ -923,7 +923,7 @@ public class NewDialog extends javax.swing.JDialog {
                 JOptionPane.showMessageDialog(this, "The file\'" + newFile.getAbsolutePath() + "\' " + "does not exist!",
                         "File Not Found.", JOptionPane.ERROR_MESSAGE);
             } else {
-                reporterGui.setLastSelectedFolder(newFile.getPath());
+                reporterGui.getLastSelectedFolder().setLastSelectedFolder(newFile.getPath());
                 importPeptideShakerFile(newFile);
             }
         }
@@ -973,7 +973,7 @@ public class NewDialog extends javax.swing.JDialog {
     private void addSpectraFilesJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addSpectraFilesJButtonActionPerformed
 
         // @TODO: add mgf validation etc like for PeptideShaker
-        JFileChooser fileChooser = new JFileChooser(reporterGui.getLastSelectedFolder());
+        JFileChooser fileChooser = new JFileChooser(reporterGui.getLastSelectedFolder().getLastSelectedFolder());
         fileChooser.setDialogTitle("Select Spectra File(s)");
         fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         fileChooser.setMultiSelectionEnabled(true);
@@ -1016,7 +1016,7 @@ public class NewDialog extends javax.swing.JDialog {
                         }
                     }
 
-                    reporterGui.setLastSelectedFolder(newFile.getPath());
+                    reporterGui.getLastSelectedFolder().setLastSelectedFolder(newFile.getPath());
                 }
 
                 txtSpectraFileLocation.setText(mgfFiles.size() + " file(s) selected");
@@ -1053,7 +1053,7 @@ public class NewDialog extends javax.swing.JDialog {
      * @param evt 
      */
     private void editPreferencesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editPreferencesButtonActionPerformed
-        new PreferencesDialog(reporterGui, reporterPreferences, cpsBean.getSearchParameters());
+        new PreferencesDialog(reporterGui, reporterPreferences, cpsBean.getIdentificationParameters().getSearchParameters());
         quantificationPreferencesTxt.setText("User Settings");
     }//GEN-LAST:event_editPreferencesButtonActionPerformed
 
@@ -1079,7 +1079,7 @@ public class NewDialog extends javax.swing.JDialog {
 //        } else {
 //            fileChooser = new JFileChooser(peptideShakerGUI.getLastSelectedFolder());
 //        }
-        fileChooser = new JFileChooser(getLastSelectedFolder());
+        fileChooser = new JFileChooser(reporterGui.getLastSelectedFolder().getLastSelectedFolder());
 
         fileChooser.setDialogTitle("Select FASTA File(s)");
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -1104,7 +1104,7 @@ public class NewDialog extends javax.swing.JDialog {
         int returnVal = fileChooser.showDialog(this.getParent(), "Open");
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File fastaFile = fileChooser.getSelectedFile();
-            setLastSelectedFolder(fastaFile.getAbsolutePath());
+            reporterGui.getLastSelectedFolder().setLastSelectedFolder(fastaFile.getAbsolutePath());
             try {
                 SequenceFactory.getInstance().loadFastaFile(fastaFile, null); // @TODO: use waiting handler
                 getSearchParameters().setFastaFile(fastaFile);
@@ -1360,11 +1360,11 @@ public class NewDialog extends javax.swing.JDialog {
                     
                     // backwards compatibility fix for gene and go references using only latin names
                     boolean genesRemapped = false;
-                    String selectedSpecies = cpsBean.getGenePreferences().getCurrentSpecies();
+                    String selectedSpecies = cpsBean.getIdentificationParameters().getGenePreferences().getCurrentSpecies();
                     if (selectedSpecies != null) {
 
-                        HashMap<String, HashMap<String, String>> allSpecies = cpsBean.getGenePreferences().getAllSpeciesMap();
-                        HashMap<String, String> tempSpecies = allSpecies.get(cpsBean.getGenePreferences().getCurrentSpeciesType());
+                        HashMap<String, HashMap<String, String>> allSpecies = cpsBean.getIdentificationParameters().getGenePreferences().getAllSpeciesMap();
+                        HashMap<String, String> tempSpecies = allSpecies.get(cpsBean.getIdentificationParameters().getGenePreferences().getCurrentSpeciesType());
 
                         if (!tempSpecies.containsKey(selectedSpecies)) {
 
@@ -1374,10 +1374,10 @@ public class NewDialog extends javax.swing.JDialog {
                             while (iterator.hasNext() && !keyFound) {
                                 String tempSpeciesKey = iterator.next();
                                 if (tempSpeciesKey.contains(selectedSpecies)) {
-                                    cpsBean.getGenePreferences().setCurrentSpecies(tempSpeciesKey);
+                                    cpsBean.getIdentificationParameters().getGenePreferences().setCurrentSpecies(tempSpeciesKey);
                                     keyFound = true;
                                 } else if (selectedSpecies.contains(tempSpeciesKey)) { // strange backwards compatibility fix, should not be needed
-                                    cpsBean.getGenePreferences().setCurrentSpecies(tempSpeciesKey);
+                                    cpsBean.getIdentificationParameters().getGenePreferences().setCurrentSpecies(tempSpeciesKey);
                                     keyFound = true;
                                 }
                             }
@@ -1399,7 +1399,7 @@ public class NewDialog extends javax.swing.JDialog {
 
                     boolean fileFound;
                     try {
-                        fileFound = cpsBean.loadFastaFile(new File(reporterGui.getLastSelectedFolder()), progressDialog);
+                        fileFound = cpsBean.loadFastaFile(new File(reporterGui.getLastSelectedFolder().getLastSelectedFolder()), progressDialog);
                     } catch (Exception e) {
                         fileFound = false;
                     }
@@ -1429,7 +1429,7 @@ public class NewDialog extends javax.swing.JDialog {
 
                         boolean found;
                         try {
-                            found = cpsBean.loadSpectrumFiles(new File(getLastSelectedFolder()), progressDialog);
+                            found = cpsBean.loadSpectrumFiles(new File(reporterGui.getLastSelectedFolder().getLastSelectedFolder()), progressDialog);
                         } catch (Exception e) {
                             found = false;
                         }
@@ -1484,7 +1484,7 @@ public class NewDialog extends javax.swing.JDialog {
                 }
 
                 txtSpectraFileLocation.setText(cpsBean.getIdentification().getSpectrumFiles().size() + " files loaded."); //@TODO: allow editing
-                fastaTxt.setText(cpsBean.getSearchParameters().getFastaFile().getName());
+                fastaTxt.setText(cpsBean.getIdentificationParameters().getSearchParameters().getFastaFile().getName());
 
                 projectTxt.setText(getExperiment().getReference());
                 sampleNameTxt.setText(getSample().getReference());
@@ -1568,7 +1568,7 @@ public class NewDialog extends javax.swing.JDialog {
      * @return the search parameters
      */
     public SearchParameters getSearchParameters() {
-        return cpsBean.getSearchParameters();
+        return cpsBean.getIdentificationParameters().getSearchParameters();
     }
 
     /**
@@ -1622,7 +1622,7 @@ public class NewDialog extends javax.swing.JDialog {
      */
     private void importMethodsError() {
         JOptionPane.showMessageDialog(this, "\"" + METHODS_FILE + "\" could not be parsed, please select a method file.", "No Spectrum File Selected", JOptionPane.ERROR_MESSAGE);
-        JFileChooser fileChooser = new JFileChooser(reporterGui.getLastSelectedFolder());
+        JFileChooser fileChooser = new JFileChooser(reporterGui.getLastSelectedFolder().getLastSelectedFolder());
         fileChooser.setDialogTitle("Select Methods file");
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fileChooser.setMultiSelectionEnabled(false);
@@ -1632,7 +1632,7 @@ public class NewDialog extends javax.swing.JDialog {
             File newFile = fileChooser.getSelectedFile();
             try {
                 methodsFactory.importMethods(newFile);
-                reporterGui.setLastSelectedFolder(newFile.getPath());
+                reporterGui.getLastSelectedFolder().setLastSelectedFolder(newFile.getPath());
             } catch (IOException e) {
                 JOptionPane.showMessageDialog(null,
                         "File " + METHODS_FILE + " not found in conf folder.",
@@ -1770,24 +1770,6 @@ public class NewDialog extends javax.swing.JDialog {
             }
         }
         return error;
-    }
-
-    /**
-     * Returns the last selected folder.
-     *
-     * @return the last selected folder
-     */
-    public String getLastSelectedFolder() {
-        return reporterGui.getLastSelectedFolder();
-    }
-
-    /**
-     * Sets the last selected folder.
-     *
-     * @param lastSelectedFolder the last selected folder
-     */
-    public void setLastSelectedFolder(String lastSelectedFolder) {
-        reporterGui.setLastSelectedFolder(lastSelectedFolder);
     }
 
     /**

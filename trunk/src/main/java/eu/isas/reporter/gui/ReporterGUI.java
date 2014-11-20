@@ -15,6 +15,7 @@ import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.exceptions.ExceptionHandler;
 import com.compomics.util.exceptions.exception_handlers.FrameExceptionHandler;
+import com.compomics.util.experiment.ShotgunProtocol;
 import com.compomics.util.gui.PrivacySettingsDialog;
 import com.compomics.util.gui.UtilitiesGUIDefaults;
 import com.compomics.util.gui.error_handlers.BugReport;
@@ -22,6 +23,8 @@ import com.compomics.util.gui.error_handlers.HelpDialog;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
 import com.compomics.util.preferences.AnnotationPreferences;
 import com.compomics.util.preferences.IdFilter;
+import com.compomics.util.preferences.IdentificationParameters;
+import com.compomics.util.preferences.LastSelectedFolder;
 import com.compomics.util.preferences.PTMScoringPreferences;
 import com.compomics.util.preferences.SequenceMatchingPreferences;
 import com.compomics.util.preferences.UtilitiesUserPreferences;
@@ -68,7 +71,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaMemoryDialogP
     /**
      * The last folder opened by the user. Defaults to user.home.
      */
-    private String lastSelectedFolder = "user.home";
+    private LastSelectedFolder lastSelectedFolder = new LastSelectedFolder();
     /**
      * A simple progress dialog.
      */
@@ -282,14 +285,16 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaMemoryDialogP
                     NewDialog newDialog = new NewDialog(ReporterGUI.this);
                     if (!newDialog.isCancelled()) {
                         cpsBean = newDialog.getCpsBean();
-                        identificationFeaturesGenerator = new IdentificationFeaturesGenerator(cpsBean.getIdentification(), cpsBean.getSearchParameters(), cpsBean.getIdFilter(), cpsBean.getMetrics(), cpsBean.getSpectrumCountingPreferences(), cpsBean.getSequenceMatchingPreferences());
-                        displayFeaturesGenerator = new DisplayFeaturesGenerator(cpsBean.getSearchParameters().getModificationProfile(), exceptionHandler);
+                        identificationFeaturesGenerator = new IdentificationFeaturesGenerator(cpsBean.getIdentification(), cpsBean.getShotgunProtocol(),
+                                cpsBean.getIdentificationParameters(), cpsBean.getMetrics(), cpsBean.getSpectrumCountingPreferences());
+                        displayFeaturesGenerator = new DisplayFeaturesGenerator(cpsBean.getIdentificationParameters().getSearchParameters().getModificationProfile(), exceptionHandler);
                         displayFeaturesGenerator.setDisplayedPTMs(cpsBean.getDisplayPreferences().getDisplayedPtms());
                         reporterPreferences = newDialog.getReporterPreferences();
                         setDisplayPreferencesFromShakerProject();
                         reporterIonQuantification = newDialog.getReporterIonQuantification();
                         projectSaved = false;
-                        quantificationFeaturesGenerator = new QuantificationFeaturesGenerator(new QuantificationFeaturesCache(), cpsBean.getIdentification(), reporterPreferences, reporterIonQuantification, cpsBean.getSearchParameters(), cpsBean.getSequenceMatchingPreferences());
+                        quantificationFeaturesGenerator = new QuantificationFeaturesGenerator(new QuantificationFeaturesCache(), cpsBean.getIdentification(), reporterPreferences, reporterIonQuantification,
+                                cpsBean.getIdentificationParameters().getSearchParameters(), cpsBean.getIdentificationParameters().getSequenceMatchingPreferences());
                         displayResults();
                     }
                 } catch (Exception e) {
@@ -437,67 +442,6 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaMemoryDialogP
     }
 
     /**
-     * Returns the annotation preferences as set by the user.
-     *
-     * @return the annotation preferences as set by the user
-     */
-    public AnnotationPreferences getAnnotationPreferences() {
-        if (cpsBean == null) {
-            return null;
-        }
-        return cpsBean.getAnnotationPreferences();
-    }
-
-    /**
-     * Returns the identification filter used when loading the files.
-     *
-     * @return the identification filter
-     */
-    public IdFilter getIdFilter() {
-        if (cpsBean == null) {
-            return null;
-        }
-        return cpsBean.getIdFilter();
-    }
-
-    /**
-     * Returns the PTM scoring preferences
-     *
-     * @return the PTM scoring preferences
-     */
-    public PTMScoringPreferences getPtmScoringPreferences() {
-        if (cpsBean == null) {
-            return null;
-        }
-        return cpsBean.getPtmScoringPreferences();
-    }
-
-    /**
-     * Returns the identification parameters of the cps file. Null if none
-     * loaded.
-     *
-     * @return the identification parameters of the cps file
-     */
-    public SearchParameters getSearchParameters() {
-        if (cpsBean == null) {
-            return null;
-        }
-        return cpsBean.getSearchParameters();
-    }
-
-    /**
-     * Returns the sequence matching preferences.
-     *
-     * @return the sequence matching preferences
-     */
-    public SequenceMatchingPreferences getSequenceMatchingPreferences() {
-        if (cpsBean == null) {
-            return null;
-        }
-        return cpsBean.getSequenceMatchingPreferences();
-    }
-
-    /**
      * Returns the exception handler.
      *
      * @return the exception handler
@@ -585,6 +529,30 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaMemoryDialogP
      */
     public Metrics getMetrics() {
         return cpsBean.getMetrics();
+    }
+
+    /**
+     * Returns the shotgun protocol.
+     *
+     * @return the shotgun protocol
+     */
+    public ShotgunProtocol getShotgunProtocol() {
+        if (cpsBean == null) {
+            return null;
+        }
+        return cpsBean.getShotgunProtocol();
+    }
+
+    /**
+     * Returns the identification parameters.
+     *
+     * @return the identification parameters
+     */
+    public IdentificationParameters getIdentificationParameters() {
+        if (cpsBean == null) {
+            return null;
+        }
+        return cpsBean.getIdentificationParameters();
     }
 
     /**
@@ -804,7 +772,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaMemoryDialogP
      * @param evt
      */
     private void quantificationOptionsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quantificationOptionsMenuItemActionPerformed
-        new PreferencesDialog(this, reporterPreferences, cpsBean.getSearchParameters());
+        new PreferencesDialog(this, reporterPreferences, cpsBean.getIdentificationParameters().getSearchParameters());
     }//GEN-LAST:event_quantificationOptionsMenuItemActionPerformed
 
     /**
@@ -1081,21 +1049,25 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaMemoryDialogP
     // End of variables declaration//GEN-END:variables
 
     /**
-     * Sets the last selected folder,
-     *
-     * @param lastSelectedFolder the lastSelectedFolder to set
-     */
-    public void setLastSelectedFolder(String lastSelectedFolder) {
-        this.lastSelectedFolder = lastSelectedFolder;
-    }
-
-    /**
      * Returns the last selected folder.
      *
      * @return the last selected folder
      */
-    public String getLastSelectedFolder() {
+    public LastSelectedFolder getLastSelectedFolder() {
+        if (lastSelectedFolder == null) {
+            lastSelectedFolder = new LastSelectedFolder();
+            utilitiesUserPreferences.setLastSelectedFolder(lastSelectedFolder);
+        }
         return lastSelectedFolder;
+    }
+
+    /**
+     * Set the last selected folder.
+     *
+     * @param lastSelectedFolder the folder to set
+     */
+    public void setLastSelectedFolder(LastSelectedFolder lastSelectedFolder) {
+        this.lastSelectedFolder = lastSelectedFolder;
     }
 
     /**
@@ -1112,13 +1084,13 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaMemoryDialogP
      */
     public File getUserSelectedFile(String aFileEnding, String aFileFormatDescription, String aDialogTitle, boolean openDialog) {
 
-        File selectedFile = Util.getUserSelectedFile(this, aFileEnding, aFileFormatDescription, aDialogTitle, lastSelectedFolder, openDialog);
+        File selectedFile = Util.getUserSelectedFile(this, aFileEnding, aFileFormatDescription, aDialogTitle, lastSelectedFolder.getLastSelectedFolder(), openDialog);
 
         if (selectedFile != null) {
             if (selectedFile.isDirectory()) {
-                lastSelectedFolder = selectedFile.getAbsolutePath();
+                lastSelectedFolder.setLastSelectedFolder(selectedFile.getAbsolutePath());
             } else {
-                lastSelectedFolder = selectedFile.getParentFile().getAbsolutePath();
+                lastSelectedFolder.setLastSelectedFolder(selectedFile.getParentFile().getAbsolutePath());
             }
         }
 
