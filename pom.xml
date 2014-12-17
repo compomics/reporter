@@ -307,7 +307,7 @@
         <dependency>
             <groupId>com.compomics</groupId>
             <artifactId>utilities</artifactId>
-            <version>3.43.24</version>
+            <version>3.44.1</version>
             <exclusions>
                 <exclusion>
                     <artifactId>commons-math</artifactId>
@@ -400,10 +400,6 @@
                 <exclusion>
                     <artifactId>charts4j</artifactId>
                     <groupId>com.googlecode.charts4j</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>jmzml</artifactId>
-                    <groupId>uk.ac.ebi.jmzml</groupId>
                 </exclusion>
                 <exclusion>
                     <artifactId>web-service-model</artifactId>
