@@ -27,8 +27,8 @@ import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshaller;
 public class SpectrumMerger {
 
     private double upperReporterRange = 135;
-    private static String mgfFileName = "m03495";
-    private File mgfFile = new File("C:\\Users\\hba041\\Desktop\\heidrun\\data\\" + mgfFileName + ".mgf");
+    private File mzmlFileFolder = new File("C:\\Users\\hba041\\Desktop\\heidrun\\data\\mzml");
+    private File mgfFileFolder = new File("C:\\Users\\hba041\\Desktop\\heidrun\\data\\mgf");
 
     /**
      * Main method for testing purposes.
@@ -37,17 +37,33 @@ public class SpectrumMerger {
      */
     public static void main(String[] args) {
         SpectrumMerger spectrumMerge = new SpectrumMerger();
-        spectrumMerge.mergeData(new File("C:\\Users\\hba041\\Desktop\\heidrun\\data\\" + mgfFileName + ".mzML"));
+        spectrumMerge.mergeData();
         System.exit(0);
+    }
+    
+    /**
+     * Merge the MS2 and MS3 for all mzML files in the mzML folder.
+     */
+    private void mergeData() {
+        for (File tempMzmlFile : mzmlFileFolder.listFiles()) {
+            mergeData(tempMzmlFile);
+            System.out.println();
+        }
     }
 
     /**
-     * Merge the MS2 and MS3.
+     * Merge the MS2 and MS3 for the given mzML file.
      * 
      * @param mzMlFile the mzML file
      */
     private void mergeData(File mzMlFile) {
 
+        String mzmlFileName = mzMlFile.getName();
+        String mgfFileName = mzmlFileName.substring(0, mzmlFileName.length() - 5) + ".mgf";
+        File mgfFile = new File(mgfFileFolder, mgfFileName);
+        
+        System.out.println("Processing: " + mzMlFile.getAbsolutePath());
+        
         try {
             FileWriter f = new FileWriter(mgfFile);
             BufferedWriter bw = new BufferedWriter(f);
@@ -186,7 +202,7 @@ public class SpectrumMerger {
                         possibleCharges.add(new Charge(Charge.PLUS, precursorCharge));
                         MSnSpectrum mgfSpectrum = new MSnSpectrum(2,
                                 new com.compomics.util.experiment.massspectrometry.Precursor(-1, precursorMz, precursorIntensity, possibleCharges),
-                                precursorSpectrumRef + " (MS2) and " + tempId + " (MS3)", peakMap, mgfFile.getName());
+                                precursorSpectrumRef + " (MS2) and " + tempId + " (MS3)", peakMap, mgfFileName);
 
                         bw.write(mgfSpectrum.asMgf());
                     } else {
@@ -197,6 +213,8 @@ public class SpectrumMerger {
 
             bw.close();
             f.close();
+            
+            System.out.println("Created: " + mgfFile.getAbsolutePath());
 
         } catch (Exception e) {
             e.printStackTrace();
