@@ -417,8 +417,8 @@ public class ReportDialog extends javax.swing.JDialog {
 
             if (selectedFile != null) {
                 progressDialog = new ProgressDialogX(this, reporterGUI,
-                        Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/peptide-shaker.gif")),
-                        Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/peptide-shaker-orange.gif")),
+                        Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
+                        Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")),
                         true);
                 progressDialog.setTitle("Exporting Report. Please Wait...");
 
@@ -493,8 +493,8 @@ public class ReportDialog extends javax.swing.JDialog {
 
             if (selectedFile != null) {
                 progressDialog = new ProgressDialogX(this, reporterGUI,
-                        Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/peptide-shaker.gif")),
-                        Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/peptide-shaker-orange.gif")),
+                        Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
+                        Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")),
                         true);
 
                 new Thread(new Runnable() {
