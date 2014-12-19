@@ -167,7 +167,7 @@
                     <Font component="jLabel1" italic="true" property="font" relativeSize="true" size="0"/>
                   </FontInfo>
                 </Property>
-                <Property name="text" type="java.lang.String" value="Ignore peptides presenting the following PTMS"/>
+                <Property name="text" type="java.lang.String" value="Ignore peptides presenting the following PTMs"/>
               </Properties>
             </Component>
             <Container class="javax.swing.JScrollPane" name="selectedPtmsScrollPane">

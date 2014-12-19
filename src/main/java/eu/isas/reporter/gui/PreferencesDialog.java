@@ -107,7 +107,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
         miscleavageCheck.setOpaque(false);
 
         jLabel1.setFont(jLabel1.getFont().deriveFont((jLabel1.getFont().getStyle() | java.awt.Font.ITALIC)));
-        jLabel1.setText("Ignore peptides presenting the following PTMS");
+        jLabel1.setText("Ignore peptides presenting the following PTMs");
 
         selectedPtmsScrollPane.setViewportView(selectedPTMs);
 
