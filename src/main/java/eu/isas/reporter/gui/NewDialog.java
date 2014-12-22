@@ -1429,7 +1429,7 @@ public class NewDialog extends javax.swing.JDialog {
 
                         boolean found;
                         try {
-                            found = cpsBean.loadSpectrumFiles(new File(reporterGui.getLastSelectedFolder().getLastSelectedFolder()), progressDialog);
+                            found = cpsBean.loadSpectrumFile(spectrumFileName, progressDialog);
                         } catch (Exception e) {
                             found = false;
                         }
