@@ -127,9 +127,9 @@ public class ReporterPeptideSection {
      * @throws InterruptedException
      * @throws MzMLUnmarshallerException
      */
-    public void writeSection(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, 
+    public void writeSection(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator,
             QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification,
-            ShotgunProtocol shotgunProtocol, IdentificationParameters identificationParameters, 
+            ShotgunProtocol shotgunProtocol, IdentificationParameters identificationParameters,
             ArrayList<String> keys, int nSurroundingAA, String linePrefix, boolean validatedOnly, boolean decoys, WaitingHandler waitingHandler)
             throws IOException, IllegalArgumentException, SQLException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
 
@@ -200,7 +200,7 @@ public class ReporterPeptideSection {
                             first = false;
                         }
                         PsPeptideFeature peptideFeature = (PsPeptideFeature) exportFeature;
-                        writer.write(PsPeptideSection.getfeature(identification, identificationFeaturesGenerator, shotgunProtocol, identificationParameters, 
+                        writer.write(PsPeptideSection.getfeature(identification, identificationFeaturesGenerator, shotgunProtocol, identificationParameters,
                                 keys, nSurroundingAA, linePrefix, peptideMatch, psParameter, peptideFeature, validatedOnly, decoys, waitingHandler));
                     }
 
@@ -226,22 +226,23 @@ public class ReporterPeptideSection {
                             writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, peptideKey, peptideFeature, ""), reporterStyle);
                         }
                     }
-                    writer.newLine();
+
                     if (psmSection != null) {
+                        writer.newLine();
                         String psmSectionPrefix = "";
                         if (linePrefix != null) {
                             psmSectionPrefix += linePrefix;
                         }
                         psmSectionPrefix += line + ".";
                         writer.increaseDepth();
-                        psmSection.writeSection(identification, identificationFeaturesGenerator, quantificationFeaturesGenerator, reporterIonQuantification, ReporterPreferences.getUserPreferences(), 
+                        psmSection.writeSection(identification, identificationFeaturesGenerator, quantificationFeaturesGenerator, reporterIonQuantification, ReporterPreferences.getUserPreferences(),
                                 shotgunProtocol, identificationParameters, peptideMatch.getSpectrumMatches(), psmSectionPrefix, validatedOnly, decoys, null);
                         writer.decreseDepth();
                     }
                     line++;
                     writer.newLine();
                 }
-            }  
+            }
         }
     }
 
