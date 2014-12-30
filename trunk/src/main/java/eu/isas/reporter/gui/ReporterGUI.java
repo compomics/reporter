@@ -1,7 +1,7 @@
 package eu.isas.reporter.gui;
 
 import com.compomics.software.CompomicsWrapper;
-import com.compomics.software.dialogs.JavaMemoryDialogParent;
+import com.compomics.software.dialogs.JavaHomeOrMemoryDialogParent;
 import com.compomics.software.dialogs.JavaSettingsDialog;
 import com.compomics.util.Util;
 import com.compomics.util.db.DerbyUtil;
@@ -9,7 +9,6 @@ import com.compomics.util.experiment.MsExperiment;
 import com.compomics.util.experiment.biology.PTMFactory;
 import com.compomics.util.experiment.biology.Sample;
 import com.compomics.util.experiment.identification.Identification;
-import com.compomics.util.experiment.identification.SearchParameters;
 import com.compomics.util.experiment.identification.SequenceFactory;
 import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
@@ -21,12 +20,8 @@ import com.compomics.util.gui.UtilitiesGUIDefaults;
 import com.compomics.util.gui.error_handlers.BugReport;
 import com.compomics.util.gui.error_handlers.HelpDialog;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
-import com.compomics.util.preferences.AnnotationPreferences;
-import com.compomics.util.preferences.IdFilter;
 import com.compomics.util.preferences.IdentificationParameters;
 import com.compomics.util.preferences.LastSelectedFolder;
-import com.compomics.util.preferences.PTMScoringPreferences;
-import com.compomics.util.preferences.SequenceMatchingPreferences;
 import com.compomics.util.preferences.UtilitiesUserPreferences;
 import eu.isas.peptideshaker.PeptideShaker;
 import eu.isas.peptideshaker.preferences.FilterPreferences;
@@ -62,7 +57,7 @@ import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
  * @author Marc Vaudel
  * @author Harald Barsnes
  */
-public class ReporterGUI extends javax.swing.JFrame implements JavaMemoryDialogParent {
+public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryDialogParent {
 
     /**
      * If set to true all messages will be sent to a log file.
