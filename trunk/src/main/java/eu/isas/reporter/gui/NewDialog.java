@@ -1483,7 +1483,7 @@ public class NewDialog extends javax.swing.JDialog {
                     return;
                 }
 
-                txtSpectraFileLocation.setText(cpsBean.getIdentification().getSpectrumFiles().size() + " files loaded."); //@TODO: allow editing
+                txtSpectraFileLocation.setText(cpsBean.getIdentification().getSpectrumFiles().size() + " files loaded"); //@TODO: allow editing
                 fastaTxt.setText(cpsBean.getIdentificationParameters().getSearchParameters().getFastaFile().getName());
 
                 projectTxt.setText(getExperiment().getReference());
@@ -1737,7 +1737,7 @@ public class NewDialog extends javax.swing.JDialog {
                 JOptionPane.showMessageDialog(NewDialog.this,
                         report,
                         "File Input Error", JOptionPane.ERROR_MESSAGE);
-                txtSpectraFileLocation.setText(mgfFiles.size() + " file(s) selected.");
+                txtSpectraFileLocation.setText(mgfFiles.size() + " file(s) selected");
             }
         }.start();
     }

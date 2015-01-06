@@ -88,6 +88,7 @@ public class Reporter {
             }
             identification.loadSpectrumMatches(mgfName, waitingHandler);
         }
+
         if (waitingHandler != null) {
             waitingHandler.setPrimaryProgressCounterIndeterminate(true);
             waitingHandler.setWaitingText("Loading Peptide Matches (Step " + ++progress + " of " + totalProgress + "). Please Wait...");
@@ -100,18 +101,20 @@ public class Reporter {
             }
             identification.loadSpectrumMatchParameters(mgfName, psParameter, waitingHandler);
         }
+
         if (waitingHandler != null) {
             waitingHandler.setPrimaryProgressCounterIndeterminate(true);
             waitingHandler.setWaitingText("Loading Peptide Details (Step " + ++progress + " of " + totalProgress + "). Please Wait...");
         }
         identification.loadPeptideMatchParameters(psParameter, waitingHandler);
+
         if (waitingHandler != null) {
             waitingHandler.setWaitingText("Ratio Normalization (Step " + ++progress + " of " + totalProgress + "). Please Wait...");
             waitingHandler.resetPrimaryProgressCounter();
             waitingHandler.setPrimaryProgressCounterIndeterminate(false);
             waitingHandler.setMaxPrimaryProgressCounter(identification.getPeptideIdentification().size());
         }
-        int nPeptides = identification.getPeptideIdentification().size(), cpt = 0;
+
         progress++;
         for (String peptideKey : identification.getPeptideIdentification()) {
             psParameter = (PSParameter) identification.getPeptideMatchParameter(peptideKey, psParameter);
@@ -129,7 +132,6 @@ public class Reporter {
                     return;
                 }
                 waitingHandler.increaseSecondaryProgressCounter();
-                waitingHandler.setWaitingText("Ratio Normalization (Step " + progress + " of " + totalProgress + " - Peptide " + ++cpt + " of " + nPeptides + "). Please Wait...");
             }
         }
         for (String sampleIndex : reporterIonQuantification.getSampleIndexes()) {
@@ -462,8 +464,8 @@ public class Reporter {
      * @throws java.io.IOException
      * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException
      */
-    public static SpectrumQuantificationDetails estimateSpectrumQuantificationDetails(Identification identification, 
-            QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, 
+    public static SpectrumQuantificationDetails estimateSpectrumQuantificationDetails(Identification identification,
+            QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification,
             ReporterPreferences reporterPreferences, String matchKey) throws IOException, MzMLUnmarshallerException {
 
         ReporterMethod reporterMethod = reporterIonQuantification.getReporterMethod();

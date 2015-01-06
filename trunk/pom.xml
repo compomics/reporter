@@ -5,7 +5,7 @@
     <groupId>eu.isas.reporter</groupId>
     <artifactId>Reporter</artifactId>
     <packaging>jar</packaging>
-    <version>1.5.0-beta</version>
+    <version>0.0.1-beta</version>
     <name>Reporter</name>
     <url>http://reporter.googlecode.com</url>
     <description>Protein quantification based on reporter ions</description>
@@ -307,7 +307,7 @@
         <dependency>
             <groupId>com.compomics</groupId>
             <artifactId>utilities</artifactId>
-            <version>3.45.8</version>
+            <version>3.45.14</version>
             <exclusions>
                 <exclusion>
                     <artifactId>commons-math</artifactId>
