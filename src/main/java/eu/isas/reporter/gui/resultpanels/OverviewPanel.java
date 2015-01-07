@@ -105,6 +105,18 @@ public class OverviewPanel extends javax.swing.JPanel {
      * The current line chart chart panel.
      */
     private ChartPanel lineChartChartPanel;
+    /**
+     * The protein ratio distributions.
+     */
+    private HashMap<String, Double[]> proteinRatioDistributions;
+    /**
+     * The max protein ratio (in log2).
+     */
+    private double maxProteinRatio;
+    /**
+     * The min protein ratio (in log2).
+     */
+    private double minProteinRatio;
 
     /**
      * Creates a new OverviewPanel.
@@ -175,7 +187,6 @@ public class OverviewPanel extends javax.swing.JPanel {
             public void run() {
 
                 try {
-
                     progressDialog.setPrimaryProgressCounterIndeterminate(true);
                     progressDialog.setTitle("Preparing Overview. Please Wait...");
 
@@ -199,6 +210,9 @@ public class OverviewPanel extends javax.swing.JPanel {
                     if (proteinTable.getRowCount() > 0) {
                         proteinTable.setRowSelectionInterval(0, 0);
                     }
+
+                    // get the protein ratio distributions
+                    getProteinRatioDistributions();
 
                     // update the ratio plot
                     updateQuantificationDataPlot();
@@ -243,15 +257,6 @@ public class OverviewPanel extends javax.swing.JPanel {
 
                     reporterGUI.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
                     progressDialog.setRunFinished();
-
-//                    new Thread(new Runnable() {
-//                        public void run() {
-//                            peptideShakerGUI.checkNewsFeed();
-//                            peptideShakerGUI.showNotesNotification();
-//                            updateSelection(true); // @TODO: this is sometimes too fast and results in Row index out of range...
-//                            proteinTable.requestFocus();
-//                        }
-//                    }, "UpdateSelectionThread").start();
                 } catch (Exception e) {
                     reporterGUI.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
                     reporterGUI.catchException(e);
@@ -259,6 +264,55 @@ public class OverviewPanel extends javax.swing.JPanel {
                 }
             }
         }.start();
+    }
+
+    /**
+     * Get the protein ratio distributions.
+     */
+    private void getProteinRatioDistributions() {
+
+        ArrayList<String> sampleIndexes = new ArrayList<String>(reporterGUI.getReporterIonQuantification().getSampleIndexes());
+        Collections.sort(sampleIndexes);
+
+        proteinRatioDistributions = new HashMap<String, Double[]>();
+        maxProteinRatio = Double.MIN_VALUE;
+        minProteinRatio = Double.MAX_VALUE;
+
+        try {
+            for (String sampleIndex : sampleIndexes) {
+
+                ArrayList<Double> data = new ArrayList<Double>();
+
+                for (String proteinKey : proteinKeys) {
+
+                    ProteinQuantificationDetails quantificationDetails = reporterGUI.getQuantificationFeaturesGenerator().getProteinMatchQuantificationDetails(proteinKey);
+                    Double ratio = quantificationDetails.getRatio(sampleIndex);
+
+                    if (ratio != null) {
+                        if (ratio != 0) {
+                            ratio = Math.log(ratio) / Math.log(2);
+                        }
+                        data.add(ratio);
+
+                        if (ratio > maxProteinRatio) {
+                            maxProteinRatio = ratio;
+                        }
+                        if (ratio < minProteinRatio) {
+                            minProteinRatio = ratio;
+                        }
+                    }
+                }
+
+                Double[] values = new Double[data.size()];
+                for (int i = 0; i < data.size(); i++) {
+                    values[i] = data.get(i);
+                }
+
+                proteinRatioDistributions.put(sampleIndex, values);
+            }
+        } catch (Exception e) {
+            reporterGUI.catchException(e);
+        }
     }
 
     /**
@@ -326,8 +380,8 @@ public class OverviewPanel extends javax.swing.JPanel {
 
                     // see if the background distribution is to be displayed
                     if (backgroundDistCheckBox.isSelected()) {
-                        for (int i = 0; i < sampleIndexes.size(); i++) {
-                            insertDensityChart();
+                        for (String sampleIndex : sampleIndexes) {
+                            insertDensityChart(sampleIndex);
                         }
                     }
 
@@ -410,8 +464,8 @@ public class OverviewPanel extends javax.swing.JPanel {
 
                 // see if the background distribution is to be displayed
                 if (backgroundDistCheckBox.isSelected()) {
-                    for (int i = 0; i < sampleIndexes.size(); i++) {
-                        insertDensityChart();
+                    for (String sampleIndex : sampleIndexes) {
+                        insertDensityChart(sampleIndex);
                     }
                 }
 
@@ -493,15 +547,10 @@ public class OverviewPanel extends javax.swing.JPanel {
         rangeAxis.setLowerMargin(0.15);
         rangeAxis.setUpperMargin(0.15);
 
-        double lowerBound = rangeAxis.getLowerBound();
-        double upperBound = rangeAxis.getUpperBound();
-
         // make sure that the chart has a symmetrical y-axis
-        if (Math.abs(lowerBound) > Math.abs(upperBound)) {
-            rangeAxis.setUpperBound(Math.abs(lowerBound));
-        } else {
-            rangeAxis.setLowerBound(-Math.abs(upperBound));
-        }
+        double maxAbsRatioValue = Math.max(Math.abs(maxProteinRatio), Math.abs(minProteinRatio));
+        rangeAxis.setUpperBound(maxAbsRatioValue);
+        rangeAxis.setLowerBound(-maxAbsRatioValue);
 
         // add a second axis on the right, identical to the left one
         ValueAxis rangeAxis2 = chart.getCategoryPlot().getRangeAxis();
@@ -509,6 +558,7 @@ public class OverviewPanel extends javax.swing.JPanel {
 
         lineChartChartPanel = new ChartPanel(chart);
         chart.getPlot().setOutlineVisible(false);
+        lineChartChartPanel.setRangeZoomable(false);
 
         // make the background see-through
         Color temp = new Color(255, 255, 255, 0);
@@ -561,6 +611,7 @@ public class OverviewPanel extends javax.swing.JPanel {
         plot.setRangeAxis(1, rangeAxis2);
 
         ChartPanel chartPanel = new ChartPanel(chart);
+        chartPanel.setRangeZoomable(false);
         chart.getPlot().setOutlineVisible(false);
 
         // make the background see-through
@@ -579,17 +630,10 @@ public class OverviewPanel extends javax.swing.JPanel {
     /**
      * Insert the density charts.
      */
-    private void insertDensityChart() {
+    private void insertDensityChart(String sampleIndex) {
 
         NormalKernelDensityEstimator kernelEstimator = new NormalKernelDensityEstimator();
-
-        int numValues = 200;
-        double[] values = new double[numValues];
-        for (int i = 0; i < numValues; i++) { // @TODO: replace with real values
-            values[i] = Math.random();
-        }
-
-        ArrayList list = kernelEstimator.estimateDensityFunction(values);
+        ArrayList list = kernelEstimator.estimateDensityFunction(proteinRatioDistributions.get(sampleIndex));
 
         XYSeriesCollection lineChartDataset = new XYSeriesCollection();
         XYSeries tempSeries = new XYSeries("1");
@@ -619,7 +663,13 @@ public class OverviewPanel extends javax.swing.JPanel {
         plot.setRangeGridlinesVisible(false);
         plot.setDomainGridlinesVisible(false);
 
+        // make sure that the chart has a symmetrical y-axis
+        double maxAbsRatioValue = Math.max(Math.abs(maxProteinRatio), Math.abs(minProteinRatio));
+        plot.getDomainAxis().setUpperBound(maxAbsRatioValue);
+        plot.getDomainAxis().setLowerBound(-maxAbsRatioValue);
+
         ChartPanel chartPanel = new ChartPanel(chart);
+        chartPanel.setRangeZoomable(false);
         chart.getPlot().setOutlineVisible(false);
 
         // make the background see-through
@@ -1660,18 +1710,20 @@ public class OverviewPanel extends javax.swing.JPanel {
                             Rectangle2D area = lineChartChartPanel.getScreenDataArea();
 
                             int xStart = (int) Math.ceil(area.getX());
-                            int yStart = (int) Math.ceil(area.getY());
-                            xStart -= 22; // @TODO: remove hardcoding!
-                            yStart += 5; // @TODO: remove hardcoding!
+                            xStart -= (int) ((double) Math.ceil(area.getX()) * 0.15);
 
-                            int xPadding = 80; // @TODO: remove hardcoding!
-                            int plotWidth = plotsLayeredPane.getWidth() - xStart * 2 - xPadding * 2;
+                            double width = area.getWidth();
+                            int xPadding = (int) (width * 0.097);
+                            int xPaddingRight = (int) (xPadding * 0.045);
+
+                            int plotWidth = plotsLayeredPane.getWidth() - xStart * 2 - xPadding - xPaddingRight;
                             int individualPlotWidth = (plotWidth / (plotsLayeredPane.getComponentCount() - 1));
-                            int plotHeight = plotsLayeredPane.getHeight() - yStart * 2;
+                            int plotHeight = (int) (area.getHeight() * 1.03); // @TODO: optimize for low heights...
+                            int individualPlotWidthWithSpace = (int) ((double) individualPlotWidth * 0.35);
 
                             for (int i = 1; i < plotsLayeredPane.getComponentCount(); i++) {
                                 int currentX = xPadding + xStart + (individualPlotWidth * (i - 1));
-                                plotsLayeredPane.getComponent(i).setBounds(currentX, 0, individualPlotWidth, plotHeight);
+                                plotsLayeredPane.getComponent(i).setBounds(currentX, 0, individualPlotWidthWithSpace, plotHeight);
                             }
 
                             plotsLayeredPane.revalidate();
