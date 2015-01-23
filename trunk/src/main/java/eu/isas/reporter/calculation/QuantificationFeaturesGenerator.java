@@ -96,7 +96,7 @@ public class QuantificationFeaturesGenerator {
         int nPeptides = proteinMatch.getPeptideCount();
         ProteinQuantificationDetails result = quantificationFeaturesCache.getProteinMatchQuantificationDetails(nPeptides, matchKey);
         if (result == null) {
-            result = Reporter.estimateProteinMatchQuantificationDetails(identification, this, reporterPreferences, reporterIonQuantification, searchParameters, matchKey);
+            result = Reporter.estimateProteinMatchQuantificationDetails(identification, this, reporterPreferences, reporterIonQuantification, searchParameters, proteinMatch);
             quantificationFeaturesCache.addProteinMatchQuantificationDetails(nPeptides, matchKey, result);
         }
         return result;
@@ -130,7 +130,7 @@ public class QuantificationFeaturesGenerator {
     /**
      * Returns the quantification details of a peptide match.
      *
-     * @param matchKey the key of the match of interest
+     * @param peptideMatch the peptide match
      *
      * @return the quantification details of the match
      *
@@ -140,12 +140,12 @@ public class QuantificationFeaturesGenerator {
      * @throws InterruptedException
      * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException
      */
-    public PeptideQuantificationDetails getPeptideMatchQuantificationDetails(String matchKey) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
-        PeptideMatch peptideMatch = identification.getPeptideMatch(matchKey);
+    public PeptideQuantificationDetails getPeptideMatchQuantificationDetails(PeptideMatch peptideMatch) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
         int nPsms = peptideMatch.getSpectrumCount();
+        String matchKey = peptideMatch.getKey();
         PeptideQuantificationDetails result = quantificationFeaturesCache.getPeptideMatchQuantificationDetails(nPsms, matchKey);
         if (result == null) {
-            result = Reporter.estimatePeptideMatchQuantificationDetails(identification, this, reporterPreferences, reporterIonQuantification, matchKey);
+            result = Reporter.estimatePeptideMatchQuantificationDetails(identification, this, reporterPreferences, reporterIonQuantification, peptideMatch);
             quantificationFeaturesCache.addPeptideMatchQuantificationDetails(nPsms, matchKey, result);
         }
         return result;

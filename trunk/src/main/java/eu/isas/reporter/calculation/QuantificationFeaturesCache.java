@@ -29,7 +29,7 @@ public class QuantificationFeaturesCache {
      * The protein level PTM quantification details in a map: PTM name > protein
      * match key > site > match quantification details.
      */
-    private HashMap<String, HashMap<String, HashMap<Integer, PtmSiteQuantificationDetails>>> proteinPtmRatios = new HashMap<String, HashMap<String, HashMap<Integer, PtmSiteQuantificationDetails>>>();
+    private HashMap<String, HashMap<String, HashMap<String, PtmSiteQuantificationDetails>>> proteinPtmRatios = new HashMap<String, HashMap<String, HashMap<String, PtmSiteQuantificationDetails>>>();
     /**
      * The peptide quantification details in a map: number of PSMs > peptide
      * match key > match quantification details.
@@ -158,17 +158,17 @@ public class QuantificationFeaturesCache {
      * @param matchQuantificationDetails The protein quantification details
      */
     public void addPtmQuantificationDetails(String ptmName, String matchKey, int site, PtmSiteQuantificationDetails matchQuantificationDetails) {
-        HashMap<String, HashMap<Integer, PtmSiteQuantificationDetails>> submap = proteinPtmRatios.get(ptmName);
+        HashMap<String, HashMap<String, PtmSiteQuantificationDetails>> submap = proteinPtmRatios.get(ptmName);
         if (submap == null) {
-            submap = new HashMap<String, HashMap<Integer, PtmSiteQuantificationDetails>>();
+            submap = new HashMap<String, HashMap<String, PtmSiteQuantificationDetails>>();
             proteinPtmRatios.put(ptmName, submap);
         }
-        HashMap<Integer, PtmSiteQuantificationDetails> subsubmap = submap.get(matchKey);
+        HashMap<String, PtmSiteQuantificationDetails> subsubmap = submap.get(matchKey);
         if (subsubmap == null) {
-            subsubmap = new HashMap<Integer, PtmSiteQuantificationDetails>();
+            subsubmap = new HashMap<String, PtmSiteQuantificationDetails>();
             submap.put(matchKey, subsubmap);
         }
-        subsubmap.put(site, matchQuantificationDetails);
+        subsubmap.put(site + "", matchQuantificationDetails); //@TODO: implement site key
         adaptCacheSize();
     }
 
@@ -183,11 +183,11 @@ public class QuantificationFeaturesCache {
      */
     public PtmSiteQuantificationDetails getPtmQuantificationDetails(String ptmName, String matchKey, int site) {
         PtmSiteQuantificationDetails result = null;
-        HashMap<String, HashMap<Integer, PtmSiteQuantificationDetails>> submap = proteinPtmRatios.get(ptmName);
+        HashMap<String, HashMap<String, PtmSiteQuantificationDetails>> submap = proteinPtmRatios.get(ptmName);
         if (submap != null) {
-            HashMap<Integer, PtmSiteQuantificationDetails> subsubmap = submap.get(matchKey);
+            HashMap<String, PtmSiteQuantificationDetails> subsubmap = submap.get(matchKey);
             if (subsubmap != null) {
-                result = subsubmap.get(site);
+                result = subsubmap.get(site + ""); //@TODO: implement site key
             }
         }
         adaptCacheSize();

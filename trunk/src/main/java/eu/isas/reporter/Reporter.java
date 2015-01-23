@@ -11,10 +11,14 @@ import com.compomics.util.experiment.identification.matches.IonMatch;
 import com.compomics.util.experiment.identification.matches.ModificationMatch;
 import com.compomics.util.experiment.identification.matches.PeptideMatch;
 import com.compomics.util.experiment.identification.matches.ProteinMatch;
+import com.compomics.util.experiment.identification.matches.SpectrumMatch;
+import com.compomics.util.experiment.identification.matches_iterators.PeptideMatchesIterator;
+import com.compomics.util.experiment.identification.matches_iterators.PsmIterator;
 import com.compomics.util.experiment.massspectrometry.MSnSpectrum;
 import com.compomics.util.experiment.massspectrometry.Precursor;
 import com.compomics.util.experiment.massspectrometry.Spectrum;
 import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
+import com.compomics.util.experiment.personalization.UrParameter;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
 import com.compomics.util.math.BasicMathFunctions;
@@ -64,11 +68,12 @@ public class Reporter {
      * @param quantificationFeaturesGenerator the quantification features
      * generator
      * @param waitingHandler waiting handler displaying progress to the user
-     * @throws java.sql.SQLException
-     * @throws java.io.IOException
-     * @throws java.lang.ClassNotFoundException
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException
-     * @throws java.lang.InterruptedException
+     * 
+     * @throws java.sql.SQLException exception thrown whenever an error occurred while interacting with the database
+     * @throws java.io.IOException exception thrown whenever an error occurred while interacting with a file
+     * @throws java.lang.ClassNotFoundException exception thrown whenever an error occurred while deserializing an object
+     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown whenever an error occurred while reading an mzML file
+     * @throws java.lang.InterruptedException exception thrown whenever a threading error occurred
      */
     public static void setNormalizationFactors(ReporterIonQuantification reporterIonQuantification, ReporterPreferences reporterPreferences,
             Identification identification, QuantificationFeaturesGenerator quantificationFeaturesGenerator, WaitingHandler waitingHandler)
@@ -81,32 +86,8 @@ public class Reporter {
         int progress = 0;
         int totalProgress = 2 * identification.getSpectrumFiles().size() + 4;
         PSParameter psParameter = new PSParameter();
-        for (String mgfName : identification.getOrderedSpectrumFileNames()) {
-            if (waitingHandler != null) {
-                waitingHandler.setPrimaryProgressCounterIndeterminate(true);
-                waitingHandler.setWaitingText("Loading Matches: " + mgfName + " (Step " + ++progress + " of " + totalProgress + "). Please Wait...");
-            }
-            identification.loadSpectrumMatches(mgfName, waitingHandler);
-        }
-
-        if (waitingHandler != null) {
-            waitingHandler.setPrimaryProgressCounterIndeterminate(true);
-            waitingHandler.setWaitingText("Loading Peptide Matches (Step " + ++progress + " of " + totalProgress + "). Please Wait...");
-        }
-        identification.loadPeptideMatches(waitingHandler);
-        for (String mgfName : identification.getOrderedSpectrumFileNames()) {
-            if (waitingHandler != null) {
-                waitingHandler.setPrimaryProgressCounterIndeterminate(true);
-                waitingHandler.setWaitingText("Loading Match Parameters: " + mgfName + " (Step " + ++progress + " of " + totalProgress + "). Please Wait...");
-            }
-            identification.loadSpectrumMatchParameters(mgfName, psParameter, waitingHandler);
-        }
-
-        if (waitingHandler != null) {
-            waitingHandler.setPrimaryProgressCounterIndeterminate(true);
-            waitingHandler.setWaitingText("Loading Peptide Details (Step " + ++progress + " of " + totalProgress + "). Please Wait...");
-        }
-        identification.loadPeptideMatchParameters(psParameter, waitingHandler);
+        ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
+        parameters.add(psParameter);
 
         if (waitingHandler != null) {
             waitingHandler.setWaitingText("Ratio Normalization (Step " + ++progress + " of " + totalProgress + "). Please Wait...");
@@ -116,10 +97,13 @@ public class Reporter {
         }
 
         progress++;
-        for (String peptideKey : identification.getPeptideIdentification()) {
+        PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(parameters, true, parameters);
+        while (peptideMatchesIterator.hasNext()) {
+            PeptideMatch peptideMatch = peptideMatchesIterator.next();
+            String peptideKey = peptideMatch.getKey();
             psParameter = (PSParameter) identification.getPeptideMatchParameter(peptideKey, psParameter);
             if (psParameter.getMatchValidationLevel().isValidated()) {
-                PeptideQuantificationDetails matchQuantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideKey);
+                PeptideQuantificationDetails matchQuantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideMatch);
                 for (String sampleIndex : reporterIonQuantification.getSampleIndexes()) {
                     Double ratio = matchQuantificationDetails.getRawRatio(sampleIndex);
                     if (QuantificationFilter.isRatioValid(reporterPreferences, ratio) && ratio > 0) {
@@ -155,32 +139,38 @@ public class Reporter {
      * @param reporterPreferences the quantification user settings
      * @param reporterIonQuantification the reporter quantification settings
      * @param searchParameters the identification parameters
-     * @param matchKey the key of the match of interest
+     * @param proteinMatch the protein match
      *
      * @return the quantification details of the match
-     *
-     * @throws java.sql.SQLException
-     * @throws java.io.IOException
-     * @throws java.lang.ClassNotFoundException
-     * @throws java.lang.InterruptedException
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException
+     * 
+     * @throws java.sql.SQLException exception thrown whenever an error occurred while interacting with the database
+     * @throws java.io.IOException exception thrown whenever an error occurred while interacting with a file
+     * @throws java.lang.ClassNotFoundException exception thrown whenever an error occurred while deserializing an object
+     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown whenever an error occurred while reading an mzML file
+     * @throws java.lang.InterruptedException exception thrown whenever a threading error occurred
      */
     public static ProteinQuantificationDetails estimateProteinMatchQuantificationDetails(Identification identification,
             QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterPreferences reporterPreferences,
-            ReporterIonQuantification reporterIonQuantification, SearchParameters searchParameters, String matchKey)
+            ReporterIonQuantification reporterIonQuantification, SearchParameters searchParameters, ProteinMatch proteinMatch)
             throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
 
         ProteinQuantificationDetails result = new ProteinQuantificationDetails();
         HashMap<String, ArrayList<Double>> ratios = new HashMap<String, ArrayList<Double>>();
-        ProteinMatch proteinMatch = identification.getProteinMatch(matchKey);
         Set<String> indexes = reporterIonQuantification.getSampleIndexes();
-        identification.loadPeptideMatches(proteinMatch.getPeptideMatchesKeys(), null);
-        identification.loadPeptideMatchParameters(proteinMatch.getPeptideMatchesKeys(), new PSParameter(), null);
+        
+        PSParameter psParameter = new PSParameter();
+        ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
+        parameters.add(psParameter);
+        
+        PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(proteinMatch.getPeptideMatchesKeys(), parameters, false, parameters);
 
-        for (String peptideKey : proteinMatch.getPeptideMatchesKeys()) {
-            if (QuantificationFilter.isPeptideValid(reporterPreferences, identification, searchParameters, peptideKey)) {
+        while (peptideMatchesIterator.hasNext()) {
+            
+            PeptideMatch peptideMatch = peptideMatchesIterator.next();
+            
+            if (QuantificationFilter.isPeptideValid(reporterPreferences, identification, searchParameters, peptideMatch)) {
                 for (String index : indexes) {
-                    PeptideQuantificationDetails peptideQuantification = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideKey);
+                    PeptideQuantificationDetails peptideQuantification = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideMatch);
                     double ratio = peptideQuantification.getRatio(index, reporterIonQuantification);
                     ArrayList<Double> channelRatios = ratios.get(index);
                     if (channelRatios == null) {
@@ -219,12 +209,12 @@ public class Reporter {
      * @param site the site of the PTM on the protein sequence
      *
      * @return the quantification details of the match
-     *
-     * @throws java.sql.SQLException
-     * @throws java.io.IOException
-     * @throws java.lang.ClassNotFoundException
-     * @throws java.lang.InterruptedException
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException
+     * 
+     * @throws java.sql.SQLException exception thrown whenever an error occurred while interacting with the database
+     * @throws java.io.IOException exception thrown whenever an error occurred while interacting with a file
+     * @throws java.lang.ClassNotFoundException exception thrown whenever an error occurred while deserializing an object
+     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown whenever an error occurred while reading an mzML file
+     * @throws java.lang.InterruptedException exception thrown whenever a threading error occurred
      */
     public static PtmSiteQuantificationDetails estimatePTMQuantificationDetails(Identification identification,
             QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterPreferences reporterPreferences,
@@ -236,11 +226,15 @@ public class Reporter {
         HashMap<String, ArrayList<Double>> ratios = new HashMap<String, ArrayList<Double>>();
         ProteinMatch proteinMatch = identification.getProteinMatch(matchKey);
         Set<String> indexes = reporterIonQuantification.getSampleIndexes();
-        identification.loadPeptideMatches(proteinMatch.getPeptideMatchesKeys(), null);
-        identification.loadPeptideMatchParameters(proteinMatch.getPeptideMatchesKeys(), new PSParameter(), null);
-
-        for (String peptideKey : proteinMatch.getPeptideMatchesKeys()) {
-            PeptideMatch peptideMatch = identification.getPeptideMatch(peptideKey);
+        
+        PSParameter psParameter = new PSParameter();
+        ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
+        parameters.add(psParameter);
+        PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(proteinMatch.getPeptideMatchesKeys(), parameters, false, parameters);
+        
+        while (peptideMatchesIterator.hasNext()) {
+            
+            PeptideMatch peptideMatch = peptideMatchesIterator.next();
             Peptide peptide = peptideMatch.getTheoreticPeptide();
             boolean modified = false;
             for (ModificationMatch modificationMatch : peptide.getModificationMatches()) {
@@ -260,9 +254,9 @@ public class Reporter {
                     break;
                 }
             }
-            if (QuantificationFilter.isPeptideValid(reporterPreferences, identification, searchParameters, peptideKey)) {
+            if (QuantificationFilter.isPeptideValid(reporterPreferences, identification, searchParameters, peptideMatch)) {
                 for (String index : indexes) {
-                    PeptideQuantificationDetails peptideQuantification = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideKey);
+                    PeptideQuantificationDetails peptideQuantification = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideMatch);
                     double ratio = peptideQuantification.getRatio(index, reporterIonQuantification);
                     ArrayList<Double> channelRatios = ratios.get(index);
                     if (channelRatios == null) {
@@ -293,29 +287,36 @@ public class Reporter {
      * generator used to store and retrieve quantification details
      * @param reporterPreferences the quantification user settings
      * @param reporterIonQuantification the reporter quantification settings
-     * @param matchKey the key of the match of interest
+     * @param peptideMatch the peptide match
      *
      * @return the quantification details of the match
-     *
-     * @throws java.sql.SQLException
-     * @throws java.io.IOException
-     * @throws java.lang.ClassNotFoundException
-     * @throws java.lang.InterruptedException
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException
+     * 
+     * @throws java.sql.SQLException exception thrown whenever an error occurred while interacting with the database
+     * @throws java.io.IOException exception thrown whenever an error occurred while interacting with a file
+     * @throws java.lang.ClassNotFoundException exception thrown whenever an error occurred while deserializing an object
+     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown whenever an error occurred while reading an mzML file
+     * @throws java.lang.InterruptedException exception thrown whenever a threading error occurred
      */
     public static PeptideQuantificationDetails estimatePeptideMatchQuantificationDetails(Identification identification,
             QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterPreferences reporterPreferences,
-            ReporterIonQuantification reporterIonQuantification, String matchKey)
+            ReporterIonQuantification reporterIonQuantification, PeptideMatch peptideMatch)
             throws IOException, MzMLUnmarshallerException, SQLException, ClassNotFoundException, InterruptedException {
 
         PeptideQuantificationDetails result = new PeptideQuantificationDetails();
         HashMap<String, ArrayList<Double>> ratios = new HashMap<String, ArrayList<Double>>();
-        PeptideMatch peptideMatch = identification.getPeptideMatch(matchKey);
         Set<String> indexes = reporterIonQuantification.getSampleIndexes();
-        identification.loadSpectrumMatches(peptideMatch.getSpectrumMatches(), null);
-        identification.loadSpectrumMatchParameters(peptideMatch.getSpectrumMatches(), new PSParameter(), null);
+        
+        PSParameter psParameter = new PSParameter();
+        ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
+        parameters.add(psParameter);
+        
+        PsmIterator psmIterator = identification.getPsmIterator(peptideMatch.getSpectrumMatches(), parameters, false);
 
-        for (String spectrumKey : peptideMatch.getSpectrumMatches()) {
+        while (psmIterator.hasNext()) {
+            
+            SpectrumMatch spectrumMatch = psmIterator.next();
+            String spectrumKey = spectrumMatch.getKey();
+            
             if (QuantificationFilter.isPsmValid(reporterPreferences, identification, spectrumKey)) {
                 for (String index : indexes) {
                     PsmQuantificationDetails spectrumQuantification = quantificationFeaturesGenerator.getPSMQuantificationDetails(spectrumKey);
@@ -352,12 +353,12 @@ public class Reporter {
      * @param matchKey the key of the match of interest
      *
      * @return the quantification details of the match
-     *
-     * @throws java.sql.SQLException
-     * @throws java.io.IOException
-     * @throws java.lang.ClassNotFoundException
-     * @throws java.lang.InterruptedException
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException
+     * 
+     * @throws java.sql.SQLException exception thrown whenever an error occurred while interacting with the database
+     * @throws java.io.IOException exception thrown whenever an error occurred while interacting with a file
+     * @throws java.lang.ClassNotFoundException exception thrown whenever an error occurred while deserializing an object
+     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown whenever an error occurred while reading an mzML file
+     * @throws java.lang.InterruptedException exception thrown whenever a threading error occurred
      */
     public static PsmQuantificationDetails estimatePSMQuantificationDetails(Identification identification,
             QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterPreferences reporterPreferences,
@@ -460,9 +461,9 @@ public class Reporter {
      * @param matchKey the key of the spectrum of interest
      *
      * @return the quantification details of the spectrum
-     *
-     * @throws java.io.IOException
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException
+     * 
+     * @throws java.io.IOException exception thrown whenever an error occurred while interacting with a file
+     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown whenever an error occurred while reading an mzML file
      */
     public static SpectrumQuantificationDetails estimateSpectrumQuantificationDetails(Identification identification,
             QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification,

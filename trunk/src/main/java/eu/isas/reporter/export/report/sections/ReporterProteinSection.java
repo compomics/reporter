@@ -3,6 +3,8 @@ package eu.isas.reporter.export.report.sections;
 import com.compomics.util.experiment.ShotgunProtocol;
 import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.matches.ProteinMatch;
+import com.compomics.util.experiment.identification.matches_iterators.ProteinMatchesIterator;
+import com.compomics.util.experiment.personalization.UrParameter;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.io.export.ExportFeature;
 import com.compomics.util.io.export.ExportWriter;
@@ -126,15 +128,13 @@ public class ReporterProteinSection {
      * @param validatedOnly whether only validated matches should be exported
      * @param decoys whether decoy matches should be exported as well
      * @param waitingHandler the waiting handler
-     *
-     * @throws IOException exception thrown whenever an error occurred while
-     * writing the file.
-     * @throws IllegalArgumentException
-     * @throws SQLException
-     * @throws ClassNotFoundException
-     * @throws InterruptedException
-     * @throws MzMLUnmarshallerException
-     * @throws org.apache.commons.math.MathException
+     * 
+     * @throws java.sql.SQLException exception thrown whenever an error occurred while interacting with the database
+     * @throws java.io.IOException exception thrown whenever an error occurred while interacting with a file
+     * @throws java.lang.ClassNotFoundException exception thrown whenever an error occurred while deserializing an object
+     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown whenever an error occurred while reading an mzML file
+     * @throws java.lang.InterruptedException exception thrown whenever a threading error occurred
+     * @throws org.apache.commons.math.MathException exception thrown whenever an error occurred while transforming the ratios
      */
     public void writeSection(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification,
             ShotgunProtocol shotgunProtocol, IdentificationParameters identificationParameters, ArrayList<String> keys, int nSurroundingAas, boolean validatedOnly, boolean decoys, WaitingHandler waitingHandler)
@@ -153,30 +153,8 @@ public class ReporterProteinSection {
         }
         int line = 1;
         PSParameter psParameter = new PSParameter();
-
-        if (peptideSection != null) {
-            if (waitingHandler != null) {
-                waitingHandler.setWaitingText("Loading Peptides. Please Wait...");
-                waitingHandler.resetSecondaryProgressCounter();
-            }
-            identification.loadPeptideMatches(waitingHandler);
-            if (waitingHandler != null) {
-                waitingHandler.setWaitingText("Loading Peptide Details. Please Wait...");
-                waitingHandler.resetSecondaryProgressCounter();
-            }
-            identification.loadPeptideMatchParameters(psParameter, waitingHandler);
-        }
-
-        if (waitingHandler != null) {
-            waitingHandler.setWaitingText("Loading Proteins. Please Wait...");
-            waitingHandler.resetSecondaryProgressCounter();
-        }
-        identification.loadProteinMatches(keys, waitingHandler);
-        if (waitingHandler != null) {
-            waitingHandler.setWaitingText("Loading Protein Details. Please Wait...");
-            waitingHandler.resetSecondaryProgressCounter();
-        }
-        identification.loadProteinMatchParameters(keys, psParameter, waitingHandler);
+        ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
+        parameters.add(psParameter);
 
         if (waitingHandler != null) {
             waitingHandler.setWaitingText("Exporting. Please Wait...");
@@ -184,7 +162,9 @@ public class ReporterProteinSection {
             waitingHandler.setMaxSecondaryProgressCounter(keys.size());
         }
 
-        for (String proteinKey : keys) {
+        ProteinMatchesIterator proteinMatchesIterator = identification.getProteinMatchesIterator(keys, parameters, peptideSection != null, parameters, peptideSection != null, parameters);
+        
+        while (proteinMatchesIterator.hasNext()) {
 
             if (waitingHandler != null) {
                 if (waitingHandler.isRunCanceled()) {
@@ -192,6 +172,9 @@ public class ReporterProteinSection {
                 }
                 waitingHandler.increaseSecondaryProgressCounter();
             }
+            
+            ProteinMatch proteinMatch = proteinMatchesIterator.next();
+            String proteinKey = proteinMatch.getKey();
 
             if (decoys || !ProteinMatch.isDecoy(proteinKey)) {
 
@@ -205,8 +188,6 @@ public class ReporterProteinSection {
                         writer.write(line + "");
                         first = false;
                     }
-
-                    ProteinMatch proteinMatch = identification.getProteinMatch(proteinKey);
 
                     for (ExportFeature exportFeature : identificationFeatures) {
                         if (!first) {
@@ -272,12 +253,12 @@ public class ReporterProteinSection {
      *
      * @return the report component corresponding to a feature at a given
      * channel
-     *
-     * @throws SQLException
-     * @throws IOException
-     * @throws ClassNotFoundException
-     * @throws InterruptedException
-     * @throws MzMLUnmarshallerException
+     * 
+     * @throws java.sql.SQLException exception thrown whenever an error occurred while interacting with the database
+     * @throws java.io.IOException exception thrown whenever an error occurred while interacting with a file
+     * @throws java.lang.ClassNotFoundException exception thrown whenever an error occurred while deserializing an object
+     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown whenever an error occurred while reading an mzML file
+     * @throws java.lang.InterruptedException exception thrown whenever a threading error occurred
      */
     public static String getFeature(QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, String proteinKey,
             ReporterProteinFeatures proteinFeatures, String sampleIndex) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
@@ -296,7 +277,7 @@ public class ReporterProteinSection {
      * @param reporterIonQuantification the reporter ion quantification object
      * containing the quantification configuration
      *
-     * @throws IOException
+     * @throws java.io.IOException exception thrown whenever an error occurred while interacting with a file
      */
     public void writeHeader(ReporterIonQuantification reporterIonQuantification) throws IOException {
 

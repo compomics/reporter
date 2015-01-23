@@ -3,6 +3,8 @@ package eu.isas.reporter.export.report.sections;
 import com.compomics.util.experiment.ShotgunProtocol;
 import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.matches.PeptideMatch;
+import com.compomics.util.experiment.identification.matches_iterators.PeptideMatchesIterator;
+import com.compomics.util.experiment.personalization.UrParameter;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.io.export.ExportFeature;
 import com.compomics.util.io.export.ExportWriter;
@@ -118,14 +120,12 @@ public class ReporterPeptideSection {
      * @param validatedOnly whether only validated matches should be exported
      * @param decoys whether decoy matches should be exported as well
      * @param waitingHandler the waiting handler
-     *
-     * @throws IOException exception thrown whenever an error occurred while
-     * writing the file.
-     * @throws IllegalArgumentException
-     * @throws SQLException
-     * @throws ClassNotFoundException
-     * @throws InterruptedException
-     * @throws MzMLUnmarshallerException
+     * 
+     * @throws java.sql.SQLException exception thrown whenever an error occurred while interacting with the database
+     * @throws java.io.IOException exception thrown whenever an error occurred while interacting with a file
+     * @throws java.lang.ClassNotFoundException exception thrown whenever an error occurred while deserializing an object
+     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown whenever an error occurred while reading an mzML file
+     * @throws java.lang.InterruptedException exception thrown whenever a threading error occurred
      */
     public void writeSection(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator,
             QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification,
@@ -145,20 +145,10 @@ public class ReporterPeptideSection {
             keys = identification.getPeptideIdentification();
         }
 
-        PSParameter psParameter = new PSParameter();
-        PeptideMatch peptideMatch;
         int line = 1;
-
-        if (waitingHandler != null) {
-            waitingHandler.setWaitingText("Loading Peptides. Please Wait...");
-            waitingHandler.resetSecondaryProgressCounter();
-        }
-        identification.loadPeptideMatches(keys, waitingHandler);
-        if (waitingHandler != null) {
-            waitingHandler.setWaitingText("Loading Peptide Details. Please Wait...");
-            waitingHandler.resetSecondaryProgressCounter();
-        }
-        identification.loadPeptideMatchParameters(keys, psParameter, waitingHandler);
+        PSParameter psParameter = new PSParameter();
+        ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
+        parameters.add(psParameter);
 
         if (waitingHandler != null) {
             waitingHandler.setWaitingText("Exporting. Please Wait...");
@@ -166,7 +156,9 @@ public class ReporterPeptideSection {
             waitingHandler.setMaxSecondaryProgressCounter(keys.size());
         }
 
-        for (String peptideKey : keys) {
+        PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(keys, parameters, false, parameters);
+        
+        while (peptideMatchesIterator.hasNext()) {
 
             if (waitingHandler != null) {
                 if (waitingHandler.isRunCanceled()) {
@@ -175,6 +167,9 @@ public class ReporterPeptideSection {
                 waitingHandler.increaseSecondaryProgressCounter();
             }
 
+            PeptideMatch peptideMatch = peptideMatchesIterator.next();
+            String peptideKey = peptideMatch.getKey();
+            
             psParameter = (PSParameter) identification.getPeptideMatchParameter(peptideKey, psParameter);
 
             if (!validatedOnly || psParameter.getMatchValidationLevel().isValidated()) {
@@ -215,7 +210,7 @@ public class ReporterPeptideSection {
                                 } else {
                                     first = false;
                                 }
-                                writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, peptideKey, peptideFeature, sampleIndex), reporterStyle);
+                                writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, peptideMatch, peptideFeature, sampleIndex), reporterStyle);
                             }
                         } else {
                             if (!first) {
@@ -223,7 +218,7 @@ public class ReporterPeptideSection {
                             } else {
                                 first = false;
                             }
-                            writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, peptideKey, peptideFeature, ""), reporterStyle);
+                            writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, peptideMatch, peptideFeature, ""), reporterStyle);
                         }
                     }
 
@@ -254,28 +249,28 @@ public class ReporterPeptideSection {
      * generator
      * @param reporterIonQuantification the reporter ion quantification object
      * containing the quantification configuration
-     * @param peptideKey the peptide key
+     * @param peptideMatch the peptide match
      * @param peptideFeatures the peptide feature to export
      * @param sampleIndex the index of the sample in case the feature is channel
      * dependent, ignored otherwise
      *
      * @return the report component corresponding to a feature at a given
      * channel
-     *
-     * @throws SQLException
-     * @throws IOException
-     * @throws ClassNotFoundException
-     * @throws InterruptedException
-     * @throws MzMLUnmarshallerException
+     * 
+     * @throws java.sql.SQLException exception thrown whenever an error occurred while interacting with the database
+     * @throws java.io.IOException exception thrown whenever an error occurred while interacting with a file
+     * @throws java.lang.ClassNotFoundException exception thrown whenever an error occurred while deserializing an object
+     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown whenever an error occurred while reading an mzML file
+     * @throws java.lang.InterruptedException exception thrown whenever a threading error occurred
      */
-    public static String getFeature(QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, String peptideKey,
+    public static String getFeature(QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, PeptideMatch peptideMatch,
             ReporterPeptideFeature peptideFeatures, String sampleIndex) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
         switch (peptideFeatures) {
             case raw_ratio:
-                PeptideQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideKey);
+                PeptideQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideMatch);
                 return quantificationDetails.getRawRatio(sampleIndex).toString();
             case normalized_ratio:
-                quantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideKey);
+                quantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideMatch);
                 return quantificationDetails.getRatio(sampleIndex, reporterIonQuantification).toString();
             default:
                 return "Not implemented";
@@ -288,7 +283,7 @@ public class ReporterPeptideSection {
      * @param reporterIonQuantification the reporter ion quantification object
      * containing the quantification configuration
      *
-     * @throws IOException
+     * @throws java.io.IOException exception thrown whenever an error occurred while interacting with a file
      */
     public void writeHeader(ReporterIonQuantification reporterIonQuantification) throws IOException {
 
