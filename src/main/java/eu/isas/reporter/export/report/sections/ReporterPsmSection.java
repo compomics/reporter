@@ -6,7 +6,9 @@ import com.compomics.util.experiment.identification.PeptideAssumption;
 import com.compomics.util.experiment.identification.TagAssumption;
 import com.compomics.util.experiment.identification.matches.IonMatch;
 import com.compomics.util.experiment.identification.matches.SpectrumMatch;
+import com.compomics.util.experiment.identification.matches_iterators.PsmIterator;
 import com.compomics.util.experiment.massspectrometry.Spectrum;
+import com.compomics.util.experiment.personalization.UrParameter;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.io.export.ExportFeature;
 import com.compomics.util.io.export.ExportWriter;
@@ -127,13 +129,13 @@ public class ReporterPsmSection {
      * @param validatedOnly whether only validated matches should be exported
      * @param decoys whether decoy matches should be exported as well
      * @param waitingHandler the waiting handler
-     * @throws IOException exception thrown whenever an error occurred while
-     * writing the file.
-     * @throws IllegalArgumentException
-     * @throws SQLException
-     * @throws ClassNotFoundException
-     * @throws InterruptedException
-     * @throws MzMLUnmarshallerException
+     * 
+     * 
+     * @throws java.sql.SQLException exception thrown whenever an error occurred while interacting with the database
+     * @throws java.io.IOException exception thrown whenever an error occurred while interacting with a file
+     * @throws java.lang.ClassNotFoundException exception thrown whenever an error occurred while deserializing an object
+     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown whenever an error occurred while reading an mzML file
+     * @throws java.lang.InterruptedException exception thrown whenever a threading error occurred
      */
     public void writeSection(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, ReporterPreferences reporterPreferences,
             ShotgunProtocol shotgunProtocol, IdentificationParameters identificationParameters, ArrayList<String> keys, String linePrefix, boolean validatedOnly, boolean decoys, WaitingHandler waitingHandler) throws IOException, IllegalArgumentException, SQLException,
@@ -161,7 +163,6 @@ public class ReporterPsmSection {
             }
         }
 
-        PSParameter psParameter = new PSParameter();
         int line = 1;
 
         int totalSize = 0;
@@ -182,26 +183,22 @@ public class ReporterPsmSection {
         }
 
         if (waitingHandler != null) {
-            waitingHandler.setWaitingText("Loading Spectra. Please Wait...");
-            waitingHandler.resetSecondaryProgressCounter();
-        }
-        identification.loadSpectrumMatches(spectrumKeys, waitingHandler);
-
-        if (waitingHandler != null) {
-            waitingHandler.setWaitingText("Loading Spectrum Details. Please Wait...");
-            waitingHandler.resetSecondaryProgressCounter();
-        }
-        identification.loadSpectrumMatchParameters(spectrumKeys, psParameter, waitingHandler);
-
-        if (waitingHandler != null) {
             waitingHandler.setWaitingText("Exporting. Please Wait...");
             waitingHandler.resetSecondaryProgressCounter();
             waitingHandler.setMaxSecondaryProgressCounter(totalSize);
         }
+        
+        PSParameter psParameter = new PSParameter();
+        ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
+        parameters.add(psParameter);
 
         for (String spectrumFile : psmMap.keySet()) {
+            
+            ArrayList<String> fileKeys = psmMap.get(spectrumFile);
+            
+            PsmIterator psmIterator = identification.getPsmIterator(spectrumFile, fileKeys, parameters, false);
 
-            for (String spectrumKey : psmMap.get(spectrumFile)) {
+            while (psmIterator.hasNext()) {
 
                 if (waitingHandler != null) {
                     if (waitingHandler.isRunCanceled()) {
@@ -210,11 +207,13 @@ public class ReporterPsmSection {
                     waitingHandler.increaseSecondaryProgressCounter();
                 }
 
+                SpectrumMatch spectrumMatch = psmIterator.next();
+                String spectrumKey = spectrumMatch.getKey();
+                        
                 psParameter = (PSParameter) identification.getSpectrumMatchParameter(spectrumKey, psParameter);
 
                 if (!validatedOnly || psParameter.getMatchValidationLevel().isValidated()) {
 
-                    SpectrumMatch spectrumMatch = identification.getSpectrumMatch(spectrumKey);
                     PeptideAssumption peptideAssumption = spectrumMatch.getBestPeptideAssumption();
 
                     if (decoys || peptideAssumption == null || !peptideAssumption.getPeptide().isDecoy(identificationParameters.getSequenceMatchingPreferences())) {
@@ -317,12 +316,12 @@ public class ReporterPsmSection {
      *
      * @return the report component corresponding to a feature at a given
      * channel
-     *
-     * @throws SQLException
-     * @throws IOException
-     * @throws ClassNotFoundException
-     * @throws InterruptedException
-     * @throws MzMLUnmarshallerException
+     * 
+     * @throws java.sql.SQLException exception thrown whenever an error occurred while interacting with the database
+     * @throws java.io.IOException exception thrown whenever an error occurred while interacting with a file
+     * @throws java.lang.ClassNotFoundException exception thrown whenever an error occurred while deserializing an object
+     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown whenever an error occurred while reading an mzML file
+     * @throws java.lang.InterruptedException exception thrown whenever a threading error occurred
      */
     public static String getFeature(QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, ReporterPreferences reporterPreferences, String spectrumKey, ReporterPsmFeatures psmFeatures, String sampleIndex) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
         switch (psmFeatures) {
@@ -357,7 +356,7 @@ public class ReporterPsmSection {
      * @param reporterIonQuantification the reporter ion quantification object
      * containing the quantification configuration
      *
-     * @throws IOException
+     * @throws java.io.IOException exception thrown whenever an error occurred while interacting with a file
      */
     public void writeHeader(ReporterIonQuantification reporterIonQuantification) throws IOException {
 

@@ -66,7 +66,7 @@ public class QuantificationFilter {
      * @param identification the identification where to get the information
      * from
      * @param searchParameters the identification parameters
-     * @param matchKey the key of the match of interest
+     * @param peptideMatch the match of interest
      *
      * @return true if the PSM can be used for quantification
      *
@@ -76,17 +76,16 @@ public class QuantificationFilter {
      * @throws java.lang.InterruptedException
      */
     public static boolean isPeptideValid(ReporterPreferences reporterPreferences, Identification identification,
-            SearchParameters searchParameters, String matchKey) throws SQLException, IOException, ClassNotFoundException, InterruptedException {
+            SearchParameters searchParameters, PeptideMatch peptideMatch) throws SQLException, IOException, ClassNotFoundException, InterruptedException {
 
         // check match validation
         PSParameter psParameter = new PSParameter();
-        psParameter = (PSParameter) identification.getPeptideMatchParameter(matchKey, psParameter);
+        psParameter = (PSParameter) identification.getPeptideMatchParameter(peptideMatch.getKey(), psParameter);
         if (psParameter.getMatchValidationLevel().getIndex() < reporterPreferences.getPeptideValidationLevel().getIndex()) {
             return false;
         }
 
         // check enzymaticity
-        PeptideMatch peptideMatch = identification.getPeptideMatch(matchKey);
         Peptide peptide = peptideMatch.getTheoreticPeptide();
         Enzyme enzyme = searchParameters.getEnzyme();
         if (!enzyme.isSemiSpecific()) {

@@ -2,6 +2,9 @@ package eu.isas.reporter.gui.resultpanels;
 
 import com.compomics.util.examples.BareBonesBrowserLaunch;
 import com.compomics.util.experiment.identification.Identification;
+import com.compomics.util.experiment.identification.matches.PeptideMatch;
+import com.compomics.util.experiment.identification.matches_iterators.PeptideMatchesIterator;
+import com.compomics.util.experiment.personalization.UrParameter;
 import com.compomics.util.gui.GuiUtilities;
 import com.compomics.util.gui.error_handlers.HelpDialog;
 import com.compomics.util.gui.tablemodels.SelfUpdatingTableModel;
@@ -337,8 +340,15 @@ public class OverviewPanel extends javax.swing.JPanel {
                         DefaultBoxAndWhiskerCategoryDataset boxPlotDataset = new DefaultBoxAndWhiskerCategoryDataset();
                         HashMap<String, ArrayList<Double>> values = new HashMap<String, ArrayList<Double>>();
 
-                        for (String peptideKey : identification.getProteinMatch(proteinKey).getPeptideMatchesKeys()) {
-                            PeptideQuantificationDetails peptideQuantificationDetails = reporterGUI.getQuantificationFeaturesGenerator().getPeptideMatchQuantificationDetails(peptideKey);
+                        PSParameter psParameter = new PSParameter();
+                        ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
+                        parameters.add(psParameter);
+                        PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(identification.getProteinMatch(proteinKey).getPeptideMatchesKeys(), parameters, false, parameters);
+
+                        while (peptideMatchesIterator.hasNext()) {
+
+                            PeptideMatch peptideMatch = peptideMatchesIterator.next();
+                            PeptideQuantificationDetails peptideQuantificationDetails = reporterGUI.getQuantificationFeaturesGenerator().getPeptideMatchQuantificationDetails(peptideMatch);
 
                             for (String sampleIndex : sampleIndexes) {
                                 Double ratio = peptideQuantificationDetails.getRatio(sampleIndex, reporterGUI.getReporterIonQuantification());
@@ -407,8 +417,15 @@ public class OverviewPanel extends javax.swing.JPanel {
 
                         HashMap<String, ArrayList<Double>> values = new HashMap<String, ArrayList<Double>>();
 
-                        for (String peptideKey : identification.getProteinMatch(proteinKey).getPeptideMatchesKeys()) {
-                            PeptideQuantificationDetails peptideQuantificationDetails = reporterGUI.getQuantificationFeaturesGenerator().getPeptideMatchQuantificationDetails(peptideKey);
+                        PSParameter psParameter = new PSParameter();
+                        ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
+                        parameters.add(psParameter);
+                        PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(identification.getProteinMatch(proteinKey).getPeptideMatchesKeys(), parameters, false, parameters);
+
+                        while (peptideMatchesIterator.hasNext()) {
+
+                            PeptideMatch peptideMatch = peptideMatchesIterator.next();
+                            PeptideQuantificationDetails peptideQuantificationDetails = reporterGUI.getQuantificationFeaturesGenerator().getPeptideMatchQuantificationDetails(peptideMatch);
 
                             for (String sampleIndex : sampleIndexes) {
                                 Double ratio = peptideQuantificationDetails.getRatio(sampleIndex, reporterGUI.getReporterIonQuantification());

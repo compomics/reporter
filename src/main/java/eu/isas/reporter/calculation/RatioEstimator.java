@@ -47,7 +47,7 @@ public class RatioEstimator {
         if (nZeros == ratios.size()) {
             return 0.0;
         }
-        if (ratioMin == ratioMax) {
+        if (ratioMin.equals(ratioMax)) {
             return ratioMin;
         }
         int nLeft = ratios.size() - 2 * nZeros;

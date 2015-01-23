@@ -1,6 +1,6 @@
 package eu.isas.reporter.preferences;
 
-import com.compomics.util.preferences.UtilitiesPathPreferences;
+import com.compomics.software.settings.UtilitiesPathPreferences;
 import eu.isas.peptideshaker.preferences.PeptideShakerPathPreferences;
 import eu.isas.reporter.export.report.ReporterExportFactory;
 import java.io.BufferedReader;
