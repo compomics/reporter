@@ -966,7 +966,7 @@ public class NewDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_precursorMatchingActionPerformed
 
     /**
-     * Open a file chooser for adding specturm files.
+     * Open a file chooser for adding spectrum files.
      * 
      * @param evt 
      */
