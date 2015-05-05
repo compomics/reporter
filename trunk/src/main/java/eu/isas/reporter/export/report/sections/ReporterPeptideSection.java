@@ -156,7 +156,7 @@ public class ReporterPeptideSection {
             waitingHandler.setMaxSecondaryProgressCounter(keys.size());
         }
 
-        PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(keys, parameters, false, parameters);
+        PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(keys, parameters, false, parameters, waitingHandler);
         
         while (peptideMatchesIterator.hasNext()) {
 
@@ -210,7 +210,7 @@ public class ReporterPeptideSection {
                                 } else {
                                     first = false;
                                 }
-                                writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, peptideMatch, peptideFeature, sampleIndex), reporterStyle);
+                                writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, peptideMatch, peptideFeature, sampleIndex, waitingHandler), reporterStyle);
                             }
                         } else {
                             if (!first) {
@@ -218,7 +218,7 @@ public class ReporterPeptideSection {
                             } else {
                                 first = false;
                             }
-                            writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, peptideMatch, peptideFeature, ""), reporterStyle);
+                            writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, peptideMatch, peptideFeature, "", waitingHandler), reporterStyle);
                         }
                     }
 
@@ -253,6 +253,7 @@ public class ReporterPeptideSection {
      * @param peptideFeatures the peptide feature to export
      * @param sampleIndex the index of the sample in case the feature is channel
      * dependent, ignored otherwise
+     * @param waitingHandler the waiting handler
      *
      * @return the report component corresponding to a feature at a given
      * channel
@@ -264,13 +265,13 @@ public class ReporterPeptideSection {
      * @throws java.lang.InterruptedException exception thrown whenever a threading error occurred
      */
     public static String getFeature(QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, PeptideMatch peptideMatch,
-            ReporterPeptideFeature peptideFeatures, String sampleIndex) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
+            ReporterPeptideFeature peptideFeatures, String sampleIndex, WaitingHandler waitingHandler) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
         switch (peptideFeatures) {
             case raw_ratio:
-                PeptideQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideMatch);
+                PeptideQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideMatch, waitingHandler);
                 return quantificationDetails.getRawRatio(sampleIndex).toString();
             case normalized_ratio:
-                quantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideMatch);
+                quantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideMatch, waitingHandler);
                 return quantificationDetails.getRatio(sampleIndex, reporterIonQuantification).toString();
             default:
                 return "Not implemented";

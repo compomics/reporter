@@ -162,7 +162,7 @@ public class ReporterProteinSection {
             waitingHandler.setMaxSecondaryProgressCounter(keys.size());
         }
 
-        ProteinMatchesIterator proteinMatchesIterator = identification.getProteinMatchesIterator(keys, parameters, peptideSection != null, parameters, peptideSection != null, parameters);
+        ProteinMatchesIterator proteinMatchesIterator = identification.getProteinMatchesIterator(keys, parameters, peptideSection != null, parameters, peptideSection != null, parameters, waitingHandler);
         
         while (proteinMatchesIterator.hasNext()) {
 
@@ -212,7 +212,7 @@ public class ReporterProteinSection {
                                 } else {
                                     first = false;
                                 }
-                                writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, proteinKey, tempProteinFeatures, sampleIndex), reporterStyle);
+                                writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, proteinKey, tempProteinFeatures, sampleIndex, waitingHandler), reporterStyle);
                             }
                         } else {
                             if (!first) {
@@ -220,7 +220,7 @@ public class ReporterProteinSection {
                             } else {
                                 first = false;
                             }
-                            writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, proteinKey, tempProteinFeatures, ""), reporterStyle);
+                            writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, proteinKey, tempProteinFeatures, "", waitingHandler), reporterStyle);
                         }
                     }
 
@@ -250,6 +250,7 @@ public class ReporterProteinSection {
      * @param proteinFeatures the protein feature to export
      * @param sampleIndex the index of the sample in case the feature is channel
      * dependent, ignored otherwise
+     * @param waitingHandler the waiting handler
      *
      * @return the report component corresponding to a feature at a given
      * channel
@@ -261,10 +262,10 @@ public class ReporterProteinSection {
      * @throws java.lang.InterruptedException exception thrown whenever a threading error occurred
      */
     public static String getFeature(QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, String proteinKey,
-            ReporterProteinFeatures proteinFeatures, String sampleIndex) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
+            ReporterProteinFeatures proteinFeatures, String sampleIndex, WaitingHandler waitingHandler) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
         switch (proteinFeatures) {
             case ratio:
-                ProteinQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(proteinKey);
+                ProteinQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(proteinKey, waitingHandler);
                 return quantificationDetails.getRatio(sampleIndex).toString();
             default:
                 return "Not implemented";

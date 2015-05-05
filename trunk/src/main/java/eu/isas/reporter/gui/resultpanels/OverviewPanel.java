@@ -3,6 +3,7 @@ package eu.isas.reporter.gui.resultpanels;
 import com.compomics.util.examples.BareBonesBrowserLaunch;
 import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.matches.PeptideMatch;
+import com.compomics.util.experiment.identification.matches.ProteinMatch;
 import com.compomics.util.experiment.identification.matches_iterators.PeptideMatchesIterator;
 import com.compomics.util.experiment.personalization.UrParameter;
 import com.compomics.util.gui.GuiUtilities;
@@ -10,6 +11,7 @@ import com.compomics.util.gui.error_handlers.HelpDialog;
 import com.compomics.util.gui.tablemodels.SelfUpdatingTableModel;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
 import com.compomics.util.math.statistics.distributions.NormalKernelDensityEstimator;
+import com.compomics.util.waiting.WaitingHandler;
 import eu.isas.peptideshaker.gui.tablemodels.ProteinTableModel;
 import eu.isas.peptideshaker.myparameters.PSParameter;
 import eu.isas.peptideshaker.preferences.SpectrumCountingPreferences.SpectralCountingMethod;
@@ -215,10 +217,10 @@ public class OverviewPanel extends javax.swing.JPanel {
                     }
 
                     // get the protein ratio distributions
-                    getProteinRatioDistributions();
+                    getProteinRatioDistributions(progressDialog);
 
                     // update the ratio plot
-                    updateQuantificationDataPlot();
+                    updateQuantificationDataPlot(progressDialog);
 
                     // update spectrum counting column header tooltip
                     if (reporterGUI.getSpectrumCountingPreferences().getSelectedMethod() == SpectralCountingMethod.EMPAI) {
@@ -271,8 +273,10 @@ public class OverviewPanel extends javax.swing.JPanel {
 
     /**
      * Get the protein ratio distributions.
+     * 
+     * @param waitingHandler waitinghandler displaying progress to the user and allowing cancelling the process
      */
-    private void getProteinRatioDistributions() {
+    private void getProteinRatioDistributions(WaitingHandler waitingHandler) {
 
         ArrayList<String> sampleIndexes = new ArrayList<String>(reporterGUI.getReporterIonQuantification().getSampleIndexes());
         Collections.sort(sampleIndexes);
@@ -288,7 +292,7 @@ public class OverviewPanel extends javax.swing.JPanel {
 
                 for (String proteinKey : proteinKeys) {
 
-                    ProteinQuantificationDetails quantificationDetails = reporterGUI.getQuantificationFeaturesGenerator().getProteinMatchQuantificationDetails(proteinKey);
+                    ProteinQuantificationDetails quantificationDetails = reporterGUI.getQuantificationFeaturesGenerator().getProteinMatchQuantificationDetails(proteinKey, waitingHandler);
                     Double ratio = quantificationDetails.getRatio(sampleIndex);
 
                     if (ratio != null) {
@@ -320,8 +324,10 @@ public class OverviewPanel extends javax.swing.JPanel {
 
     /**
      * Update the ratio plot.
+     * 
+     * @param waitingHandler waitinghandler displaying progress to the user and allowing cancelling the process
      */
-    private void updateQuantificationDataPlot() {
+    private void updateQuantificationDataPlot(WaitingHandler waitingHandler) {
 
         ArrayList<String> sampleIndexes = new ArrayList<String>(reporterGUI.getReporterIonQuantification().getSampleIndexes());
         Collections.sort(sampleIndexes);
@@ -343,12 +349,13 @@ public class OverviewPanel extends javax.swing.JPanel {
                         PSParameter psParameter = new PSParameter();
                         ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
                         parameters.add(psParameter);
-                        PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(identification.getProteinMatch(proteinKey).getPeptideMatchesKeys(), parameters, false, parameters);
+                        ProteinMatch proteinMatch = identification.getProteinMatch(proteinKey);
+                        PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(proteinMatch.getPeptideMatchesKeys(), parameters, true, parameters, progressDialog);
 
                         while (peptideMatchesIterator.hasNext()) {
 
                             PeptideMatch peptideMatch = peptideMatchesIterator.next();
-                            PeptideQuantificationDetails peptideQuantificationDetails = reporterGUI.getQuantificationFeaturesGenerator().getPeptideMatchQuantificationDetails(peptideMatch);
+                            PeptideQuantificationDetails peptideQuantificationDetails = reporterGUI.getQuantificationFeaturesGenerator().getPeptideMatchQuantificationDetails(peptideMatch, waitingHandler);
 
                             for (String sampleIndex : sampleIndexes) {
                                 Double ratio = peptideQuantificationDetails.getRatio(sampleIndex, reporterGUI.getReporterIonQuantification());
@@ -372,7 +379,7 @@ public class OverviewPanel extends javax.swing.JPanel {
 
                         insertBoxPlots(boxPlotDataset);
                     } else {
-                        ProteinQuantificationDetails quantificationDetails = reporterGUI.getQuantificationFeaturesGenerator().getProteinMatchQuantificationDetails(proteinKey);
+                        ProteinQuantificationDetails quantificationDetails = reporterGUI.getQuantificationFeaturesGenerator().getProteinMatchQuantificationDetails(proteinKey, waitingHandler);
                         DefaultCategoryDataset lineChartDataset = new DefaultCategoryDataset();
 
                         for (String sampleIndex : sampleIndexes) {
@@ -420,12 +427,13 @@ public class OverviewPanel extends javax.swing.JPanel {
                         PSParameter psParameter = new PSParameter();
                         ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
                         parameters.add(psParameter);
-                        PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(identification.getProteinMatch(proteinKey).getPeptideMatchesKeys(), parameters, false, parameters);
+                        ProteinMatch proteinMatch = identification.getProteinMatch(proteinKey);
+                        PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(proteinMatch.getPeptideMatchesKeys(), parameters, true, parameters, progressDialog);
 
                         while (peptideMatchesIterator.hasNext()) {
 
                             PeptideMatch peptideMatch = peptideMatchesIterator.next();
-                            PeptideQuantificationDetails peptideQuantificationDetails = reporterGUI.getQuantificationFeaturesGenerator().getPeptideMatchQuantificationDetails(peptideMatch);
+                            PeptideQuantificationDetails peptideQuantificationDetails = reporterGUI.getQuantificationFeaturesGenerator().getPeptideMatchQuantificationDetails(peptideMatch, waitingHandler);
 
                             for (String sampleIndex : sampleIndexes) {
                                 Double ratio = peptideQuantificationDetails.getRatio(sampleIndex, reporterGUI.getReporterIonQuantification());
@@ -462,7 +470,7 @@ public class OverviewPanel extends javax.swing.JPanel {
                         if (proteinIndex != -1) {
 
                             String proteinKey = proteinKeys.get(proteinIndex);
-                            ProteinQuantificationDetails quantificationDetails = reporterGUI.getQuantificationFeaturesGenerator().getProteinMatchQuantificationDetails(proteinKey);
+                            ProteinQuantificationDetails quantificationDetails = reporterGUI.getQuantificationFeaturesGenerator().getProteinMatchQuantificationDetails(proteinKey, waitingHandler);
 
                             for (String sampleIndex : sampleIndexes) {
                                 Double ratio = quantificationDetails.getRatio(sampleIndex);
@@ -1279,7 +1287,7 @@ public class OverviewPanel extends javax.swing.JPanel {
                 this.setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
 
                 // update the plot
-                updateQuantificationDataPlot();
+                updateQuantificationDataPlot(null); //@TODO: should be in a separate thread with a progress handler
 
                 this.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
 
@@ -1672,7 +1680,7 @@ public class OverviewPanel extends javax.swing.JPanel {
      * @param evt
      */
     private void barChartRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_barChartRadioButtonActionPerformed
-        updateQuantificationDataPlot();
+        updateQuantificationDataPlot(null); //@TODO: should be in a separate thread with a progress handler
     }//GEN-LAST:event_barChartRadioButtonActionPerformed
 
     /**
@@ -1681,7 +1689,7 @@ public class OverviewPanel extends javax.swing.JPanel {
      * @param evt
      */
     private void lineChartRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lineChartRadioButtonActionPerformed
-        updateQuantificationDataPlot();
+        updateQuantificationDataPlot(null); //@TODO: should be in a separate thread with a progress handler
     }//GEN-LAST:event_lineChartRadioButtonActionPerformed
 
     /**
@@ -1690,7 +1698,7 @@ public class OverviewPanel extends javax.swing.JPanel {
      * @param evt
      */
     private void boxPlotRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_boxPlotRadioButtonActionPerformed
-        updateQuantificationDataPlot();
+        updateQuantificationDataPlot(null); //@TODO: should be in a separate thread with a progress handler
     }//GEN-LAST:event_boxPlotRadioButtonActionPerformed
 
     /**
@@ -1699,7 +1707,7 @@ public class OverviewPanel extends javax.swing.JPanel {
      * @param evt
      */
     private void backgroundDistCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backgroundDistCheckBoxActionPerformed
-        updateQuantificationDataPlot();
+        updateQuantificationDataPlot(null); //@TODO: should be in a separate thread with a progress handler
     }//GEN-LAST:event_backgroundDistCheckBoxActionPerformed
 
     /**
