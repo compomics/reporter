@@ -97,13 +97,13 @@ public class Reporter {
         }
 
         progress++;
-        PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(parameters, true, parameters);
+        PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(parameters, true, parameters, waitingHandler);
         while (peptideMatchesIterator.hasNext()) {
             PeptideMatch peptideMatch = peptideMatchesIterator.next();
             String peptideKey = peptideMatch.getKey();
             psParameter = (PSParameter) identification.getPeptideMatchParameter(peptideKey, psParameter);
             if (psParameter.getMatchValidationLevel().isValidated()) {
-                PeptideQuantificationDetails matchQuantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideMatch);
+                PeptideQuantificationDetails matchQuantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideMatch, waitingHandler);
                 for (String sampleIndex : reporterIonQuantification.getSampleIndexes()) {
                     Double ratio = matchQuantificationDetails.getRawRatio(sampleIndex);
                     if (QuantificationFilter.isRatioValid(reporterPreferences, ratio) && ratio > 0) {
@@ -140,6 +140,7 @@ public class Reporter {
      * @param reporterIonQuantification the reporter quantification settings
      * @param searchParameters the identification parameters
      * @param proteinMatch the protein match
+     * @param waitingHandler waitinghandler displaying progress to the user and allowing cancelling the process
      *
      * @return the quantification details of the match
      * 
@@ -151,7 +152,7 @@ public class Reporter {
      */
     public static ProteinQuantificationDetails estimateProteinMatchQuantificationDetails(Identification identification,
             QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterPreferences reporterPreferences,
-            ReporterIonQuantification reporterIonQuantification, SearchParameters searchParameters, ProteinMatch proteinMatch)
+            ReporterIonQuantification reporterIonQuantification, SearchParameters searchParameters, ProteinMatch proteinMatch, WaitingHandler waitingHandler)
             throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
 
         ProteinQuantificationDetails result = new ProteinQuantificationDetails();
@@ -162,7 +163,7 @@ public class Reporter {
         ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
         parameters.add(psParameter);
         
-        PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(proteinMatch.getPeptideMatchesKeys(), parameters, false, parameters);
+        PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(proteinMatch.getPeptideMatchesKeys(), parameters, false, parameters, waitingHandler);
 
         while (peptideMatchesIterator.hasNext()) {
             
@@ -170,7 +171,7 @@ public class Reporter {
             
             if (QuantificationFilter.isPeptideValid(reporterPreferences, identification, searchParameters, peptideMatch)) {
                 for (String index : indexes) {
-                    PeptideQuantificationDetails peptideQuantification = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideMatch);
+                    PeptideQuantificationDetails peptideQuantification = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideMatch, waitingHandler);
                     double ratio = peptideQuantification.getRatio(index, reporterIonQuantification);
                     ArrayList<Double> channelRatios = ratios.get(index);
                     if (channelRatios == null) {
@@ -207,6 +208,7 @@ public class Reporter {
      * @param ptmName the name of the PTM
      * @param matchKey the key of the match of interest
      * @param site the site of the PTM on the protein sequence
+     * @param waitingHandler waitinghandler displaying progress to the user and allowing cancelling the process
      *
      * @return the quantification details of the match
      * 
@@ -219,7 +221,7 @@ public class Reporter {
     public static PtmSiteQuantificationDetails estimatePTMQuantificationDetails(Identification identification,
             QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterPreferences reporterPreferences,
             ReporterIonQuantification reporterIonQuantification, SearchParameters searchParameters,
-            SequenceMatchingPreferences sequenceMatchingPreferences, String ptmName, String matchKey, int site)
+            SequenceMatchingPreferences sequenceMatchingPreferences, String ptmName, String matchKey, int site, WaitingHandler waitingHandler)
             throws IllegalArgumentException, SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
 
         PtmSiteQuantificationDetails result = new PtmSiteQuantificationDetails();
@@ -230,7 +232,7 @@ public class Reporter {
         PSParameter psParameter = new PSParameter();
         ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
         parameters.add(psParameter);
-        PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(proteinMatch.getPeptideMatchesKeys(), parameters, false, parameters);
+        PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(proteinMatch.getPeptideMatchesKeys(), parameters, false, parameters, waitingHandler);
         
         while (peptideMatchesIterator.hasNext()) {
             
@@ -256,7 +258,7 @@ public class Reporter {
             }
             if (QuantificationFilter.isPeptideValid(reporterPreferences, identification, searchParameters, peptideMatch)) {
                 for (String index : indexes) {
-                    PeptideQuantificationDetails peptideQuantification = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideMatch);
+                    PeptideQuantificationDetails peptideQuantification = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideMatch, waitingHandler);
                     double ratio = peptideQuantification.getRatio(index, reporterIonQuantification);
                     ArrayList<Double> channelRatios = ratios.get(index);
                     if (channelRatios == null) {
@@ -288,6 +290,7 @@ public class Reporter {
      * @param reporterPreferences the quantification user settings
      * @param reporterIonQuantification the reporter quantification settings
      * @param peptideMatch the peptide match
+     * @param waitingHandler waitinghandler displaying progress to the user and allowing cancelling the process
      *
      * @return the quantification details of the match
      * 
@@ -299,7 +302,7 @@ public class Reporter {
      */
     public static PeptideQuantificationDetails estimatePeptideMatchQuantificationDetails(Identification identification,
             QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterPreferences reporterPreferences,
-            ReporterIonQuantification reporterIonQuantification, PeptideMatch peptideMatch)
+            ReporterIonQuantification reporterIonQuantification, PeptideMatch peptideMatch, WaitingHandler waitingHandler)
             throws IOException, MzMLUnmarshallerException, SQLException, ClassNotFoundException, InterruptedException {
 
         PeptideQuantificationDetails result = new PeptideQuantificationDetails();
@@ -310,7 +313,7 @@ public class Reporter {
         ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
         parameters.add(psParameter);
         
-        PsmIterator psmIterator = identification.getPsmIterator(peptideMatch.getSpectrumMatches(), parameters, false);
+        PsmIterator psmIterator = identification.getPsmIterator(peptideMatch.getSpectrumMatches(), parameters, false, waitingHandler);
 
         while (psmIterator.hasNext()) {
             

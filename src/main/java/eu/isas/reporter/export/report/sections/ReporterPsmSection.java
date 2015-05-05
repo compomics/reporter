@@ -196,7 +196,7 @@ public class ReporterPsmSection {
             
             ArrayList<String> fileKeys = psmMap.get(spectrumFile);
             
-            PsmIterator psmIterator = identification.getPsmIterator(spectrumFile, fileKeys, parameters, false);
+            PsmIterator psmIterator = identification.getPsmIterator(spectrumFile, fileKeys, parameters, false, waitingHandler);
 
             while (psmIterator.hasNext()) {
 
