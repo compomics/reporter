@@ -1,0 +1,7 @@
+#summary Short summary of changes for each version of Reporter.
+
+----
+
+*Changes in Reporter 0.0.1 (May 6. 2015):*
+
+ * First public beta release of Reporter.
