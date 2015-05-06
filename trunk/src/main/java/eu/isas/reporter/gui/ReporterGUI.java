@@ -1,6 +1,7 @@
 package eu.isas.reporter.gui;
 
 import com.compomics.software.CompomicsWrapper;
+import com.compomics.software.autoupdater.MavenJarFile;
 import com.compomics.software.dialogs.JavaHomeOrMemoryDialogParent;
 import com.compomics.software.dialogs.JavaSettingsDialog;
 import com.compomics.util.Util;
@@ -44,6 +45,9 @@ import java.awt.Color;
 import java.awt.Frame;
 import java.awt.Toolkit;
 import java.io.*;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import javax.swing.JOptionPane;
@@ -163,48 +167,57 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
             e.printStackTrace();
         }
 
-        // set this version as the default Reporter version
-        if (!getJarFilePath().equalsIgnoreCase(".")) {
-            utilitiesUserPreferences.setReporterPath(new File(getJarFilePath(), "Reporter-" + new Properties().getVersion() + ".jar").getAbsolutePath());
-            UtilitiesUserPreferences.saveUserPreferences(utilitiesUserPreferences);
+        // check for new version
+        boolean newVersion = false;
+        if (!getJarFilePath().equalsIgnoreCase(".") && utilitiesUserPreferences.isAutoUpdate()) {
+            newVersion = checkForNewVersion();
         }
 
-        // add desktop shortcut?
-        if (!getJarFilePath().equalsIgnoreCase(".")
-                && System.getProperty("os.name").lastIndexOf("Windows") != -1
-                && new File(getJarFilePath() + "/resources/conf/firstRun").exists()) {
+        if (!newVersion) {
+
+            // set this version as the default Reporter version
+            if (!getJarFilePath().equalsIgnoreCase(".")) {
+                utilitiesUserPreferences.setReporterPath(new File(getJarFilePath(), "Reporter-" + new Properties().getVersion() + ".jar").getAbsolutePath());
+                UtilitiesUserPreferences.saveUserPreferences(utilitiesUserPreferences);
+            }
+
+            // add desktop shortcut?
+            if (!getJarFilePath().equalsIgnoreCase(".")
+                    && System.getProperty("os.name").lastIndexOf("Windows") != -1
+                    && new File(getJarFilePath() + "/resources/conf/firstRun").exists()) {
 
             // @TODO: add support for desktop icons in mac and linux??
-            // delete the firstRun file such that the user is not asked the next time around
-            new File(getJarFilePath() + "/resources/conf/firstRun").delete();
+                // delete the firstRun file such that the user is not asked the next time around
+                new File(getJarFilePath() + "/resources/conf/firstRun").delete();
 
-            int value = JOptionPane.showConfirmDialog(null,
-                    "Create a shortcut to Reporter on the desktop?",
-                    "Create Desktop Shortcut?",
-                    JOptionPane.YES_NO_OPTION,
-                    JOptionPane.QUESTION_MESSAGE);
+                int value = JOptionPane.showConfirmDialog(null,
+                        "Create a shortcut to Reporter on the desktop?",
+                        "Create Desktop Shortcut?",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE);
 
-            if (value == JOptionPane.YES_OPTION) {
-                addShortcutAtDeskTop();
+                if (value == JOptionPane.YES_OPTION) {
+                    addShortcutAtDeskTop();
+                }
             }
+
+            initComponents();
+
+            overviewPanel = new OverviewPanel(this);
+            overviewJPanel.add(overviewPanel);
+
+            setUpGui();
+
+            // set the title of the frame and add the icon
+            setTitle("Reporter " + new Properties().getVersion());
+            this.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")));
+            this.setExtendedState(MAXIMIZED_BOTH);
+
+            setLocationRelativeTo(null);
+            setVisible(true);
+
+            createNewProject();
         }
-
-        initComponents();
-
-        overviewPanel = new OverviewPanel(this);
-        overviewJPanel.add(overviewPanel);
-
-        setUpGui();
-
-        // set the title of the frame and add the icon
-        setTitle("Reporter " + new Properties().getVersion());
-        this.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")));
-        this.setExtendedState(MAXIMIZED_BOTH);
-
-        setLocationRelativeTo(null);
-        setVisible(true);
-
-        createNewProject();
     }
 
     /**
@@ -242,6 +255,9 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      */
     private void setUpGui() {
         //@TODO
+        
+        toolsMenu.setVisible(false);
+        toolsMenu.setEnabled(false);
     }
 
     /**
@@ -579,6 +595,8 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         jSeparator4 = new javax.swing.JPopupMenu.Separator();
         javaOptionsMenuItem = new javax.swing.JMenuItem();
         privacyMenuItem = new javax.swing.JMenuItem();
+        toolsMenu = new javax.swing.JMenu();
+        clusteringMenuItem = new javax.swing.JMenuItem();
         helpMenu = new javax.swing.JMenu();
         helpMenuItem = new javax.swing.JMenuItem();
         jSeparator17 = new javax.swing.JPopupMenu.Separator();
@@ -701,6 +719,20 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
 
         menuBar.add(quantificationOptionsMenu);
 
+        toolsMenu.setMnemonic('T');
+        toolsMenu.setText("Tools");
+
+        clusteringMenuItem.setMnemonic('H');
+        clusteringMenuItem.setText("Hierarchical Clustering");
+        clusteringMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                clusteringMenuItemActionPerformed(evt);
+            }
+        });
+        toolsMenu.add(clusteringMenuItem);
+
+        menuBar.add(toolsMenu);
+
         helpMenu.setMnemonic('H');
         helpMenu.setText("Help");
 
@@ -803,7 +835,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * @param evt
      */
     private void helpMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_helpMenuItemActionPerformed
-        new HelpDialog(this, getClass().getResource("/helpFiles/ReporterGUI.html"),
+        new HelpDialog(this, getClass().getResource("/helpFiles/Reporter.html"),
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/help.GIF")),
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
                 "ReporterGUI - Help");
@@ -815,8 +847,8 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * @param evt
      */
     private void logReportMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logReportMenuActionPerformed
-        new BugReport(this, lastSelectedFolder, "ReporterGUI", "reporter",
-                new Properties().getVersion(), "peptide-shaker", "PeptideShaker", // @TODO: create Reporter google group?
+        new BugReport(this, lastSelectedFolder, "Reporter", "reporter",
+                new Properties().getVersion(), "reporter_software", "Reporter",
                 new File(getJarFilePath() + "/resources/ReporterGUI.log"));
     }//GEN-LAST:event_logReportMenuActionPerformed
 
@@ -826,7 +858,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * @param evt
      */
     private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutMenuItemActionPerformed
-        new HelpDialog(this, getClass().getResource("/helpFiles/AboutReporterGUI.html"),
+        new HelpDialog(this, getClass().getResource("/helpFiles/AboutReporter.html"),
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/help.GIF")),
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
                 "About ReporterGUI");
@@ -844,6 +876,10 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
     private void javaOptionsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_javaOptionsMenuItemActionPerformed
         new JavaSettingsDialog(this, this, null, "Reporter", true);
     }//GEN-LAST:event_javaOptionsMenuItemActionPerformed
+
+    private void clusteringMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clusteringMenuItemActionPerformed
+        overviewPanel.clusterData();
+    }//GEN-LAST:event_clusteringMenuItemActionPerformed
 
     /**
      * Closes Reporter.
@@ -1017,6 +1053,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem aboutMenuItem;
     private javax.swing.JPanel backgroundPanel;
+    private javax.swing.JMenuItem clusteringMenuItem;
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JMenuItem exportFollowUpJMenuItem;
     private javax.swing.JMenu exportMenu;
@@ -1041,6 +1078,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
     private javax.swing.JMenuItem quantificationOptionsMenuItem;
     private javax.swing.JMenuItem saveMenuItem;
     private javax.swing.JTabbedPane tabPanel;
+    private javax.swing.JMenu toolsMenu;
     // End of variables declaration//GEN-END:variables
 
     /**
@@ -1226,5 +1264,36 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      */
     public UtilitiesUserPreferences getUtilitiesUserPreferences() {
         return utilitiesUserPreferences;
+    }
+    
+    /**
+     * Check for new version.
+     *
+     * @return true if a new version is to be downloaded
+     */
+    public boolean checkForNewVersion() {
+        try {
+            File jarFile = new File(ReporterGUI.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
+            MavenJarFile oldMavenJarFile = new MavenJarFile(jarFile.toURI());
+            URL jarRepository = new URL("http", "genesis.ugent.be", new StringBuilder().append("/maven2/").toString());
+
+            return CompomicsWrapper.checkForNewDeployedVersion(
+                    "Reporter", oldMavenJarFile, jarRepository, "reporter.ico",
+                    false, true, true, Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
+                    Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
+        } catch (UnknownHostException ex) {
+            // no internet connection
+            System.out.println("Checking for new version failed. No internet connection.");
+            return false;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+            return false;
+        } catch (Exception e) {
+            System.out.println("Checking for new version failed. Unknown error.");
+            return false;
+        }
     }
 }
