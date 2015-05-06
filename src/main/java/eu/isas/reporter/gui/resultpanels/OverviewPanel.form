@@ -4,6 +4,29 @@
   <NonVisualComponents>
     <Component class="javax.swing.ButtonGroup" name="chartTypeButtonGroup">
     </Component>
+    <Component class="javax.swing.JRadioButton" name="boxPlotRadioButton">
+      <Properties>
+        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+          <ComponentRef name="chartTypeButtonGroup"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="Box Plot"/>
+        <Property name="iconTextGap" type="int" value="10"/>
+        <Property name="opaque" type="boolean" value="false"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="boxPlotRadioButtonActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="backgroundDistCheckBox">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Background"/>
+        <Property name="iconTextGap" type="int" value="10"/>
+        <Property name="opaque" type="boolean" value="false"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="backgroundDistCheckBoxActionPerformed"/>
+      </Events>
+    </Component>
   </NonVisualComponents>
   <Properties>
     <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
@@ -199,9 +222,9 @@
                                     </Property>
                                   </Properties>
                                   <Events>
-                                    <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="proteinTableMouseReleased"/>
-                                    <EventHandler event="mouseExited" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="proteinTableMouseExited"/>
                                     <EventHandler event="mouseMoved" listener="java.awt.event.MouseMotionListener" parameters="java.awt.event.MouseEvent" handler="proteinTableMouseMoved"/>
+                                    <EventHandler event="mouseExited" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="proteinTableMouseExited"/>
+                                    <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="proteinTableMouseReleased"/>
                                     <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="proteinTableKeyReleased"/>
                                   </Events>
                                   <AuxValues>
@@ -521,7 +544,7 @@
                           </AuxValues>
                           <Constraints>
                             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout" value="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout$AbsoluteConstraintsDescription">
-                              <AbsoluteConstraints x="569" y="400" width="360" height="-1"/>
+                              <AbsoluteConstraints x="749" y="400" width="180" height="-1"/>
                             </Constraint>
                           </Constraints>
 
@@ -533,11 +556,7 @@
                                       <Component id="barChartRadioButton" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                       <Component id="lineChartRadioButton" max="32767" attributes="0"/>
-                                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                      <Component id="boxPlotRadioButton" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                      <Component id="backgroundDistCheckBox" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace min="-2" pref="118" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" pref="280" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
                             </DimensionLayout>
@@ -548,8 +567,6 @@
                                       <Group type="103" groupAlignment="3" attributes="0">
                                           <Component id="barChartRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
                                           <Component id="lineChartRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                                          <Component id="boxPlotRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                                          <Component id="backgroundDistCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                       <EmptySpace pref="9" max="32767" attributes="0"/>
                                   </Group>
@@ -582,30 +599,6 @@
                               </Properties>
                               <Events>
                                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="lineChartRadioButtonActionPerformed"/>
-                              </Events>
-                            </Component>
-                            <Component class="javax.swing.JRadioButton" name="boxPlotRadioButton">
-                              <Properties>
-                                <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
-                                  <ComponentRef name="chartTypeButtonGroup"/>
-                                </Property>
-                                <Property name="text" type="java.lang.String" value="Box Plot"/>
-                                <Property name="iconTextGap" type="int" value="10"/>
-                                <Property name="opaque" type="boolean" value="false"/>
-                              </Properties>
-                              <Events>
-                                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="boxPlotRadioButtonActionPerformed"/>
-                              </Events>
-                            </Component>
-                            <Component class="javax.swing.JCheckBox" name="backgroundDistCheckBox">
-                              <Properties>
-                                <Property name="selected" type="boolean" value="true"/>
-                                <Property name="text" type="java.lang.String" value="Background"/>
-                                <Property name="iconTextGap" type="int" value="10"/>
-                                <Property name="opaque" type="boolean" value="false"/>
-                              </Properties>
-                              <Events>
-                                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="backgroundDistCheckBoxActionPerformed"/>
                               </Events>
                             </Component>
                           </SubComponents>
