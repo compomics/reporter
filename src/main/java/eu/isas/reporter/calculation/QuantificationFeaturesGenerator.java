@@ -69,7 +69,7 @@ public class QuantificationFeaturesGenerator {
      * identification of spectra
      * @param sequenceMatchingPreferences the sequence matching preferences
      */
-    public QuantificationFeaturesGenerator(QuantificationFeaturesCache quantificationFeaturesCache, Identification identification, ReporterPreferences reporterPreferences, 
+    public QuantificationFeaturesGenerator(QuantificationFeaturesCache quantificationFeaturesCache, Identification identification, ReporterPreferences reporterPreferences,
             ReporterIonQuantification reporterIonQuantification, SearchParameters searchParameters, SequenceMatchingPreferences sequenceMatchingPreferences) {
         this.quantificationFeaturesCache = quantificationFeaturesCache;
         this.identification = identification;
@@ -87,11 +87,12 @@ public class QuantificationFeaturesGenerator {
      *
      * @return the quantification details of the match
      *
-     * @throws SQLException
-     * @throws IOException
-     * @throws ClassNotFoundException
-     * @throws InterruptedException
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException
+     * @throws SQLException thrown if an SQLException occurs
+     * @throws IOException thrown if an IOException
+     * @throws ClassNotFoundException thrown if a ClassNotFoundException
+     * @throws InterruptedException thrown if an InterruptedException
+     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException thrown if an
+     * MzMLUnmarshallerException occurs
      */
     public ProteinQuantificationDetails getProteinMatchQuantificationDetails(String matchKey, WaitingHandler waitingHandler) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
         ProteinMatch proteinMatch = identification.getProteinMatch(matchKey);
@@ -114,13 +115,14 @@ public class QuantificationFeaturesGenerator {
      *
      * @return the quantification details of the match
      *
-     * @throws SQLException
-     * @throws IOException
-     * @throws ClassNotFoundException
-     * @throws InterruptedException
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException
+     * @throws SQLException thrown if an SQLException occurs
+     * @throws IOException thrown if an IOException
+     * @throws ClassNotFoundException thrown if a ClassNotFoundException
+     * @throws InterruptedException thrown if an InterruptedException
+     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException thrown if an
+     * MzMLUnmarshallerException occurs
      */
-    public PtmSiteQuantificationDetails getPTMQuantificationDetails(String ptmName, String matchKey, int site, WaitingHandler waitingHandler) 
+    public PtmSiteQuantificationDetails getPTMQuantificationDetails(String ptmName, String matchKey, int site, WaitingHandler waitingHandler)
             throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
         PtmSiteQuantificationDetails result = quantificationFeaturesCache.getPtmQuantificationDetails(ptmName, matchKey, site);
         if (result == null) {
@@ -138,11 +140,12 @@ public class QuantificationFeaturesGenerator {
      *
      * @return the quantification details of the match
      *
-     * @throws SQLException
-     * @throws IOException
-     * @throws ClassNotFoundException
-     * @throws InterruptedException
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException
+     * @throws SQLException thrown if an SQLException occurs
+     * @throws IOException thrown if an IOException
+     * @throws ClassNotFoundException thrown if a ClassNotFoundException
+     * @throws InterruptedException thrown if an InterruptedException
+     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException thrown if an
+     * MzMLUnmarshallerException occurs
      */
     public PeptideQuantificationDetails getPeptideMatchQuantificationDetails(PeptideMatch peptideMatch, WaitingHandler waitingHandler) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
         int nPsms = peptideMatch.getSpectrumCount();
@@ -162,11 +165,12 @@ public class QuantificationFeaturesGenerator {
      *
      * @return the quantification details of the match
      *
-     * @throws SQLException
-     * @throws IOException
-     * @throws ClassNotFoundException
-     * @throws InterruptedException
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException
+     * @throws SQLException thrown if an SQLException occurs
+     * @throws IOException thrown if an IOException
+     * @throws ClassNotFoundException thrown if a ClassNotFoundException
+     * @throws InterruptedException thrown if an InterruptedException
+     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException thrown if an
+     * MzMLUnmarshallerException occurs
      */
     public PsmQuantificationDetails getPSMQuantificationDetails(String matchKey) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
         PsmQuantificationDetails result = quantificationFeaturesCache.getPSMQuantificationDetails(matchKey);
@@ -186,13 +190,14 @@ public class QuantificationFeaturesGenerator {
      *
      * @return the quantification details of the match
      *
-     * @throws SQLException
-     * @throws IOException
-     * @throws ClassNotFoundException
-     * @throws InterruptedException
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException
+     * @throws SQLException thrown if an SQLException occurs
+     * @throws IOException thrown if an IOException
+     * @throws ClassNotFoundException thrown if a ClassNotFoundException
+     * @throws InterruptedException thrown if an InterruptedException
+     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException thrown if an
+     * MzMLUnmarshallerException occurs
      */
-    public SpectrumQuantificationDetails getSpectrumQuantificationDetails(ReporterIonQuantification reporterIonQuantification, 
+    public SpectrumQuantificationDetails getSpectrumQuantificationDetails(ReporterIonQuantification reporterIonQuantification,
             ReporterPreferences reporterPreferences, String matchKey) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
         SpectrumQuantificationDetails result = quantificationFeaturesCache.getSpectrumQuantificationDetails(matchKey);
         if (result == null) {

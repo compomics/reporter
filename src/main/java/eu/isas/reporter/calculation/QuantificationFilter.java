@@ -43,10 +43,10 @@ public class QuantificationFilter {
      *
      * @return true if the PSM can be used for quantification
      *
-     * @throws java.sql.SQLException
-     * @throws java.io.IOException
-     * @throws java.lang.ClassNotFoundException
-     * @throws java.lang.InterruptedException
+     * @throws SQLException thrown if an SQLException occurs
+     * @throws IOException thrown if an IOException
+     * @throws ClassNotFoundException thrown if a ClassNotFoundException
+     * @throws InterruptedException thrown if an InterruptedException
      */
     public static boolean isPsmValid(ReporterPreferences reporterPreferences, Identification identification, String matchKey) throws SQLException, IOException, ClassNotFoundException, InterruptedException {
         // check match validation
@@ -70,10 +70,10 @@ public class QuantificationFilter {
      *
      * @return true if the PSM can be used for quantification
      *
-     * @throws java.sql.SQLException
-     * @throws java.io.IOException
-     * @throws java.lang.ClassNotFoundException
-     * @throws java.lang.InterruptedException
+     * @throws SQLException thrown if an SQLException occurs
+     * @throws IOException thrown if an IOException
+     * @throws ClassNotFoundException thrown if a ClassNotFoundException
+     * @throws InterruptedException thrown if an InterruptedException
      */
     public static boolean isPeptideValid(ReporterPreferences reporterPreferences, Identification identification,
             SearchParameters searchParameters, PeptideMatch peptideMatch) throws SQLException, IOException, ClassNotFoundException, InterruptedException {
@@ -116,10 +116,10 @@ public class QuantificationFilter {
      *
      * @return true if the PSM can be used for quantification
      *
-     * @throws java.sql.SQLException
-     * @throws java.io.IOException
-     * @throws java.lang.ClassNotFoundException
-     * @throws java.lang.InterruptedException
+     * @throws SQLException thrown if an SQLException occurs
+     * @throws IOException thrown if an IOException
+     * @throws ClassNotFoundException thrown if a ClassNotFoundException
+     * @throws InterruptedException thrown if an InterruptedException
      */
     public static boolean isProteinValid(ReporterPreferences reporterPreferences, Identification identification,
             String matchKey) throws SQLException, IOException, ClassNotFoundException, InterruptedException {

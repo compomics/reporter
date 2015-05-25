@@ -68,12 +68,17 @@ public class Reporter {
      * @param quantificationFeaturesGenerator the quantification features
      * generator
      * @param waitingHandler waiting handler displaying progress to the user
-     * 
-     * @throws java.sql.SQLException exception thrown whenever an error occurred while interacting with the database
-     * @throws java.io.IOException exception thrown whenever an error occurred while interacting with a file
-     * @throws java.lang.ClassNotFoundException exception thrown whenever an error occurred while deserializing an object
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown whenever an error occurred while reading an mzML file
-     * @throws java.lang.InterruptedException exception thrown whenever a threading error occurred
+     *
+     * @throws java.sql.SQLException exception thrown whenever an error occurred
+     * while interacting with the database
+     * @throws java.io.IOException exception thrown whenever an error occurred
+     * while interacting with a file
+     * @throws java.lang.ClassNotFoundException exception thrown whenever an
+     * error occurred while deserializing an object
+     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown
+     * whenever an error occurred while reading an mzML file
+     * @throws java.lang.InterruptedException exception thrown whenever a
+     * threading error occurred
      */
     public static void setNormalizationFactors(ReporterIonQuantification reporterIonQuantification, ReporterPreferences reporterPreferences,
             Identification identification, QuantificationFeaturesGenerator quantificationFeaturesGenerator, WaitingHandler waitingHandler)
@@ -140,15 +145,21 @@ public class Reporter {
      * @param reporterIonQuantification the reporter quantification settings
      * @param searchParameters the identification parameters
      * @param proteinMatch the protein match
-     * @param waitingHandler waitinghandler displaying progress to the user and allowing cancelling the process
+     * @param waitingHandler waitinghandler displaying progress to the user and
+     * allowing cancelling the process
      *
      * @return the quantification details of the match
-     * 
-     * @throws java.sql.SQLException exception thrown whenever an error occurred while interacting with the database
-     * @throws java.io.IOException exception thrown whenever an error occurred while interacting with a file
-     * @throws java.lang.ClassNotFoundException exception thrown whenever an error occurred while deserializing an object
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown whenever an error occurred while reading an mzML file
-     * @throws java.lang.InterruptedException exception thrown whenever a threading error occurred
+     *
+     * @throws java.sql.SQLException exception thrown whenever an error occurred
+     * while interacting with the database
+     * @throws java.io.IOException exception thrown whenever an error occurred
+     * while interacting with a file
+     * @throws java.lang.ClassNotFoundException exception thrown whenever an
+     * error occurred while deserializing an object
+     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown
+     * whenever an error occurred while reading an mzML file
+     * @throws java.lang.InterruptedException exception thrown whenever a
+     * threading error occurred
      */
     public static ProteinQuantificationDetails estimateProteinMatchQuantificationDetails(Identification identification,
             QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterPreferences reporterPreferences,
@@ -158,17 +169,17 @@ public class Reporter {
         ProteinQuantificationDetails result = new ProteinQuantificationDetails();
         HashMap<String, ArrayList<Double>> ratios = new HashMap<String, ArrayList<Double>>();
         Set<String> indexes = reporterIonQuantification.getSampleIndexes();
-        
+
         PSParameter psParameter = new PSParameter();
         ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
         parameters.add(psParameter);
-        
+
         PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(proteinMatch.getPeptideMatchesKeys(), parameters, false, parameters, waitingHandler);
 
         while (peptideMatchesIterator.hasNext()) {
-            
+
             PeptideMatch peptideMatch = peptideMatchesIterator.next();
-            
+
             if (QuantificationFilter.isPeptideValid(reporterPreferences, identification, searchParameters, peptideMatch)) {
                 for (String index : indexes) {
                     PeptideQuantificationDetails peptideQuantification = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideMatch, waitingHandler);
@@ -208,15 +219,21 @@ public class Reporter {
      * @param ptmName the name of the PTM
      * @param matchKey the key of the match of interest
      * @param site the site of the PTM on the protein sequence
-     * @param waitingHandler waitinghandler displaying progress to the user and allowing cancelling the process
+     * @param waitingHandler waiting handler displaying progress to the user and
+     * allowing canceling the process
      *
      * @return the quantification details of the match
-     * 
-     * @throws java.sql.SQLException exception thrown whenever an error occurred while interacting with the database
-     * @throws java.io.IOException exception thrown whenever an error occurred while interacting with a file
-     * @throws java.lang.ClassNotFoundException exception thrown whenever an error occurred while deserializing an object
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown whenever an error occurred while reading an mzML file
-     * @throws java.lang.InterruptedException exception thrown whenever a threading error occurred
+     *
+     * @throws java.sql.SQLException exception thrown whenever an error occurred
+     * while interacting with the database
+     * @throws java.io.IOException exception thrown whenever an error occurred
+     * while interacting with a file
+     * @throws java.lang.ClassNotFoundException exception thrown whenever an
+     * error occurred while deserializing an object
+     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown
+     * whenever an error occurred while reading an mzML file
+     * @throws java.lang.InterruptedException exception thrown whenever a
+     * threading error occurred
      */
     public static PtmSiteQuantificationDetails estimatePTMQuantificationDetails(Identification identification,
             QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterPreferences reporterPreferences,
@@ -228,14 +245,14 @@ public class Reporter {
         HashMap<String, ArrayList<Double>> ratios = new HashMap<String, ArrayList<Double>>();
         ProteinMatch proteinMatch = identification.getProteinMatch(matchKey);
         Set<String> indexes = reporterIonQuantification.getSampleIndexes();
-        
+
         PSParameter psParameter = new PSParameter();
         ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
         parameters.add(psParameter);
         PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(proteinMatch.getPeptideMatchesKeys(), parameters, false, parameters, waitingHandler);
-        
+
         while (peptideMatchesIterator.hasNext()) {
-            
+
             PeptideMatch peptideMatch = peptideMatchesIterator.next();
             Peptide peptide = peptideMatch.getTheoreticPeptide();
             boolean modified = false;
@@ -290,15 +307,21 @@ public class Reporter {
      * @param reporterPreferences the quantification user settings
      * @param reporterIonQuantification the reporter quantification settings
      * @param peptideMatch the peptide match
-     * @param waitingHandler waitinghandler displaying progress to the user and allowing cancelling the process
+     * @param waitingHandler waiting handler displaying progress to the user and
+     * allowing canceling the process
      *
      * @return the quantification details of the match
-     * 
-     * @throws java.sql.SQLException exception thrown whenever an error occurred while interacting with the database
-     * @throws java.io.IOException exception thrown whenever an error occurred while interacting with a file
-     * @throws java.lang.ClassNotFoundException exception thrown whenever an error occurred while deserializing an object
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown whenever an error occurred while reading an mzML file
-     * @throws java.lang.InterruptedException exception thrown whenever a threading error occurred
+     *
+     * @throws java.sql.SQLException exception thrown whenever an error occurred
+     * while interacting with the database
+     * @throws java.io.IOException exception thrown whenever an error occurred
+     * while interacting with a file
+     * @throws java.lang.ClassNotFoundException exception thrown whenever an
+     * error occurred while deserializing an object
+     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown
+     * whenever an error occurred while reading an mzML file
+     * @throws java.lang.InterruptedException exception thrown whenever a
+     * threading error occurred
      */
     public static PeptideQuantificationDetails estimatePeptideMatchQuantificationDetails(Identification identification,
             QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterPreferences reporterPreferences,
@@ -308,18 +331,18 @@ public class Reporter {
         PeptideQuantificationDetails result = new PeptideQuantificationDetails();
         HashMap<String, ArrayList<Double>> ratios = new HashMap<String, ArrayList<Double>>();
         Set<String> indexes = reporterIonQuantification.getSampleIndexes();
-        
+
         PSParameter psParameter = new PSParameter();
         ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
         parameters.add(psParameter);
-        
+
         PsmIterator psmIterator = identification.getPsmIterator(peptideMatch.getSpectrumMatches(), parameters, false, waitingHandler);
 
         while (psmIterator.hasNext()) {
-            
+
             SpectrumMatch spectrumMatch = psmIterator.next();
             String spectrumKey = spectrumMatch.getKey();
-            
+
             if (QuantificationFilter.isPsmValid(reporterPreferences, identification, spectrumKey)) {
                 for (String index : indexes) {
                     PsmQuantificationDetails spectrumQuantification = quantificationFeaturesGenerator.getPSMQuantificationDetails(spectrumKey);
@@ -356,12 +379,17 @@ public class Reporter {
      * @param matchKey the key of the match of interest
      *
      * @return the quantification details of the match
-     * 
-     * @throws java.sql.SQLException exception thrown whenever an error occurred while interacting with the database
-     * @throws java.io.IOException exception thrown whenever an error occurred while interacting with a file
-     * @throws java.lang.ClassNotFoundException exception thrown whenever an error occurred while deserializing an object
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown whenever an error occurred while reading an mzML file
-     * @throws java.lang.InterruptedException exception thrown whenever a threading error occurred
+     *
+     * @throws java.sql.SQLException exception thrown whenever an error occurred
+     * while interacting with the database
+     * @throws java.io.IOException exception thrown whenever an error occurred
+     * while interacting with a file
+     * @throws java.lang.ClassNotFoundException exception thrown whenever an
+     * error occurred while deserializing an object
+     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown
+     * whenever an error occurred while reading an mzML file
+     * @throws java.lang.InterruptedException exception thrown whenever a
+     * threading error occurred
      */
     public static PsmQuantificationDetails estimatePSMQuantificationDetails(Identification identification,
             QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterPreferences reporterPreferences,
@@ -464,9 +492,11 @@ public class Reporter {
      * @param matchKey the key of the spectrum of interest
      *
      * @return the quantification details of the spectrum
-     * 
-     * @throws java.io.IOException exception thrown whenever an error occurred while interacting with a file
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown whenever an error occurred while reading an mzML file
+     *
+     * @throws java.io.IOException exception thrown whenever an error occurred
+     * while interacting with a file
+     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown
+     * whenever an error occurred while reading an mzML file
      */
     public static SpectrumQuantificationDetails estimateSpectrumQuantificationDetails(Identification identification,
             QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification,

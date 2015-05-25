@@ -239,13 +239,14 @@ public class ReporterExportFactory implements ExportFactory {
      * @param spectrumCountingPreferences the spectrum counting preferences
      * (mandatory for the spectrum counting section)
      * @param waitingHandler the waiting handler
-     * @throws IOException
-     * @throws IllegalArgumentException
-     * @throws SQLException
-     * @throws ClassNotFoundException
-     * @throws InterruptedException
-     * @throws MzMLUnmarshallerException
-     * @throws org.apache.commons.math.MathException
+     *
+     * @throws SQLException thrown if an SQLException occurs
+     * @throws IOException thrown if an IOException
+     * @throws ClassNotFoundException thrown if a ClassNotFoundException
+     * @throws InterruptedException thrown if an InterruptedException
+     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException thrown if an
+     * MzMLUnmarshallerException occurs
+     * @throws org.apache.commons.math.MathException thrown if a MathException occurs
      */
     public static void writeExport(ExportScheme exportScheme, File destinationFile, ExportFormat exportFormat, String experiment, String sample, int replicateNumber,
             ProjectDetails projectDetails, Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator,
@@ -317,7 +318,7 @@ public class ReporterExportFactory implements ExportFactory {
      * @param destinationFile the destination file where to write the
      * documentation
      *
-     * @throws IOException
+     * @throws IOException if an IOException occurs
      */
     public static void writeDocumentation(ExportScheme exportScheme, ExportFormat exportFormat, File destinationFile) throws IOException {
 

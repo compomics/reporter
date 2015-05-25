@@ -131,7 +131,7 @@ public class OverviewPanel extends javax.swing.JPanel {
     /**
      * Creates a new OverviewPanel.
      *
-     * @param reporterGUI
+     * @param reporterGUI the ReporterGUI parent
      */
     public OverviewPanel(ReporterGUI reporterGUI) {
         initComponents();
