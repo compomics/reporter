@@ -102,8 +102,8 @@ public class ReporterPathPreferences {
      *
      * @param inputFile the file to load the path preferences from
      *
-     * @throws FileNotFoundException
-     * @throws IOException
+     * @throws FileNotFoundException thrown if the file cannot be found
+     * @throws IOException thrown if an IOException occurs
      */
     public static void loadPathPreferencesFromFile(File inputFile) throws FileNotFoundException, IOException {
         BufferedReader br = new BufferedReader(new FileReader(inputFile));
@@ -124,7 +124,7 @@ public class ReporterPathPreferences {
      * Loads a path to be set from a line.
      *
      * @param line the line where to read the path from
-     * @throws java.io.FileNotFoundException
+     * @throws FileNotFoundException thrown of the file cannot be found
      */
     public static void loadPathPreferenceFromLine(String line) throws FileNotFoundException, IOException {
         String id = UtilitiesPathPreferences.getPathID(line);
@@ -168,7 +168,7 @@ public class ReporterPathPreferences {
      *
      * @param path the path of the folder where to redirect all paths.
      *
-     * @throws FileNotFoundException
+     * @throws FileNotFoundException thrown if a file cannot be found
      */
     public static void setAllPathsIn(String path) throws FileNotFoundException {
         for (ReporterPathKey reporterPathKey : ReporterPathKey.values()) {
@@ -190,7 +190,7 @@ public class ReporterPathPreferences {
      *
      * @param file the destination file
      *
-     * @throws IOException
+     * @throws IOException thrown if an IOException occurs
      */
     public static void writeConfigurationToFile(File file) throws IOException {
         BufferedWriter bw = new BufferedWriter(new FileWriter(file));
@@ -206,7 +206,7 @@ public class ReporterPathPreferences {
      * 
      * @param bw the writer to use for writing.
      *
-     * @throws IOException
+     * @throws IOException thrown if an IOException occurs
      */
     public static void writeConfigurationToFile(BufferedWriter bw) throws IOException {
         for (ReporterPathKey pathKey : ReporterPathKey.values()) {
@@ -221,7 +221,7 @@ public class ReporterPathPreferences {
      * @param bw the writer to use for writing
      * @param pathKey the key of the path of interest
      *
-     * @throws IOException
+     * @throws IOException thrown if an IOException occurs
      */
     public static void writePathToFile(BufferedWriter bw, ReporterPathKey pathKey) throws IOException {
         bw.write(pathKey.id + UtilitiesPathPreferences.separator);
