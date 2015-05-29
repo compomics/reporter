@@ -1,5 +1,6 @@
 package eu.isas.reporter.gui;
 
+import com.compomics.util.Util;
 import com.compomics.util.db.ObjectsCache;
 import com.compomics.util.experiment.MsExperiment;
 import com.compomics.util.experiment.biology.Sample;
@@ -138,13 +139,6 @@ public class NewDialog extends javax.swing.JDialog {
         sampleAssignmentTable.getTableHeader().setReorderingAllowed(false);
         reagentsTable.getTableHeader().setReorderingAllowed(false);
 
-        comboMethod2.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                selectedMethod = getMethod((String) comboMethod2.getSelectedItem());
-                reagents = selectedMethod.getReagentsSortedByMass();
-                refresh();
-            }
-        });
         comboMethod1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 selectedMethod = getMethod((String) comboMethod1.getSelectedItem());
@@ -174,7 +168,8 @@ public class NewDialog extends javax.swing.JDialog {
                 "Yes", "No"));
         sampleAssignmentTable.getColumnModel().getColumn(2).setMaxWidth(100);
         sampleAssignmentTable.getColumnModel().getColumn(0).setMaxWidth(100);
-        reagentsTable.getColumnModel().getColumn(0).setMaxWidth(100);
+        reagentsTable.getColumnModel().getColumn(0).setMaxWidth(30);
+        reagentsTable.getColumnModel().getColumn(1).setMaxWidth(100);
     }
 
     /**
@@ -220,7 +215,6 @@ public class NewDialog extends javax.swing.JDialog {
         txtConfigurationFileLocation = new javax.swing.JTextField();
         browseConfigButton = new javax.swing.JButton();
         saveConfigButton = new javax.swing.JButton();
-        saveAsConfigButton = new javax.swing.JButton();
         methodPanel = new javax.swing.JPanel();
         jLabel4 = new javax.swing.JLabel();
         comboMethod2 = new javax.swing.JComboBox();
@@ -533,8 +527,11 @@ public class NewDialog extends javax.swing.JDialog {
         });
 
         saveConfigButton.setText("Save");
-
-        saveAsConfigButton.setText("Save As");
+        saveConfigButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveConfigButtonActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout configFilePanelLayout = new org.jdesktop.layout.GroupLayout(configFilePanel);
         configFilePanel.setLayout(configFilePanelLayout);
@@ -547,12 +544,10 @@ public class NewDialog extends javax.swing.JDialog {
                 .add(browseConfigButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(saveConfigButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(saveAsConfigButton)
                 .addContainerGap())
         );
 
-        configFilePanelLayout.linkSize(new java.awt.Component[] {browseConfigButton, saveAsConfigButton, saveConfigButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+        configFilePanelLayout.linkSize(new java.awt.Component[] {browseConfigButton, saveConfigButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
 
         configFilePanelLayout.setVerticalGroup(
             configFilePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -561,8 +556,7 @@ public class NewDialog extends javax.swing.JDialog {
                 .add(configFilePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(txtConfigurationFileLocation, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(saveConfigButton)
-                    .add(browseConfigButton)
-                    .add(saveAsConfigButton))
+                    .add(browseConfigButton))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -572,6 +566,11 @@ public class NewDialog extends javax.swing.JDialog {
         jLabel4.setText("Method Selected");
 
         comboMethod2.setModel(new DefaultComboBoxModel(methodsFactory.getMethodsNames()));
+        comboMethod2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                comboMethod2ActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout methodPanelLayout = new org.jdesktop.layout.GroupLayout(methodPanel);
         methodPanel.setLayout(methodPanelLayout);
@@ -860,31 +859,27 @@ public class NewDialog extends javax.swing.JDialog {
             reporterGui.getLastSelectedFolder().setLastSelectedFolder(txtConfigurationFileLocation.getText());
         }
 
-        JFileChooser fileChooser = new JFileChooser(reporterGui.getLastSelectedFolder().getLastSelectedFolder());
-        fileChooser.setDialogTitle("Select Configuration File");
-        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        fileChooser.setMultiSelectionEnabled(false);
+        File selectedFile = Util.getUserSelectedFile(this, ".xml", "Reporter Method File (*.xml)", "Select Configuration File", reporterGui.getLastSelectedFolder().getLastSelectedFolder(), true);
 
-        int returnVal = fileChooser.showDialog(this.getParent(), "Add");
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-            File newFile = fileChooser.getSelectedFile();
+        if (selectedFile != null) {
             try {
-                methodsFactory.importMethods(newFile);
+                methodsFactory.importMethods(selectedFile);
                 comboMethod2.setModel(new DefaultComboBoxModel(methodsFactory.getMethodsNames()));
                 comboMethod1.setModel(new DefaultComboBoxModel(methodsFactory.getMethodsNames()));
                 selectedMethod = getMethod((String) comboMethod2.getSelectedItem());
                 reagents = selectedMethod.getReagentsSortedByMass();
                 refresh();
-                txtConfigurationFileLocation.setText(newFile.getAbsolutePath());
-                reporterGui.getLastSelectedFolder().setLastSelectedFolder(newFile.getPath());
+                txtConfigurationFileLocation.setText(selectedFile.getAbsolutePath());
+                reporterGui.getLastSelectedFolder().setLastSelectedFolder(selectedFile.getPath());
             } catch (IOException e) {
                 JOptionPane.showMessageDialog(null,
-                        "File " + METHODS_FILE + " not found in conf folder.",
-                        "Methods file not found", JOptionPane.WARNING_MESSAGE);
+                        "File " + selectedFile.getAbsolutePath() + " not found.",
+                        "File Not Found", JOptionPane.WARNING_MESSAGE);
             } catch (XmlPullParserException e) {
                 JOptionPane.showMessageDialog(null,
-                        "An error occurred while parsing " + METHODS_FILE + " at line " + e.getLineNumber() + ".",
+                        "An error occurred while parsing " + selectedFile.getAbsolutePath() + " at line " + e.getLineNumber() + ".",
                         "Parsing Error", JOptionPane.WARNING_MESSAGE);
+                e.printStackTrace();
             }
         }
 }//GEN-LAST:event_browseConfigButtonActionPerformed
@@ -931,8 +926,8 @@ public class NewDialog extends javax.swing.JDialog {
 
     /**
      * Start loading the data.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void startButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startButtonActionPerformed
         if (validateInput()) {
@@ -949,8 +944,8 @@ public class NewDialog extends javax.swing.JDialog {
 
     /**
      * Set the precursor matching type.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void sameSpectraActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sameSpectraActionPerformed
         precursorMatching.setSelected(!sameSpectra.isSelected());
@@ -958,8 +953,8 @@ public class NewDialog extends javax.swing.JDialog {
 
     /**
      * Set the precursor matching type.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void precursorMatchingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_precursorMatchingActionPerformed
         sameSpectra.setSelected(!precursorMatching.isSelected());
@@ -967,8 +962,8 @@ public class NewDialog extends javax.swing.JDialog {
 
     /**
      * Open a file chooser for adding spectrum files.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void addSpectraFilesJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addSpectraFilesJButtonActionPerformed
 
@@ -1030,8 +1025,8 @@ public class NewDialog extends javax.swing.JDialog {
 
     /**
      * Validate the retention time input.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void rtTolTxtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rtTolTxtActionPerformed
         // @TODO: validate the input
@@ -1049,8 +1044,8 @@ public class NewDialog extends javax.swing.JDialog {
 
     /**
      * Open the PreferencesDialog.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void editPreferencesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editPreferencesButtonActionPerformed
         new PreferencesDialog(reporterGui, reporterPreferences, cpsBean.getIdentificationParameters().getSearchParameters());
@@ -1058,12 +1053,15 @@ public class NewDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_editPreferencesButtonActionPerformed
 
     /**
-     * Clear the sample names.
-     * 
-     * @param evt 
+     * Clear the sample names and update the method table.
+     *
+     * @param evt
      */
     private void comboMethod1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboMethod1ActionPerformed
         sampleNames = new HashMap<String, String>();
+        selectedMethod = getMethod((String) comboMethod1.getSelectedItem());
+        reagents = selectedMethod.getReagentsSortedByMass();
+        refresh();
     }//GEN-LAST:event_comboMethod1ActionPerformed
 
     /**
@@ -1141,8 +1139,8 @@ public class NewDialog extends javax.swing.JDialog {
 
     /**
      * Validate the sample name.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void sampleNameTxtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sampleNameTxtActionPerformed
         // @TODO: validate the input
@@ -1150,8 +1148,8 @@ public class NewDialog extends javax.swing.JDialog {
 
     /**
      * Validate the project name.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void projectTxtKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_projectTxtKeyReleased
         // @TODO: validate the input
@@ -1159,12 +1157,51 @@ public class NewDialog extends javax.swing.JDialog {
 
     /**
      * Validate the input.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void replicateNumberTxtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_replicateNumberTxtActionPerformed
         validateInput();
     }//GEN-LAST:event_replicateNumberTxtActionPerformed
+
+    /**
+     * Save the current reagent settings.
+     *
+     * @param evt
+     */
+    private void saveConfigButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveConfigButtonActionPerformed
+        if (txtConfigurationFileLocation.getText().length() > 0) {
+            reporterGui.getLastSelectedFolder().setLastSelectedFolder(txtConfigurationFileLocation.getText());
+        }
+
+        File selectedFile = Util.getUserSelectedFile(this, ".xml", "Reporter Method File (*.xml)", "Save Configuration File", reporterGui.getLastSelectedFolder().getLastSelectedFolder(), false);
+
+        if (selectedFile != null) {
+            try {
+                methodsFactory.saveFile(selectedFile);
+                txtConfigurationFileLocation.setText(selectedFile.getAbsolutePath());
+                JOptionPane.showMessageDialog(null,
+                        "Settings saved to " + selectedFile.getAbsolutePath() + ".",
+                        "Settings Saved", JOptionPane.INFORMATION_MESSAGE);
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(null,
+                        "An error occured when saving the file.",
+                        "File Error", JOptionPane.WARNING_MESSAGE);
+                ex.printStackTrace();
+            }
+        }
+    }//GEN-LAST:event_saveConfigButtonActionPerformed
+
+    /**
+     * Update the selected method.
+     *
+     * @param evt
+     */
+    private void comboMethod2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboMethod2ActionPerformed
+        selectedMethod = getMethod((String) comboMethod2.getSelectedItem());
+        reagents = selectedMethod.getReagentsSortedByMass();
+        refresh();
+    }//GEN-LAST:event_comboMethod2ActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addDbButton;
@@ -1216,7 +1253,6 @@ public class NewDialog extends javax.swing.JDialog {
     private javax.swing.JTable sampleAssignmentTable;
     private javax.swing.JTextField sampleNameTxt;
     private javax.swing.JPanel samplePanel;
-    private javax.swing.JButton saveAsConfigButton;
     private javax.swing.JButton saveConfigButton;
     private javax.swing.JPanel spectrumAnalysisPanel;
     private javax.swing.JButton startButton;
@@ -1357,7 +1393,7 @@ public class NewDialog extends javax.swing.JDialog {
 
                     progressDialog.setTitle("Loading Gene Mappings. Please Wait...");
                     loadGeneMappings(); // have to load the new gene mappings
-                    
+
                     // backwards compatibility fix for gene and go references using only latin names
                     boolean genesRemapped = false;
                     String selectedSpecies = cpsBean.getIdentificationParameters().getGenePreferences().getCurrentSpecies();
@@ -1381,7 +1417,7 @@ public class NewDialog extends javax.swing.JDialog {
                                     keyFound = true;
                                 }
                             }
-                            
+
                             if (keyFound) {
                                 loadGeneMappings(); // have to re-load the gene mappings now that we have the correct species name
                                 genesRemapped = true;
@@ -1864,7 +1900,7 @@ public class NewDialog extends javax.swing.JDialog {
 
         @Override
         public int getColumnCount() {
-            return 7;
+            return 8;
         }
 
         @Override
@@ -1873,16 +1909,18 @@ public class NewDialog extends javax.swing.JDialog {
                 case 0:
                     return " ";
                 case 1:
-                    return "Monoisotopic Mass";
+                    return "Name";
                 case 2:
-                    return "-2 C13 [%]";
+                    return "Mass";
                 case 3:
-                    return "-1 C13 [%]";
+                    return "-2 C13 [%]";
                 case 4:
-                    return "Monoisotopic [%]";
+                    return "-1 C13 [%]";
                 case 5:
-                    return "+1 C13 [%]";
+                    return "Monoisotopic [%]";
                 case 6:
+                    return "+1 C13 [%]";
+                case 7:
                     return "+2 C13 [%]";
                 default:
                     return "";
@@ -1894,18 +1932,20 @@ public class NewDialog extends javax.swing.JDialog {
             String reagentName = reagents.get(row);
             switch (column) {
                 case 0:
-                    return selectedMethod.getReagent(reagentName).getReporterIon().getName();
+                    return row + 1;
                 case 1:
-                    return selectedMethod.getReagent(reagentName).getReporterIon().getTheoreticMass() + ElementaryIon.proton.getTheoreticMass();
+                    return selectedMethod.getReagent(reagentName).getReporterIon().getName();
                 case 2:
-                    return selectedMethod.getReagent(reagentName).getMinus2();
+                    return selectedMethod.getReagent(reagentName).getReporterIon().getTheoreticMass() + ElementaryIon.proton.getTheoreticMass();
                 case 3:
-                    return selectedMethod.getReagent(reagentName).getMinus1();
+                    return selectedMethod.getReagent(reagentName).getMinus2();
                 case 4:
-                    return 100;
+                    return selectedMethod.getReagent(reagentName).getMinus1();
                 case 5:
-                    return selectedMethod.getReagent(reagentName).getPlus1();
+                    return selectedMethod.getReagent(reagentName).getRef();
                 case 6:
+                    return selectedMethod.getReagent(reagentName).getPlus1();
+                case 7:
                     return selectedMethod.getReagent(reagentName).getPlus2();
                 default:
                     return "";
@@ -1913,13 +1953,43 @@ public class NewDialog extends javax.swing.JDialog {
         }
 
         @Override
-        public void setValueAt(Object aValue, int row, int column) {
-            // @TODO: implement me!!
+        public void setValueAt(Object aValue, int row, int column) { // @TODO: ask the user to save before loading the data if changes have been made!
+            String reagentName = reagents.get(row);
+            switch (column) {
+                case 1:
+                    selectedMethod.getReagent(reagentName).getReporterIon().setName((String) aValue);
+                    break;
+                case 2:
+                    selectedMethod.getReagent(reagentName).getReporterIon().setTheoreticMass((Double) aValue - ElementaryIon.proton.getTheoreticMass());
+                    break;
+                case 3:
+                    selectedMethod.getReagent(reagentName).setMinus2((Double) aValue);
+                    break;
+                case 4:
+                    selectedMethod.getReagent(reagentName).setMinus1((Double) aValue);
+                    break;
+                case 5:
+                    selectedMethod.getReagent(reagentName).setRef((Double) aValue);
+                    break;
+                case 6:
+                    selectedMethod.getReagent(reagentName).setPlus1((Double) aValue);
+                    break;
+                case 7:
+                    selectedMethod.getReagent(reagentName).setPlus2((Double) aValue);
+                    break;
+                default:
+                    break;
+            }
         }
 
         @Override
         public Class getColumnClass(int columnIndex) {
             return getValueAt(0, columnIndex).getClass();
+        }
+
+        @Override
+        public boolean isCellEditable(int row, int column) {
+            return column != 0;
         }
     }
 

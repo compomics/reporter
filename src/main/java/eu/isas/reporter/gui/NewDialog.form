@@ -572,8 +572,6 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="saveConfigButton" linkSize="3" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="saveAsConfigButton" linkSize="3" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -585,7 +583,6 @@
                                   <Component id="txtConfigurationFileLocation" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="saveConfigButton" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="browseConfigButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="saveAsConfigButton" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="32767" attributes="0"/>
                           </Group>
@@ -610,11 +607,9 @@
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Save"/>
                       </Properties>
-                    </Component>
-                    <Component class="javax.swing.JButton" name="saveAsConfigButton">
-                      <Properties>
-                        <Property name="text" type="java.lang.String" value="Save As"/>
-                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="saveConfigButtonActionPerformed"/>
+                      </Events>
                     </Component>
                   </SubComponents>
                 </Container>
@@ -665,6 +660,9 @@
                           <Connection code="new DefaultComboBoxModel(methodsFactory.getMethodsNames())" type="code"/>
                         </Property>
                       </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="comboMethod2ActionPerformed"/>
+                      </Events>
                     </Component>
                   </SubComponents>
                 </Container>
