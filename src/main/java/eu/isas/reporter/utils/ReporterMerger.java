@@ -11,6 +11,9 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -801,7 +804,8 @@ public class ReporterMerger {
                             Double logValue = logNormalizedValidatedRatiosMap.get(key).get(experiment).get(ratio);
                             if (logValue != null && !logValue.isNaN()) {
                                 Distribution distribution = distributionsMap.get(experiment).get(ratio);
-                                Double p = distribution.getProbabilityAt(logValue);
+                                MathContext mathContext = new MathContext(10, RoundingMode.HALF_DOWN);
+                                BigDecimal p = distribution.getProbabilityAt(logValue, mathContext);
                                 writer.write(p.toString());
                             }
                             writer.write(separator);
@@ -813,7 +817,7 @@ public class ReporterMerger {
             }
             writer.close();
 
-            // Output pathways
+            // output pathways
             for (String pathway : normalizedPathwaysRatiosMap.keySet()) {
 
                 outputFile = new File(path, pathway + "_quantification.txt");
