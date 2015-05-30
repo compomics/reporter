@@ -3,6 +3,17 @@
 
 ----
 
+*Changes in Reporter 0.0.2 (Coming soon...):*
+
+ * FEATURE IMPROVEMENT: Made it possible to edit and save the reagent details via the GUI.
+
+ * LIBRARY UPDATE: Updated utilities to version 3.49.1.
+ * LIBRARY UPDATE: Updated PeptideShaker to version 0.39.0.
+
+----
+
 *Changes in Reporter 0.0.1 (May 6. 2015):*
 
  * First public beta release of Reporter.
+
+----
