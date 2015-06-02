@@ -3,7 +3,7 @@
 
 ----
 
-*Changes in Reporter 0.0.2 (Coming soon...):*
+*Changes in Reporter 0.0.2 (June 2. 2015):*
 
  * FEATURE IMPROVEMENT: Made it possible to edit and save the reagent details via the GUI.
 
