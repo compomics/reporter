@@ -7,8 +7,8 @@
 
  * FEATURE IMPROVEMENT: Made it possible to edit and save the reagent details via the GUI.
 
- * LIBRARY UPDATE: Updated utilities to version 3.49.1.
  * LIBRARY UPDATE: Updated PeptideShaker to version 0.39.0.
+ * LIBRARY UPDATE: Updated utilities to version 3.49.2.
 
 ----
 
