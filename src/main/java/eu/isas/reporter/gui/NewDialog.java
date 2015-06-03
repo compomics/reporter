@@ -235,8 +235,8 @@ public class NewDialog extends javax.swing.JDialog {
         jLabel7 = new javax.swing.JLabel();
         editPreferencesButton = new javax.swing.JButton();
         quantificationPreferencesTxt = new javax.swing.JTextField();
-        startButton = new javax.swing.JButton();
-        exitJButton = new javax.swing.JButton();
+        loadButton = new javax.swing.JButton();
+        exitButton = new javax.swing.JButton();
 
         org.jdesktop.layout.GroupLayout jPanel3Layout = new org.jdesktop.layout.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -526,7 +526,7 @@ public class NewDialog extends javax.swing.JDialog {
             }
         });
 
-        saveConfigButton.setText("Save");
+        saveConfigButton.setText("Save As");
         saveConfigButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 saveConfigButtonActionPerformed(evt);
@@ -790,19 +790,17 @@ public class NewDialog extends javax.swing.JDialog {
 
         tabbedPane.addTab("Advanced Parameters", advancedParamsPanel);
 
-        startButton.setText("Load");
-        startButton.setPreferredSize(new java.awt.Dimension(57, 23));
-        startButton.addActionListener(new java.awt.event.ActionListener() {
+        loadButton.setText("Load");
+        loadButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                startButtonActionPerformed(evt);
+                loadButtonActionPerformed(evt);
             }
         });
 
-        exitJButton.setText("Exit");
-        exitJButton.setPreferredSize(new java.awt.Dimension(57, 23));
-        exitJButton.addActionListener(new java.awt.event.ActionListener() {
+        exitButton.setText("Exit");
+        exitButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                exitJButtonActionPerformed(evt);
+                exitButtonActionPerformed(evt);
             }
         });
 
@@ -813,16 +811,16 @@ public class NewDialog extends javax.swing.JDialog {
             .add(backgroundPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(backgroundPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(backgroundPanelLayout.createSequentialGroup()
+                    .add(tabbedPane)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, backgroundPanelLayout.createSequentialGroup()
                         .add(0, 0, Short.MAX_VALUE)
-                        .add(startButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(loadButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(exitJButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(tabbedPane))
+                        .add(exitButton)))
                 .addContainerGap())
         );
 
-        backgroundPanelLayout.linkSize(new java.awt.Component[] {exitJButton, startButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+        backgroundPanelLayout.linkSize(new java.awt.Component[] {exitButton, loadButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
 
         backgroundPanelLayout.setVerticalGroup(
             backgroundPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -831,8 +829,8 @@ public class NewDialog extends javax.swing.JDialog {
                 .add(tabbedPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 588, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(backgroundPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(startButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(exitJButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(loadButton)
+                    .add(exitButton))
                 .addContainerGap())
         );
 
@@ -925,24 +923,6 @@ public class NewDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_addIdFilesButtonActionPerformed
 
     /**
-     * Start loading the data.
-     *
-     * @param evt
-     */
-    private void startButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startButtonActionPerformed
-        if (validateInput()) {
-            reporterIonQuantification = new ReporterIonQuantification(Quantification.QuantificationMethod.REPORTER_IONS);
-            for (String key : sampleNames.keySet()) {
-                reporterIonQuantification.assignSample(key, new Sample(sampleNames.get(key)));
-            }
-            reporterIonQuantification.setMethod(selectedMethod);
-            reporterIonQuantification.setControlSamples(controlSamples);
-            saveUserPreferences();
-            dispose();
-        }
-    }//GEN-LAST:event_startButtonActionPerformed
-
-    /**
      * Set the precursor matching type.
      *
      * @param evt
@@ -1031,16 +1011,6 @@ public class NewDialog extends javax.swing.JDialog {
     private void rtTolTxtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rtTolTxtActionPerformed
         // @TODO: validate the input
     }//GEN-LAST:event_rtTolTxtActionPerformed
-
-    /**
-     * Clear the data and close the dialog.
-     *
-     * @param evt
-     */
-    private void exitJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitJButtonActionPerformed
-        cancelled = true;
-        this.dispose();
-    }//GEN-LAST:event_exitJButtonActionPerformed
 
     /**
      * Open the PreferencesDialog.
@@ -1134,7 +1104,7 @@ public class NewDialog extends javax.swing.JDialog {
      * @param evt
      */
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
-        exitJButtonActionPerformed(null);
+        exitButtonActionPerformed(null);
     }//GEN-LAST:event_formWindowClosing
 
     /**
@@ -1203,6 +1173,34 @@ public class NewDialog extends javax.swing.JDialog {
         refresh();
     }//GEN-LAST:event_comboMethod2ActionPerformed
 
+    /**
+     * Start loading the data.
+     *
+     * @param evt
+     */
+    private void loadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadButtonActionPerformed
+        if (validateInput()) {
+            reporterIonQuantification = new ReporterIonQuantification(Quantification.QuantificationMethod.REPORTER_IONS);
+            for (String key : sampleNames.keySet()) {
+                reporterIonQuantification.assignSample(key, new Sample(sampleNames.get(key)));
+            }
+            reporterIonQuantification.setMethod(selectedMethod);
+            reporterIonQuantification.setControlSamples(controlSamples);
+            saveUserPreferences();
+            dispose();
+        }
+    }//GEN-LAST:event_loadButtonActionPerformed
+
+    /**
+     * Clear the data and close the dialog.
+     *
+     * @param evt
+     */
+    private void exitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitButtonActionPerformed
+        cancelled = true;
+        this.dispose();
+    }//GEN-LAST:event_exitButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addDbButton;
     private javax.swing.JButton addIdFilesButton;
@@ -1215,7 +1213,7 @@ public class NewDialog extends javax.swing.JDialog {
     private javax.swing.JPanel configFilePanel;
     private javax.swing.JPanel configPanel;
     private javax.swing.JButton editPreferencesButton;
-    private javax.swing.JButton exitJButton;
+    private javax.swing.JButton exitButton;
     private javax.swing.JTextField fastaTxt;
     private javax.swing.JPanel fileSelectiontPanel;
     private javax.swing.JTextField ionToleranceTxt;
@@ -1236,6 +1234,7 @@ public class NewDialog extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel7;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JButton loadButton;
     private javax.swing.JPanel methodPanel;
     private javax.swing.JTextField mzTolTxt;
     private javax.swing.JComboBox ppmCmb;
@@ -1255,7 +1254,6 @@ public class NewDialog extends javax.swing.JDialog {
     private javax.swing.JPanel samplePanel;
     private javax.swing.JButton saveConfigButton;
     private javax.swing.JPanel spectrumAnalysisPanel;
-    private javax.swing.JButton startButton;
     private javax.swing.JTabbedPane tabbedPane;
     private javax.swing.JTextField txtConfigurationFileLocation;
     private javax.swing.JTextField txtIdFileLocation;
@@ -1960,7 +1958,7 @@ public class NewDialog extends javax.swing.JDialog {
                     selectedMethod.getReagent(reagentName).getReporterIon().setName((String) aValue);
                     break;
                 case 2:
-                    selectedMethod.getReagent(reagentName).getReporterIon().setTheoreticMass((Double) aValue - ElementaryIon.proton.getTheoreticMass());
+                    selectedMethod.getReagent(reagentName).getReporterIon().setTheoreticMass((Double) aValue);
                     break;
                 case 3:
                     selectedMethod.getReagent(reagentName).setMinus2((Double) aValue);
