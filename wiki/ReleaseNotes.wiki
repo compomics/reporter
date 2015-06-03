@@ -3,6 +3,15 @@
 
 ----
 
+*Changes in Reporter 0.0.3 (June 3. 2015):*
+
+ * BUG FIX: Fixed bugs related to saving the reporter methods.
+
+ * LIBRARY UPDATE: Updated PeptideShaker to version 0.39.1.
+ * LIBRARY UPDATE: Updated utilities to version 3.49.4.
+
+----
+
 *Changes in Reporter 0.0.2 (June 2. 2015):*
 
  * FEATURE IMPROVEMENT: Made it possible to edit and save the reagent details via the GUI.
