@@ -202,8 +202,9 @@ public class OverviewPanel extends javax.swing.JPanel {
 
                     reporterGUI.getIdentificationFeaturesGenerator().setProteinKeys(reporterGUI.getMetrics().getProteinKeys());
                     proteinKeys = reporterGUI.getIdentificationFeaturesGenerator().getProcessedProteinKeys(progressDialog, reporterGUI.getFilterPreferences());
-                    identification.loadProteinMatches(proteinKeys, progressDialog);
-                    identification.loadProteinMatchParameters(proteinKeys, new PSParameter(), progressDialog);
+                    identification.loadProteinMatches(proteinKeys, progressDialog, false);
+                    identification.loadProteinMatchParameters(proteinKeys, new PSParameter(), progressDialog, false);
+
                     // update the table model
                     if (proteinTable.getRowCount() > 0) {
                         ((ProteinTableModel) proteinTable.getModel()).updateDataModel(identification, identificationFeaturesGenerator, reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getExceptionHandler(), proteinKeys);
