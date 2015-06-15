@@ -98,12 +98,8 @@
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="jLabel8" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                          </Group>
                           <Group type="102" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="102" alignment="1" attributes="0">
@@ -112,12 +108,18 @@
                                       <EmptySpace min="-2" max="-2" attributes="0"/>
                                       <Component id="removeModification" linkSize="11" min="-2" pref="119" max="-2" attributes="0"/>
                                   </Group>
-                                  <Component id="miscleavageCheck" min="-2" max="-2" attributes="0"/>
                                   <Component id="allPtmsScrollPane" alignment="0" max="32767" attributes="0"/>
-                                  <Component id="selectedPtmsScrollPane" alignment="0" max="32767" attributes="1"/>
+                                  <Component id="selectedPtmsScrollPane" alignment="0" pref="524" max="32767" attributes="1"/>
                                   <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="1"/>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="jLabel8" min="-2" max="-2" attributes="0"/>
+                                  <Component id="miscleavageCheck" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                   </Group>
@@ -126,9 +128,9 @@
             <DimensionLayout dim="1">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
                       <Component id="miscleavageCheck" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="23" max="-2" attributes="0"/>
+                      <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="selectedPtmsScrollPane" max="32767" attributes="1"/>
@@ -269,23 +271,23 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
-                              <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
-                              <Component id="proteinValidationCmb" pref="200" max="32767" attributes="0"/>
+                              <Component id="jLabel2" linkSize="17" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <Component id="proteinValidationCmb" min="-2" pref="200" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="jLabel3" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="jLabel7" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="jLabel3" linkSize="17" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="jLabel7" linkSize="17" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="psmValidationCmb" max="32767" attributes="0"/>
-                                  <Component id="peptideValidationCmb" max="32767" attributes="0"/>
+                                  <Component id="psmValidationCmb" linkSize="16" min="-2" pref="200" max="-2" attributes="0"/>
+                                  <Component id="peptideValidationCmb" linkSize="16" min="-2" pref="200" max="-2" attributes="0"/>
                               </Group>
                           </Group>
                       </Group>
-                      <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
+                      <EmptySpace pref="18" max="32767" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="nullIntensitiesCheck" min="-2" max="-2" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
