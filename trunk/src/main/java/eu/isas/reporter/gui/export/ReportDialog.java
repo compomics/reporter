@@ -459,7 +459,7 @@ public class ReportDialog extends javax.swing.JDialog {
                             progressDialog.setRunFinished();
                             JOptionPane.showMessageDialog(reporterGUI,
                                     "An error occurred while generating the output. Please make sure "
-                                    + "that the detination file is not opened by another application.", "Output Error.", JOptionPane.ERROR_MESSAGE);
+                                    + "that the destination file is not opened by another application.", "Output Error.", JOptionPane.ERROR_MESSAGE);
                             e.printStackTrace();
                         } catch (Exception e) {
                             progressDialog.setRunFinished();

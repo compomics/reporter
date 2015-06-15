@@ -1,10 +1,8 @@
 package eu.isas.reporter.gui;
 
-import com.compomics.util.Util;
 import com.compomics.util.db.ObjectsCache;
 import com.compomics.util.experiment.MsExperiment;
 import com.compomics.util.experiment.biology.Sample;
-import com.compomics.util.experiment.biology.ions.ElementaryIon;
 import com.compomics.util.experiment.biology.ions.PeptideFragmentIon;
 import com.compomics.util.experiment.biology.ions.ReporterIon;
 import com.compomics.util.experiment.identification.Identification;
@@ -48,6 +46,10 @@ public class NewDialog extends javax.swing.JDialog {
      * File containing the various reporter methods.
      */
     private final String METHODS_FILE = "resources/conf/reporterMethods.xml";
+    /**
+     * The current methods file.
+     */
+    private File methodsFile;
     /**
      * The compomics reporter methods factory.
      */
@@ -115,39 +117,27 @@ public class NewDialog extends javax.swing.JDialog {
 
         this.reporterGui = reporterGui;
 
+        methodsFile = new File(reporterGui.getJarFilePath(), METHODS_FILE);
         importMethods();
+
         initComponents();
+
+        setUpGui();
+
         // load the user preferences
         loadUserPreferences();
 
-        // make sure that the scroll panes are see-through
-        reagentsTableJScrollPane.getViewport().setOpaque(false);
-        sampleAssignmentJScrollPane.getViewport().setOpaque(false);
-
-        sameSpectra.setSelected(true);
-
         if (selectedMethod == null && methodsFactory.getMethodsNames() != null && methodsFactory.getMethodsNames().length > 0) {
-            comboMethod2.setSelectedItem(methodsFactory.getMethodsNames()[0]);
-            comboMethod1.setSelectedItem(methodsFactory.getMethodsNames()[0]);
+            reporterMethodComboBox.setSelectedItem(methodsFactory.getMethodsNames()[0]);
         }
 
-        // centrally align the comboboxes
-        comboMethod1.setRenderer(new AlignedListCellRenderer(SwingConstants.CENTER));
-        comboMethod2.setRenderer(new AlignedListCellRenderer(SwingConstants.CENTER));
-
-        // disables the user to drag column headers to reorder columns
-        sampleAssignmentTable.getTableHeader().setReorderingAllowed(false);
-        reagentsTable.getTableHeader().setReorderingAllowed(false);
-
-        comboMethod1.addActionListener(new ActionListener() {
+        reporterMethodComboBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                selectedMethod = getMethod((String) comboMethod1.getSelectedItem());
+                selectedMethod = getMethod((String) reporterMethodComboBox.getSelectedItem());
                 reagents = selectedMethod.getReagentsSortedByMass();
                 refresh();
             }
         });
-
-        txtConfigurationFileLocation.setText(reporterGui.getJarFilePath() + File.separator + METHODS_FILE);
 
         reporterGui.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")));
 
@@ -159,17 +149,36 @@ public class NewDialog extends javax.swing.JDialog {
     }
 
     /**
+     * Set up the GUI.
+     */
+    private void setUpGui() {
+        sameSpectraActionPerformed(null);
+
+        // make sure that the scroll panes are see-through
+        sampleAssignmentJScrollPane.getViewport().setOpaque(false);
+
+        // centrally align the comboboxes
+        reporterMethodComboBox.setRenderer(new AlignedListCellRenderer(SwingConstants.CENTER));
+
+        // disables the user to drag column headers to reorder columns
+        sampleAssignmentTable.getTableHeader().setReorderingAllowed(false);
+    }
+
+    /**
      * Set up the properties of the tables.
      */
     private void setTableProperties() {
-        sampleAssignmentTable.getColumnModel().getColumn(2).setCellRenderer(new TrueFalseIconRenderer(
+
+        sampleAssignmentTable.getColumnModel().getColumn(0).setMaxWidth(30);
+        sampleAssignmentTable.getColumnModel().getColumn(1).setMinWidth(150);
+        sampleAssignmentTable.getColumnModel().getColumn(1).setMaxWidth(150);
+        sampleAssignmentTable.getColumnModel().getColumn(3).setMinWidth(80);
+        sampleAssignmentTable.getColumnModel().getColumn(3).setMaxWidth(80);
+
+        sampleAssignmentTable.getColumnModel().getColumn(3).setCellRenderer(new TrueFalseIconRenderer(
                 new ImageIcon(this.getClass().getResource("/icons/selected_green.png")),
                 null,
                 "Yes", "No"));
-        sampleAssignmentTable.getColumnModel().getColumn(2).setMaxWidth(100);
-        sampleAssignmentTable.getColumnModel().getColumn(0).setMaxWidth(100);
-        reagentsTable.getColumnModel().getColumn(0).setMaxWidth(30);
-        reagentsTable.getColumnModel().getColumn(1).setMaxWidth(100);
     }
 
     /**
@@ -181,73 +190,51 @@ public class NewDialog extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jPanel3 = new javax.swing.JPanel();
+        reporterLocatinButtonGroup = new javax.swing.ButtonGroup();
         backgroundPanel = new javax.swing.JPanel();
         tabbedPane = new javax.swing.JTabbedPane();
         processingPanel = new javax.swing.JPanel();
         projectPanel = new javax.swing.JPanel();
         projectTxt = new javax.swing.JTextField();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel24 = new javax.swing.JLabel();
+        projectReferenceLabel = new javax.swing.JLabel();
+        sampleNameLabel = new javax.swing.JLabel();
         sampleNameTxt = new javax.swing.JTextField();
-        jLabel25 = new javax.swing.JLabel();
+        replicateLabel = new javax.swing.JLabel();
         replicateNumberTxt = new javax.swing.JTextField();
         fileSelectiontPanel = new javax.swing.JPanel();
-        jLabel2 = new javax.swing.JLabel();
+        spectrumFilesLabel = new javax.swing.JLabel();
         txtSpectraFileLocation = new javax.swing.JTextField();
-        jLabel3 = new javax.swing.JLabel();
+        idFilesLabel = new javax.swing.JLabel();
         txtIdFileLocation = new javax.swing.JTextField();
         addIdFilesButton = new javax.swing.JButton();
         addSpectraFilesJButton = new javax.swing.JButton();
-        jLabel10 = new javax.swing.JLabel();
+        databaseFileLabel = new javax.swing.JLabel();
         fastaTxt = new javax.swing.JTextField();
         addDbButton = new javax.swing.JButton();
         samplePanel = new javax.swing.JPanel();
         sampleAssignmentJScrollPane = new javax.swing.JScrollPane();
         sampleAssignmentTable = new javax.swing.JTable();
-        jLabel5 = new javax.swing.JLabel();
-        comboMethod1 = new javax.swing.JComboBox();
-        configPanel = new javax.swing.JPanel();
-        isotopeCorrectionPanel = new javax.swing.JPanel();
-        reagentsTableJScrollPane = new javax.swing.JScrollPane();
-        reagentsTable = new javax.swing.JTable();
-        configFilePanel = new javax.swing.JPanel();
-        txtConfigurationFileLocation = new javax.swing.JTextField();
-        browseConfigButton = new javax.swing.JButton();
-        saveConfigButton = new javax.swing.JButton();
-        methodPanel = new javax.swing.JPanel();
-        jLabel4 = new javax.swing.JLabel();
-        comboMethod2 = new javax.swing.JComboBox();
+        reporterMethodLabel = new javax.swing.JLabel();
+        reporterMethodComboBox = new javax.swing.JComboBox();
+        methodSettingsButton = new javax.swing.JButton();
         advancedParamsPanel = new javax.swing.JPanel();
         spectrumAnalysisPanel = new javax.swing.JPanel();
-        jLabel6 = new javax.swing.JLabel();
+        reporterIonMzToleranceLabel = new javax.swing.JLabel();
         ionToleranceTxt = new javax.swing.JTextField();
-        jLabel11 = new javax.swing.JLabel();
+        quantOptionsPanel = new javax.swing.JPanel();
+        quantPreferencesLabel = new javax.swing.JLabel();
+        quantificationPreferencesTxt = new javax.swing.JTextField();
+        editQuantPrefsButton = new javax.swing.JButton();
+        reporterLocationPanel = new javax.swing.JPanel();
         sameSpectra = new javax.swing.JRadioButton();
         precursorMatching = new javax.swing.JRadioButton();
-        jLabel19 = new javax.swing.JLabel();
-        jLabel20 = new javax.swing.JLabel();
-        rtTolTxt = new javax.swing.JTextField();
+        mzToleranceLabel = new javax.swing.JLabel();
         mzTolTxt = new javax.swing.JTextField();
-        jLabel22 = new javax.swing.JLabel();
         ppmCmb = new javax.swing.JComboBox();
-        jPanel1 = new javax.swing.JPanel();
-        jLabel7 = new javax.swing.JLabel();
-        editPreferencesButton = new javax.swing.JButton();
-        quantificationPreferencesTxt = new javax.swing.JTextField();
+        rtToleranceLabel = new javax.swing.JLabel();
+        rtTolTxt = new javax.swing.JTextField();
         loadButton = new javax.swing.JButton();
         exitButton = new javax.swing.JButton();
-
-        org.jdesktop.layout.GroupLayout jPanel3Layout = new org.jdesktop.layout.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 100, Short.MAX_VALUE)
-        );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 100, Short.MAX_VALUE)
-        );
 
         setTitle("New Project");
         setResizable(false);
@@ -273,9 +260,9 @@ public class NewDialog extends javax.swing.JDialog {
             }
         });
 
-        jLabel1.setText("Project Reference");
+        projectReferenceLabel.setText("Project Reference");
 
-        jLabel24.setText("Sample Name");
+        sampleNameLabel.setText("Sample Name");
 
         sampleNameTxt.setEditable(false);
         sampleNameTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
@@ -285,7 +272,7 @@ public class NewDialog extends javax.swing.JDialog {
             }
         });
 
-        jLabel25.setText("Replicate");
+        replicateLabel.setText("Replicate");
 
         replicateNumberTxt.setEditable(false);
         replicateNumberTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
@@ -302,14 +289,14 @@ public class NewDialog extends javax.swing.JDialog {
             .add(projectPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(projectPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 120, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 120, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(20, 20, 20)
+                    .add(projectReferenceLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 120, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(sampleNameLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 120, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(projectPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(sampleNameTxt)
-                    .add(projectTxt))
+                    .add(projectTxt)
+                    .add(sampleNameTxt))
                 .add(26, 26, 26)
-                .add(jLabel25)
+                .add(replicateLabel)
                 .add(18, 18, 18)
                 .add(replicateNumberTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 66, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -320,12 +307,12 @@ public class NewDialog extends javax.swing.JDialog {
                 .addContainerGap()
                 .add(projectPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(projectTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel1))
+                    .add(projectReferenceLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(projectPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel24)
+                    .add(sampleNameLabel)
                     .add(sampleNameTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel25)
+                    .add(replicateLabel)
                     .add(replicateNumberTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -333,12 +320,12 @@ public class NewDialog extends javax.swing.JDialog {
         fileSelectiontPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Files Selection"));
         fileSelectiontPanel.setOpaque(false);
 
-        jLabel2.setText("Spectrum File(s)");
+        spectrumFilesLabel.setText("Spectrum File(s)");
 
         txtSpectraFileLocation.setEditable(false);
         txtSpectraFileLocation.setHorizontalAlignment(javax.swing.JTextField.CENTER);
 
-        jLabel3.setText("Identification File");
+        idFilesLabel.setText("Identification File");
 
         txtIdFileLocation.setEditable(false);
         txtIdFileLocation.setHorizontalAlignment(javax.swing.JTextField.CENTER);
@@ -351,14 +338,14 @@ public class NewDialog extends javax.swing.JDialog {
             }
         });
 
-        addSpectraFilesJButton.setText("Add");
+        addSpectraFilesJButton.setText("Browse");
         addSpectraFilesJButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addSpectraFilesJButtonActionPerformed(evt);
             }
         });
 
-        jLabel10.setText("Database File");
+        databaseFileLabel.setText("Database File");
 
         fastaTxt.setEditable(false);
         fastaTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
@@ -379,15 +366,15 @@ public class NewDialog extends javax.swing.JDialog {
                 .add(fileSelectiontPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(fileSelectiontPanelLayout.createSequentialGroup()
                         .add(fileSelectiontPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jLabel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 120, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(jLabel10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 120, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .add(18, 18, 18)
+                            .add(spectrumFilesLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 120, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(databaseFileLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 120, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .add(10, 10, 10)
                         .add(fileSelectiontPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(txtSpectraFileLocation)
                             .add(fastaTxt)))
                     .add(fileSelectiontPanelLayout.createSequentialGroup()
-                        .add(jLabel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 120, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(18, 18, 18)
+                        .add(idFilesLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 120, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(txtIdFileLocation)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(fileSelectiontPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -404,17 +391,17 @@ public class NewDialog extends javax.swing.JDialog {
             .add(fileSelectiontPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(fileSelectiontPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel3)
+                    .add(idFilesLabel)
                     .add(txtIdFileLocation, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(addIdFilesButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(fileSelectiontPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel2)
+                    .add(spectrumFilesLabel)
                     .add(txtSpectraFileLocation, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(addSpectraFilesJButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(fileSelectiontPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel10)
+                    .add(databaseFileLabel)
                     .add(fastaTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(addDbButton))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -427,12 +414,30 @@ public class NewDialog extends javax.swing.JDialog {
         sampleAssignmentTable.setOpaque(false);
         sampleAssignmentJScrollPane.setViewportView(sampleAssignmentTable);
 
-        jLabel5.setText("Method Selected");
+        reporterMethodLabel.setText("Reporter Method");
 
-        comboMethod1.setModel(new DefaultComboBoxModel(methodsFactory.getMethodsNames()));
-        comboMethod1.addActionListener(new java.awt.event.ActionListener() {
+        reporterMethodComboBox.setModel(new DefaultComboBoxModel(methodsFactory.getMethodsNames()));
+        reporterMethodComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                comboMethod1ActionPerformed(evt);
+                reporterMethodComboBoxActionPerformed(evt);
+            }
+        });
+
+        methodSettingsButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/edit_gray.png"))); // NOI18N
+        methodSettingsButton.setToolTipText("Edit Method Settings");
+        methodSettingsButton.setBorder(null);
+        methodSettingsButton.setBorderPainted(false);
+        methodSettingsButton.setContentAreaFilled(false);
+        methodSettingsButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/edit.png"))); // NOI18N
+        methodSettingsButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                methodSettingsButtonMouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                methodSettingsButtonMouseExited(evt);
+            }
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                methodSettingsButtonMouseReleased(evt);
             }
         });
 
@@ -443,20 +448,23 @@ public class NewDialog extends javax.swing.JDialog {
             .add(samplePanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(samplePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(sampleAssignmentJScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 778, Short.MAX_VALUE)
+                    .add(sampleAssignmentJScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 787, Short.MAX_VALUE)
                     .add(samplePanelLayout.createSequentialGroup()
-                        .add(jLabel5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 120, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(18, 18, 18)
-                        .add(comboMethod1, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .add(reporterMethodLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 120, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(reporterMethodComboBox, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(methodSettingsButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 66, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         samplePanelLayout.setVerticalGroup(
             samplePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(samplePanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(samplePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel5)
-                    .add(comboMethod1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(samplePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
+                    .add(reporterMethodLabel)
+                    .add(reporterMethodComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(methodSettingsButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(sampleAssignmentJScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 218, Short.MAX_VALUE)
                 .addContainerGap())
@@ -488,148 +496,82 @@ public class NewDialog extends javax.swing.JDialog {
 
         tabbedPane.addTab("Processing", processingPanel);
 
-        configPanel.setOpaque(false);
-
-        isotopeCorrectionPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Reagents"));
-        isotopeCorrectionPanel.setOpaque(false);
-
-        reagentsTable.setModel(new CorrectionTableModel());
-        reagentsTable.setOpaque(false);
-        reagentsTableJScrollPane.setViewportView(reagentsTable);
-
-        org.jdesktop.layout.GroupLayout isotopeCorrectionPanelLayout = new org.jdesktop.layout.GroupLayout(isotopeCorrectionPanel);
-        isotopeCorrectionPanel.setLayout(isotopeCorrectionPanelLayout);
-        isotopeCorrectionPanelLayout.setHorizontalGroup(
-            isotopeCorrectionPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(isotopeCorrectionPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(reagentsTableJScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 778, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        isotopeCorrectionPanelLayout.setVerticalGroup(
-            isotopeCorrectionPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(isotopeCorrectionPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(reagentsTableJScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 347, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-
-        configFilePanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Configuration File"));
-        configFilePanel.setOpaque(false);
-
-        txtConfigurationFileLocation.setEditable(false);
-
-        browseConfigButton.setText("Browse");
-        browseConfigButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                browseConfigButtonActionPerformed(evt);
-            }
-        });
-
-        saveConfigButton.setText("Save As");
-        saveConfigButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                saveConfigButtonActionPerformed(evt);
-            }
-        });
-
-        org.jdesktop.layout.GroupLayout configFilePanelLayout = new org.jdesktop.layout.GroupLayout(configFilePanel);
-        configFilePanel.setLayout(configFilePanelLayout);
-        configFilePanelLayout.setHorizontalGroup(
-            configFilePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(configFilePanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(txtConfigurationFileLocation)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(browseConfigButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(saveConfigButton)
-                .addContainerGap())
-        );
-
-        configFilePanelLayout.linkSize(new java.awt.Component[] {browseConfigButton, saveConfigButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
-
-        configFilePanelLayout.setVerticalGroup(
-            configFilePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(configFilePanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(configFilePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(txtConfigurationFileLocation, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(saveConfigButton)
-                    .add(browseConfigButton))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        methodPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Method"));
-        methodPanel.setOpaque(false);
-
-        jLabel4.setText("Method Selected");
-
-        comboMethod2.setModel(new DefaultComboBoxModel(methodsFactory.getMethodsNames()));
-        comboMethod2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                comboMethod2ActionPerformed(evt);
-            }
-        });
-
-        org.jdesktop.layout.GroupLayout methodPanelLayout = new org.jdesktop.layout.GroupLayout(methodPanel);
-        methodPanel.setLayout(methodPanelLayout);
-        methodPanelLayout.setHorizontalGroup(
-            methodPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(methodPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(jLabel4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 120, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(18, 18, 18)
-                .add(comboMethod2, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        methodPanelLayout.setVerticalGroup(
-            methodPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(methodPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(methodPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel4)
-                    .add(comboMethod2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        org.jdesktop.layout.GroupLayout configPanelLayout = new org.jdesktop.layout.GroupLayout(configPanel);
-        configPanel.setLayout(configPanelLayout);
-        configPanelLayout.setHorizontalGroup(
-            configPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(configPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(configPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(configFilePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(methodPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(isotopeCorrectionPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        configPanelLayout.setVerticalGroup(
-            configPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(configPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(methodPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(isotopeCorrectionPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(configFilePanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(12, 12, 12))
-        );
-
-        tabbedPane.addTab("Configuration", configPanel);
-
         advancedParamsPanel.setOpaque(false);
 
         spectrumAnalysisPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Spectrum Analysis"));
         spectrumAnalysisPanel.setOpaque(false);
 
-        jLabel6.setText("Reporter Ion Selection Tolerance [m/z]");
+        reporterIonMzToleranceLabel.setText("Reporter Ion Selection Tolerance [m/z]");
 
         ionToleranceTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
 
-        jLabel11.setText("Link to Quantification");
+        org.jdesktop.layout.GroupLayout spectrumAnalysisPanelLayout = new org.jdesktop.layout.GroupLayout(spectrumAnalysisPanel);
+        spectrumAnalysisPanel.setLayout(spectrumAnalysisPanelLayout);
+        spectrumAnalysisPanelLayout.setHorizontalGroup(
+            spectrumAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(spectrumAnalysisPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(reporterIonMzToleranceLabel)
+                .add(18, 18, 18)
+                .add(ionToleranceTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 102, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(491, Short.MAX_VALUE))
+        );
+        spectrumAnalysisPanelLayout.setVerticalGroup(
+            spectrumAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(spectrumAnalysisPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(spectrumAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(reporterIonMzToleranceLabel)
+                    .add(ionToleranceTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
 
+        quantOptionsPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Quantification Options"));
+        quantOptionsPanel.setOpaque(false);
+
+        quantPreferencesLabel.setText("Quantification Preferences");
+
+        quantificationPreferencesTxt.setEditable(false);
+        quantificationPreferencesTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        quantificationPreferencesTxt.setText("Default Settings");
+
+        editQuantPrefsButton.setText("Edit");
+        editQuantPrefsButton.setEnabled(false);
+        editQuantPrefsButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editQuantPrefsButtonActionPerformed(evt);
+            }
+        });
+
+        org.jdesktop.layout.GroupLayout quantOptionsPanelLayout = new org.jdesktop.layout.GroupLayout(quantOptionsPanel);
+        quantOptionsPanel.setLayout(quantOptionsPanelLayout);
+        quantOptionsPanelLayout.setHorizontalGroup(
+            quantOptionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(quantOptionsPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(quantPreferencesLabel)
+                .add(18, 18, 18)
+                .add(quantificationPreferencesTxt)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(editQuantPrefsButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 66, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+        quantOptionsPanelLayout.setVerticalGroup(
+            quantOptionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(quantOptionsPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(quantOptionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(quantPreferencesLabel)
+                    .add(quantificationPreferencesTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(editQuantPrefsButton))
+                .addContainerGap(13, Short.MAX_VALUE))
+        );
+
+        reporterLocationPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Reporter Location"));
+        reporterLocationPanel.setOpaque(false);
+
+        reporterLocatinButtonGroup.add(sameSpectra);
+        sameSpectra.setSelected(true);
         sameSpectra.setText("Same Spectra");
         sameSpectra.setIconTextGap(10);
         sameSpectra.setOpaque(false);
@@ -639,7 +581,8 @@ public class NewDialog extends javax.swing.JDialog {
             }
         });
 
-        precursorMatching.setText("Precursor Matching:");
+        reporterLocatinButtonGroup.add(precursorMatching);
+        precursorMatching.setText("Precursor Matching");
         precursorMatching.setIconTextGap(10);
         precursorMatching.setOpaque(false);
         precursorMatching.addActionListener(new java.awt.event.ActionListener() {
@@ -648,9 +591,13 @@ public class NewDialog extends javax.swing.JDialog {
             }
         });
 
-        jLabel19.setText("m/z tolerance");
+        mzToleranceLabel.setText("m/z tolerance");
 
-        jLabel20.setText("RT tolerance");
+        mzTolTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+
+        ppmCmb.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "ppm", "m/z" }));
+
+        rtToleranceLabel.setText("RT tolerance (s)");
 
         rtTolTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         rtTolTxt.setText("10");
@@ -660,111 +607,48 @@ public class NewDialog extends javax.swing.JDialog {
             }
         });
 
-        mzTolTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-
-        jLabel22.setText("s");
-
-        ppmCmb.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "ppm", "m/z" }));
-
-        org.jdesktop.layout.GroupLayout spectrumAnalysisPanelLayout = new org.jdesktop.layout.GroupLayout(spectrumAnalysisPanel);
-        spectrumAnalysisPanel.setLayout(spectrumAnalysisPanelLayout);
-        spectrumAnalysisPanelLayout.setHorizontalGroup(
-            spectrumAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(spectrumAnalysisPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(jLabel6)
-                .add(18, 18, 18)
-                .add(ionToleranceTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 102, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 211, Short.MAX_VALUE)
-                .add(spectrumAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel11)
-                    .add(spectrumAnalysisPanelLayout.createSequentialGroup()
-                        .add(10, 10, 10)
-                        .add(spectrumAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(precursorMatching)
+        org.jdesktop.layout.GroupLayout reporterLocationPanelLayout = new org.jdesktop.layout.GroupLayout(reporterLocationPanel);
+        reporterLocationPanel.setLayout(reporterLocationPanelLayout);
+        reporterLocationPanelLayout.setHorizontalGroup(
+            reporterLocationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(reporterLocationPanelLayout.createSequentialGroup()
+                .add(reporterLocationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(reporterLocationPanelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(reporterLocationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(sameSpectra)
-                            .add(spectrumAnalysisPanelLayout.createSequentialGroup()
-                                .add(19, 19, 19)
-                                .add(spectrumAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(jLabel19)
-                                    .add(jLabel20))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(spectrumAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                                    .add(rtTolTxt)
-                                    .add(mzTolTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 106, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(spectrumAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jLabel22)
-                            .add(ppmCmb, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap())
-        );
-        spectrumAnalysisPanelLayout.setVerticalGroup(
-            spectrumAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(spectrumAnalysisPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(spectrumAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(spectrumAnalysisPanelLayout.createSequentialGroup()
-                        .add(jLabel11)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(sameSpectra)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(precursorMatching)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(spectrumAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(jLabel19)
-                            .add(mzTolTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(ppmCmb, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(spectrumAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(rtTolTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(jLabel20)
-                            .add(jLabel22)))
-                    .add(spectrumAnalysisPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(jLabel6)
-                        .add(ionToleranceTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                            .add(precursorMatching)))
+                    .add(reporterLocationPanelLayout.createSequentialGroup()
+                        .add(119, 119, 119)
+                        .add(reporterLocationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(rtToleranceLabel)
+                            .add(mzToleranceLabel))
+                        .add(14, 14, 14)
+                        .add(reporterLocationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(reporterLocationPanelLayout.createSequentialGroup()
+                                .add(mzTolTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 106, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(ppmCmb, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                            .add(rtTolTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 106, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Quantification Options"));
-        jPanel1.setOpaque(false);
-
-        jLabel7.setText("Quantification Preferences");
-
-        editPreferencesButton.setText("Edit");
-        editPreferencesButton.setEnabled(false);
-        editPreferencesButton.setPreferredSize(new java.awt.Dimension(57, 23));
-        editPreferencesButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                editPreferencesButtonActionPerformed(evt);
-            }
-        });
-
-        quantificationPreferencesTxt.setEditable(false);
-        quantificationPreferencesTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        quantificationPreferencesTxt.setText("Default Settings");
-
-        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1Layout.createSequentialGroup()
+        reporterLocationPanelLayout.setVerticalGroup(
+            reporterLocationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(reporterLocationPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(jLabel7)
-                .add(18, 18, 18)
-                .add(quantificationPreferencesTxt)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(editPreferencesButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel7)
-                    .add(editPreferencesButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(quantificationPreferencesTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(sameSpectra)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(precursorMatching)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(reporterLocationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(mzToleranceLabel)
+                    .add(mzTolTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(ppmCmb, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(reporterLocationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(rtTolTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(rtToleranceLabel))
+                .addContainerGap(17, Short.MAX_VALUE))
         );
 
         org.jdesktop.layout.GroupLayout advancedParamsPanelLayout = new org.jdesktop.layout.GroupLayout(advancedParamsPanel);
@@ -775,7 +659,8 @@ public class NewDialog extends javax.swing.JDialog {
                 .addContainerGap()
                 .add(advancedParamsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(spectrumAnalysisPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(quantOptionsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(reporterLocationPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         advancedParamsPanelLayout.setVerticalGroup(
@@ -783,12 +668,14 @@ public class NewDialog extends javax.swing.JDialog {
             .add(advancedParamsPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(spectrumAnalysisPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(315, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(reporterLocationPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(quantOptionsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(261, Short.MAX_VALUE))
         );
 
-        tabbedPane.addTab("Advanced Parameters", advancedParamsPanel);
+        tabbedPane.addTab("Advanced Settings", advancedParamsPanel);
 
         loadButton.setText("Load");
         loadButton.addActionListener(new java.awt.event.ActionListener() {
@@ -847,42 +734,6 @@ public class NewDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     /**
-     * Opens a file chooser for selecting the configuration file.
-     *
-     * @param evt
-     */
-    private void browseConfigButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseConfigButtonActionPerformed
-
-        if (txtConfigurationFileLocation.getText().length() > 0) {
-            reporterGui.getLastSelectedFolder().setLastSelectedFolder(txtConfigurationFileLocation.getText());
-        }
-
-        File selectedFile = Util.getUserSelectedFile(this, ".xml", "Reporter Method File (*.xml)", "Select Configuration File", reporterGui.getLastSelectedFolder().getLastSelectedFolder(), true);
-
-        if (selectedFile != null) {
-            try {
-                methodsFactory.importMethods(selectedFile);
-                comboMethod2.setModel(new DefaultComboBoxModel(methodsFactory.getMethodsNames()));
-                comboMethod1.setModel(new DefaultComboBoxModel(methodsFactory.getMethodsNames()));
-                selectedMethod = getMethod((String) comboMethod2.getSelectedItem());
-                reagents = selectedMethod.getReagentsSortedByMass();
-                refresh();
-                txtConfigurationFileLocation.setText(selectedFile.getAbsolutePath());
-                reporterGui.getLastSelectedFolder().setLastSelectedFolder(selectedFile.getPath());
-            } catch (IOException e) {
-                JOptionPane.showMessageDialog(null,
-                        "File " + selectedFile.getAbsolutePath() + " not found.",
-                        "File Not Found", JOptionPane.WARNING_MESSAGE);
-            } catch (XmlPullParserException e) {
-                JOptionPane.showMessageDialog(null,
-                        "An error occurred while parsing " + selectedFile.getAbsolutePath() + " at line " + e.getLineNumber() + ".",
-                        "Parsing Error", JOptionPane.WARNING_MESSAGE);
-                e.printStackTrace();
-            }
-        }
-}//GEN-LAST:event_browseConfigButtonActionPerformed
-
-    /**
      * Opens a file chooser for adding identification files.
      *
      * @param evt
@@ -928,7 +779,12 @@ public class NewDialog extends javax.swing.JDialog {
      * @param evt
      */
     private void sameSpectraActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sameSpectraActionPerformed
-        precursorMatching.setSelected(!sameSpectra.isSelected());
+        // enable or disable the precursor matching options
+        mzToleranceLabel.setEnabled(precursorMatching.isSelected());
+        mzTolTxt.setEnabled(precursorMatching.isSelected());
+        ppmCmb.setEnabled(precursorMatching.isSelected());
+        rtToleranceLabel.setEnabled(precursorMatching.isSelected());
+        rtTolTxt.setEnabled(precursorMatching.isSelected());
     }//GEN-LAST:event_sameSpectraActionPerformed
 
     /**
@@ -937,7 +793,7 @@ public class NewDialog extends javax.swing.JDialog {
      * @param evt
      */
     private void precursorMatchingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_precursorMatchingActionPerformed
-        sameSpectra.setSelected(!precursorMatching.isSelected());
+        sameSpectraActionPerformed(null);
     }//GEN-LAST:event_precursorMatchingActionPerformed
 
     /**
@@ -1013,26 +869,16 @@ public class NewDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_rtTolTxtActionPerformed
 
     /**
-     * Open the PreferencesDialog.
-     *
-     * @param evt
-     */
-    private void editPreferencesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editPreferencesButtonActionPerformed
-        new PreferencesDialog(reporterGui, reporterPreferences, cpsBean.getIdentificationParameters().getSearchParameters());
-        quantificationPreferencesTxt.setText("User Settings");
-    }//GEN-LAST:event_editPreferencesButtonActionPerformed
-
-    /**
      * Clear the sample names and update the method table.
      *
      * @param evt
      */
-    private void comboMethod1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboMethod1ActionPerformed
+    private void reporterMethodComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reporterMethodComboBoxActionPerformed
         sampleNames = new HashMap<String, String>();
-        selectedMethod = getMethod((String) comboMethod1.getSelectedItem());
+        selectedMethod = getMethod((String) reporterMethodComboBox.getSelectedItem());
         reagents = selectedMethod.getReagentsSortedByMass();
         refresh();
-    }//GEN-LAST:event_comboMethod1ActionPerformed
+    }//GEN-LAST:event_reporterMethodComboBoxActionPerformed
 
     /**
      * Opens a file chooser for selecting the database FASTA file.
@@ -1135,45 +981,6 @@ public class NewDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_replicateNumberTxtActionPerformed
 
     /**
-     * Save the current reagent settings.
-     *
-     * @param evt
-     */
-    private void saveConfigButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveConfigButtonActionPerformed
-        if (txtConfigurationFileLocation.getText().length() > 0) {
-            reporterGui.getLastSelectedFolder().setLastSelectedFolder(txtConfigurationFileLocation.getText());
-        }
-
-        File selectedFile = Util.getUserSelectedFile(this, ".xml", "Reporter Method File (*.xml)", "Save Configuration File", reporterGui.getLastSelectedFolder().getLastSelectedFolder(), false);
-
-        if (selectedFile != null) {
-            try {
-                methodsFactory.saveFile(selectedFile);
-                txtConfigurationFileLocation.setText(selectedFile.getAbsolutePath());
-                JOptionPane.showMessageDialog(null,
-                        "Settings saved to " + selectedFile.getAbsolutePath() + ".",
-                        "Settings Saved", JOptionPane.INFORMATION_MESSAGE);
-            } catch (IOException ex) {
-                JOptionPane.showMessageDialog(null,
-                        "An error occured when saving the file.",
-                        "File Error", JOptionPane.WARNING_MESSAGE);
-                ex.printStackTrace();
-            }
-        }
-    }//GEN-LAST:event_saveConfigButtonActionPerformed
-
-    /**
-     * Update the selected method.
-     *
-     * @param evt
-     */
-    private void comboMethod2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboMethod2ActionPerformed
-        selectedMethod = getMethod((String) comboMethod2.getSelectedItem());
-        reagents = selectedMethod.getReagentsSortedByMass();
-        refresh();
-    }//GEN-LAST:event_comboMethod2ActionPerformed
-
-    /**
      * Start loading the data.
      *
      * @param evt
@@ -1201,61 +1008,87 @@ public class NewDialog extends javax.swing.JDialog {
         this.dispose();
     }//GEN-LAST:event_exitButtonActionPerformed
 
+    /**
+     * Change the cursor icon to a hand cursor.
+     *
+     * @param evt
+     */
+    private void methodSettingsButtonMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_methodSettingsButtonMouseEntered
+        this.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+    }//GEN-LAST:event_methodSettingsButtonMouseEntered
+
+    /**
+     * Change the cursor icon back to the default icon.
+     *
+     * @param evt
+     */
+    private void methodSettingsButtonMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_methodSettingsButtonMouseExited
+        this.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+    }//GEN-LAST:event_methodSettingsButtonMouseExited
+
+    /**
+     * Open the MethodSettingsDialog.
+     *
+     * @param evt
+     */
+    private void methodSettingsButtonMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_methodSettingsButtonMouseReleased
+        new MethodSettingsDialog(this, true);
+    }//GEN-LAST:event_methodSettingsButtonMouseReleased
+
+    /**
+     * Open the PreferencesDialog.
+     *
+     * @param evt
+     */
+    private void editQuantPrefsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editQuantPrefsButtonActionPerformed
+        new PreferencesDialog(reporterGui, reporterPreferences, cpsBean.getIdentificationParameters().getSearchParameters());
+        quantificationPreferencesTxt.setText("User Settings");
+    }//GEN-LAST:event_editQuantPrefsButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addDbButton;
     private javax.swing.JButton addIdFilesButton;
     private javax.swing.JButton addSpectraFilesJButton;
     private javax.swing.JPanel advancedParamsPanel;
     private javax.swing.JPanel backgroundPanel;
-    private javax.swing.JButton browseConfigButton;
-    private javax.swing.JComboBox comboMethod1;
-    private javax.swing.JComboBox comboMethod2;
-    private javax.swing.JPanel configFilePanel;
-    private javax.swing.JPanel configPanel;
-    private javax.swing.JButton editPreferencesButton;
+    private javax.swing.JLabel databaseFileLabel;
+    private javax.swing.JButton editQuantPrefsButton;
     private javax.swing.JButton exitButton;
     private javax.swing.JTextField fastaTxt;
     private javax.swing.JPanel fileSelectiontPanel;
+    private javax.swing.JLabel idFilesLabel;
     private javax.swing.JTextField ionToleranceTxt;
-    private javax.swing.JPanel isotopeCorrectionPanel;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel10;
-    private javax.swing.JLabel jLabel11;
-    private javax.swing.JLabel jLabel19;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel20;
-    private javax.swing.JLabel jLabel22;
-    private javax.swing.JLabel jLabel24;
-    private javax.swing.JLabel jLabel25;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel3;
     private javax.swing.JButton loadButton;
-    private javax.swing.JPanel methodPanel;
+    private javax.swing.JButton methodSettingsButton;
     private javax.swing.JTextField mzTolTxt;
+    private javax.swing.JLabel mzToleranceLabel;
     private javax.swing.JComboBox ppmCmb;
     private javax.swing.JRadioButton precursorMatching;
     private javax.swing.JPanel processingPanel;
     private javax.swing.JPanel projectPanel;
+    private javax.swing.JLabel projectReferenceLabel;
     private javax.swing.JTextField projectTxt;
+    private javax.swing.JPanel quantOptionsPanel;
+    private javax.swing.JLabel quantPreferencesLabel;
     private javax.swing.JTextField quantificationPreferencesTxt;
-    private javax.swing.JTable reagentsTable;
-    private javax.swing.JScrollPane reagentsTableJScrollPane;
+    private javax.swing.JLabel replicateLabel;
     private javax.swing.JTextField replicateNumberTxt;
+    private javax.swing.JLabel reporterIonMzToleranceLabel;
+    private javax.swing.ButtonGroup reporterLocatinButtonGroup;
+    private javax.swing.JPanel reporterLocationPanel;
+    private javax.swing.JComboBox reporterMethodComboBox;
+    private javax.swing.JLabel reporterMethodLabel;
     private javax.swing.JTextField rtTolTxt;
+    private javax.swing.JLabel rtToleranceLabel;
     private javax.swing.JRadioButton sameSpectra;
     private javax.swing.JScrollPane sampleAssignmentJScrollPane;
     private javax.swing.JTable sampleAssignmentTable;
+    private javax.swing.JLabel sampleNameLabel;
     private javax.swing.JTextField sampleNameTxt;
     private javax.swing.JPanel samplePanel;
-    private javax.swing.JButton saveConfigButton;
     private javax.swing.JPanel spectrumAnalysisPanel;
+    private javax.swing.JLabel spectrumFilesLabel;
     private javax.swing.JTabbedPane tabbedPane;
-    private javax.swing.JTextField txtConfigurationFileLocation;
     private javax.swing.JTextField txtIdFileLocation;
     private javax.swing.JTextField txtSpectraFileLocation;
     // End of variables declaration//GEN-END:variables
@@ -1266,7 +1099,7 @@ public class NewDialog extends javax.swing.JDialog {
      * @param methodName the given name
      * @return the corresponding reporter method
      */
-    private ReporterMethod getMethod(String methodName) {
+    public ReporterMethod getMethod(String methodName) {
         if (methodsFactory.getMethods() == null) {
             importMethods();
         }
@@ -1285,8 +1118,7 @@ public class NewDialog extends javax.swing.JDialog {
     private void refresh() {
 
         if (selectedMethod != null) {
-            comboMethod1.setSelectedItem(selectedMethod.getName());
-            comboMethod2.setSelectedItem(selectedMethod.getName());
+            reporterMethodComboBox.setSelectedItem(selectedMethod.getName());
         }
 
         sampleAssignmentTable.setModel(new AssignementTableModel());
@@ -1297,9 +1129,6 @@ public class NewDialog extends javax.swing.JDialog {
             public void run() {
                 sampleAssignmentTable.revalidate();
                 sampleAssignmentTable.repaint();
-
-                reagentsTable.revalidate();
-                reagentsTable.repaint();
             }
         });
     }
@@ -1309,7 +1138,7 @@ public class NewDialog extends javax.swing.JDialog {
      */
     private void importMethods() {
         try {
-            methodsFactory.importMethods(new File(reporterGui.getJarFilePath() + File.separator + METHODS_FILE));
+            methodsFactory.importMethods(methodsFile);
         } catch (Exception e) {
             e.printStackTrace();
             importMethodsError();
@@ -1480,7 +1309,7 @@ public class NewDialog extends javax.swing.JDialog {
                         }
                     }
 
-                    editPreferencesButton.setEnabled(true);
+                    editQuantPrefsButton.setEnabled(true);
                     progressDialog.setPrimaryProgressCounterIndeterminate(true);
                     progressDialog.setRunFinished();
 
@@ -1566,8 +1395,7 @@ public class NewDialog extends javax.swing.JDialog {
 
                 // no method detected, default to iTRAQ 4 plex
                 if (selectedMethod == null) {
-                    comboMethod2.setSelectedItem(methodsFactory.getMethodsNames()[0]);
-                    comboMethod1.setSelectedItem(methodsFactory.getMethodsNames()[0]);
+                    reporterMethodComboBox.setSelectedItem(methodsFactory.getMethodsNames()[0]);
                 }
 
                 reagents = selectedMethod.getReagentsSortedByMass();
@@ -1690,7 +1518,7 @@ public class NewDialog extends javax.swing.JDialog {
     private boolean validateInput() {
 
         // check the ion torerance
-        double ionTolerance = -1;
+        double ionTolerance;
         try {
             ionTolerance = new Double(ionToleranceTxt.getText().trim());
         } catch (Exception e) {
@@ -1807,6 +1635,67 @@ public class NewDialog extends javax.swing.JDialog {
     }
 
     /**
+     * Returns the selected method.
+     *
+     * @return the selectedMethod
+     */
+    public ReporterMethod getSelectedMethod() {
+        return selectedMethod;
+    }
+
+    /**
+     * Set the selected method.
+     *
+     * @param selectedMethod the selectedMethod to set
+     */
+    public void setSelectedMethod(ReporterMethod selectedMethod) {
+        this.selectedMethod = selectedMethod;
+    }
+
+    /**
+     * Returns the reagents.
+     *
+     * @return the reagents
+     */
+    public ArrayList<String> getReagents() {
+        return reagents;
+    }
+
+    /**
+     * Set the reagents.
+     *
+     * @param reagents the reagents to set
+     */
+    public void setReagents(ArrayList<String> reagents) {
+        this.reagents = reagents;
+    }
+
+    /**
+     * Returns the current methods file.
+     *
+     * @return the methodsFile
+     */
+    public File getMethodsFile() {
+        return methodsFile;
+    }
+
+    /**
+     * Set the current method file.
+     *
+     * @param methodsFile the methodsFile to set
+     */
+    public void setMethodsFile(File methodsFile) {
+        this.methodsFile = methodsFile;
+    }
+
+    /**
+     * @return the reporterGui
+     */
+    public ReporterGUI getReporterGui() {
+        return reporterGui;
+    }
+
+    /**
      * Table model for the sample to reporter ion assignment.
      */
     private class AssignementTableModel extends DefaultTableModel {
@@ -1821,17 +1710,19 @@ public class NewDialog extends javax.swing.JDialog {
 
         @Override
         public int getColumnCount() {
-            return 3;
+            return 4;
         }
 
         @Override
         public String getColumnName(int column) {
             switch (column) {
                 case 0:
-                    return "Label";
+                    return " ";
                 case 1:
-                    return "Sample";
+                    return "Label";
                 case 2:
+                    return "Sample";
+                case 3:
                     return "Ref";
                 default:
                     return "";
@@ -1843,9 +1734,11 @@ public class NewDialog extends javax.swing.JDialog {
             String reagentName = reagents.get(row);
             switch (column) {
                 case 0:
+                    return (row + 1);
+                case 1:
                     ReporterIon reporterIon = selectedMethod.getReporterIon(reagentName);
                     return reporterIon.getName();
-                case 1:
+                case 2:
                     Sample sample = getSample();
                     if (sampleNames.get(reagentName) == null) {
                         if (sample != null) {
@@ -1855,7 +1748,7 @@ public class NewDialog extends javax.swing.JDialog {
                         }
                     }
                     return sampleNames.get(reagentName);
-                case 2:
+                case 3:
                     return controlSamples.contains(reagentName);
                 default:
                     return "";
@@ -1865,9 +1758,9 @@ public class NewDialog extends javax.swing.JDialog {
         @Override
         public void setValueAt(Object aValue, int row, int column) {
             String reagentName = reagents.get(row);
-            if (column == 1) {
+            if (column == 2) {
                 sampleNames.put(reagentName, aValue.toString());
-            } else if (column == 2) {
+            } else if (column == 3) {
                 if (controlSamples.contains(reagentName)) {
                     controlSamples.remove(reagentName);
                 } else {
@@ -1881,113 +1774,10 @@ public class NewDialog extends javax.swing.JDialog {
         public Class getColumnClass(int columnIndex) {
             return getValueAt(0, columnIndex).getClass();
         }
-    }
-
-    /**
-     * Table model for the correction factors table.
-     */
-    private class CorrectionTableModel extends DefaultTableModel {
-
-        @Override
-        public int getRowCount() {
-            if (selectedMethod == null) {
-                return 0;
-            }
-            return reagents.size();
-        }
-
-        @Override
-        public int getColumnCount() {
-            return 8;
-        }
-
-        @Override
-        public String getColumnName(int column) {
-            switch (column) {
-                case 0:
-                    return " ";
-                case 1:
-                    return "Name";
-                case 2:
-                    return "Mass";
-                case 3:
-                    return "-2 C13 [%]";
-                case 4:
-                    return "-1 C13 [%]";
-                case 5:
-                    return "Monoisotopic [%]";
-                case 6:
-                    return "+1 C13 [%]";
-                case 7:
-                    return "+2 C13 [%]";
-                default:
-                    return "";
-            }
-        }
-
-        @Override
-        public Object getValueAt(int row, int column) {
-            String reagentName = reagents.get(row);
-            switch (column) {
-                case 0:
-                    return row + 1;
-                case 1:
-                    return selectedMethod.getReagent(reagentName).getReporterIon().getName();
-                case 2:
-                    return selectedMethod.getReagent(reagentName).getReporterIon().getTheoreticMass() + ElementaryIon.proton.getTheoreticMass();
-                case 3:
-                    return selectedMethod.getReagent(reagentName).getMinus2();
-                case 4:
-                    return selectedMethod.getReagent(reagentName).getMinus1();
-                case 5:
-                    return selectedMethod.getReagent(reagentName).getRef();
-                case 6:
-                    return selectedMethod.getReagent(reagentName).getPlus1();
-                case 7:
-                    return selectedMethod.getReagent(reagentName).getPlus2();
-                default:
-                    return "";
-            }
-        }
-
-        @Override
-        public void setValueAt(Object aValue, int row, int column) { // @TODO: ask the user to save before loading the data if changes have been made!
-            String reagentName = reagents.get(row);
-            switch (column) {
-                case 1:
-                    selectedMethod.getReagent(reagentName).getReporterIon().setName((String) aValue);
-                    break;
-                case 2:
-                    selectedMethod.getReagent(reagentName).getReporterIon().setTheoreticMass((Double) aValue);
-                    break;
-                case 3:
-                    selectedMethod.getReagent(reagentName).setMinus2((Double) aValue);
-                    break;
-                case 4:
-                    selectedMethod.getReagent(reagentName).setMinus1((Double) aValue);
-                    break;
-                case 5:
-                    selectedMethod.getReagent(reagentName).setRef((Double) aValue);
-                    break;
-                case 6:
-                    selectedMethod.getReagent(reagentName).setPlus1((Double) aValue);
-                    break;
-                case 7:
-                    selectedMethod.getReagent(reagentName).setPlus2((Double) aValue);
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        @Override
-        public Class getColumnClass(int columnIndex) {
-            return getValueAt(0, columnIndex).getClass();
-        }
 
         @Override
         public boolean isCellEditable(int row, int column) {
-            return column != 0;
+            return column > 1;
         }
     }
 
@@ -2039,5 +1829,13 @@ public class NewDialog extends javax.swing.JDialog {
      */
     public ReporterIonQuantification getReporterIonQuantification() {
         return reporterIonQuantification;
+    }
+
+    /**
+     * Update the reagent names in the sample assignment table.
+     */
+    public void updateReagentNames() {
+        sampleAssignmentTable.revalidate();
+        sampleAssignmentTable.repaint();
     }
 }
