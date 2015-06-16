@@ -47,22 +47,21 @@
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" attributes="0">
-                  <EmptySpace max="-2" attributes="0"/>
+                  <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="1" attributes="0">
                       <Component id="advancedSettingsPanel" max="32767" attributes="0"/>
                       <Group type="102" alignment="1" attributes="0">
                           <Component id="aboutButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="32767" attributes="0"/>
-                          <Component id="reporterPublicationLabel" min="-2" pref="504" max="-2" attributes="0"/>
+                          <Component id="reporterPublicationLabel" min="-2" pref="406" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="loadButton" min="-2" pref="167" max="-2" attributes="0"/>
                           <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
                       </Group>
-                      <Component id="projectPanel" alignment="0" max="32767" attributes="0"/>
                       <Component id="fileSelectiontPanel" alignment="0" max="32767" attributes="0"/>
                       <Component id="samplePanel" alignment="0" max="32767" attributes="0"/>
                   </Group>
-                  <EmptySpace max="-2" attributes="0"/>
+                  <EmptySpace min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -72,18 +71,16 @@
                   <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Component id="fileSelectiontPanel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace min="-2" max="-2" attributes="0"/>
-                  <Component id="projectPanel" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Component id="samplePanel" max="32767" attributes="0"/>
                   <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Component id="advancedSettingsPanel" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                  <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="2" attributes="0">
                       <Component id="aboutButton" alignment="2" min="-2" max="-2" attributes="0"/>
                       <Component id="reporterPublicationLabel" alignment="2" min="-2" pref="45" max="-2" attributes="0"/>
                       <Component id="loadButton" alignment="2" min="-2" pref="53" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace max="-2" attributes="0"/>
+                  <EmptySpace min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -219,103 +216,6 @@
             </Component>
           </SubComponents>
         </Container>
-        <Container class="javax.swing.JPanel" name="projectPanel">
-          <Properties>
-            <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-              <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                <TitledBorder title="Project Details"/>
-              </Border>
-            </Property>
-            <Property name="opaque" type="boolean" value="false"/>
-          </Properties>
-
-          <Layout>
-            <DimensionLayout dim="0">
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" attributes="0">
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="projectReferenceLabel" alignment="0" min="-2" pref="120" max="-2" attributes="0"/>
-                          <Component id="sampleNameLabel" alignment="0" min="-2" pref="120" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="projectTxt" max="32767" attributes="0"/>
-                          <Component id="sampleNameTxt" max="32767" attributes="0"/>
-                      </Group>
-                      <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Component id="replicateLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
-                      <Component id="replicateNumberTxt" min="-2" pref="66" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                  </Group>
-              </Group>
-            </DimensionLayout>
-            <DimensionLayout dim="1">
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="projectTxt" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="projectReferenceLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="sampleNameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="sampleNameTxt" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="replicateLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="replicateNumberTxt" alignment="3" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace max="32767" attributes="0"/>
-                  </Group>
-              </Group>
-            </DimensionLayout>
-          </Layout>
-          <SubComponents>
-            <Component class="javax.swing.JTextField" name="projectTxt">
-              <Properties>
-                <Property name="editable" type="boolean" value="false"/>
-                <Property name="horizontalAlignment" type="int" value="0"/>
-              </Properties>
-              <Events>
-                <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="projectTxtKeyReleased"/>
-              </Events>
-            </Component>
-            <Component class="javax.swing.JLabel" name="projectReferenceLabel">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Project Reference"/>
-              </Properties>
-            </Component>
-            <Component class="javax.swing.JLabel" name="sampleNameLabel">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Sample Name"/>
-              </Properties>
-            </Component>
-            <Component class="javax.swing.JTextField" name="sampleNameTxt">
-              <Properties>
-                <Property name="editable" type="boolean" value="false"/>
-                <Property name="horizontalAlignment" type="int" value="0"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="sampleNameTxtActionPerformed"/>
-              </Events>
-            </Component>
-            <Component class="javax.swing.JLabel" name="replicateLabel">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Replicate"/>
-              </Properties>
-            </Component>
-            <Component class="javax.swing.JTextField" name="replicateNumberTxt">
-              <Properties>
-                <Property name="editable" type="boolean" value="false"/>
-                <Property name="horizontalAlignment" type="int" value="0"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="replicateNumberTxtActionPerformed"/>
-              </Events>
-            </Component>
-          </SubComponents>
-        </Container>
         <Container class="javax.swing.JPanel" name="samplePanel">
           <Properties>
             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
@@ -332,7 +232,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="sampleAssignmentJScrollPane" pref="802" max="32767" attributes="0"/>
+                          <Component id="sampleAssignmentJScrollPane" pref="707" max="32767" attributes="0"/>
                           <Group type="102" attributes="0">
                               <Component id="reporterMethodLabel" min="-2" pref="120" max="-2" attributes="0"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>

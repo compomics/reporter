@@ -200,13 +200,6 @@ public class NewDialog extends javax.swing.JDialog {
         databaseFileLabel = new javax.swing.JLabel();
         fastaTxt = new javax.swing.JTextField();
         addDbButton = new javax.swing.JButton();
-        projectPanel = new javax.swing.JPanel();
-        projectTxt = new javax.swing.JTextField();
-        projectReferenceLabel = new javax.swing.JLabel();
-        sampleNameLabel = new javax.swing.JLabel();
-        sampleNameTxt = new javax.swing.JTextField();
-        replicateLabel = new javax.swing.JLabel();
-        replicateNumberTxt = new javax.swing.JTextField();
         samplePanel = new javax.swing.JPanel();
         sampleAssignmentJScrollPane = new javax.swing.JScrollPane();
         sampleAssignmentTable = new javax.swing.JTable();
@@ -321,74 +314,6 @@ public class NewDialog extends javax.swing.JDialog {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        projectPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Project Details"));
-        projectPanel.setOpaque(false);
-
-        projectTxt.setEditable(false);
-        projectTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        projectTxt.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                projectTxtKeyReleased(evt);
-            }
-        });
-
-        projectReferenceLabel.setText("Project Reference");
-
-        sampleNameLabel.setText("Sample Name");
-
-        sampleNameTxt.setEditable(false);
-        sampleNameTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        sampleNameTxt.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                sampleNameTxtActionPerformed(evt);
-            }
-        });
-
-        replicateLabel.setText("Replicate");
-
-        replicateNumberTxt.setEditable(false);
-        replicateNumberTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        replicateNumberTxt.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                replicateNumberTxtActionPerformed(evt);
-            }
-        });
-
-        org.jdesktop.layout.GroupLayout projectPanelLayout = new org.jdesktop.layout.GroupLayout(projectPanel);
-        projectPanel.setLayout(projectPanelLayout);
-        projectPanelLayout.setHorizontalGroup(
-            projectPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(projectPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(projectPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(projectReferenceLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 120, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(sampleNameLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 120, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(10, 10, 10)
-                .add(projectPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(projectTxt)
-                    .add(sampleNameTxt))
-                .add(18, 18, 18)
-                .add(replicateLabel)
-                .add(18, 18, 18)
-                .add(replicateNumberTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 66, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-        );
-        projectPanelLayout.setVerticalGroup(
-            projectPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(projectPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(projectPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(projectTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(projectReferenceLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(projectPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(sampleNameLabel)
-                    .add(sampleNameTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(replicateLabel)
-                    .add(replicateNumberTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
         samplePanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Sample Assignment"));
         samplePanel.setOpaque(false);
 
@@ -430,7 +355,7 @@ public class NewDialog extends javax.swing.JDialog {
             .add(samplePanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(samplePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(sampleAssignmentJScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 802, Short.MAX_VALUE)
+                    .add(sampleAssignmentJScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 707, Short.MAX_VALUE)
                     .add(samplePanelLayout.createSequentialGroup()
                         .add(reporterMethodLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 120, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
@@ -549,11 +474,10 @@ public class NewDialog extends javax.swing.JDialog {
                     .add(backgroundPanelLayout.createSequentialGroup()
                         .add(aboutButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .add(reporterPublicationLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 504, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(reporterPublicationLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 406, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(loadButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 167, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .add(14, 14, 14))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, projectPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, fileSelectiontPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, samplePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
@@ -563,8 +487,6 @@ public class NewDialog extends javax.swing.JDialog {
             .add(backgroundPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(fileSelectiontPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(projectPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(samplePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -779,33 +701,6 @@ public class NewDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_formWindowClosing
 
     /**
-     * Validate the sample name.
-     *
-     * @param evt
-     */
-    private void sampleNameTxtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sampleNameTxtActionPerformed
-        // @TODO: validate the input
-    }//GEN-LAST:event_sampleNameTxtActionPerformed
-
-    /**
-     * Validate the project name.
-     *
-     * @param evt
-     */
-    private void projectTxtKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_projectTxtKeyReleased
-        // @TODO: validate the input
-    }//GEN-LAST:event_projectTxtKeyReleased
-
-    /**
-     * Validate the input.
-     *
-     * @param evt
-     */
-    private void replicateNumberTxtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_replicateNumberTxtActionPerformed
-        validateInput();
-    }//GEN-LAST:event_replicateNumberTxtActionPerformed
-
-    /**
      * Change the cursor icon to a hand cursor.
      *
      * @param evt
@@ -930,20 +825,13 @@ public class NewDialog extends javax.swing.JDialog {
     private javax.swing.JLabel idFilesLabel;
     private javax.swing.JButton loadButton;
     private javax.swing.JButton methodSettingsButton;
-    private javax.swing.JPanel projectPanel;
-    private javax.swing.JLabel projectReferenceLabel;
-    private javax.swing.JTextField projectTxt;
     private javax.swing.JLabel quantPreferencesLabel;
     private javax.swing.JTextField quantificationPreferencesTxt;
-    private javax.swing.JLabel replicateLabel;
-    private javax.swing.JTextField replicateNumberTxt;
     private javax.swing.JComboBox reporterMethodComboBox;
     private javax.swing.JLabel reporterMethodLabel;
     private javax.swing.JLabel reporterPublicationLabel;
     private javax.swing.JScrollPane sampleAssignmentJScrollPane;
     private javax.swing.JTable sampleAssignmentTable;
-    private javax.swing.JLabel sampleNameLabel;
-    private javax.swing.JTextField sampleNameTxt;
     private javax.swing.JPanel samplePanel;
     private javax.swing.JLabel spectrumFilesLabel;
     private javax.swing.JTextField txtIdFileLocation;
@@ -1181,10 +1069,6 @@ public class NewDialog extends javax.swing.JDialog {
 
                 txtSpectraFileLocation.setText(cpsBean.getIdentification().getSpectrumFiles().size() + " files loaded"); //@TODO: allow editing
                 fastaTxt.setText(cpsBean.getIdentificationParameters().getSearchParameters().getFastaFile().getName());
-
-                projectTxt.setText(getExperiment().getReference());
-                sampleNameTxt.setText(getSample().getReference());
-                replicateNumberTxt.setText(getReplicateNumber() + "");
                 txtIdFileLocation.setText(cpsBean.getCpsFile().getName());
 
                 cache = new ObjectsCache();
@@ -1342,12 +1226,7 @@ public class NewDialog extends javax.swing.JDialog {
      * @return true if the input can be processed
      */
     private boolean validateInput() {
-        try {
-            new Integer(replicateNumberTxt.getText().trim());
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Please input a number for replicate number.", "Replicate Number Error", JOptionPane.ERROR_MESSAGE);
-            return false;
-        }
+        // @TODO: validate that the PeptideShaker project has been loaded
         return true;
     }
 
