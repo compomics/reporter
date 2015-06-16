@@ -17,6 +17,7 @@
                 </Property>
                 <Property name="mnemonic" type="int" value="78"/>
                 <Property name="text" type="java.lang.String" value="New"/>
+                <Property name="enabled" type="boolean" value="false"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="newMenuItemActionPerformed"/>
@@ -88,17 +89,6 @@
             <Property name="text" type="java.lang.String" value="Edit"/>
           </Properties>
           <SubComponents>
-            <MenuItem class="javax.swing.JMenuItem" name="quantificationOptionsMenuItem">
-              <Properties>
-                <Property name="mnemonic" type="int" value="81"/>
-                <Property name="text" type="java.lang.String" value="Quantification Preferences"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="quantificationOptionsMenuItemActionPerformed"/>
-              </Events>
-            </MenuItem>
-            <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator4">
-            </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="javaOptionsMenuItem">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Java Settings"/>
@@ -121,6 +111,7 @@
           <Properties>
             <Property name="mnemonic" type="int" value="84"/>
             <Property name="text" type="java.lang.String" value="Tools"/>
+            <Property name="enabled" type="boolean" value="false"/>
           </Properties>
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="clusteringMenuItem">

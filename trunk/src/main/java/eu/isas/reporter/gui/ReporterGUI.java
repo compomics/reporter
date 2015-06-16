@@ -186,7 +186,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
                     && System.getProperty("os.name").lastIndexOf("Windows") != -1
                     && new File(getJarFilePath() + "/resources/conf/firstRun").exists()) {
 
-            // @TODO: add support for desktop icons in mac and linux??
+                // @TODO: add support for desktop icons in mac and linux??
                 // delete the firstRun file such that the user is not asked the next time around
                 new File(getJarFilePath() + "/resources/conf/firstRun").delete();
 
@@ -255,7 +255,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      */
     private void setUpGui() {
         //@TODO
-        
+
         toolsMenu.setVisible(false);
         toolsMenu.setEnabled(false);
     }
@@ -266,56 +266,57 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      */
     private void createNewProject() {
 
-        progressDialog = new ProgressDialogX(this,
-                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
-                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
-        progressDialog.setPrimaryProgressCounterIndeterminate(true);
-        progressDialog.setTitle("Quantifying Proteins. Please Wait...");
+        if (cpsBean != null) {
+            closeOpenedProject();
+        }
+        projectSaved = true;
+        NewDialog newDialog = new NewDialog(ReporterGUI.this);
 
-        new Thread(new Runnable() {
-            public void run() {
-                try {
-                    progressDialog.setVisible(true);
-                } catch (IndexOutOfBoundsException e) {
-                    // ignore
-                }
-            }
-        }, "ProgressDialog").start();
+        if (!newDialog.isCancelled()) {
 
-        new Thread("ImportThread") {
-            @Override
-            public void run() {
-                try {
-                    if (cpsBean != null) {
-                        closeOpenedProject();
-                        if (progressDialog.isRunCanceled()) {
-                            return;
-                        }
+            cpsBean = newDialog.getCpsBean();
+            reporterPreferences = newDialog.getReporterPreferences();
+            reporterIonQuantification = newDialog.getReporterIonQuantification();
+            identificationFeaturesGenerator = new IdentificationFeaturesGenerator(cpsBean.getIdentification(), cpsBean.getShotgunProtocol(),
+                    cpsBean.getIdentificationParameters(), cpsBean.getMetrics(), cpsBean.getSpectrumCountingPreferences());
+            displayFeaturesGenerator = new DisplayFeaturesGenerator(cpsBean.getIdentificationParameters().getSearchParameters().getModificationProfile(), exceptionHandler);
+            displayFeaturesGenerator.setDisplayedPTMs(cpsBean.getDisplayPreferences().getDisplayedPtms());
+            setDisplayPreferencesFromShakerProject();
+
+            projectSaved = false;
+            quantificationFeaturesGenerator = new QuantificationFeaturesGenerator(new QuantificationFeaturesCache(), cpsBean.getIdentification(), reporterPreferences, reporterIonQuantification,
+                    cpsBean.getIdentificationParameters().getSearchParameters(), cpsBean.getIdentificationParameters().getSequenceMatchingPreferences());
+
+            progressDialog = new ProgressDialogX(this,
+                    Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
+                    Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
+            progressDialog.setPrimaryProgressCounterIndeterminate(true);
+            progressDialog.setTitle("Quantifying Proteins. Please Wait...");
+
+            new Thread(new Runnable() {
+                public void run() {
+                    try {
+                        progressDialog.setVisible(true);
+                    } catch (IndexOutOfBoundsException e) {
+                        // ignore
                     }
-                    projectSaved = true;
-                    NewDialog newDialog = new NewDialog(ReporterGUI.this);
-                    if (!newDialog.isCancelled()) {
-                        cpsBean = newDialog.getCpsBean();
-                        identificationFeaturesGenerator = new IdentificationFeaturesGenerator(cpsBean.getIdentification(), cpsBean.getShotgunProtocol(),
-                                cpsBean.getIdentificationParameters(), cpsBean.getMetrics(), cpsBean.getSpectrumCountingPreferences());
-                        displayFeaturesGenerator = new DisplayFeaturesGenerator(cpsBean.getIdentificationParameters().getSearchParameters().getModificationProfile(), exceptionHandler);
-                        displayFeaturesGenerator.setDisplayedPTMs(cpsBean.getDisplayPreferences().getDisplayedPtms());
-                        reporterPreferences = newDialog.getReporterPreferences();
-                        setDisplayPreferencesFromShakerProject();
-                        reporterIonQuantification = newDialog.getReporterIonQuantification();
-                        projectSaved = false;
-                        quantificationFeaturesGenerator = new QuantificationFeaturesGenerator(new QuantificationFeaturesCache(), cpsBean.getIdentification(), reporterPreferences, reporterIonQuantification,
-                                cpsBean.getIdentificationParameters().getSearchParameters(), cpsBean.getIdentificationParameters().getSequenceMatchingPreferences());
+                }
+            }, "ProgressDialog").start();
+
+            new Thread("ImportThread") {
+                @Override
+                public void run() {
+                    try {
                         displayResults();
+                    } catch (Exception e) {
+                        catchException(e);
+                        progressDialog.setRunCanceled();
+                    } finally {
+                        progressDialog.setRunFinished();
                     }
-                } catch (Exception e) {
-                    catchException(e);
-                    progressDialog.setRunCanceled();
-                } finally {
-                    progressDialog.setRunFinished();
                 }
-            }
-        }.start();
+            }.start();
+        }
     }
 
     /**
@@ -591,8 +592,6 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         exportQuantificationFeaturesMenuItem = new javax.swing.JMenuItem();
         exportFollowUpJMenuItem = new javax.swing.JMenuItem();
         quantificationOptionsMenu = new javax.swing.JMenu();
-        quantificationOptionsMenuItem = new javax.swing.JMenuItem();
-        jSeparator4 = new javax.swing.JPopupMenu.Separator();
         javaOptionsMenuItem = new javax.swing.JMenuItem();
         privacyMenuItem = new javax.swing.JMenuItem();
         toolsMenu = new javax.swing.JMenu();
@@ -637,6 +636,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         newMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
         newMenuItem.setMnemonic('N');
         newMenuItem.setText("New");
+        newMenuItem.setEnabled(false);
         newMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newMenuItemActionPerformed(evt);
@@ -691,16 +691,6 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         quantificationOptionsMenu.setMnemonic('E');
         quantificationOptionsMenu.setText("Edit");
 
-        quantificationOptionsMenuItem.setMnemonic('Q');
-        quantificationOptionsMenuItem.setText("Quantification Preferences");
-        quantificationOptionsMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                quantificationOptionsMenuItemActionPerformed(evt);
-            }
-        });
-        quantificationOptionsMenu.add(quantificationOptionsMenuItem);
-        quantificationOptionsMenu.add(jSeparator4);
-
         javaOptionsMenuItem.setText("Java Settings");
         javaOptionsMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -721,6 +711,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
 
         toolsMenu.setMnemonic('T');
         toolsMenu.setText("Tools");
+        toolsMenu.setEnabled(false);
 
         clusteringMenuItem.setMnemonic('H');
         clusteringMenuItem.setText("Hierarchical Clustering");
@@ -792,15 +783,6 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
     private void newMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newMenuItemActionPerformed
         createNewProject();
     }//GEN-LAST:event_newMenuItemActionPerformed
-
-    /**
-     * Open the preferences dialog.
-     *
-     * @param evt
-     */
-    private void quantificationOptionsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quantificationOptionsMenuItemActionPerformed
-        new PreferencesDialog(this, reporterPreferences, cpsBean.getIdentificationParameters().getSearchParameters());
-    }//GEN-LAST:event_quantificationOptionsMenuItemActionPerformed
 
     /**
      * Export the proteins to a tab separated text file.
@@ -1066,7 +1048,6 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
     private javax.swing.JPopupMenu.Separator jSeparator17;
     private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
-    private javax.swing.JPopupMenu.Separator jSeparator4;
     private javax.swing.JMenuItem javaOptionsMenuItem;
     private javax.swing.JMenuItem logReportMenu;
     private javax.swing.JMenuBar menuBar;
@@ -1075,7 +1056,6 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
     private javax.swing.JPanel overviewJPanel;
     private javax.swing.JMenuItem privacyMenuItem;
     private javax.swing.JMenu quantificationOptionsMenu;
-    private javax.swing.JMenuItem quantificationOptionsMenuItem;
     private javax.swing.JMenuItem saveMenuItem;
     private javax.swing.JTabbedPane tabPanel;
     private javax.swing.JMenu toolsMenu;
@@ -1265,7 +1245,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
     public UtilitiesUserPreferences getUtilitiesUserPreferences() {
         return utilitiesUserPreferences;
     }
-    
+
     /**
      * Check for new version.
      *
