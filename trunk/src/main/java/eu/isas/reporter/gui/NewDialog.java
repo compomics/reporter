@@ -1192,41 +1192,42 @@ public class NewDialog extends javax.swing.JDialog {
 
                 //@TODO: load quantification parameters if existing
                 SearchParameters searchParameters = getSearchParameters();
+
                 // try to detect the method used
                 for (String ptmName : searchParameters.getModificationProfile().getAllModifications()) {
                     if (ptmName.contains("4plex")) {
-                        selectedMethod = getMethod("iTRAQ 4Plex (Default)");
+                        selectedMethod = getMethod("iTRAQ 4plex");
                         break;
                     } else if (ptmName.contains("8plex")) {
-                        selectedMethod = getMethod("iTRAQ 8Plex (Default)");
+                        selectedMethod = getMethod("iTRAQ 8plex");
                         break;
                     } else if (ptmName.contains("duplex")) {
-                        selectedMethod = getMethod("TMT2 (Default)");
+                        selectedMethod = getMethod("TMT 2plex");
                         break;
                     } else if (ptmName.contains("tmt") && ptmName.contains("6")) {
                         if (searchParameters.getIonSearched1() == PeptideFragmentIon.Y_ION
                                 || searchParameters.getIonSearched2() == PeptideFragmentIon.Y_ION) {
-                            selectedMethod = getMethod("TMT6 HCD (Default)");
+                            selectedMethod = getMethod("TMT 6plex (HCD)");
                         } else {
-                            selectedMethod = getMethod("TMT6 ETD (Default)");
+                            selectedMethod = getMethod("TMT 6plex (ETD)");
                         }
                         if (getReporterPreferences().getReporterIonsMzTolerance() > 0.0016) {
                             getReporterPreferences().setReporterIonsMzTolerance(0.0016);
                         }
                         break;
                     } else if (ptmName.contains("tmt") && ptmName.contains("10")) {
-                        selectedMethod = getMethod("TMT10 (Default)");
+                        selectedMethod = getMethod("TMT 10plex");
                         if (getReporterPreferences().getReporterIonsMzTolerance() > 0.0016) {
                             getReporterPreferences().setReporterIonsMzTolerance(0.0016);
                         }
                         break;
                     } else if (ptmName.contains("itraq")) {
-                        selectedMethod = getMethod("iTRAQ 4Plex (Default)");
+                        selectedMethod = getMethod("iTRAQ 4plex");
                         break;
                     }
                 }
 
-                // no method detected, default to iTRAQ 4 plex
+                // no method detected, default to iTRAQ 4plex
                 if (selectedMethod == null) {
                     reporterMethodComboBox.setSelectedItem(methodsFactory.getMethodsNames()[0]);
                 }
