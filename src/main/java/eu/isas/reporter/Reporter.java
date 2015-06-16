@@ -88,27 +88,30 @@ public class Reporter {
         for (String sampleIndex : reporterIonQuantification.getSampleIndexes()) {
             ratios.put(sampleIndex, new ArrayList<Double>());
         }
-        int progress = 0;
-        int totalProgress = 2 * identification.getSpectrumFiles().size() + 4;
+
         PSParameter psParameter = new PSParameter();
         ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
         parameters.add(psParameter);
 
         if (waitingHandler != null) {
-            waitingHandler.setWaitingText("Ratio Normalization (Step " + ++progress + " of " + totalProgress + "). Please Wait...");
+            waitingHandler.setWaitingText("Ratio Normalization. Please Wait...");
             waitingHandler.resetPrimaryProgressCounter();
             waitingHandler.setPrimaryProgressCounterIndeterminate(false);
             waitingHandler.setMaxPrimaryProgressCounter(identification.getPeptideIdentification().size());
         }
 
-        progress++;
         PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(parameters, true, parameters, waitingHandler);
+
         while (peptideMatchesIterator.hasNext()) {
+
             PeptideMatch peptideMatch = peptideMatchesIterator.next();
             String peptideKey = peptideMatch.getKey();
             psParameter = (PSParameter) identification.getPeptideMatchParameter(peptideKey, psParameter);
+
             if (psParameter.getMatchValidationLevel().isValidated()) {
+
                 PeptideQuantificationDetails matchQuantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideMatch, waitingHandler);
+
                 for (String sampleIndex : reporterIonQuantification.getSampleIndexes()) {
                     Double ratio = matchQuantificationDetails.getRawRatio(sampleIndex);
                     if (QuantificationFilter.isRatioValid(reporterPreferences, ratio) && ratio > 0) {
@@ -116,6 +119,7 @@ public class Reporter {
                     }
                 }
             }
+
             if (waitingHandler != null) {
                 if (waitingHandler.isRunCanceled()) {
                     return;
@@ -123,6 +127,7 @@ public class Reporter {
                 waitingHandler.increaseSecondaryProgressCounter();
             }
         }
+
         for (String sampleIndex : reporterIonQuantification.getSampleIndexes()) {
             double normalisationFactor;
             if (ratios.get(sampleIndex) != null && !ratios.get(sampleIndex).isEmpty()) {

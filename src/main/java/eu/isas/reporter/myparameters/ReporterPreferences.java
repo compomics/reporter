@@ -350,7 +350,7 @@ public class ReporterPreferences implements UrParameter {
     }
 
     /**
-     * Indicates the validation level to require for protein quantification
+     * Indicates the validation level to require for protein quantification.
      *
      * @return the minimal validation level for a protein to be accounted for
      */
@@ -359,7 +359,7 @@ public class ReporterPreferences implements UrParameter {
     }
 
     /**
-     * Sets the validation level to require for quantification
+     * Sets the validation level to require for quantification.
      *
      * @param matchValidationLevel the minimal validation level for a protein to
      * be accounted for
@@ -369,7 +369,7 @@ public class ReporterPreferences implements UrParameter {
     }
 
     /**
-     * Indicates the validation level to require for peptide quantification
+     * Indicates the validation level to require for peptide quantification.
      *
      * @return the minimal validation level for a protein to be accounted for
      */
@@ -378,7 +378,7 @@ public class ReporterPreferences implements UrParameter {
     }
 
     /**
-     * Sets the validation level to require for quantification
+     * Sets the validation level to require for quantification.
      *
      * @param matchValidationLevel the minimal validation level for a peptide to
      * be accounted for
@@ -388,7 +388,7 @@ public class ReporterPreferences implements UrParameter {
     }
 
     /**
-     * Indicates the validation level to require for psm quantification
+     * Indicates the validation level to require for PSM quantification.
      *
      * @return the minimal validation level for a protein to be accounted for
      */
@@ -397,9 +397,9 @@ public class ReporterPreferences implements UrParameter {
     }
 
     /**
-     * Sets the validation level to require for quantification
+     * Sets the validation level to require for quantification.
      *
-     * @param matchValidationLevel the minimal validation level for a psm to be
+     * @param matchValidationLevel the minimal validation level for a PSM to be
      * accounted for
      */
     public void setPsmValidationLevel(MatchValidationLevel matchValidationLevel) {
