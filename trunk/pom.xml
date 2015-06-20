@@ -5,7 +5,7 @@
     <groupId>eu.isas.reporter</groupId>
     <artifactId>Reporter</artifactId>
     <packaging>jar</packaging>
-    <version>0.0.3</version>
+    <version>0.0.4</version>
     <name>Reporter</name>
     <url>http://reporter.googlecode.com</url>
     <description>Protein quantification based on reporter ions</description>
@@ -307,7 +307,7 @@
         <dependency>
             <groupId>com.compomics</groupId>
             <artifactId>utilities</artifactId>
-            <version>3.49.17</version>
+            <version>3.49.19</version>
             <exclusions>
                 <exclusion>
                     <artifactId>commons-math</artifactId>
@@ -363,7 +363,7 @@
         <dependency>
             <groupId>eu.isas.peptideshaker</groupId>
             <artifactId>PeptideShaker</artifactId>
-            <version>0.40.1</version>
+            <version>0.40.2</version>
             <exclusions>
                 <exclusion>
                     <groupId>de.proteinms.omxparser</groupId>
