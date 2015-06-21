@@ -3,6 +3,17 @@
 
 ----
 
+*Changes in Reporter 0.0.4 (June 21. 2015):*
+
+ * FEATURE IMPROVEMENT: Refactored the GUI in the New Project Dialog.
+
+ * BUG FIX: Fixed a bug in the loading of isotope correction factors from file.
+
+ * LIBRARY UPDATE: Updated PeptideShaker to version 0.40.2.
+ * LIBRARY UPDATE: Updated utilities to version 3.49.19.
+
+----
+
 *Changes in Reporter 0.0.3 (June 3. 2015):*
 
  * BUG FIX: Fixed bugs related to saving the reporter methods.
