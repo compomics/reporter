@@ -1171,7 +1171,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
                 jarFilePath = jarFilePath.substring(1);
             }
 
-            String iconFileLocation = jarFilePath + "\\resources\\conf\\reporter.ico";
+            String iconFileLocation = jarFilePath + "\\resources\\reporter.ico";
             String jarFileLocation = jarFilePath + "\\Reporter-" + new Properties().getVersion() + ".jar";
 
             try {
