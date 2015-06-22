@@ -3,6 +3,12 @@
 
 ----
 
+*Changes in Reporter 0.0.5 (June 22. 2015):*
+
+ * BUG FIX: Fixed a bug in the setting of the desktop icon.
+
+----
+
 *Changes in Reporter 0.0.4 (June 21. 2015):*
 
  * FEATURE IMPROVEMENT: Refactored the GUI in the New Project Dialog.
