@@ -1,6 +1,5 @@
 package eu.isas.reporter.gui.resultpanels;
 
-import com.compomics.util.examples.BareBonesBrowserLaunch;
 import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.matches.PeptideMatch;
 import com.compomics.util.experiment.identification.matches.ProteinMatch;
@@ -10,29 +9,32 @@ import com.compomics.util.gui.GuiUtilities;
 import com.compomics.util.gui.error_handlers.HelpDialog;
 import com.compomics.util.gui.tablemodels.SelfUpdatingTableModel;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
+import com.compomics.util.math.clustering.KMeansClustering;
 import com.compomics.util.math.statistics.distributions.NormalKernelDensityEstimator;
 import com.compomics.util.waiting.WaitingHandler;
-import eu.isas.peptideshaker.gui.tablemodels.ProteinTableModel;
 import eu.isas.peptideshaker.myparameters.PSParameter;
-import eu.isas.peptideshaker.preferences.SpectrumCountingPreferences.SpectralCountingMethod;
 import eu.isas.peptideshaker.utils.IdentificationFeaturesGenerator;
 import eu.isas.reporter.gui.ReporterGUI;
+import eu.isas.reporter.gui.tablemodels.ProteinTableModel;
 import eu.isas.reporter.quantificationdetails.PeptideQuantificationDetails;
 import eu.isas.reporter.quantificationdetails.ProteinQuantificationDetails;
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
@@ -124,10 +126,14 @@ public class OverviewPanel extends javax.swing.JPanel {
      */
     private double minProteinRatio;
     /**
+     * The currently selected chart panel.
+     */
+    private ChartPanel selectedChartPanel = null;
+
+    /**
      * The clustering dataset.
      */
     //private DataSet dataset;
-
     /**
      * Creates a new OverviewPanel.
      *
@@ -205,64 +211,60 @@ public class OverviewPanel extends javax.swing.JPanel {
                     identification.loadProteinMatches(proteinKeys, progressDialog, false);
                     identification.loadProteinMatchParameters(proteinKeys, new PSParameter(), progressDialog, false);
 
-                    // update the table model
-                    if (proteinTable.getRowCount() > 0) {
-                        ((ProteinTableModel) proteinTable.getModel()).updateDataModel(identification, identificationFeaturesGenerator, reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getExceptionHandler(), proteinKeys);
-                    } else {
-                        ProteinTableModel proteinTableModel = new ProteinTableModel(identification, identificationFeaturesGenerator, reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getExceptionHandler(), proteinKeys);
-                        proteinTable.setModel(proteinTableModel);
-                    }
-
-                    setTableProperties();
-
-                    ((DefaultTableModel) proteinTable.getModel()).fireTableDataChanged();
-
-                    // select the first row
-                    if (proteinTable.getRowCount() > 0) {
-                        proteinTable.setRowSelectionInterval(0, 0);
-                    }
-
                     // get the protein ratio distributions
                     getProteinRatioDistributions(progressDialog);
 
+//                    // update the table model
+//                    if (proteinTable.getRowCount() > 0) {
+//                        ((ProteinTableModel) proteinTable.getModel()).updateDataModel(identification, identificationFeaturesGenerator,
+//                                reporterGUI.getReporterIonQuantification(), reporterGUI.getQuantificationFeaturesGenerator(),
+//                                reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getExceptionHandler(), proteinKeys);
+//                    } else {
+//                        ProteinTableModel proteinTableModel = new ProteinTableModel(identification, identificationFeaturesGenerator,
+//                                reporterGUI.getReporterIonQuantification(), reporterGUI.getQuantificationFeaturesGenerator(),
+//                                reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getExceptionHandler(), proteinKeys);
+//                        proteinTable.setModel(proteinTableModel);
+//                    }
+//                    
+//                    setProteinTableProperties();
+//                    
+//                    ((DefaultTableModel) proteinTable.getModel()).fireTableDataChanged();
+//
+//                    // select the first row
+//                    if (proteinTable.getRowCount() > 0) {
+//                        proteinTable.setRowSelectionInterval(0, 0);
+//                    }
+                    // display the clusters
+                    displayClusters(progressDialog);
+
+                    // select the first cluster
+                    // @TODO: implement me!
                     // update the ratio plot
-                    updateQuantificationDataPlot(progressDialog);
-
-                    // update spectrum counting column header tooltip
-                    if (reporterGUI.getSpectrumCountingPreferences().getSelectedMethod() == SpectralCountingMethod.EMPAI) {
-                        proteinTableToolTips.set(proteinTable.getColumn("MS2 Quant.").getModelIndex(), "Protein MS2 Quantification - emPAI");
-                    } else if (reporterGUI.getSpectrumCountingPreferences().getSelectedMethod() == SpectralCountingMethod.NSAF) {
-                        proteinTableToolTips.set(proteinTable.getColumn("MS2 Quant.").getModelIndex(), "Protein MS2 Quantification - NSAF");
-                    } else {
-                        proteinTableToolTips.set(proteinTable.getColumn("MS2 Quant.").getModelIndex(), "Protein MS2 Quantification");
-                    }
-
+                    //updateQuantificationDataPlot(progressDialog);
                     if (reporterGUI.getIdentificationDisplayPreferences().showScores()) {
                         proteinTableToolTips.set(proteinTable.getColumnCount() - 2, "Protein Score");
                     } else {
                         proteinTableToolTips.set(proteinTable.getColumnCount() - 2, "Protein Confidence");
                     }
 
-                    String title = ReporterGUI.TITLED_BORDER_HORIZONTAL_PADDING + "Proteins (";
-                    try {
-                        int nValidated = identificationFeaturesGenerator.getNValidatedProteins();
-                        int nConfident = identificationFeaturesGenerator.getNConfidentProteins();
-                        int nProteins = proteinTable.getRowCount();
-                        if (nConfident > 0) {
-                            title += nValidated + "/" + nProteins + " - " + nConfident + " confident, " + (nValidated - nConfident) + " doubtful";
-                        } else {
-                            title += nValidated + "/" + nProteins;
-                        }
-                    } catch (Exception eNValidated) {
-                        reporterGUI.catchException(eNValidated);
-                    }
-                    title += ")" + ReporterGUI.TITLED_BORDER_HORIZONTAL_PADDING;
-
-                    ((TitledBorder) proteinsLayeredPanel.getBorder()).setTitle(title);
-                    proteinsLayeredPanel.repaint();
-
-                    updateProteinTableCellRenderers();
-
+//                    String title = ReporterGUI.TITLED_BORDER_HORIZONTAL_PADDING + "Proteins (";
+//                    try {
+//                        int nValidated = identificationFeaturesGenerator.getNValidatedProteins();
+//                        int nConfident = identificationFeaturesGenerator.getNConfidentProteins();
+//                        int nProteins = proteinTable.getRowCount();
+//                        if (nConfident > 0) {
+//                            title += nValidated + "/" + nProteins + " - " + nConfident + " confident, " + (nValidated - nConfident) + " doubtful";
+//                        } else {
+//                            title += nValidated + "/" + nProteins;
+//                        }
+//                    } catch (Exception eNValidated) {
+//                        reporterGUI.catchException(eNValidated);
+//                    }
+//                    title += ")" + ReporterGUI.TITLED_BORDER_HORIZONTAL_PADDING;
+//
+//                    ((TitledBorder) proteinsLayeredPanel.getBorder()).setTitle(title);
+//                    proteinsLayeredPanel.repaint();
+//                    updateProteinTableCellRenderers();
                     // enable the contextual export options
                     exportProteinsJButton.setEnabled(true);
 
@@ -334,6 +336,39 @@ public class OverviewPanel extends javax.swing.JPanel {
     }
 
     /**
+     * Display the clusters.
+     * 
+     * @param waitingHandler the waiting handler
+     */
+    private void displayClusters(WaitingHandler waitingHandler) {
+
+        plotPanel.removeAll();
+
+        ArrayList<String> sampleIndexes = new ArrayList<String>(reporterGUI.getReporterIonQuantification().getSampleIndexes());
+        Collections.sort(sampleIndexes);
+
+        KMeansClustering kMeansClustering = reporterGUI.getkMeansClutering();
+
+        for (int clusterIndex = 0; clusterIndex < kMeansClustering.getNumberOfClusters(); clusterIndex++) {
+
+            DefaultCategoryDataset chartDataset = new DefaultCategoryDataset();
+            ArrayList<String> clusterMembers = kMeansClustering.getClusterMembers(clusterIndex);
+            HashMap<String, ArrayList<Double>> allValues = kMeansClustering.getClusterMembersData(clusterIndex);
+
+            for (String tempProteinKey : clusterMembers) {
+                ArrayList<Double> tempValues = allValues.get(tempProteinKey);
+
+                for (int sampleIndex = 0; sampleIndex < sampleIndexes.size(); sampleIndex++) {
+                    chartDataset.addValue(tempValues.get(sampleIndex), tempProteinKey, sampleIndexes.get(sampleIndex));
+                }
+
+            }
+
+            addClusterChart(chartDataset);
+        }
+    }
+
+    /**
      * Update the ratio plot.
      *
      * @param waitingHandler waiting handler displaying progress to the user and
@@ -356,7 +391,7 @@ public class OverviewPanel extends javax.swing.JPanel {
 
                     String proteinKey = proteinKeys.get(proteinIndex);
 
-                    if (boxPlotRadioButton.isSelected()) {
+                    if (boxPlotRadioButtonMenuItem.isSelected()) {
                         DefaultBoxAndWhiskerCategoryDataset boxPlotDataset = new DefaultBoxAndWhiskerCategoryDataset();
                         HashMap<String, ArrayList<Double>> values = new HashMap<String, ArrayList<Double>>();
 
@@ -425,23 +460,20 @@ public class OverviewPanel extends javax.swing.JPanel {
                     }
 
                     // see if the background distribution is to be displayed
-                    if (backgroundDistCheckBox.isSelected()) {
-                        for (String sampleIndex : sampleIndexes) {
-                            insertDensityChart(sampleIndex);
-                        }
-                    }
-
-                    plotsLayeredPaneComponentResized(null);
-
+//                    if (backgroundDistCheckBox.isSelected()) {
+//                        for (String sampleIndex : sampleIndexes) {
+//                            insertDensityChart(sampleIndex);
+//                        }
+//                    }
                     // update the border title
-                    ((TitledBorder) ratioPlotsTitledPanel.getBorder()).setTitle("Quantification Data (" + proteinKey + ")");
+                    ((TitledBorder) ratioPlotsTitledPanel.getBorder()).setTitle("Quantification Data (" + proteinKey + ")"); // @TODO: update me!
                     ratioPlotsTitledPanel.repaint();
                 }
             } else if (proteinTable.getSelectedRows().length > 1) {
 
                 int[] selectedRows = proteinTable.getSelectedRows();
 
-                if (boxPlotRadioButton.isSelected()) {
+                if (boxPlotRadioButtonMenuItem.isSelected()) {
 
                     DefaultBoxAndWhiskerCategoryDataset dataset = new DefaultBoxAndWhiskerCategoryDataset();
 
@@ -530,23 +562,18 @@ public class OverviewPanel extends javax.swing.JPanel {
                 }
 
                 // see if the background distribution is to be displayed
-                if (backgroundDistCheckBox.isSelected()) {
-                    for (String sampleIndex : sampleIndexes) {
-                        insertDensityChart(sampleIndex);
-                    }
-                }
-
-                plotsLayeredPaneComponentResized(null);
-
+//                if (backgroundDistCheckBox.isSelected()) {
+//                    for (String sampleIndex : sampleIndexes) {
+//                        insertDensityChart(sampleIndex);
+//                    }
+//                }
                 // update the border title
                 ((TitledBorder) ratioPlotsTitledPanel.getBorder()).setTitle("Quantification Data");
                 ratioPlotsTitledPanel.repaint();
             } else {
                 // no rows selected
-                plotsLayeredPane.removeAll();
-                plotsLayeredPane.validate();
-
-                plotsLayeredPaneComponentResized(null);
+                plotPanel.removeAll();
+                plotPanel.validate();
 
                 // update the border title
                 ((TitledBorder) ratioPlotsTitledPanel.getBorder()).setTitle("Quantification Data");
@@ -558,6 +585,139 @@ public class OverviewPanel extends javax.swing.JPanel {
     }
 
     /**
+     * Add a cluster line chart.
+     *
+     * @param dataset the dataset
+     */
+    private void addClusterChart(DefaultCategoryDataset dataset) {
+
+        JFreeChart chart = ChartFactory.createLineChart(
+                null, // chart title
+                null, // domain axis label
+                null, // range axis label
+                dataset, // data
+                PlotOrientation.VERTICAL, // the plot orientation
+                false, // include legend
+                true, // tooltips
+                false); // urls
+
+        // set the background and gridline colors
+        CategoryPlot plot = chart.getCategoryPlot();
+        plot.setBackgroundPaint(Color.WHITE);
+        plot.setRangeGridlinePaint(Color.LIGHT_GRAY);
+
+        // set the renderer
+        CategoryItemRenderer renderer = new LineAndShapeRenderer(true, false);
+        //renderer.setBaseToolTipGenerator(new StandardCategoryToolTipGenerator());
+        for (int i = 0; i < dataset.getRowCount(); i++) {
+            renderer.setSeriesStroke(i, new BasicStroke(LINE_WIDTH, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+            //renderer.setSeriesPaint(i, colors.get(i));
+            renderer.setSeriesPaint(i, new Color(200, 200, 200, 100));
+        }
+
+        plot.setRenderer(renderer);
+
+        // change the margin at the top and bottom of the range axis
+        final ValueAxis rangeAxis = plot.getRangeAxis();
+        rangeAxis.setLowerMargin(0.15);
+        rangeAxis.setUpperMargin(0.15);
+
+        // make sure that the chart has a symmetrical y-axis
+        double maxAbsRatioValue = Math.max(Math.abs(maxProteinRatio), Math.abs(minProteinRatio));
+        rangeAxis.setUpperBound(maxAbsRatioValue);
+        rangeAxis.setLowerBound(-maxAbsRatioValue);
+
+        // create the chart panel
+        lineChartChartPanel = new ChartPanel(chart);
+
+        // add tooltip
+        lineChartChartPanel.setToolTipText("#Proteins: " + dataset.getRowCount());
+
+        // remove the zoom support and pop up menu
+        lineChartChartPanel.setRangeZoomable(false);
+        lineChartChartPanel.setPopupMenu(null);
+
+        // hide unwanted chart details
+        plot.setOutlineVisible(false);
+        plot.getDomainAxis().setVisible(false);
+        plot.setDomainGridlinesVisible(false);
+
+        // make the background see-through
+        Color temp = new Color(255, 255, 255, 0);
+        chart.setBackgroundPaint(temp);
+        chart.setBackgroundImageAlpha(0.0f);
+        plot.setBackgroundPaint(new Color(255, 255, 255, 0));
+        plot.setBackgroundImageAlpha(0.0f);
+        lineChartChartPanel.setBackground(temp);
+
+        lineChartChartPanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                Component c = e.getComponent();
+                if (c instanceof ChartPanel) {
+
+                    if (selectedChartPanel != null) {
+                        selectedChartPanel.setBorder(null);
+                        selectedChartPanel.setBackground(Color.WHITE);
+                        selectedChartPanel.revalidate();
+                        selectedChartPanel.repaint();
+                    }
+
+                    ChartPanel chartPanel = (ChartPanel) c;
+                    chartPanel.setBorder(new LineBorder(Color.DARK_GRAY));
+                    chartPanel.setBackground(new Color(0f, 0f, 1f, 0.01f));
+                    chartPanel.revalidate();
+                    chartPanel.repaint();
+
+                    selectedChartPanel = chartPanel;
+
+                    plotPanel.revalidate();
+                    plotPanel.repaint();
+
+                    DefaultCategoryDataset dataset = (DefaultCategoryDataset) chartPanel.getChart().getCategoryPlot().getDataset();
+
+                    List rowKeys = dataset.getRowKeys();
+                    ArrayList<String> proteinKeys = new ArrayList<String>();
+
+                    for (Object proteinKey : rowKeys) {
+                        proteinKeys.add((String) proteinKey);
+                    }
+
+                    // update the table model
+                    if (proteinTable.getRowCount() > 0) {
+                        ((ProteinTableModel) proteinTable.getModel()).updateDataModel(identification, identificationFeaturesGenerator,
+                                reporterGUI.getReporterIonQuantification(), reporterGUI.getQuantificationFeaturesGenerator(),
+                                reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getExceptionHandler(), proteinKeys);
+                    } else {
+                        ProteinTableModel proteinTableModel = new ProteinTableModel(identification, identificationFeaturesGenerator,
+                                reporterGUI.getReporterIonQuantification(), reporterGUI.getQuantificationFeaturesGenerator(),
+                                reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getExceptionHandler(), proteinKeys);
+                        proteinTable.setModel(proteinTableModel);
+                    }
+
+                    setProteinTableProperties();
+
+                    ((DefaultTableModel) proteinTable.getModel()).fireTableDataChanged();
+                    updateProteinTableCellRenderers();
+
+                    String title = ReporterGUI.TITLED_BORDER_HORIZONTAL_PADDING + "Proteins (" + proteinTable.getRowCount() + ")";
+                    ((TitledBorder) proteinsLayeredPanel.getBorder()).setTitle(title);
+                    proteinsLayeredPanel.repaint();
+                }
+            }
+
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                plotPanel.revalidate();
+                plotPanel.repaint();
+            }
+        });
+
+        plotPanel.add(lineChartChartPanel);
+        plotPanel.validate();
+    }
+
+    /**
      * Insert the bar or line chart.
      *
      * @param dataset the dataset
@@ -566,11 +726,11 @@ public class OverviewPanel extends javax.swing.JPanel {
 
         JFreeChart chart;
 
-        if (barChartRadioButton.isSelected()) {
+        if (barChartRadioButtonMenuItem.isSelected()) {
             chart = ChartFactory.createBarChart(
                     null, // chart title
                     null, // domain axis label
-                    "log2", // range axis label
+                    null, //"log2", // range axis label
                     dataset, // data
                     PlotOrientation.VERTICAL, // the plot orientation
                     dataset.getRowCount() > 1 && dataset.getRowCount() <= maxLegendSize, // include legend
@@ -583,7 +743,7 @@ public class OverviewPanel extends javax.swing.JPanel {
             chart = ChartFactory.createLineChart(
                     null, // chart title
                     null, // domain axis label
-                    "log2", // range axis label
+                    null, //"log2", // range axis label
                     dataset, // data
                     PlotOrientation.VERTICAL, // the plot orientation
                     dataset.getRowCount() > 1 && dataset.getRowCount() <= maxLegendSize, // include legend
@@ -599,7 +759,7 @@ public class OverviewPanel extends javax.swing.JPanel {
 
         // set the renderer
         CategoryItemRenderer renderer;
-        if (lineChartRadioButton.isSelected()) {
+        if (lineChartRadioButtonMenuItem.isSelected()) {
             renderer = new LineAndShapeRenderer(true, false);
             renderer.setBaseToolTipGenerator(new StandardCategoryToolTipGenerator());
             for (int i = 0; i < dataset.getRowCount(); i++) {
@@ -627,11 +787,24 @@ public class OverviewPanel extends javax.swing.JPanel {
         rangeAxis.setLowerBound(-maxAbsRatioValue);
 
         // add a second axis on the right, identical to the left one
-        ValueAxis rangeAxis2 = chart.getCategoryPlot().getRangeAxis();
-        plot.setRangeAxis(1, rangeAxis2);
+//        ValueAxis rangeAxis2 = chart.getCategoryPlot().getRangeAxis();
+//        plot.setRangeAxis(1, rangeAxis2);
         lineChartChartPanel = new ChartPanel(chart);
-        chart.getPlot().setOutlineVisible(false);
+        plot.setOutlineVisible(false);
         lineChartChartPanel.setRangeZoomable(false);
+
+        // hide the legend
+        if (lineChartChartPanel.getChart().getLegend() != null) {
+            lineChartChartPanel.getChart().getLegend().setVisible(false);
+        }
+
+        // hide unwanted chart details
+//        plot.getRangeAxis().setVisible(false);
+        plot.getDomainAxis().setVisible(false);
+//        plot.setRangeGridlinesVisible(false);
+        plot.setDomainGridlinesVisible(false);
+
+        plot.setRangeGridlinePaint(Color.lightGray);
 
         // make the background see-through
         Color temp = new Color(255, 255, 255, 0);
@@ -641,9 +814,42 @@ public class OverviewPanel extends javax.swing.JPanel {
         plot.setBackgroundImageAlpha(0.0f);
         lineChartChartPanel.setBackground(temp);
 
-        plotsLayeredPane.removeAll();
-        plotsLayeredPane.add(lineChartChartPanel);
-        plotsLayeredPane.validate();
+        lineChartChartPanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                Component c = e.getComponent();
+                if (c instanceof ChartPanel) {
+
+                    if (selectedChartPanel != null) {
+                        selectedChartPanel.setBorder(null);
+                        selectedChartPanel.setBackground(Color.WHITE);
+                        selectedChartPanel.revalidate();
+                        selectedChartPanel.repaint();
+                    }
+
+                    ChartPanel chartPanel = (ChartPanel) c;
+                    chartPanel.setBorder(new LineBorder(Color.DARK_GRAY));
+                    chartPanel.setBackground(new Color(0f, 0f, 1f, 0.01f));
+                    chartPanel.revalidate();
+                    chartPanel.repaint();
+
+                    selectedChartPanel = chartPanel;
+
+                    plotPanel.revalidate();
+                    plotPanel.repaint();
+                }
+            }
+
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                plotPanel.revalidate();
+                plotPanel.repaint();
+            }
+        });
+
+        //plotsLayeredPane.removeAll();
+        plotPanel.add(lineChartChartPanel);
+        plotPanel.validate();
     }
 
     /**
@@ -695,9 +901,9 @@ public class OverviewPanel extends javax.swing.JPanel {
         plot.setBackgroundImageAlpha(0.0f);
         chartPanel.setBackground(temp);
 
-        plotsLayeredPane.removeAll();
-        plotsLayeredPane.add(chartPanel);
-        plotsLayeredPane.validate();
+        plotPanel.removeAll();
+        plotPanel.add(chartPanel);
+        plotPanel.validate();
     }
 
     /**
@@ -754,8 +960,8 @@ public class OverviewPanel extends javax.swing.JPanel {
         chartPanel.setBackground(temp);
 
         //plotsLayeredPane.removeAll();
-        plotsLayeredPane.add(chartPanel);
-        plotsLayeredPane.validate();
+        plotPanel.add(chartPanel);
+        plotPanel.validate();
     }
 
     /**
@@ -764,7 +970,7 @@ public class OverviewPanel extends javax.swing.JPanel {
     private void setUpTableHeaderToolTips() {
         proteinTableToolTips = new ArrayList<String>();
         proteinTableToolTips.add(null);
-        proteinTableToolTips.add("Starred");
+        proteinTableToolTips.add("Protein Quantification");
         proteinTableToolTips.add("Protein Inference Class");
         proteinTableToolTips.add("Protein Accession Number");
         proteinTableToolTips.add("Protein Description");
@@ -772,7 +978,6 @@ public class OverviewPanel extends javax.swing.JPanel {
         proteinTableToolTips.add("Protein Sequence Coverage (%) (Confident / Doubtful / Not Validated / Possible)");
         proteinTableToolTips.add("Number of Peptides (Confident / Doubtful / Not Validated)");
         proteinTableToolTips.add("Number of Spectra (Confident / Doubtful / Not Validated)");
-        proteinTableToolTips.add("MS2 Quantification");
         proteinTableToolTips.add("Protein Molecular Weight (kDa)");
 
         if (reporterGUI.getIdentificationDisplayPreferences() != null && reporterGUI.getIdentificationDisplayPreferences().showScores()) {
@@ -785,19 +990,12 @@ public class OverviewPanel extends javax.swing.JPanel {
     }
 
     /**
-     * Set up the properties of the tables.
-     */
-    private void setTableProperties() {
-        setProteinTableProperties();
-    }
-
-    /**
      * Set up the properties of the protein table.
      */
     private void setProteinTableProperties() {
         ProteinTableModel.setProteinTableProperties(proteinTable, reporterGUI.getSparklineColor(), reporterGUI.getSparklineColorNonValidated(),
                 reporterGUI.getSparklineColorNotFound(), reporterGUI.getSparklineColorDoubtful(), reporterGUI.getScoreAndConfidenceDecimalFormat(),
-                this.getClass(), reporterGUI.getMetrics().getMaxProteinKeyLength());
+                this.getClass(), reporterGUI.getMetrics().getMaxProteinKeyLength(), Math.max(Math.abs(minProteinRatio), Math.abs(maxProteinRatio)));
     }
 
     /**
@@ -810,11 +1008,22 @@ public class OverviewPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         chartTypeButtonGroup = new javax.swing.ButtonGroup();
-        boxPlotRadioButton = new javax.swing.JRadioButton();
-        backgroundDistCheckBox = new javax.swing.JCheckBox();
+        plotPopupMenu = new javax.swing.JPopupMenu();
+        lineChartRadioButtonMenuItem = new javax.swing.JRadioButtonMenuItem();
+        barChartRadioButtonMenuItem = new javax.swing.JRadioButtonMenuItem();
+        boxPlotRadioButtonMenuItem = new javax.swing.JRadioButtonMenuItem();
         backgroundLayeredPane = new javax.swing.JLayeredPane();
         overviewJPanel = new javax.swing.JPanel();
         overviewJSplitPane = new javax.swing.JSplitPane();
+        ratioPlotsJPanel = new javax.swing.JPanel();
+        ratioPlotsMainLayeredPane = new javax.swing.JLayeredPane();
+        ratioPlotHelpJButton = new javax.swing.JButton();
+        exportRatioPlotContextJButton = new javax.swing.JButton();
+        hideRatioPlotJButton = new javax.swing.JButton();
+        ratioPlotOptionsJButton = new javax.swing.JButton();
+        contextMenuRatioPlotBackgroundPanel = new javax.swing.JPanel();
+        ratioPlotsTitledPanel = new javax.swing.JPanel();
+        plotPanel = new javax.swing.JPanel();
         proteinsJPanel = new javax.swing.JPanel();
         proteinsLayeredPane = new javax.swing.JLayeredPane();
         proteinsLayeredPanel = new javax.swing.JPanel();
@@ -836,37 +1045,35 @@ public class OverviewPanel extends javax.swing.JPanel {
         exportProteinsJButton = new javax.swing.JButton();
         hideProteinsJButton = new javax.swing.JButton();
         contextMenuProteinsBackgroundPanel = new javax.swing.JPanel();
-        ratioPlotsJPanel = new javax.swing.JPanel();
-        ratioPlotsMainLayeredPane = new javax.swing.JLayeredPane();
-        ratioPlotHelpJButton = new javax.swing.JButton();
-        exportRatioPlotContextJButton = new javax.swing.JButton();
-        hideRatioPlotJButton = new javax.swing.JButton();
-        ratioPlotOptionsJButton = new javax.swing.JButton();
-        contextMenuRatioPlotBackgroundPanel = new javax.swing.JPanel();
-        plotTypePanel = new javax.swing.JPanel();
-        barChartRadioButton = new javax.swing.JRadioButton();
-        lineChartRadioButton = new javax.swing.JRadioButton();
-        ratioPlotsTitledPanel = new javax.swing.JPanel();
-        plotsLayeredPane = new javax.swing.JLayeredPane();
 
-        chartTypeButtonGroup.add(boxPlotRadioButton);
-        boxPlotRadioButton.setText("Box Plot");
-        boxPlotRadioButton.setIconTextGap(10);
-        boxPlotRadioButton.setOpaque(false);
-        boxPlotRadioButton.addActionListener(new java.awt.event.ActionListener() {
+        chartTypeButtonGroup.add(lineChartRadioButtonMenuItem);
+        lineChartRadioButtonMenuItem.setSelected(true);
+        lineChartRadioButtonMenuItem.setText("Line Chart");
+        lineChartRadioButtonMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                boxPlotRadioButtonActionPerformed(evt);
+                lineChartRadioButtonMenuItemActionPerformed(evt);
             }
         });
+        plotPopupMenu.add(lineChartRadioButtonMenuItem);
 
-        backgroundDistCheckBox.setText("Background");
-        backgroundDistCheckBox.setIconTextGap(10);
-        backgroundDistCheckBox.setOpaque(false);
-        backgroundDistCheckBox.addActionListener(new java.awt.event.ActionListener() {
+        chartTypeButtonGroup.add(barChartRadioButtonMenuItem);
+        barChartRadioButtonMenuItem.setText("Bar Chart");
+        barChartRadioButtonMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                backgroundDistCheckBoxActionPerformed(evt);
+                barChartRadioButtonMenuItemActionPerformed(evt);
             }
         });
+        plotPopupMenu.add(barChartRadioButtonMenuItem);
+
+        chartTypeButtonGroup.add(boxPlotRadioButtonMenuItem);
+        boxPlotRadioButtonMenuItem.setText("Box Plot");
+        boxPlotRadioButtonMenuItem.setEnabled(false);
+        boxPlotRadioButtonMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                boxPlotRadioButtonMenuItemActionPerformed(evt);
+            }
+        });
+        plotPopupMenu.add(boxPlotRadioButtonMenuItem);
 
         setBackground(new java.awt.Color(255, 255, 255));
         addComponentListener(new java.awt.event.ComponentAdapter() {
@@ -885,161 +1092,6 @@ public class OverviewPanel extends javax.swing.JPanel {
         overviewJSplitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         overviewJSplitPane.setResizeWeight(0.5);
         overviewJSplitPane.setOpaque(false);
-
-        proteinsJPanel.setOpaque(false);
-
-        proteinsLayeredPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Proteins"));
-        proteinsLayeredPanel.setOpaque(false);
-
-        proteinScrollPane.setOpaque(false);
-
-        proteinTable.setModel(new ProteinTableModel());
-        proteinTable.setOpaque(false);
-        proteinTable.setSelectionMode(javax.swing.ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        proteinTable.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
-            public void mouseMoved(java.awt.event.MouseEvent evt) {
-                proteinTableMouseMoved(evt);
-            }
-        });
-        proteinTable.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                proteinTableMouseExited(evt);
-            }
-            public void mouseReleased(java.awt.event.MouseEvent evt) {
-                proteinTableMouseReleased(evt);
-            }
-        });
-        proteinTable.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                proteinTableKeyReleased(evt);
-            }
-        });
-        proteinScrollPane.setViewportView(proteinTable);
-
-        javax.swing.GroupLayout proteinsLayeredPanelLayout = new javax.swing.GroupLayout(proteinsLayeredPanel);
-        proteinsLayeredPanel.setLayout(proteinsLayeredPanelLayout);
-        proteinsLayeredPanelLayout.setHorizontalGroup(
-            proteinsLayeredPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 938, Short.MAX_VALUE)
-            .addGroup(proteinsLayeredPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(proteinsLayeredPanelLayout.createSequentialGroup()
-                    .addContainerGap()
-                    .addComponent(proteinScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 918, Short.MAX_VALUE)
-                    .addContainerGap()))
-        );
-        proteinsLayeredPanelLayout.setVerticalGroup(
-            proteinsLayeredPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 273, Short.MAX_VALUE)
-            .addGroup(proteinsLayeredPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(proteinsLayeredPanelLayout.createSequentialGroup()
-                    .addContainerGap()
-                    .addComponent(proteinScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE)
-                    .addContainerGap()))
-        );
-
-        proteinsLayeredPane.add(proteinsLayeredPanel);
-        proteinsLayeredPanel.setBounds(0, 0, 950, 300);
-
-        proteinsHelpJButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/help_no_frame_grey.png"))); // NOI18N
-        proteinsHelpJButton.setToolTipText("Help");
-        proteinsHelpJButton.setBorder(null);
-        proteinsHelpJButton.setBorderPainted(false);
-        proteinsHelpJButton.setContentAreaFilled(false);
-        proteinsHelpJButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/help_no_frame.png"))); // NOI18N
-        proteinsHelpJButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                proteinsHelpJButtonMouseEntered(evt);
-            }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                proteinsHelpJButtonMouseExited(evt);
-            }
-        });
-        proteinsHelpJButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                proteinsHelpJButtonActionPerformed(evt);
-            }
-        });
-        proteinsLayeredPane.add(proteinsHelpJButton);
-        proteinsHelpJButton.setBounds(930, 0, 10, 19);
-        proteinsLayeredPane.setLayer(proteinsHelpJButton, javax.swing.JLayeredPane.POPUP_LAYER);
-
-        exportProteinsJButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/export_no_frame_grey.png"))); // NOI18N
-        exportProteinsJButton.setToolTipText("Copy to File");
-        exportProteinsJButton.setBorder(null);
-        exportProteinsJButton.setBorderPainted(false);
-        exportProteinsJButton.setContentAreaFilled(false);
-        exportProteinsJButton.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/export_no_frame_grey.png"))); // NOI18N
-        exportProteinsJButton.setEnabled(false);
-        exportProteinsJButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/export_no_frame.png"))); // NOI18N
-        exportProteinsJButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                exportProteinsJButtonMouseEntered(evt);
-            }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                exportProteinsJButtonMouseExited(evt);
-            }
-        });
-        exportProteinsJButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                exportProteinsJButtonActionPerformed(evt);
-            }
-        });
-        proteinsLayeredPane.add(exportProteinsJButton);
-        exportProteinsJButton.setBounds(920, 0, 10, 19);
-        proteinsLayeredPane.setLayer(exportProteinsJButton, javax.swing.JLayeredPane.POPUP_LAYER);
-
-        hideProteinsJButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/hide_grey.png"))); // NOI18N
-        hideProteinsJButton.setToolTipText("Hide Proteins (Shift+Ctrl+P)");
-        hideProteinsJButton.setBorder(null);
-        hideProteinsJButton.setBorderPainted(false);
-        hideProteinsJButton.setContentAreaFilled(false);
-        hideProteinsJButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/hide.png"))); // NOI18N
-        hideProteinsJButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                hideProteinsJButtonMouseEntered(evt);
-            }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                hideProteinsJButtonMouseExited(evt);
-            }
-        });
-        hideProteinsJButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                hideProteinsJButtonActionPerformed(evt);
-            }
-        });
-        proteinsLayeredPane.add(hideProteinsJButton);
-        hideProteinsJButton.setBounds(910, 0, 10, 19);
-        proteinsLayeredPane.setLayer(hideProteinsJButton, javax.swing.JLayeredPane.POPUP_LAYER);
-
-        contextMenuProteinsBackgroundPanel.setBackground(new java.awt.Color(255, 255, 255));
-
-        javax.swing.GroupLayout contextMenuProteinsBackgroundPanelLayout = new javax.swing.GroupLayout(contextMenuProteinsBackgroundPanel);
-        contextMenuProteinsBackgroundPanel.setLayout(contextMenuProteinsBackgroundPanelLayout);
-        contextMenuProteinsBackgroundPanelLayout.setHorizontalGroup(
-            contextMenuProteinsBackgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 40, Short.MAX_VALUE)
-        );
-        contextMenuProteinsBackgroundPanelLayout.setVerticalGroup(
-            contextMenuProteinsBackgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 19, Short.MAX_VALUE)
-        );
-
-        proteinsLayeredPane.add(contextMenuProteinsBackgroundPanel);
-        contextMenuProteinsBackgroundPanel.setBounds(910, 0, 40, 19);
-        proteinsLayeredPane.setLayer(contextMenuProteinsBackgroundPanel, javax.swing.JLayeredPane.POPUP_LAYER);
-
-        javax.swing.GroupLayout proteinsJPanelLayout = new javax.swing.GroupLayout(proteinsJPanel);
-        proteinsJPanel.setLayout(proteinsJPanelLayout);
-        proteinsJPanelLayout.setHorizontalGroup(
-            proteinsJPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(proteinsLayeredPane, javax.swing.GroupLayout.DEFAULT_SIZE, 970, Short.MAX_VALUE)
-        );
-        proteinsJPanelLayout.setVerticalGroup(
-            proteinsJPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(proteinsLayeredPane, javax.swing.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
-        );
-
-        overviewJSplitPane.setTopComponent(proteinsJPanel);
 
         ratioPlotsJPanel.setOpaque(false);
 
@@ -1152,111 +1204,204 @@ public class OverviewPanel extends javax.swing.JPanel {
         contextMenuRatioPlotBackgroundPanel.setBounds(890, 0, 50, 19);
         ratioPlotsMainLayeredPane.setLayer(contextMenuRatioPlotBackgroundPanel, javax.swing.JLayeredPane.POPUP_LAYER);
 
-        plotTypePanel.setOpaque(false);
-
-        chartTypeButtonGroup.add(barChartRadioButton);
-        barChartRadioButton.setText("Bar Chart");
-        barChartRadioButton.setIconTextGap(10);
-        barChartRadioButton.setOpaque(false);
-        barChartRadioButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                barChartRadioButtonActionPerformed(evt);
-            }
-        });
-
-        chartTypeButtonGroup.add(lineChartRadioButton);
-        lineChartRadioButton.setSelected(true);
-        lineChartRadioButton.setText("Line Chart");
-        lineChartRadioButton.setIconTextGap(10);
-        lineChartRadioButton.setOpaque(false);
-        lineChartRadioButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                lineChartRadioButtonActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout plotTypePanelLayout = new javax.swing.GroupLayout(plotTypePanel);
-        plotTypePanel.setLayout(plotTypePanelLayout);
-        plotTypePanelLayout.setHorizontalGroup(
-            plotTypePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(plotTypePanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(barChartRadioButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(lineChartRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGap(280, 280, 280))
-        );
-        plotTypePanelLayout.setVerticalGroup(
-            plotTypePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(plotTypePanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(plotTypePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(barChartRadioButton)
-                    .addComponent(lineChartRadioButton))
-                .addContainerGap(9, Short.MAX_VALUE))
-        );
-
-        ratioPlotsMainLayeredPane.add(plotTypePanel);
-        plotTypePanel.setBounds(749, 400, 180, 39);
-        ratioPlotsMainLayeredPane.setLayer(plotTypePanel, javax.swing.JLayeredPane.POPUP_LAYER);
-
         ratioPlotsTitledPanel.setBackground(new java.awt.Color(255, 255, 255));
-        ratioPlotsTitledPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Quantification Data"));
+        ratioPlotsTitledPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Protein Profile Clusters"));
         ratioPlotsTitledPanel.setOpaque(false);
 
-        plotsLayeredPane.addComponentListener(new java.awt.event.ComponentAdapter() {
-            public void componentResized(java.awt.event.ComponentEvent evt) {
-                plotsLayeredPaneComponentResized(evt);
-            }
-        });
-
-        javax.swing.GroupLayout plotsLayeredPaneLayout = new javax.swing.GroupLayout(plotsLayeredPane);
-        plotsLayeredPane.setLayout(plotsLayeredPaneLayout);
-        plotsLayeredPaneLayout.setHorizontalGroup(
-            plotsLayeredPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 918, Short.MAX_VALUE)
-        );
-        plotsLayeredPaneLayout.setVerticalGroup(
-            plotsLayeredPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 415, Short.MAX_VALUE)
-        );
+        plotPanel.setOpaque(false);
+        plotPanel.setLayout(new java.awt.GridLayout(3, 4, 25, 25));
 
         javax.swing.GroupLayout ratioPlotsTitledPanelLayout = new javax.swing.GroupLayout(ratioPlotsTitledPanel);
         ratioPlotsTitledPanel.setLayout(ratioPlotsTitledPanelLayout);
         ratioPlotsTitledPanelLayout.setHorizontalGroup(
             ratioPlotsTitledPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 938, Short.MAX_VALUE)
+            .addGap(0, 948, Short.MAX_VALUE)
             .addGroup(ratioPlotsTitledPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(ratioPlotsTitledPanelLayout.createSequentialGroup()
                     .addContainerGap()
-                    .addComponent(plotsLayeredPane)
+                    .addComponent(plotPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addContainerGap()))
         );
         ratioPlotsTitledPanelLayout.setVerticalGroup(
             ratioPlotsTitledPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 437, Short.MAX_VALUE)
+            .addGap(0, 267, Short.MAX_VALUE)
             .addGroup(ratioPlotsTitledPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(ratioPlotsTitledPanelLayout.createSequentialGroup()
                     .addContainerGap()
-                    .addComponent(plotsLayeredPane)
+                    .addComponent(plotPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addContainerGap()))
         );
 
         ratioPlotsMainLayeredPane.add(ratioPlotsTitledPanel);
-        ratioPlotsTitledPanel.setBounds(0, 0, 950, 460);
+        ratioPlotsTitledPanel.setBounds(0, 0, 960, 290);
 
         javax.swing.GroupLayout ratioPlotsJPanelLayout = new javax.swing.GroupLayout(ratioPlotsJPanel);
         ratioPlotsJPanel.setLayout(ratioPlotsJPanelLayout);
         ratioPlotsJPanelLayout.setHorizontalGroup(
             ratioPlotsJPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(ratioPlotsMainLayeredPane, javax.swing.GroupLayout.DEFAULT_SIZE, 970, Short.MAX_VALUE)
+            .addComponent(ratioPlotsMainLayeredPane)
         );
         ratioPlotsJPanelLayout.setVerticalGroup(
             ratioPlotsJPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(ratioPlotsMainLayeredPane, javax.swing.GroupLayout.DEFAULT_SIZE, 458, Short.MAX_VALUE)
+            .addComponent(ratioPlotsMainLayeredPane)
         );
 
-        overviewJSplitPane.setRightComponent(ratioPlotsJPanel);
+        overviewJSplitPane.setLeftComponent(ratioPlotsJPanel);
+
+        proteinsJPanel.setOpaque(false);
+
+        proteinsLayeredPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Proteins"));
+        proteinsLayeredPanel.setOpaque(false);
+
+        proteinScrollPane.setOpaque(false);
+
+        proteinTable.setModel(new ProteinTableModel());
+        proteinTable.setOpaque(false);
+        proteinTable.setSelectionMode(javax.swing.ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        proteinTable.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+            public void mouseMoved(java.awt.event.MouseEvent evt) {
+                proteinTableMouseMoved(evt);
+            }
+        });
+        proteinTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                proteinTableMouseExited(evt);
+            }
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                proteinTableMouseReleased(evt);
+            }
+        });
+        proteinTable.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                proteinTableKeyReleased(evt);
+            }
+        });
+        proteinScrollPane.setViewportView(proteinTable);
+
+        javax.swing.GroupLayout proteinsLayeredPanelLayout = new javax.swing.GroupLayout(proteinsLayeredPanel);
+        proteinsLayeredPanel.setLayout(proteinsLayeredPanelLayout);
+        proteinsLayeredPanelLayout.setHorizontalGroup(
+            proteinsLayeredPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 938, Short.MAX_VALUE)
+            .addGroup(proteinsLayeredPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(proteinsLayeredPanelLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(proteinScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 918, Short.MAX_VALUE)
+                    .addContainerGap()))
+        );
+        proteinsLayeredPanelLayout.setVerticalGroup(
+            proteinsLayeredPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 327, Short.MAX_VALUE)
+            .addGroup(proteinsLayeredPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(proteinsLayeredPanelLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(proteinScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 305, Short.MAX_VALUE)
+                    .addContainerGap()))
+        );
+
+        proteinsLayeredPane.add(proteinsLayeredPanel);
+        proteinsLayeredPanel.setBounds(0, 0, 950, 350);
+
+        proteinsHelpJButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/help_no_frame_grey.png"))); // NOI18N
+        proteinsHelpJButton.setToolTipText("Help");
+        proteinsHelpJButton.setBorder(null);
+        proteinsHelpJButton.setBorderPainted(false);
+        proteinsHelpJButton.setContentAreaFilled(false);
+        proteinsHelpJButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/help_no_frame.png"))); // NOI18N
+        proteinsHelpJButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                proteinsHelpJButtonMouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                proteinsHelpJButtonMouseExited(evt);
+            }
+        });
+        proteinsHelpJButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                proteinsHelpJButtonActionPerformed(evt);
+            }
+        });
+        proteinsLayeredPane.add(proteinsHelpJButton);
+        proteinsHelpJButton.setBounds(930, 0, 10, 19);
+        proteinsLayeredPane.setLayer(proteinsHelpJButton, javax.swing.JLayeredPane.POPUP_LAYER);
+
+        exportProteinsJButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/export_no_frame_grey.png"))); // NOI18N
+        exportProteinsJButton.setToolTipText("Copy to File");
+        exportProteinsJButton.setBorder(null);
+        exportProteinsJButton.setBorderPainted(false);
+        exportProteinsJButton.setContentAreaFilled(false);
+        exportProteinsJButton.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/export_no_frame_grey.png"))); // NOI18N
+        exportProteinsJButton.setEnabled(false);
+        exportProteinsJButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/export_no_frame.png"))); // NOI18N
+        exportProteinsJButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                exportProteinsJButtonMouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                exportProteinsJButtonMouseExited(evt);
+            }
+        });
+        exportProteinsJButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportProteinsJButtonActionPerformed(evt);
+            }
+        });
+        proteinsLayeredPane.add(exportProteinsJButton);
+        exportProteinsJButton.setBounds(920, 0, 10, 19);
+        proteinsLayeredPane.setLayer(exportProteinsJButton, javax.swing.JLayeredPane.POPUP_LAYER);
+
+        hideProteinsJButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/hide_grey.png"))); // NOI18N
+        hideProteinsJButton.setToolTipText("Hide Proteins (Shift+Ctrl+P)");
+        hideProteinsJButton.setBorder(null);
+        hideProteinsJButton.setBorderPainted(false);
+        hideProteinsJButton.setContentAreaFilled(false);
+        hideProteinsJButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/hide.png"))); // NOI18N
+        hideProteinsJButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                hideProteinsJButtonMouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                hideProteinsJButtonMouseExited(evt);
+            }
+        });
+        hideProteinsJButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                hideProteinsJButtonActionPerformed(evt);
+            }
+        });
+        proteinsLayeredPane.add(hideProteinsJButton);
+        hideProteinsJButton.setBounds(910, 0, 10, 19);
+        proteinsLayeredPane.setLayer(hideProteinsJButton, javax.swing.JLayeredPane.POPUP_LAYER);
+
+        contextMenuProteinsBackgroundPanel.setBackground(new java.awt.Color(255, 255, 255));
+
+        javax.swing.GroupLayout contextMenuProteinsBackgroundPanelLayout = new javax.swing.GroupLayout(contextMenuProteinsBackgroundPanel);
+        contextMenuProteinsBackgroundPanel.setLayout(contextMenuProteinsBackgroundPanelLayout);
+        contextMenuProteinsBackgroundPanelLayout.setHorizontalGroup(
+            contextMenuProteinsBackgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 40, Short.MAX_VALUE)
+        );
+        contextMenuProteinsBackgroundPanelLayout.setVerticalGroup(
+            contextMenuProteinsBackgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 19, Short.MAX_VALUE)
+        );
+
+        proteinsLayeredPane.add(contextMenuProteinsBackgroundPanel);
+        contextMenuProteinsBackgroundPanel.setBounds(910, 0, 40, 19);
+        proteinsLayeredPane.setLayer(contextMenuProteinsBackgroundPanel, javax.swing.JLayeredPane.POPUP_LAYER);
+
+        javax.swing.GroupLayout proteinsJPanelLayout = new javax.swing.GroupLayout(proteinsJPanel);
+        proteinsJPanel.setLayout(proteinsJPanelLayout);
+        proteinsJPanelLayout.setHorizontalGroup(
+            proteinsJPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(proteinsLayeredPane, javax.swing.GroupLayout.DEFAULT_SIZE, 970, Short.MAX_VALUE)
+        );
+        proteinsJPanelLayout.setVerticalGroup(
+            proteinsJPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(proteinsLayeredPane, javax.swing.GroupLayout.DEFAULT_SIZE, 458, Short.MAX_VALUE)
+        );
+
+        overviewJSplitPane.setRightComponent(proteinsJPanel);
 
         javax.swing.GroupLayout overviewJPanelLayout = new javax.swing.GroupLayout(overviewJPanel);
         overviewJPanel.setLayout(overviewJPanelLayout);
@@ -1284,15 +1429,13 @@ public class OverviewPanel extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 993, Short.MAX_VALUE)
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(layout.createSequentialGroup()
-                    .addComponent(backgroundLayeredPane, javax.swing.GroupLayout.DEFAULT_SIZE, 993, Short.MAX_VALUE)
-                    .addGap(0, 0, 0)))
+                .addComponent(backgroundLayeredPane, javax.swing.GroupLayout.DEFAULT_SIZE, 993, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 782, Short.MAX_VALUE)
+            .addGap(0, 688, Short.MAX_VALUE)
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(backgroundLayeredPane, javax.swing.GroupLayout.DEFAULT_SIZE, 782, Short.MAX_VALUE))
+                .addComponent(backgroundLayeredPane, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 688, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -1312,64 +1455,65 @@ public class OverviewPanel extends javax.swing.JPanel {
      */
     private void proteinTableMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_proteinTableMouseReleased
 
-        int row = proteinTable.getSelectedRow();
-        int column = proteinTable.getSelectedColumn();
-
-        int proteinIndex = -1;
-
-        if (row != -1) {
-            proteinIndex = proteinTable.convertRowIndexToModel(row);
-        }
-
-        if (evt == null || (evt.getButton() == MouseEvent.BUTTON1 && (proteinIndex != -1 && column != -1))) {
-
-            if (proteinIndex != -1) {
-
-                this.setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
-
-                // update the plot
-                updateQuantificationDataPlot(null); //@TODO: should be in a separate thread with a progress handler
-
-                this.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-
-                // open protein link in web browser
-                if (column == proteinTable.getColumn("Accession").getModelIndex() && evt != null && evt.getButton() == MouseEvent.BUTTON1
-                        && ((String) proteinTable.getValueAt(row, column)).lastIndexOf("<html>") != -1) {
-
-                    String link = (String) proteinTable.getValueAt(row, column);
-                    link = link.substring(link.indexOf("\"") + 1);
-                    link = link.substring(0, link.indexOf("\""));
-
-                    this.setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
-                    BareBonesBrowserLaunch.openURL(link);
-                    this.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-                }
-
-                // open the protein inference dialog
-//                if (column == proteinTable.getColumn("PI").getModelIndex() && evt != null && evt.getButton() == MouseEvent.BUTTON1) {
-//                    String proteinKey = proteinKeys.get(proteinIndex);
-//                    new ProteinInferenceDialog(peptideShakerGUI, proteinKey, peptideShakerGUI.getIdentification());
-//                }
-//                if (dataset != null) {
+        // @TODO: reimplement me!
+//        int row = proteinTable.getSelectedRow();
+//        int column = proteinTable.getSelectedColumn();
+//        
+//        int proteinIndex = -1;
+//        
+//        if (row != -1) {
+//            proteinIndex = proteinTable.convertRowIndexToModel(row);
+//        }
+//        
+//        if (evt == null || (evt.getButton() == MouseEvent.BUTTON1 && (proteinIndex != -1 && column != -1))) {
+//            
+//            if (proteinIndex != -1) {
+//                
+//                this.setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
 //
-//                    Selection selection = new Selection(Selection.TYPE.OF_ROWS, proteinTable.getSelectedRows());
+//                // update the plot
+//                updateQuantificationDataPlot(null); //@TODO: should be in a separate thread with a progress handler
 //
-//                    if (SelectionManager.getSelectionManager().getSelectedRows(dataset) != null) {
-//                        if (!arraysContainsTheSameNumbers(selection.getMembers(), SelectionManager.getSelectionManager().getSelectedRows(dataset).getMembers())) {
-//                            SelectionManager.getSelectionManager().setSelectedRows(dataset, selection);
-//                            //System.out.println("update 1: " + evt);
-//                        }
-//                    } else {
-//                        SelectionManager.getSelectionManager().setSelectedRows(dataset, selection);
-//                        //System.out.println("update 2: " + evt);
-//                    }
+//                this.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+//
+//                // open protein link in web browser
+//                if (column == proteinTable.getColumn("Accession").getModelIndex() && evt != null && evt.getButton() == MouseEvent.BUTTON1
+//                        && ((String) proteinTable.getValueAt(row, column)).lastIndexOf("<html>") != -1) {
+//                    
+//                    String link = (String) proteinTable.getValueAt(row, column);
+//                    link = link.substring(link.indexOf("\"") + 1);
+//                    link = link.substring(0, link.indexOf("\""));
+//                    
+//                    this.setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
+//                    BareBonesBrowserLaunch.openURL(link);
+//                    this.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
 //                }
-            }
-        } else if (evt.getButton() == MouseEvent.BUTTON3) {
-            if (proteinTable.columnAtPoint(evt.getPoint()) == proteinTable.getColumn("  ").getModelIndex()) {
-                //selectJPopupMenu.show(proteinTable, evt.getX(), evt.getY());
-            }
-        }
+//
+//                // open the protein inference dialog
+////                if (column == proteinTable.getColumn("PI").getModelIndex() && evt != null && evt.getButton() == MouseEvent.BUTTON1) {
+////                    String proteinKey = proteinKeys.get(proteinIndex);
+////                    new ProteinInferenceDialog(peptideShakerGUI, proteinKey, peptideShakerGUI.getIdentification());
+////                }
+////                if (dataset != null) {
+////
+////                    Selection selection = new Selection(Selection.TYPE.OF_ROWS, proteinTable.getSelectedRows());
+////
+////                    if (SelectionManager.getSelectionManager().getSelectedRows(dataset) != null) {
+////                        if (!arraysContainsTheSameNumbers(selection.getMembers(), SelectionManager.getSelectionManager().getSelectedRows(dataset).getMembers())) {
+////                            SelectionManager.getSelectionManager().setSelectedRows(dataset, selection);
+////                            //System.out.println("update 1: " + evt);
+////                        }
+////                    } else {
+////                        SelectionManager.getSelectionManager().setSelectedRows(dataset, selection);
+////                        //System.out.println("update 2: " + evt);
+////                    }
+////                }
+//            }
+//        } else if (evt.getButton() == MouseEvent.BUTTON3) {
+//            if (proteinTable.columnAtPoint(evt.getPoint()) == proteinTable.getColumn("  ").getModelIndex()) {
+//                //selectJPopupMenu.show(proteinTable, evt.getX(), evt.getY());
+//            }
+//        }
     }//GEN-LAST:event_proteinTableMouseReleased
 
     /**
@@ -1633,7 +1777,7 @@ public class OverviewPanel extends javax.swing.JPanel {
      * @param evt
      */
     private void ratioPlotOptionsJButtonMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ratioPlotOptionsJButtonMouseReleased
-//        sequenceCoverageJPopupMenu.show(sequenceCoverageOptionsJButton, evt.getX(), evt.getY());
+        //plotPopupMenu.show(ratioPlotOptionsJButton, evt.getX(), evt.getY());
     }//GEN-LAST:event_ratioPlotOptionsJButtonMouseReleased
 
     /**
@@ -1652,6 +1796,8 @@ public class OverviewPanel extends javax.swing.JPanel {
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
+
+                overviewJSplitPane.setDividerLocation(0.5);
 
                 // move the icons
                 proteinsLayeredPane.getComponent(0).setBounds(
@@ -1714,15 +1860,8 @@ public class OverviewPanel extends javax.swing.JPanel {
                         ratioPlotsMainLayeredPane.getComponent(4).getWidth(),
                         ratioPlotsMainLayeredPane.getComponent(4).getHeight());
 
-                // move the chart option menu
-                ratioPlotsMainLayeredPane.getComponent(5).setBounds(
-                        ratioPlotsMainLayeredPane.getWidth() - ratioPlotsMainLayeredPane.getComponent(5).getWidth() - 20,
-                        ratioPlotsMainLayeredPane.getHeight() - ratioPlotsMainLayeredPane.getComponent(5).getHeight() + 10,
-                        ratioPlotsMainLayeredPane.getComponent(5).getWidth() + 10,
-                        ratioPlotsMainLayeredPane.getComponent(5).getHeight());
-
                 // resize the plot area
-                ratioPlotsMainLayeredPane.getComponent(6).setBounds(0, 0, ratioPlotsMainLayeredPane.getWidth(), ratioPlotsMainLayeredPane.getHeight() - ratioPlotsMainLayeredPane.getComponent(5).getHeight() + 10);
+                ratioPlotsMainLayeredPane.getComponent(5).setBounds(0, 0, ratioPlotsMainLayeredPane.getWidth(), ratioPlotsMainLayeredPane.getHeight());
                 ratioPlotsMainLayeredPane.revalidate();
                 ratioPlotsMainLayeredPane.repaint();
             }
@@ -1734,92 +1873,32 @@ public class OverviewPanel extends javax.swing.JPanel {
      *
      * @param evt
      */
-    private void barChartRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_barChartRadioButtonActionPerformed
+    private void lineChartRadioButtonMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lineChartRadioButtonMenuItemActionPerformed
         updateQuantificationDataPlot(null); //@TODO: should be in a separate thread with a progress handler
-    }//GEN-LAST:event_barChartRadioButtonActionPerformed
+    }//GEN-LAST:event_lineChartRadioButtonMenuItemActionPerformed
 
     /**
      * Update the chart.
      *
      * @param evt
      */
-    private void lineChartRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lineChartRadioButtonActionPerformed
+    private void barChartRadioButtonMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_barChartRadioButtonMenuItemActionPerformed
         updateQuantificationDataPlot(null); //@TODO: should be in a separate thread with a progress handler
-    }//GEN-LAST:event_lineChartRadioButtonActionPerformed
+    }//GEN-LAST:event_barChartRadioButtonMenuItemActionPerformed
 
     /**
      * Update the chart.
      *
      * @param evt
      */
-    private void boxPlotRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_boxPlotRadioButtonActionPerformed
+    private void boxPlotRadioButtonMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_boxPlotRadioButtonMenuItemActionPerformed
         updateQuantificationDataPlot(null); //@TODO: should be in a separate thread with a progress handler
-    }//GEN-LAST:event_boxPlotRadioButtonActionPerformed
-
-    /**
-     * Display/hide the background distribution.
-     *
-     * @param evt
-     */
-    private void backgroundDistCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backgroundDistCheckBoxActionPerformed
-        updateQuantificationDataPlot(null); //@TODO: should be in a separate thread with a progress handler
-    }//GEN-LAST:event_backgroundDistCheckBoxActionPerformed
-
-    /**
-     * Resize the plots.
-     *
-     * @param evt
-     */
-    private void plotsLayeredPaneComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_plotsLayeredPaneComponentResized
-
-        SwingUtilities.invokeLater(new Runnable() {
-
-            public void run() {
-
-                // resize the plot area
-                if (plotsLayeredPane.getComponentCount() > 0) {
-                    plotsLayeredPane.getComponent(0).setBounds(0, 0, plotsLayeredPane.getWidth(), plotsLayeredPane.getHeight());
-                    plotsLayeredPane.revalidate();
-                    plotsLayeredPane.repaint();
-                }
-                if (plotsLayeredPane.getComponentCount() > 1) {
-
-                    SwingUtilities.invokeLater(new Runnable() {
-
-                        public void run() {
-                            Rectangle2D area = lineChartChartPanel.getScreenDataArea();
-
-                            int xStart = (int) Math.ceil(area.getX());
-                            xStart -= (int) ((double) Math.ceil(area.getX()) * 0.15);
-
-                            double width = area.getWidth();
-                            int xPadding = (int) (width * 0.097);
-                            int xPaddingRight = (int) (xPadding * 0.045);
-
-                            int plotWidth = plotsLayeredPane.getWidth() - xStart * 2 - xPadding - xPaddingRight;
-                            int individualPlotWidth = (plotWidth / (plotsLayeredPane.getComponentCount() - 1));
-                            int plotHeight = (int) (area.getHeight() * 1.03); // @TODO: optimize for low heights...
-                            int individualPlotWidthWithSpace = (int) ((double) individualPlotWidth * 0.35);
-
-                            for (int i = 1; i < plotsLayeredPane.getComponentCount(); i++) {
-                                int currentX = xPadding + xStart + (individualPlotWidth * (i - 1));
-                                plotsLayeredPane.getComponent(i).setBounds(currentX, 0, individualPlotWidthWithSpace, plotHeight);
-                            }
-
-                            plotsLayeredPane.revalidate();
-                            plotsLayeredPane.repaint();
-                        }
-                    });
-                }
-            }
-        });
-    }//GEN-LAST:event_plotsLayeredPaneComponentResized
+    }//GEN-LAST:event_boxPlotRadioButtonMenuItemActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox backgroundDistCheckBox;
     private javax.swing.JLayeredPane backgroundLayeredPane;
-    private javax.swing.JRadioButton barChartRadioButton;
-    private javax.swing.JRadioButton boxPlotRadioButton;
+    private javax.swing.JRadioButtonMenuItem barChartRadioButtonMenuItem;
+    private javax.swing.JRadioButtonMenuItem boxPlotRadioButtonMenuItem;
     private javax.swing.ButtonGroup chartTypeButtonGroup;
     private javax.swing.JPanel contextMenuProteinsBackgroundPanel;
     private javax.swing.JPanel contextMenuRatioPlotBackgroundPanel;
@@ -1827,11 +1906,11 @@ public class OverviewPanel extends javax.swing.JPanel {
     private javax.swing.JButton exportRatioPlotContextJButton;
     private javax.swing.JButton hideProteinsJButton;
     private javax.swing.JButton hideRatioPlotJButton;
-    private javax.swing.JRadioButton lineChartRadioButton;
+    private javax.swing.JRadioButtonMenuItem lineChartRadioButtonMenuItem;
     private javax.swing.JPanel overviewJPanel;
     private javax.swing.JSplitPane overviewJSplitPane;
-    private javax.swing.JPanel plotTypePanel;
-    private javax.swing.JLayeredPane plotsLayeredPane;
+    private javax.swing.JPanel plotPanel;
+    private javax.swing.JPopupMenu plotPopupMenu;
     private javax.swing.JScrollPane proteinScrollPane;
     private javax.swing.JTable proteinTable;
     private javax.swing.JButton proteinsHelpJButton;
@@ -1863,7 +1942,6 @@ public class OverviewPanel extends javax.swing.JPanel {
 
             ((JSparklinesArrayListBarChartTableCellRenderer) proteinTable.getColumn("#Peptides").getCellRenderer()).setMaxValue(reporterGUI.getMetrics().getMaxNPeptides());
             ((JSparklinesArrayListBarChartTableCellRenderer) proteinTable.getColumn("#Spectra").getCellRenderer()).setMaxValue(reporterGUI.getMetrics().getMaxNSpectra());
-            ((JSparklinesBarChartTableCellRenderer) proteinTable.getColumn("MS2 Quant.").getCellRenderer()).setMaxValue(reporterGUI.getMetrics().getMaxSpectrumCounting());
             ((JSparklinesBarChartTableCellRenderer) proteinTable.getColumn("MW").getCellRenderer()).setMaxValue(reporterGUI.getMetrics().getMaxMW());
 
             try {
@@ -2029,7 +2107,6 @@ public class OverviewPanel extends javax.swing.JPanel {
 //            return som.runClustering();
 //        }
 //    }
-
     /**
      * Returns true if the integers contained in the two lists are equal. Note
      * that the order of the numbers are ignored.

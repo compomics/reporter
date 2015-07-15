@@ -21,10 +21,13 @@ import com.compomics.util.gui.UtilitiesGUIDefaults;
 import com.compomics.util.gui.error_handlers.BugReport;
 import com.compomics.util.gui.error_handlers.HelpDialog;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
+import com.compomics.util.math.clustering.KMeansClustering;
 import com.compomics.util.preferences.IdentificationParameters;
 import com.compomics.util.preferences.LastSelectedFolder;
 import com.compomics.util.preferences.UtilitiesUserPreferences;
+import com.compomics.util.waiting.WaitingHandler;
 import eu.isas.peptideshaker.PeptideShaker;
+import eu.isas.peptideshaker.myparameters.PSParameter;
 import eu.isas.peptideshaker.preferences.FilterPreferences;
 import eu.isas.peptideshaker.preferences.ProjectDetails;
 import eu.isas.peptideshaker.preferences.SpectrumCountingPreferences;
@@ -40,6 +43,7 @@ import eu.isas.reporter.gui.export.ReportDialog;
 import eu.isas.reporter.myparameters.ReporterPreferences;
 import eu.isas.reporter.gui.resultpanels.OverviewPanel;
 import eu.isas.reporter.preferences.DisplayPreferences;
+import eu.isas.reporter.quantificationdetails.ProteinQuantificationDetails;
 import eu.isas.reporter.utils.Properties;
 import java.awt.Color;
 import java.awt.Frame;
@@ -50,6 +54,8 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Collections;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import net.jimmc.jshortcut.JShellLink;
@@ -144,6 +150,10 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * The decimal format use for the score and confidence columns.
      */
     private DecimalFormat scoreAndConfidenceDecimalFormat = new DecimalFormat("0");
+    /**
+     * The k-means clustering results.
+     */
+    private KMeansClustering kMeansClutering;
 
     /**
      * Creates a new ReporterGUI.
@@ -254,8 +264,6 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * Sets up the GUI.
      */
     private void setUpGui() {
-        //@TODO
-
         toolsMenu.setVisible(false);
         toolsMenu.setEnabled(false);
     }
@@ -307,7 +315,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
                 @Override
                 public void run() {
                     try {
-                        displayResults();
+                        displayResults(progressDialog);
                     } catch (Exception e) {
                         catchException(e);
                         progressDialog.setRunCanceled();
@@ -364,12 +372,116 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
 
     /**
      * Displays the results on the GUI.
+     *
+     * @param waitingHandler the waiting handler
      */
-    private void displayResults() throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
+    private void displayResults(WaitingHandler waitingHandler) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
         if (!reporterIonQuantification.hasNormalisationFactors()) {
             Reporter.setNormalizationFactors(reporterIonQuantification, reporterPreferences, cpsBean.getIdentification(), quantificationFeaturesGenerator, progressDialog);
         }
+
+        // cluster the protein profiles
+        clusterProteinProfiles(waitingHandler);
+
         overviewPanel.updateDisplay();
+    }
+
+    /**
+     * Cluster the protein profiles.
+     *
+     * @param waitingHandler the waiting handler
+     */
+    private void clusterProteinProfiles(WaitingHandler waitingHandler) {
+
+        waitingHandler.setSecondaryProgressCounterIndeterminate(true);
+        waitingHandler.setWaitingText("Clustering Proteins. Please Wait...");
+
+        // filter the proteins
+        String[] filteredProteinKeys = filterProteins(getMetrics().getProteinKeys(), waitingHandler);
+
+        // get the ratios
+        double proteinRatios[][] = getProteinRatios(filteredProteinKeys, waitingHandler);
+
+        // set up the clustering
+        kMeansClutering = new KMeansClustering(proteinRatios, filteredProteinKeys, 18); // @TODO: number of clusters should not be hardcoded!!!
+
+        // perform the clustering
+        kMeansClutering.kMeanCluster(waitingHandler);
+    }
+
+    /**
+     * Get the protein ratios for the set of protein keys.
+     *
+     * @param proteinKeys the protein keys
+     * @param waitingHandler the waiting handler
+     * @return the protein ratios for the set of protein keys
+     */
+    private double[][] getProteinRatios(String[] proteinKeys, WaitingHandler waitingHandler) {
+
+        ArrayList<String> sampleIndexes = new ArrayList<String>(reporterIonQuantification.getSampleIndexes());
+        Collections.sort(sampleIndexes);
+
+        double proteinRatios[][] = new double[proteinKeys.length][sampleIndexes.size()];
+
+        for (int proteinIndex = 0; proteinIndex < proteinKeys.length && !waitingHandler.isRunCanceled(); proteinIndex++) {
+
+            try {
+                String tempProteinKey = proteinKeys[proteinIndex];
+                ProteinQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(tempProteinKey, null);
+
+                for (int sampleIndex = 0; sampleIndex < sampleIndexes.size() && !waitingHandler.isRunCanceled(); sampleIndex++) {
+                    Double ratio = quantificationDetails.getRatio(sampleIndexes.get(sampleIndex));
+                    if (ratio != null) {
+                        if (ratio != 0) {
+                            ratio = Math.log(ratio) / Math.log(2);
+                        }
+                        proteinRatios[proteinIndex][sampleIndex] = ratio;
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace(); // @TODO: better error handling!
+            }
+        }
+
+        return proteinRatios;
+    }
+
+    /**
+     * Filter the proteins.
+     *
+     * @param proteinKeys the protein keys to filter
+     * @param waitingHandler the waiting handler
+     * @return the filtered protein keys
+     */
+    private String[] filterProteins(ArrayList<String> proteinKeys, WaitingHandler waitingHandler) {
+
+        ArrayList<String> tempFilteredProteinKeys = new ArrayList<String>();
+
+        for (String tempProteinKey : proteinKeys) {
+
+            if (waitingHandler.isRunCanceled()) {
+                return null;
+            }
+
+            try {
+                PSParameter psParameter = (PSParameter) getIdentification().getProteinMatchParameter(tempProteinKey, new PSParameter(), true);
+
+                if (psParameter.getMatchValidationLevel().isValidated()) {
+                    tempFilteredProteinKeys.add(tempProteinKey);
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace(); // @TODO: better error handling!
+            }
+        }
+
+        String[] filteredProteinKeys = new String[tempFilteredProteinKeys.size()];
+
+        for (int i = 0; i < tempFilteredProteinKeys.size() && !waitingHandler.isRunCanceled(); i++) {
+            filteredProteinKeys[i] = tempFilteredProteinKeys.get(i);
+        }
+
+        return filteredProteinKeys;
     }
 
     /**
@@ -1275,5 +1387,14 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
             System.out.println("Checking for new version failed. Unknown error.");
             return false;
         }
+    }
+
+    /**
+     * Returns the k-means clustering results.
+     *
+     * @return the k-means clustering results
+     */
+    public KMeansClustering getkMeansClutering() {
+        return kMeansClutering;
     }
 }
