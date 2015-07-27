@@ -33,8 +33,8 @@ public class MethodSettingsDialog extends javax.swing.JDialog {
     /**
      * Creates a new MethodSettingsDialog.
      *
-     * @param newDialog
-     * @param modal
+     * @param newDialog the parent dialog
+     * @param modal if the dialog is to be modal or not
      */
     public MethodSettingsDialog(NewDialog newDialog, boolean modal) {
         super(newDialog, modal);

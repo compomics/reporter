@@ -154,6 +154,14 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * The k-means clustering results.
      */
     private KMeansClustering kMeansClutering;
+    /**
+     * The number of clusters.
+     */
+    private int numberOfClusters = 18; // @TODO: number of clusters should not be hardcoded!!!
+    /**
+     * List of the currently selected proteins.
+     */
+    private ArrayList<String> selectedProteins = new ArrayList<String>();
 
     /**
      * Creates a new ReporterGUI.
@@ -216,8 +224,6 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
             overviewPanel = new OverviewPanel(this);
             overviewJPanel.add(overviewPanel);
 
-            setUpGui();
-
             // set the title of the frame and add the icon
             setTitle("Reporter " + new Properties().getVersion());
             this.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")));
@@ -225,6 +231,8 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
 
             setLocationRelativeTo(null);
             setVisible(true);
+
+            overviewPanel.autoResizeComponents();
 
             createNewProject();
         }
@@ -261,14 +269,6 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
     }
 
     /**
-     * Sets up the GUI.
-     */
-    private void setUpGui() {
-        toolsMenu.setVisible(false);
-        toolsMenu.setEnabled(false);
-    }
-
-    /**
      * Closes the currently opened project, open the new project dialog and
      * loads the new project on the interface
      */
@@ -290,6 +290,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
             displayFeaturesGenerator = new DisplayFeaturesGenerator(cpsBean.getIdentificationParameters().getSearchParameters().getModificationProfile(), exceptionHandler);
             displayFeaturesGenerator.setDisplayedPTMs(cpsBean.getDisplayPreferences().getDisplayedPtms());
             setDisplayPreferencesFromShakerProject();
+            selectedProteins = new ArrayList<String>();
 
             projectSaved = false;
             quantificationFeaturesGenerator = new QuantificationFeaturesGenerator(new QuantificationFeaturesCache(), cpsBean.getIdentification(), reporterPreferences, reporterIonQuantification,
@@ -403,7 +404,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         double proteinRatios[][] = getProteinRatios(filteredProteinKeys, waitingHandler);
 
         // set up the clustering
-        kMeansClutering = new KMeansClustering(proteinRatios, filteredProteinKeys, 18); // @TODO: number of clusters should not be hardcoded!!!
+        kMeansClutering = new KMeansClustering(proteinRatios, filteredProteinKeys, numberOfClusters);
 
         // perform the clustering
         kMeansClutering.kMeanCluster(waitingHandler);
@@ -706,8 +707,6 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         quantificationOptionsMenu = new javax.swing.JMenu();
         javaOptionsMenuItem = new javax.swing.JMenuItem();
         privacyMenuItem = new javax.swing.JMenuItem();
-        toolsMenu = new javax.swing.JMenu();
-        clusteringMenuItem = new javax.swing.JMenuItem();
         helpMenu = new javax.swing.JMenu();
         helpMenuItem = new javax.swing.JMenuItem();
         jSeparator17 = new javax.swing.JPopupMenu.Separator();
@@ -820,21 +819,6 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         quantificationOptionsMenu.add(privacyMenuItem);
 
         menuBar.add(quantificationOptionsMenu);
-
-        toolsMenu.setMnemonic('T');
-        toolsMenu.setText("Tools");
-        toolsMenu.setEnabled(false);
-
-        clusteringMenuItem.setMnemonic('H');
-        clusteringMenuItem.setText("Hierarchical Clustering");
-        clusteringMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                clusteringMenuItemActionPerformed(evt);
-            }
-        });
-        toolsMenu.add(clusteringMenuItem);
-
-        menuBar.add(toolsMenu);
 
         helpMenu.setMnemonic('H');
         helpMenu.setText("Help");
@@ -970,10 +954,6 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
     private void javaOptionsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_javaOptionsMenuItemActionPerformed
         new JavaSettingsDialog(this, this, null, "Reporter", true);
     }//GEN-LAST:event_javaOptionsMenuItemActionPerformed
-
-    private void clusteringMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clusteringMenuItemActionPerformed
-        overviewPanel.clusterData();
-    }//GEN-LAST:event_clusteringMenuItemActionPerformed
 
     /**
      * Closes Reporter.
@@ -1147,7 +1127,6 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem aboutMenuItem;
     private javax.swing.JPanel backgroundPanel;
-    private javax.swing.JMenuItem clusteringMenuItem;
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JMenuItem exportFollowUpJMenuItem;
     private javax.swing.JMenu exportMenu;
@@ -1170,7 +1149,6 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
     private javax.swing.JMenu quantificationOptionsMenu;
     private javax.swing.JMenuItem saveMenuItem;
     private javax.swing.JTabbedPane tabPanel;
-    private javax.swing.JMenu toolsMenu;
     // End of variables declaration//GEN-END:variables
 
     /**
@@ -1396,5 +1374,23 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      */
     public KMeansClustering getkMeansClutering() {
         return kMeansClutering;
+    }
+
+    /**
+     * Returns the list of selected proteins.
+     *
+     * @return the list of selected proteins
+     */
+    public ArrayList<String> getSelectedProteins() {
+        return selectedProteins;
+    }
+
+    /**
+     * Set the list of selected proteins.
+     *
+     * @param selectedProteins the list of selected proteins
+     */
+    public void setSelectedProteins(ArrayList<String> selectedProteins) {
+        this.selectedProteins = selectedProteins;
     }
 }
