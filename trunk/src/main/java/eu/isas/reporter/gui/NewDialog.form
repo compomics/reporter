@@ -102,22 +102,15 @@
                   <Group type="102" attributes="0">
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="spectrumFilesLabel" alignment="0" min="-2" pref="120" max="-2" attributes="0"/>
-                                  <Component id="databaseFileLabel" alignment="0" min="-2" pref="120" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="txtSpectraFileLocation" max="32767" attributes="0"/>
-                                  <Component id="fastaTxt" max="32767" attributes="0"/>
-                              </Group>
-                          </Group>
-                          <Group type="102" attributes="0">
-                              <Component id="idFilesLabel" min="-2" pref="120" max="-2" attributes="0"/>
-                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                              <Component id="txtIdFileLocation" max="32767" attributes="0"/>
-                          </Group>
+                          <Component id="spectrumFilesLabel" alignment="0" min="-2" pref="120" max="-2" attributes="0"/>
+                          <Component id="databaseFileLabel" alignment="0" min="-2" pref="120" max="-2" attributes="0"/>
+                          <Component id="idFilesLabel" alignment="0" min="-2" pref="120" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="txtIdFileLocation" max="32767" attributes="0"/>
+                          <Component id="txtSpectraFileLocation" pref="504" max="32767" attributes="0"/>
+                          <Component id="fastaTxt" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
