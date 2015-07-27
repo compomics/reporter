@@ -403,6 +403,8 @@ public class OverviewPanel extends javax.swing.JPanel {
                         selectedChartPanel.getChart().fireChartChanged();
                     }
 
+                    reporterGUI.setSelectedProteins(new ArrayList<String>());
+
                     ChartPanel chartPanel = (ChartPanel) c;
                     chartPanel.setBorder(new LineBorder(Color.DARK_GRAY));
                     chartPanel.getChart().fireChartChanged();
