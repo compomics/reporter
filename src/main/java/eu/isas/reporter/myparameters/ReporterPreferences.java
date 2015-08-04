@@ -2,9 +2,7 @@ package eu.isas.reporter.myparameters;
 
 import com.compomics.util.experiment.personalization.UrParameter;
 import com.compomics.util.io.SerializationUtils;
-import eu.isas.peptideshaker.scoring.MatchValidationLevel;
 import java.io.File;
-import java.util.ArrayList;
 
 /**
  * This class contains the quantification options set by the user.
@@ -19,21 +17,54 @@ public class ReporterPreferences implements UrParameter {
      * Location of the user preferences file.
      */
     private static String USER_PREFERENCES_FILE = System.getProperty("user.home") + "/.reporter/reporter_user_preferences.cup";
+    
     /**
-     * The settings for the selection fo the  reporter ions in spectra
+     * The default reporter settings.
      */
-    private ReporterIonSelectionSettings reporterIonSelectionSettings;
-    /**
-     * The ratio estimation settings
-     */
-    private RatioEstimationSettings ratioEstimationSettings;
+    private ReporterSettings defaultSettings = new ReporterSettings();
 
     /**
-     * Constructor.
+     * Constructor. Creates new preferences set to default.
      */
     private ReporterPreferences() {
     }
 
+    @Override
+    public ReporterPreferences clone() throws CloneNotSupportedException {
+        ReporterPreferences clone =  new ReporterPreferences();
+        clone.setDefaultSettings(defaultSettings.clone());
+        return clone;
+    }
+    
+    /**
+     * Indicates whether another setting is the same as this one.
+     * 
+     * @param anotherSetting another setting
+     * 
+     * @return a boolean indicating whether another setting is the same as this one
+     */
+    public boolean isSameAs(ReporterPreferences anotherSetting) {
+        return defaultSettings.isSameAs(anotherSetting.getDefaultSettings());
+    }
+
+    /**
+     * Returns the default settings.
+     * 
+     * @return the default settings
+     */
+    public ReporterSettings getDefaultSettings() {
+        return defaultSettings;
+    }
+
+    /**
+     * Sets the default settings.
+     * 
+     * @param defaultSettings the default settings
+     */
+    public void setDefaultSettings(ReporterSettings defaultSettings) {
+        this.defaultSettings = defaultSettings;
+    }
+    
 
     /**
      * Convenience method saving the user preferences.
@@ -79,42 +110,6 @@ public class ReporterPreferences implements UrParameter {
         }
 
         return userPreferences;
-    }
-
-    /**
-     * Returns the reporter ion selection settings.
-     * 
-     * @return the reporter ion selection settings
-     */
-    public ReporterIonSelectionSettings getReporterIonSelectionSettings() {
-        return reporterIonSelectionSettings;
-    }
-
-    /**
-     * Sets the reporter ion selection settings.
-     * 
-     * @param reporterIonSelectionSettings the reporter ion selection settings
-     */
-    public void setReporterIonSelectionSettings(ReporterIonSelectionSettings reporterIonSelectionSettings) {
-        this.reporterIonSelectionSettings = reporterIonSelectionSettings;
-    }
-
-    /**
-     * Returns the ratio estimation settings.
-     * 
-     * @return the ratio estimation settings
-     */
-    public RatioEstimationSettings getRatioEstimationSettings() {
-        return ratioEstimationSettings;
-    }
-
-    /**
-     * Sets the ratio estimation settings.
-     * 
-     * @param ratioEstimationSettings the ratio estimation settings
-     */
-    public void setRatioEstimationSettings(RatioEstimationSettings ratioEstimationSettings) {
-        this.ratioEstimationSettings = ratioEstimationSettings;
     }
 
     /**

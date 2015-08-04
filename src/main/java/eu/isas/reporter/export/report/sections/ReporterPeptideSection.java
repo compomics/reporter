@@ -24,6 +24,7 @@ import eu.isas.reporter.export.report.ReporterReportStyle;
 import eu.isas.reporter.export.report.export_features.ReporterPeptideFeature;
 import eu.isas.reporter.export.report.export_features.ReporterPsmFeatures;
 import eu.isas.reporter.myparameters.ReporterPreferences;
+import eu.isas.reporter.myparameters.ReporterSettings;
 import eu.isas.reporter.quantificationdetails.PeptideQuantificationDetails;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -112,6 +113,7 @@ public class ReporterPeptideSection {
      * generator containing the quantification information
      * @param reporterIonQuantification the reporter ion quantification object
      * containing the quantification configuration
+     * @param reporterSettings the reporter settings
      * @param shotgunProtocol the shotgun protocol
      * @param identificationParameters the identification parameters
      * @param keys the keys of the protein matches to output
@@ -128,7 +130,7 @@ public class ReporterPeptideSection {
      * @throws java.lang.InterruptedException exception thrown whenever a threading error occurred
      */
     public void writeSection(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator,
-            QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification,
+            QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, ReporterSettings reporterSettings,
             ShotgunProtocol shotgunProtocol, IdentificationParameters identificationParameters,
             ArrayList<String> keys, int nSurroundingAA, String linePrefix, boolean validatedOnly, boolean decoys, WaitingHandler waitingHandler)
             throws IOException, IllegalArgumentException, SQLException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
@@ -230,7 +232,7 @@ public class ReporterPeptideSection {
                         }
                         psmSectionPrefix += line + ".";
                         writer.increaseDepth();
-                        psmSection.writeSection(identification, identificationFeaturesGenerator, quantificationFeaturesGenerator, reporterIonQuantification, ReporterPreferences.getUserPreferences(),
+                        psmSection.writeSection(identification, identificationFeaturesGenerator, quantificationFeaturesGenerator, reporterIonQuantification, reporterSettings,
                                 shotgunProtocol, identificationParameters, peptideMatch.getSpectrumMatches(), psmSectionPrefix, validatedOnly, decoys, null);
                         writer.decreseDepth();
                     }

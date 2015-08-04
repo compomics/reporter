@@ -1,16 +1,18 @@
 package eu.isas.reporter.myparameters;
 
+import java.io.Serializable;
+
 /**
  * Preferences for the reporter ions selection in spectra.
  *
  * @author Marc Vaudel
  */
-public class ReporterIonSelectionSettings {
+public class ReporterIonSelectionSettings implements Serializable {
 
     /*
      * Tolerance for reporter ion matching.
      */
-    private double ReporterIonsMzTolerance = 0.0016;
+    private double reporterIonsMzTolerance = 0.0016;
     /**
      * Quantification and identification are conducted on the same spectra
      * (identification files import only).
@@ -34,12 +36,37 @@ public class ReporterIonSelectionSettings {
     private double precursorRTTolerance = 10;
     
     /**
-     * Constructor
+     * Constructor. Creates new reporter ion selection settings set to default.
      */
     public ReporterIonSelectionSettings() {
         
     }
     
+    @Override
+    public ReporterIonSelectionSettings clone() {
+        ReporterIonSelectionSettings clone = new ReporterIonSelectionSettings();
+        clone.setReporterIonsMzTolerance(reporterIonsMzTolerance);
+        clone.setSameSpectra(sameSpectra);
+        clone.setPrecursorMzTolerance(precursorMzTolerance);
+        clone.setPrecursorMzPpm(precursorMzPpm);
+        clone.setPrecursorRTTolerance(precursorRTTolerance);
+        return clone;
+    }
+    
+    /**
+     * Indicates whether another setting is the same as this one.
+     * 
+     * @param anotherSetting another setting
+     * 
+     * @return a boolean indicating whether another setting is the same as this one
+     */
+    public boolean isSameAs(ReporterIonSelectionSettings anotherSetting) {
+        return reporterIonsMzTolerance == anotherSetting.getPrecursorMzTolerance()
+                && sameSpectra == anotherSetting.isSameSpectra()
+                && precursorMzTolerance == anotherSetting.getPrecursorMzTolerance()
+                && precursorMzPpm == anotherSetting.isPrecursorMzPpm()
+                && precursorRTTolerance == anotherSetting.getPrecursorRTTolerance();
+    }
 
     /**
      * Returns the tolerance used to match reporter ions.
@@ -47,7 +74,7 @@ public class ReporterIonSelectionSettings {
      * @return the tolerance used to match reporter ions
      */
     public double getReporterIonsMzTolerance() {
-        return ReporterIonsMzTolerance;
+        return reporterIonsMzTolerance;
     }
 
     /**
@@ -56,7 +83,7 @@ public class ReporterIonSelectionSettings {
      * @param ReporterIonsMzTolerance the tolerance used to match reporter ions
      */
     public void setReporterIonsMzTolerance(double ReporterIonsMzTolerance) {
-        this.ReporterIonsMzTolerance = ReporterIonsMzTolerance;
+        this.reporterIonsMzTolerance = ReporterIonsMzTolerance;
     }
 
     /**

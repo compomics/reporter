@@ -1,14 +1,14 @@
-package eu.isas.reporter.gui;
+package eu.isas.reporter.gui.settings;
 
 import com.compomics.util.examples.BareBonesBrowserLaunch;
-import com.compomics.util.experiment.identification.SearchParameters;
 import com.compomics.util.gui.renderers.AlignedListCellRenderer;
+import com.compomics.util.preferences.ModificationProfile;
 import eu.isas.peptideshaker.scoring.MatchValidationLevel;
 import eu.isas.reporter.myparameters.RatioEstimationSettings;
-import eu.isas.reporter.myparameters.ReporterIonSelectionSettings;
-import eu.isas.reporter.myparameters.ReporterPreferences;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
 
@@ -18,66 +18,75 @@ import javax.swing.SwingConstants;
  * @author Marc Vaudel
  * @author Harald Barsnes
  */
-public class PreferencesDialog extends javax.swing.JDialog {
+public class RatioEstimationSettingsDialog extends javax.swing.JDialog {
 
     /**
-     * The parent dialog.
+     * Boolean indicating whether the editing of the settings has been canceled.
      */
-    private NewDialog newDialog;
+    private boolean canceled = false;
     /**
-     * The identification parameters
+     * The modification profile of the search.
      */
-    private SearchParameters searchParameters;
+    private ModificationProfile modificationProfile;
 
     /**
-     * Creates a new PreferencesDialog.
+     * Creates a new RatioEstimationSettingsDialog.
      *
-     * @param newDialog reference to the NewDialog
-     * @param searchParameters the identification parameters
-     * @param modal if the dialog is to be modal or not
+     * @param parentDialog the parent dialog
+     * @param ratioEstimationSettings the settings to display
+     * @param modificationProfile the modification profile of the search
+     * @param editable boolean indicating whether the settings can be edited
      */
-    public PreferencesDialog(NewDialog newDialog, SearchParameters searchParameters, boolean modal) {
-        super(newDialog, modal);
-        this.newDialog = newDialog;
-        this.searchParameters = searchParameters;
+    public RatioEstimationSettingsDialog(JDialog parentDialog, RatioEstimationSettings ratioEstimationSettings, ModificationProfile modificationProfile, boolean editable) {
+        super(parentDialog, true);
+        this.modificationProfile = modificationProfile;
         initComponents();
-        setUpGui();
-        loadValues();
-        updateModificationList();
-        setLocationRelativeTo(newDialog);
+        setUpGui(editable);
+        populateGUI(ratioEstimationSettings);
+        setLocationRelativeTo(parentDialog);
         setVisible(true);
     }
 
     /**
      * Set up the GUI.
+     *
+     * @param editable boolean indicating whether the settings can be edited
      */
-    private void setUpGui() {
-
-        sameSpectraActionPerformed(null);
+    private void setUpGui(boolean editable) {
 
         // centrally align the comboboxes
         proteinValidationCmb.setRenderer(new AlignedListCellRenderer(SwingConstants.CENTER));
         peptideValidationCmb.setRenderer(new AlignedListCellRenderer(SwingConstants.CENTER));
         psmValidationCmb.setRenderer(new AlignedListCellRenderer(SwingConstants.CENTER));
         
-        ReporterIonSelectionSettings reporterIonSelectionSettings = newDialog.getReporterPreferences().getReporterIonSelectionSettings();
-        ionToleranceTxt.setText(reporterIonSelectionSettings.getReporterIonsMzTolerance() + "");
-        if (reporterIonSelectionSettings.isSameSpectra()) {
-            sameSpectra.setSelected(true);
-            precursorMatching.setSelected(false);
-        } else {
-            sameSpectra.setSelected(false);
-            precursorMatching.setSelected(true);
-            mzTolTxt.setText(reporterIonSelectionSettings.getPrecursorMzTolerance() + "");
-            rtTolTxt.setText(reporterIonSelectionSettings.getPrecursorRTTolerance() + "");
-        }
+        //@TODO: Set editable or not
+        
+    }
 
-        mzTolTxt.setText(searchParameters.getPrecursorAccuracy() + "");
-        if (searchParameters.isPrecursorAccuracyTypePpm()) {
-            ppmCmb.setSelectedIndex(0);
-        } else {
-            ppmCmb.setSelectedIndex(1);
+    /**
+     * Fills the gui with the given settings.
+     *
+     * @param ratioEstimationSettings the settings to display
+     */
+    private void populateGUI(RatioEstimationSettings ratioEstimationSettings) {
+        
+        miscleavageCheck.setSelected(ratioEstimationSettings.isIgnoreMissedCleavages());
+        nullIntensitiesCheck.setSelected(ratioEstimationSettings.isIgnoreNullIntensities());
+        widthTxt.setText(ratioEstimationSettings.getPercentile() + "");
+        resolutionTxt.setText(ratioEstimationSettings.getRatioResolution() + "");
+
+        ArrayList<String> selectedModificationsList = new ArrayList<String>(ratioEstimationSettings.getExcludingPtms());
+        Collections.sort(selectedModificationsList);
+        String[] allModificationsAsArray = new String[selectedModificationsList.size()];
+        for (int i = 0; i < selectedModificationsList.size(); i++) {
+            allModificationsAsArray[i] = selectedModificationsList.get(i);
         }
+        selectedPTMs.setListData(allModificationsAsArray);
+        updateModificationList();
+
+        proteinValidationCmb.setSelectedIndex(ratioEstimationSettings.getProteinValidationLevel().getIndex());
+        peptideValidationCmb.setSelectedIndex(ratioEstimationSettings.getPeptideValidationLevel().getIndex());
+        psmValidationCmb.setSelectedIndex(ratioEstimationSettings.getPsmValidationLevel().getIndex());
     }
 
     /**
@@ -116,17 +125,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
         helpLabel = new javax.swing.JLabel();
         helpLinkLabel = new javax.swing.JLabel();
         okButton = new javax.swing.JButton();
-        spectrumAnalysisPanel = new javax.swing.JPanel();
-        reporterIonMzToleranceLabel = new javax.swing.JLabel();
-        ionToleranceTxt = new javax.swing.JTextField();
-        reporterLocationPanel = new javax.swing.JPanel();
-        sameSpectra = new javax.swing.JRadioButton();
-        precursorMatching = new javax.swing.JRadioButton();
-        mzToleranceLabel = new javax.swing.JLabel();
-        mzTolTxt = new javax.swing.JTextField();
-        ppmCmb = new javax.swing.JComboBox();
-        rtToleranceLabel = new javax.swing.JLabel();
-        rtTolTxt = new javax.swing.JTextField();
+        okButton1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Quantification Advanced Settings");
@@ -214,7 +213,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
                         .addGroup(idSelectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(idSelectionPanelLayout.createSequentialGroup()
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(selectedPtmsScrollPane))
+                                .addComponent(selectedPtmsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE))
                             .addGroup(idSelectionPanelLayout.createSequentialGroup()
                                 .addGap(15, 15, 15)
                                 .addComponent(addModifications)
@@ -286,7 +285,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
                         .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(widthTxt)
                             .addComponent(resolutionTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(29, Short.MAX_VALUE))
         );
 
         ratioEstimationsPanelLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {jLabel2, jLabel3, jLabel7});
@@ -337,115 +336,12 @@ public class PreferencesDialog extends javax.swing.JDialog {
             }
         });
 
-        spectrumAnalysisPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Spectrum Analysis"));
-        spectrumAnalysisPanel.setOpaque(false);
-
-        reporterIonMzToleranceLabel.setText("Reporter Tolerance (m/z)");
-
-        ionToleranceTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-
-        javax.swing.GroupLayout spectrumAnalysisPanelLayout = new javax.swing.GroupLayout(spectrumAnalysisPanel);
-        spectrumAnalysisPanel.setLayout(spectrumAnalysisPanelLayout);
-        spectrumAnalysisPanelLayout.setHorizontalGroup(
-            spectrumAnalysisPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(spectrumAnalysisPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(reporterIonMzToleranceLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(ionToleranceTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        spectrumAnalysisPanelLayout.setVerticalGroup(
-            spectrumAnalysisPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(spectrumAnalysisPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(spectrumAnalysisPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(reporterIonMzToleranceLabel)
-                    .addComponent(ionToleranceTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        reporterLocationPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Reporter Location"));
-        reporterLocationPanel.setOpaque(false);
-
-        reporterLocationButtonGroup.add(sameSpectra);
-        sameSpectra.setSelected(true);
-        sameSpectra.setText("Same Spectra");
-        sameSpectra.setIconTextGap(10);
-        sameSpectra.setOpaque(false);
-        sameSpectra.addActionListener(new java.awt.event.ActionListener() {
+        okButton1.setText("Cancel");
+        okButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                sameSpectraActionPerformed(evt);
+                okButton1ActionPerformed(evt);
             }
         });
-
-        reporterLocationButtonGroup.add(precursorMatching);
-        precursorMatching.setText("Precursor Matching");
-        precursorMatching.setIconTextGap(10);
-        precursorMatching.setOpaque(false);
-        precursorMatching.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                precursorMatchingActionPerformed(evt);
-            }
-        });
-
-        mzToleranceLabel.setText("m/z tolerance");
-
-        mzTolTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-
-        ppmCmb.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "ppm", "m/z" }));
-
-        rtToleranceLabel.setText("RT tolerance (s)");
-
-        rtTolTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        rtTolTxt.setText("10");
-        rtTolTxt.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                rtTolTxtActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout reporterLocationPanelLayout = new javax.swing.GroupLayout(reporterLocationPanel);
-        reporterLocationPanel.setLayout(reporterLocationPanelLayout);
-        reporterLocationPanelLayout.setHorizontalGroup(
-            reporterLocationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(reporterLocationPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(reporterLocationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(sameSpectra, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(precursorMatching, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(reporterLocationPanelLayout.createSequentialGroup()
-                        .addGap(27, 27, 27)
-                        .addGroup(reporterLocationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(rtToleranceLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 144, Short.MAX_VALUE)
-                            .addComponent(mzToleranceLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(reporterLocationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(rtTolTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(reporterLocationPanelLayout.createSequentialGroup()
-                                .addComponent(mzTolTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(ppmCmb, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        reporterLocationPanelLayout.setVerticalGroup(
-            reporterLocationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(reporterLocationPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(sameSpectra)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(precursorMatching)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(reporterLocationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(mzToleranceLabel)
-                    .addComponent(mzTolTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(ppmCmb, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(reporterLocationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(rtToleranceLabel)
-                    .addComponent(rtTolTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
 
         javax.swing.GroupLayout backgroundPanelLayout = new javax.swing.GroupLayout(backgroundPanel);
         backgroundPanel.setLayout(backgroundPanelLayout);
@@ -460,32 +356,29 @@ public class PreferencesDialog extends javax.swing.JDialog {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(helpLinkLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(okButton, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(okButton, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(okButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(backgroundPanelLayout.createSequentialGroup()
-                        .addGroup(backgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(reporterLocationPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(spectrumAnalysisPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(ratioEstimationsPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(idSelectionPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(backgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(ratioEstimationsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(idSelectionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         backgroundPanelLayout.setVerticalGroup(
             backgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(backgroundPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(spectrumAnalysisPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(ratioEstimationsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(reporterLocationPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(idSelectionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(18, 18, 18)
                 .addGroup(backgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
                     .addComponent(helpLabel)
                     .addComponent(helpLinkLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(okButton))
+                    .addComponent(okButton)
+                    .addComponent(okButton1))
                 .addContainerGap())
         );
 
@@ -504,13 +397,15 @@ public class PreferencesDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     /**
-     * Changes the cursor to the hand cursor when over the help link.
+     * Save the data and close the dialog.
      *
      * @param evt
      */
-    private void helpLinkLabelMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_helpLinkLabelMouseEntered
-        this.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-    }//GEN-LAST:event_helpLinkLabelMouseEntered
+    private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
+        if (validateInput()) {
+            dispose();
+        }
+    }//GEN-LAST:event_okButtonActionPerformed
 
     /**
      * Changes the cursor back to the default cursor when leaving the help link.
@@ -522,6 +417,15 @@ public class PreferencesDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_helpLinkLabelMouseExited
 
     /**
+     * Changes the cursor to the hand cursor when over the help link.
+     *
+     * @param evt
+     */
+    private void helpLinkLabelMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_helpLinkLabelMouseEntered
+        this.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+    }//GEN-LAST:event_helpLinkLabelMouseEntered
+
+    /**
      * Opens the help link in the web browser.
      *
      * @param evt
@@ -531,6 +435,35 @@ public class PreferencesDialog extends javax.swing.JDialog {
         BareBonesBrowserLaunch.openURL("http://onlinelibrary.wiley.com/doi/10.1002/pmic.201000711/abstract");
         this.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_helpLinkLabelMouseClicked
+
+    /**
+     * Remove a modification from the list.
+     *
+     * @param evt
+     */
+    private void removeModificationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeModificationActionPerformed
+
+        int nSelected = selectedPTMs.getModel().getSize();
+        int nToRemove = selectedPTMs.getSelectedIndices().length;
+        String[] variableModifications = new String[nSelected - nToRemove];
+        int cpt = 0;
+        boolean found;
+        for (int i = 0; i < selectedPTMs.getModel().getSize(); i++) {
+            found = false;
+            for (Object selection : selectedPTMs.getSelectedValuesList()) {
+                if (((String) selectedPTMs.getModel().getElementAt(i)).equals((String) selection)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                variableModifications[cpt] = (String) selectedPTMs.getModel().getElementAt(i);
+                cpt++;
+            }
+        }
+        selectedPTMs.setListData(variableModifications);
+        updateModificationList();
+    }//GEN-LAST:event_removeModificationActionPerformed
 
     /**
      * Add a modification to the list.
@@ -567,63 +500,10 @@ public class PreferencesDialog extends javax.swing.JDialog {
         updateModificationList();
     }//GEN-LAST:event_addModificationsActionPerformed
 
-    /**
-     * Remove a modification from the list.
-     *
-     * @param evt
-     */
-    private void removeModificationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeModificationActionPerformed
-
-        int nSelected = selectedPTMs.getModel().getSize();
-        int nToRemove = selectedPTMs.getSelectedIndices().length;
-        String[] variableModifications = new String[nSelected - nToRemove];
-        int cpt = 0;
-        boolean found;
-        for (int i = 0; i < selectedPTMs.getModel().getSize(); i++) {
-            found = false;
-            for (Object selection : selectedPTMs.getSelectedValuesList()) {
-                if (((String) selectedPTMs.getModel().getElementAt(i)).equals((String) selection)) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                variableModifications[cpt] = (String) selectedPTMs.getModel().getElementAt(i);
-                cpt++;
-            }
-        }
-        selectedPTMs.setListData(variableModifications);
-        updateModificationList();
-    }//GEN-LAST:event_removeModificationActionPerformed
-
-    /**
-     * Save the data and close the dialog.
-     *
-     * @param evt
-     */
-    private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
-        if (validateInput()) {
-            saveValues();
-            dispose();
-        }
-    }//GEN-LAST:event_okButtonActionPerformed
-
-    private void sameSpectraActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sameSpectraActionPerformed
-        // enable or disable the precursor matching options
-        mzToleranceLabel.setEnabled(precursorMatching.isSelected());
-        mzTolTxt.setEnabled(precursorMatching.isSelected());
-        ppmCmb.setEnabled(precursorMatching.isSelected());
-        rtToleranceLabel.setEnabled(precursorMatching.isSelected());
-        rtTolTxt.setEnabled(precursorMatching.isSelected());
-    }//GEN-LAST:event_sameSpectraActionPerformed
-
-    private void precursorMatchingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_precursorMatchingActionPerformed
-        sameSpectraActionPerformed(null);
-    }//GEN-LAST:event_precursorMatchingActionPerformed
-
-    private void rtTolTxtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rtTolTxtActionPerformed
-        // @TODO: validate the input
-    }//GEN-LAST:event_rtTolTxtActionPerformed
+    private void okButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButton1ActionPerformed
+        canceled = true;
+        dispose();
+    }//GEN-LAST:event_okButton1ActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addModifications;
@@ -633,7 +513,6 @@ public class PreferencesDialog extends javax.swing.JDialog {
     private javax.swing.JLabel helpLabel;
     private javax.swing.JLabel helpLinkLabel;
     private javax.swing.JPanel idSelectionPanel;
-    private javax.swing.JTextField ionToleranceTxt;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -642,88 +521,30 @@ public class PreferencesDialog extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JCheckBox miscleavageCheck;
-    private javax.swing.JTextField mzTolTxt;
-    private javax.swing.JLabel mzToleranceLabel;
     private javax.swing.JCheckBox nullIntensitiesCheck;
     private javax.swing.JButton okButton;
+    private javax.swing.JButton okButton1;
     private javax.swing.JComboBox peptideValidationCmb;
-    private javax.swing.JComboBox ppmCmb;
-    private javax.swing.JRadioButton precursorMatching;
     private javax.swing.JComboBox proteinValidationCmb;
     private javax.swing.JComboBox psmValidationCmb;
     private javax.swing.JPanel ratioEstimationsPanel;
     private javax.swing.JButton removeModification;
-    private javax.swing.JLabel reporterIonMzToleranceLabel;
     private javax.swing.ButtonGroup reporterLocationButtonGroup;
-    private javax.swing.JPanel reporterLocationPanel;
     private javax.swing.JTextField resolutionTxt;
-    private javax.swing.JTextField rtTolTxt;
-    private javax.swing.JLabel rtToleranceLabel;
-    private javax.swing.JRadioButton sameSpectra;
     private javax.swing.JList selectedPTMs;
     private javax.swing.JScrollPane selectedPtmsScrollPane;
-    private javax.swing.JPanel spectrumAnalysisPanel;
     private javax.swing.JTextField widthTxt;
     // End of variables declaration//GEN-END:variables
 
-    /**
-     * Loads values from the quantificationPreferences.
+/**
+     * Indicates whether the user canceled the editing.
+     * 
+     * @return a boolean indicating whether the user canceled the editing
      */
-    private void loadValues() {
-        
-        RatioEstimationSettings ratioEstimationSettings = newDialog.getReporterPreferences().getRatioEstimationSettings();
-        miscleavageCheck.setSelected(ratioEstimationSettings.isIgnoreMissedCleavages());
-        nullIntensitiesCheck.setSelected(ratioEstimationSettings.isIgnoreNullIntensities());
-        widthTxt.setText(ratioEstimationSettings.getPercentile() + "");
-        resolutionTxt.setText(ratioEstimationSettings.getRatioResolution() + "");
-
-        ArrayList<String> selectedModificationsList = ratioEstimationSettings.getexcludingPtms();
-        String[] allModificationsAsArray = new String[selectedModificationsList.size()];
-        for (int i = 0; i < selectedModificationsList.size(); i++) {
-            allModificationsAsArray[i] = selectedModificationsList.get(i);
-        }
-        selectedPTMs.setListData(allModificationsAsArray);
-        updateModificationList();
-
-        proteinValidationCmb.setSelectedIndex(ratioEstimationSettings.getProteinValidationLevel().getIndex());
-        peptideValidationCmb.setSelectedIndex(ratioEstimationSettings.getPeptideValidationLevel().getIndex());
-        psmValidationCmb.setSelectedIndex(ratioEstimationSettings.getPsmValidationLevel().getIndex());
+    public boolean isCanceled() {
+        return canceled;
     }
-
-    /**
-     * Saves the values in the quantificationPreferences.
-     */
-    private void saveValues() {
-
-        RatioEstimationSettings ratioEstimationSettings = newDialog.getReporterPreferences().getRatioEstimationSettings();
-        ratioEstimationSettings.setIgnoreMissedCleavages(miscleavageCheck.isSelected());
-        ratioEstimationSettings.setIgnoreNullIntensities(nullIntensitiesCheck.isSelected());
-        ratioEstimationSettings.setPercentile(new Double(widthTxt.getText()));
-        ratioEstimationSettings.setRatioResolution(new Double(resolutionTxt.getText()));
-        ratioEstimationSettings.emptyPTMList();
-
-        for (int j = 0; j < selectedPTMs.getModel().getSize(); j++) {
-            String name = (String) selectedPTMs.getModel().getElementAt(j);
-            ratioEstimationSettings.addExcludingPtm(name);
-        }
-
-        ratioEstimationSettings.setProteinValidationLevel(MatchValidationLevel.getMatchValidationLevel(proteinValidationCmb.getSelectedIndex()));
-        ratioEstimationSettings.setPeptideValidationLevel(MatchValidationLevel.getMatchValidationLevel(peptideValidationCmb.getSelectedIndex()));
-        ratioEstimationSettings.setPsmValidationLevel(MatchValidationLevel.getMatchValidationLevel(psmValidationCmb.getSelectedIndex()));
-
-        ReporterIonSelectionSettings reporterIonSelectionSettings = newDialog.getReporterPreferences().getReporterIonSelectionSettings();
-        reporterIonSelectionSettings.setReporterIonsMzTolerance(new Double(ionToleranceTxt.getText()));
-        if (sameSpectra.isSelected()) {
-            reporterIonSelectionSettings.setSameSpectra(true);
-        } else {
-            reporterIonSelectionSettings.setSameSpectra(false);
-            reporterIonSelectionSettings.setPrecursorMzTolerance(new Double(mzTolTxt.getText()));
-            reporterIonSelectionSettings.setPrecursorRTTolerance(new Double(rtTolTxt.getText()));
-        }
-
-        ReporterPreferences.saveUserPreferences(newDialog.getReporterPreferences());
-    }
-
+    
     /**
      * Methods which validates the user input (returns false in case of wrong
      * input).
@@ -732,55 +553,26 @@ public class PreferencesDialog extends javax.swing.JDialog {
      */
     private boolean validateInput() {
 
-        // check the ion torerance
-        double ionTolerance;
+        // check the resolution and window width
+        Double input;
         try {
-            ionTolerance = new Double(ionToleranceTxt.getText().trim());
+            input = new Double(resolutionTxt.getText());
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Please input a number for the ion tolerance.", "Ion Tolerance Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "please enter a correct ratio resolution.", "Ratio resolution error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
-        if (ionTolerance <= 0) {
-            JOptionPane.showMessageDialog(this, "Please input a positive number for the ion tolerance.", "Ion Tolerance Error", JOptionPane.ERROR_MESSAGE);
+        if (input <= 0) {
+            JOptionPane.showMessageDialog(this, "Please input a positive number for the ratio resolution.", "Ratio resolution error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
-        for (String reagent1 : newDialog.getSelectedMethod().getReagentNames()) {
-            for (String reagent2 : newDialog.getSelectedMethod().getReagentNames()) {
-                if (!reagent1.equals(reagent2) && Math.abs(newDialog.getSelectedMethod().getReagent(reagent1).getReporterIon().getTheoreticMass()
-                        - newDialog.getSelectedMethod().getReagent(reagent2).getReporterIon().getTheoreticMass()) <= ionTolerance) {
-                    JOptionPane.showMessageDialog(this, "The ion tolerance does not allow distinction of " + reagent1 + " and  " + reagent2 + ".", "Ion Tolerance Error", JOptionPane.ERROR_MESSAGE);
-                    return false;
-                }
-            }
-        }
-
-        // check the precursor matching
-        if (precursorMatching.isSelected()) {
-            try {
-                new Double(mzTolTxt.getText().trim());
-            } catch (Exception e) {
-                JOptionPane.showMessageDialog(this, "Please input a number for precursor m/z tolerance.", "Matching Tolerance Error", JOptionPane.ERROR_MESSAGE);
-                return false;
-            }
-            try {
-                new Double(rtTolTxt.getText().trim());
-            } catch (Exception e) {
-                JOptionPane.showMessageDialog(this, "Please input a number for precursor RT tolerance.", "RT Tolerance Error", JOptionPane.ERROR_MESSAGE);
-                return false;
-            }
-        }
-
-        // check the window width
         try {
-            new Double(widthTxt.getText());
+            input = new Double(widthTxt.getText());
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "please enter a correct window width.", "Window width error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
-        try {
-            new Double(resolutionTxt.getText());
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "please enter a correct ratio resolution.", "Ratio resolution error", JOptionPane.ERROR_MESSAGE);
+        if (input <= 0) {
+            JOptionPane.showMessageDialog(this, "Please input a positive number for the window width.", "Window width error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
 
@@ -791,7 +583,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
      * Updates the modification list (right).
      */
     private void updateModificationList() {
-        ArrayList<String> allModificationsList = new ArrayList<String>(searchParameters.getModificationProfile().getAllNotFixedModifications());
+        ArrayList<String> allModificationsList = new ArrayList<String>(modificationProfile.getAllNotFixedModifications());
         int nSelected = selectedPTMs.getModel().getSize();
         ArrayList<String> allModifications = new ArrayList<String>();
 
@@ -817,5 +609,27 @@ public class PreferencesDialog extends javax.swing.JDialog {
         Arrays.sort(allModificationsAsArray);
         allPTMs.setListData(allModificationsAsArray);
         allPTMs.setSelectedIndex(0);
+    }
+
+    /**
+     * Returns the settings as set by the user.
+     *
+     * @return the settings as set by the user
+     */
+    public RatioEstimationSettings getRatioEstimationSettings() {
+        RatioEstimationSettings ratioEstimationSettings = new RatioEstimationSettings();
+        ratioEstimationSettings.setProteinValidationLevel(MatchValidationLevel.getMatchValidationLevel(proteinValidationCmb.getSelectedIndex()));
+        ratioEstimationSettings.setPeptideValidationLevel(MatchValidationLevel.getMatchValidationLevel(peptideValidationCmb.getSelectedIndex()));
+        ratioEstimationSettings.setPsmValidationLevel(MatchValidationLevel.getMatchValidationLevel(psmValidationCmb.getSelectedIndex()));
+        Double resolution = new Double(resolutionTxt.getText());
+        ratioEstimationSettings.setRatioResolution(resolution);
+        Double windowWidth = new Double(widthTxt.getText());
+        ratioEstimationSettings.setPercentile(windowWidth);
+        ratioEstimationSettings.setIgnoreNullIntensities(nullIntensitiesCheck.isSelected());
+        ratioEstimationSettings.setIgnoreMissedCleavages(miscleavageCheck.isSelected());
+        for (int i = 0 ; i < selectedPTMs.getModel().getSize() ; i++) {
+            ratioEstimationSettings.addExcludingPtm(selectedPTMs.getModel().getElementAt(i).toString());
+        }
+        return ratioEstimationSettings;
     }
 }

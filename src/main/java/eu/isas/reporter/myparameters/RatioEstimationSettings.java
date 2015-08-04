@@ -1,14 +1,15 @@
 package eu.isas.reporter.myparameters;
 
 import eu.isas.peptideshaker.scoring.MatchValidationLevel;
-import java.util.ArrayList;
+import java.io.Serializable;
+import java.util.HashSet;
 
 /**
  * Settings for the estimation of a peptide or protein ratio.
  *
  * @author Marc Vaudel
  */
-public class RatioEstimationSettings {
+public class RatioEstimationSettings implements Serializable {
 
     /**
      * Boolean indicating whether spectra presenting null intensities should be
@@ -33,7 +34,7 @@ public class RatioEstimationSettings {
      * List of PTMs to exclude. Peptides presenting these PTMs will not be
      * accounted for during quantification.
      */
-    private ArrayList<String> excludingPTM = new ArrayList<String>();
+    private HashSet<String> excludingPTM = new HashSet<String>();
     /**
      * The validation threshold to use for protein quantification.
      */
@@ -52,6 +53,48 @@ public class RatioEstimationSettings {
      */
     public RatioEstimationSettings() {
         
+    }
+    
+    @Override
+    public RatioEstimationSettings clone() {
+        RatioEstimationSettings clone = new RatioEstimationSettings();
+        clone.setIgnoreNullIntensities(ignoreNullIntensities);
+        clone.setIgnoreMissedCleavages(ignoreMissedCleavages);
+        clone.setPercentile(percentile);
+        clone.setRatioResolution(ratioResolution);
+        for (String excludingPtm : excludingPTM) {
+            clone.addExcludingPtm(excludingPtm);
+        }
+        clone.setProteinValidationLevel(proteinValidation);
+        clone.setPeptideValidationLevel(peptideValidation);
+        clone.setPsmValidationLevel(psmValidation);
+        return clone;
+    }
+    
+    /**
+     * Indicates whether another setting is the same as this one.
+     * 
+     * @param anotherSetting another setting
+     * 
+     * @return a boolean indicating whether another setting is the same as this one
+     */
+    public boolean isSameAs(RatioEstimationSettings anotherSetting) {
+        if (ignoreNullIntensities != anotherSetting.isIgnoreNullIntensities()
+                || ignoreMissedCleavages != anotherSetting.isIgnoreMissedCleavages()
+                || percentile != anotherSetting.getPercentile()
+                || ratioResolution != anotherSetting.getRatioResolution()
+                || proteinValidation != anotherSetting.getProteinValidationLevel()
+                || peptideValidation != anotherSetting.getPeptideValidationLevel()
+                || psmValidation != anotherSetting.getPsmValidationLevel()
+                || excludingPTM.size() != anotherSetting.getExcludingPtms().size()) {
+            return false;
+        }
+        for (String ptm : anotherSetting.getExcludingPtms()) {
+            if (!excludingPTM.contains(ptm)) {
+                return false;
+            }
+        }
+        return true;
     }
     
     /**
@@ -139,7 +182,7 @@ public class RatioEstimationSettings {
      *
      * @return the list of PTMs to ignore
      */
-    public ArrayList<String> getexcludingPtms() {
+    public HashSet<String> getExcludingPtms() {
         return excludingPTM;
     }
 

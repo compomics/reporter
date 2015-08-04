@@ -25,6 +25,7 @@ import eu.isas.reporter.export.report.ReporterReportStyle;
 import eu.isas.reporter.export.report.export_features.ReporterPeptideFeature;
 import eu.isas.reporter.export.report.export_features.ReporterProteinFeatures;
 import eu.isas.reporter.export.report.export_features.ReporterPsmFeatures;
+import eu.isas.reporter.myparameters.ReporterSettings;
 import eu.isas.reporter.quantificationdetails.ProteinQuantificationDetails;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -119,6 +120,7 @@ public class ReporterProteinSection {
      * generator containing the quantification information
      * @param reporterIonQuantification the reporter ion quantification object
      * containing the quantification configuration
+     * @param reporterSettings the reporter settings
      * @param shotgunProtocol the shotgun protocol
      * @param identificationParameters the identification parameters
      * @param keys the keys of the protein matches to output. if null all
@@ -136,7 +138,7 @@ public class ReporterProteinSection {
      * @throws java.lang.InterruptedException exception thrown whenever a threading error occurred
      * @throws org.apache.commons.math.MathException exception thrown whenever an error occurred while transforming the ratios
      */
-    public void writeSection(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification,
+    public void writeSection(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, ReporterSettings reporterSettings,
             ShotgunProtocol shotgunProtocol, IdentificationParameters identificationParameters, ArrayList<String> keys, int nSurroundingAas, boolean validatedOnly, boolean decoys, WaitingHandler waitingHandler)
             throws IOException, IllegalArgumentException, SQLException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException, MathException {
 
@@ -227,7 +229,7 @@ public class ReporterProteinSection {
                     writer.newLine();
                     if (peptideSection != null) {
                         writer.increaseDepth();
-                        peptideSection.writeSection(identification, identificationFeaturesGenerator, quantificationFeaturesGenerator, reporterIonQuantification, 
+                        peptideSection.writeSection(identification, identificationFeaturesGenerator, quantificationFeaturesGenerator, reporterIonQuantification, reporterSettings, 
                                 shotgunProtocol, identificationParameters, proteinMatch.getPeptideMatchesKeys(), nSurroundingAas, 
                                 line + ".", validatedOnly, decoys, null);
                         writer.decreseDepth();

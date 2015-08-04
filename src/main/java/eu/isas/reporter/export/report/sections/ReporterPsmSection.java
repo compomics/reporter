@@ -28,6 +28,7 @@ import eu.isas.reporter.export.report.ReporterExportFeature;
 import eu.isas.reporter.export.report.ReporterReportStyle;
 import eu.isas.reporter.export.report.export_features.ReporterPsmFeatures;
 import eu.isas.reporter.myparameters.ReporterPreferences;
+import eu.isas.reporter.myparameters.ReporterSettings;
 import eu.isas.reporter.quantificationdetails.PsmQuantificationDetails;
 import eu.isas.reporter.quantificationdetails.SpectrumQuantificationDetails;
 import java.io.IOException;
@@ -121,7 +122,7 @@ public class ReporterPsmSection {
      * generator containing the quantification information
      * @param reporterIonQuantification the reporter ion quantification object
      * containing the quantification configuration
-     * @param reporterPreferences the reporter preferences
+     * @param reporterSettings the reporter settings
      * @param shotgunProtocol the shotgun protocol
      * @param identificationParameters the identification parameters
      * @param keys the keys of the PSM matches to output
@@ -137,7 +138,7 @@ public class ReporterPsmSection {
      * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown whenever an error occurred while reading an mzML file
      * @throws java.lang.InterruptedException exception thrown whenever a threading error occurred
      */
-    public void writeSection(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, ReporterPreferences reporterPreferences,
+    public void writeSection(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, ReporterSettings reporterSettings,
             ShotgunProtocol shotgunProtocol, IdentificationParameters identificationParameters, ArrayList<String> keys, String linePrefix, boolean validatedOnly, boolean decoys, WaitingHandler waitingHandler) throws IOException, IllegalArgumentException, SQLException,
             ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
 
@@ -272,7 +273,7 @@ public class ReporterPsmSection {
                                     } else {
                                         first = false;
                                     }
-                                    writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, reporterPreferences, spectrumKey, psmFeature, sampleIndex), reporterStyle);
+                                    writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, reporterSettings, spectrumKey, psmFeature, sampleIndex), reporterStyle);
                                 }
                             } else {
                                 if (!first) {
@@ -280,7 +281,7 @@ public class ReporterPsmSection {
                                 } else {
                                     first = false;
                                 }
-                                writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, reporterPreferences, spectrumKey, psmFeature, ""), reporterStyle);
+                                writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, reporterSettings, spectrumKey, psmFeature, ""), reporterStyle);
                             }
 
                         }
@@ -308,7 +309,7 @@ public class ReporterPsmSection {
      * generator
      * @param reporterIonQuantification the reporter ion quantification object
      * containing the quantification configuration
-     * @param reporterPreferences the reporter preferences
+     * @param reporterSettings the reporter settings
      * @param spectrumKey the spectrum key
      * @param psmFeatures the PSM feature to export
      * @param sampleIndex the index of the sample in case the feature is channel
@@ -323,27 +324,27 @@ public class ReporterPsmSection {
      * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown whenever an error occurred while reading an mzML file
      * @throws java.lang.InterruptedException exception thrown whenever a threading error occurred
      */
-    public static String getFeature(QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, ReporterPreferences reporterPreferences, String spectrumKey, ReporterPsmFeatures psmFeatures, String sampleIndex) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
+    public static String getFeature(QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, ReporterSettings reporterSettings, String spectrumKey, ReporterPsmFeatures psmFeatures, String sampleIndex) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
         switch (psmFeatures) {
             case ratio:
                 PsmQuantificationDetails psmDetails = quantificationFeaturesGenerator.getPSMQuantificationDetails(spectrumKey);
                 return psmDetails.getRatio(sampleIndex).toString();
             case reporter_intensity:
-                SpectrumQuantificationDetails spectrumDetails = quantificationFeaturesGenerator.getSpectrumQuantificationDetails(reporterIonQuantification, reporterPreferences.getReporterIonSelectionSettings(), spectrumKey);
+                SpectrumQuantificationDetails spectrumDetails = quantificationFeaturesGenerator.getSpectrumQuantificationDetails(reporterIonQuantification, reporterSettings.getReporterIonSelectionSettings(), spectrumKey);
                 IonMatch ionMatch = spectrumDetails.getRepoterMatch(sampleIndex);
                 if (ionMatch == null) {
                     return "";
                 }
                 return ionMatch.peak.intensity + "";
             case reporter_mz:
-                spectrumDetails = quantificationFeaturesGenerator.getSpectrumQuantificationDetails(reporterIonQuantification, reporterPreferences.getReporterIonSelectionSettings(), spectrumKey);
+                spectrumDetails = quantificationFeaturesGenerator.getSpectrumQuantificationDetails(reporterIonQuantification, reporterSettings.getReporterIonSelectionSettings(), spectrumKey);
                 ionMatch = spectrumDetails.getRepoterMatch(sampleIndex);
                 if (ionMatch == null) {
                     return "";
                 }
                 return ionMatch.peak.mz + "";
             case deisotoped_intensity:
-                spectrumDetails = quantificationFeaturesGenerator.getSpectrumQuantificationDetails(reporterIonQuantification, reporterPreferences.getReporterIonSelectionSettings(), spectrumKey);
+                spectrumDetails = quantificationFeaturesGenerator.getSpectrumQuantificationDetails(reporterIonQuantification, reporterSettings.getReporterIonSelectionSettings(), spectrumKey);
                 return spectrumDetails.getDeisotopedIntensity(sampleIndex).toString();
             default:
                 return "Not implemented";

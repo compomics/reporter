@@ -42,6 +42,7 @@ import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
 import eu.isas.reporter.gui.export.ReportDialog;
 import eu.isas.reporter.myparameters.ReporterPreferences;
 import eu.isas.reporter.gui.resultpanels.OverviewPanel;
+import eu.isas.reporter.myparameters.ReporterSettings;
 import eu.isas.reporter.preferences.DisplayPreferences;
 import eu.isas.reporter.quantificationdetails.ProteinQuantificationDetails;
 import eu.isas.reporter.utils.Properties;
@@ -106,9 +107,9 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      */
     private CpsParent cpsBean = null;
     /**
-     * The reporter preferences.
+     * The reporter settings
      */
-    private ReporterPreferences reporterPreferences;
+    private ReporterSettings reporterSettings;
     /**
      * The reporter ion quantification containing the quantification parameters.
      */
@@ -283,17 +284,17 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         if (!newDialog.isCancelled()) {
 
             cpsBean = newDialog.getCpsBean();
-            reporterPreferences = newDialog.getReporterPreferences();
+            reporterSettings = newDialog.getReporterSettings();
             reporterIonQuantification = newDialog.getReporterIonQuantification();
             identificationFeaturesGenerator = new IdentificationFeaturesGenerator(cpsBean.getIdentification(), cpsBean.getShotgunProtocol(),
                     cpsBean.getIdentificationParameters(), cpsBean.getMetrics(), cpsBean.getSpectrumCountingPreferences());
             displayFeaturesGenerator = new DisplayFeaturesGenerator(cpsBean.getIdentificationParameters().getSearchParameters().getModificationProfile(), exceptionHandler);
-            displayFeaturesGenerator.setDisplayedPTMs(cpsBean.getDisplayPreferences().getDisplayedPtms());
+//            displayFeaturesGenerator.setDisplayedPTMs(cpsBean.getDisplayPreferences().getDisplayedPtms()); //@TODO: this is null with the online version of PeptideShaker
             setDisplayPreferencesFromShakerProject();
             selectedProteins = new ArrayList<String>();
 
             projectSaved = false;
-            quantificationFeaturesGenerator = new QuantificationFeaturesGenerator(new QuantificationFeaturesCache(), cpsBean.getIdentification(), reporterPreferences, reporterIonQuantification,
+            quantificationFeaturesGenerator = new QuantificationFeaturesGenerator(new QuantificationFeaturesCache(), cpsBean.getIdentification(), reporterSettings, reporterIonQuantification,
                     cpsBean.getIdentificationParameters().getSearchParameters(), cpsBean.getIdentificationParameters().getSequenceMatchingPreferences());
 
             progressDialog = new ProgressDialogX(this,
@@ -379,7 +380,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
     private void displayResults(WaitingHandler waitingHandler) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
         
         if (!reporterIonQuantification.hasNormalisationFactors()) {
-            Reporter.setPeptideNormalizationFactors(reporterIonQuantification, reporterPreferences.getRatioEstimationSettings(), cpsBean.getIdentification(), quantificationFeaturesGenerator, progressDialog);
+            Reporter.setPeptideNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(), cpsBean.getIdentification(), quantificationFeaturesGenerator, progressDialog);
         }
 
         // cluster the protein profiles
@@ -487,12 +488,12 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
     }
 
     /**
-     * Returns the reporter preferences.
-     *
-     * @return the reporter preferences
+     * Returns the reporter settings.
+     * 
+     * @return the reporter settings
      */
-    public ReporterPreferences getReporterPreferences() {
-        return reporterPreferences;
+    public ReporterSettings getReporterSettings() {
+        return reporterSettings;
     }
 
     /**
@@ -561,8 +562,8 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * @return the identification display preferences
      */
     public eu.isas.peptideshaker.preferences.DisplayPreferences getIdentificationDisplayPreferences() {
-        if (cpsBean == null) {
-            return null;
+        if (cpsBean == null || cpsBean.getDisplayPreferences() == null) { //@TODO: this is null with the online version of PeptideShaker
+            return new eu.isas.peptideshaker.preferences.DisplayPreferences();
         }
         return cpsBean.getDisplayPreferences();
     }
