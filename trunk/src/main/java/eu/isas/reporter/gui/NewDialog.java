@@ -937,37 +937,6 @@ public class NewDialog extends javax.swing.JDialog {
                     progressDialog.setTitle("Loading Gene Mappings. Please Wait...");
                     loadGeneMappings(); // have to load the new gene mappings
 
-                    // backwards compatibility fix for gene and go references using only latin names
-                    boolean genesRemapped = false;
-                    String selectedSpecies = cpsBean.getIdentificationParameters().getGenePreferences().getCurrentSpecies();
-                    if (selectedSpecies != null) {
-
-                        HashMap<String, HashMap<String, String>> allSpecies = cpsBean.getIdentificationParameters().getGenePreferences().getAllSpeciesMap();
-                        HashMap<String, String> tempSpecies = allSpecies.get(cpsBean.getIdentificationParameters().getGenePreferences().getCurrentSpeciesType());
-
-                        if (!tempSpecies.containsKey(selectedSpecies)) {
-
-                            Iterator<String> iterator = tempSpecies.keySet().iterator();
-                            boolean keyFound = false;
-
-                            while (iterator.hasNext() && !keyFound) {
-                                String tempSpeciesKey = iterator.next();
-                                if (tempSpeciesKey.contains(selectedSpecies)) {
-                                    cpsBean.getIdentificationParameters().getGenePreferences().setCurrentSpecies(tempSpeciesKey);
-                                    keyFound = true;
-                                } else if (selectedSpecies.contains(tempSpeciesKey)) { // strange backwards compatibility fix, should not be needed
-                                    cpsBean.getIdentificationParameters().getGenePreferences().setCurrentSpecies(tempSpeciesKey);
-                                    keyFound = true;
-                                }
-                            }
-
-                            if (keyFound) {
-                                loadGeneMappings(); // have to re-load the gene mappings now that we have the correct species name
-                                genesRemapped = true;
-                            }
-                        }
-                    }
-
                     // @TODO: check if the used gene mapping files are available and download if not?
                     if (progressDialog.isRunCanceled()) {
                         progressDialog.setRunFinished();
@@ -1091,14 +1060,14 @@ public class NewDialog extends javax.swing.JDialog {
                         } else {
                             selectedMethod = getMethod("TMT 6plex (ETD)");
                         }
-                        if (getReporterPreferences().getReporterIonsMzTolerance() > 0.0016) {
-                            getReporterPreferences().setReporterIonsMzTolerance(0.0016);
+                        if (getReporterPreferences().getReporterIonSelectionSettings().getReporterIonsMzTolerance() > 0.0016) {
+                            getReporterPreferences().getReporterIonSelectionSettings().setReporterIonsMzTolerance(0.0016);
                         }
                         break;
                     } else if (ptmName.contains("tmt") && ptmName.contains("10")) {
                         selectedMethod = getMethod("TMT 10plex");
-                        if (getReporterPreferences().getReporterIonsMzTolerance() > 0.0016) {
-                            getReporterPreferences().setReporterIonsMzTolerance(0.0016);
+                        if (getReporterPreferences().getReporterIonSelectionSettings().getReporterIonsMzTolerance() > 0.0016) {
+                            getReporterPreferences().getReporterIonSelectionSettings().setReporterIonsMzTolerance(0.0016);
                         }
                         break;
                     } else if (ptmName.contains("itraq")) {
