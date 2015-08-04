@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.ScrollPaneConstants;
@@ -125,6 +126,10 @@ public class OverviewPanel extends javax.swing.JPanel {
      * The gene factory.
      */
     private GeneFactory geneFactory = GeneFactory.getInstance();
+    /**
+     * The complete list of ordered protein keys.
+     */
+    private ArrayList<String> allOrderedProteinKeys;
 
     /**
      * Creates a new OverviewPanel.
@@ -200,14 +205,42 @@ public class OverviewPanel extends javax.swing.JPanel {
 
                     reporterGUI.getIdentificationFeaturesGenerator().setProteinKeys(reporterGUI.getMetrics().getProteinKeys());
                     proteinKeys = reporterGUI.getIdentificationFeaturesGenerator().getProcessedProteinKeys(progressDialog, reporterGUI.getFilterPreferences());
-                    identification.loadProteinMatches(proteinKeys, progressDialog, false);
-                    identification.loadProteinMatchParameters(proteinKeys, new PSParameter(), progressDialog, false);
+                    allOrderedProteinKeys = reporterGUI.getIdentificationFeaturesGenerator().getProcessedProteinKeys(progressDialog, reporterGUI.getFilterPreferences());
+                    identification.loadProteinMatches(allOrderedProteinKeys, progressDialog, false);
+                    identification.loadProteinMatchParameters(allOrderedProteinKeys, new PSParameter(), progressDialog, false);
 
                     // get the protein ratio distributions
                     getProteinRatioDistributions(progressDialog);
 
                     // display the clusters
                     displayClusters(progressDialog);
+
+                    // clear the protein table
+                    ArrayList<String> proteinSelection = new ArrayList<String>();
+                    reporterGUI.setSelectedProteins(proteinSelection, false, false);
+                    proteinTable.clearSelection();
+                    proteinKeys = new ArrayList<String>();
+
+                    // update the table model
+                    if (proteinTable.getRowCount() > 0) {
+                        ((ProteinTableModel) proteinTable.getModel()).updateDataModel(identification, identificationFeaturesGenerator,
+                                reporterGUI.getReporterIonQuantification(), reporterGUI.getQuantificationFeaturesGenerator(),
+                                reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getExceptionHandler(), proteinKeys);
+                    } else {
+                        ProteinTableModel proteinTableModel = new ProteinTableModel(identification, identificationFeaturesGenerator,
+                                reporterGUI.getReporterIonQuantification(), reporterGUI.getQuantificationFeaturesGenerator(),
+                                reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getExceptionHandler(), proteinKeys);
+                        proteinTable.setModel(proteinTableModel);
+                    }
+
+                    setProteinTableProperties();
+
+                    ((DefaultTableModel) proteinTable.getModel()).fireTableDataChanged();
+                    updateProteinTableCellRenderers();
+
+                    String title = ReporterGUI.TITLED_BORDER_HORIZONTAL_PADDING + "Proteins";
+                    ((TitledBorder) proteinsLayeredPanel.getBorder()).setTitle(title);
+                    proteinsLayeredPanel.repaint();
 
                     if (reporterGUI.getIdentificationDisplayPreferences().showScores()) {
                         proteinTableToolTips.set(proteinTable.getColumnCount() - 2, "Protein Score");
@@ -217,6 +250,7 @@ public class OverviewPanel extends javax.swing.JPanel {
 
                     // enable the contextual export options
                     exportProteinsJButton.setEnabled(true);
+                    ratioPlotOptionsJButton.setEnabled(true);
 
                     reporterGUI.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
                     progressDialog.setRunFinished();
@@ -388,71 +422,74 @@ public class OverviewPanel extends javax.swing.JPanel {
             public void mouseReleased(MouseEvent e) {
                 Component c = e.getComponent();
                 if (c instanceof ChartPanel) {
-
-                    if (selectedChartPanel != null) {
-                        selectedChartPanel.setBorder(null);
-
-                        // reset the selection
-                        CategoryItemRenderer renderer = selectedChartPanel.getChart().getCategoryPlot().getRenderer();
-                        DefaultCategoryDataset dataset = (DefaultCategoryDataset) selectedChartPanel.getChart().getCategoryPlot().getDataset();
-
-                        for (int i = 0; i < dataset.getRowCount(); i++) {
-                            renderer.setSeriesPaint(i, notSelectedProteinProfileColor);
-                        }
-
-                        selectedChartPanel.getChart().fireChartChanged();
-                    }
-
-                    reporterGUI.setSelectedProteins(new ArrayList<String>());
-
-                    ChartPanel chartPanel = (ChartPanel) c;
-                    chartPanel.setBorder(new LineBorder(Color.DARK_GRAY));
-                    chartPanel.getChart().fireChartChanged();
-
-                    selectedChartPanel = chartPanel;
-
-                    // get the current protein keys
-                    DefaultCategoryDataset dataset = (DefaultCategoryDataset) chartPanel.getChart().getCategoryPlot().getDataset();
-
-                    List rowKeys = dataset.getRowKeys();
-                    proteinKeys = new ArrayList<String>();
-
-                    for (Object proteinKey : rowKeys) {
-                        proteinKeys.add((String) proteinKey);
-                    }
-
-                    // update the table model
-                    if (proteinTable.getRowCount() > 0) {
-                        ((ProteinTableModel) proteinTable.getModel()).updateDataModel(identification, identificationFeaturesGenerator,
-                                reporterGUI.getReporterIonQuantification(), reporterGUI.getQuantificationFeaturesGenerator(),
-                                reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getExceptionHandler(), proteinKeys);
-                    } else {
-                        ProteinTableModel proteinTableModel = new ProteinTableModel(identification, identificationFeaturesGenerator,
-                                reporterGUI.getReporterIonQuantification(), reporterGUI.getQuantificationFeaturesGenerator(),
-                                reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getExceptionHandler(), proteinKeys);
-                        proteinTable.setModel(proteinTableModel);
-                    }
-
-                    setProteinTableProperties();
-
-                    ((DefaultTableModel) proteinTable.getModel()).fireTableDataChanged();
-                    updateProteinTableCellRenderers();
-
-                    String title = ReporterGUI.TITLED_BORDER_HORIZONTAL_PADDING + "Proteins (" + proteinTable.getRowCount() + ")";
-                    ((TitledBorder) proteinsLayeredPanel.getBorder()).setTitle(title);
-                    proteinsLayeredPanel.repaint();
+                    reporterGUI.setSelectedProteins(new ArrayList<String>(), true, true);
+                    selectCluster((ChartPanel) c);
                 }
-            }
-
-            @Override
-            public void mouseDragged(MouseEvent e) {
-//                plotPanel.revalidate();
-//                plotPanel.repaint();
             }
         });
 
         plotPanel.add(lineChartChartPanel);
         plotPanel.validate();
+    }
+
+    /**
+     * Selected the given cluster.
+     *
+     * @param chartPanel the chart panel containing the cluster
+     */
+    private void selectCluster(ChartPanel chartPanel) {
+
+        if (selectedChartPanel != null) {
+            selectedChartPanel.setBorder(null);
+
+            // reset the selection
+            CategoryItemRenderer renderer = selectedChartPanel.getChart().getCategoryPlot().getRenderer();
+            DefaultCategoryDataset dataset = (DefaultCategoryDataset) selectedChartPanel.getChart().getCategoryPlot().getDataset();
+
+            for (int i = 0; i < dataset.getRowCount(); i++) {
+                renderer.setSeriesPaint(i, notSelectedProteinProfileColor);
+            }
+
+            selectedChartPanel.getChart().fireChartChanged();
+        }
+
+        chartPanel.setBorder(new LineBorder(Color.DARK_GRAY));
+        chartPanel.getChart().fireChartChanged();
+
+        selectedChartPanel = chartPanel;
+
+        // get the current protein keys
+        DefaultCategoryDataset dataset = (DefaultCategoryDataset) chartPanel.getChart().getCategoryPlot().getDataset();
+        List rowKeys = dataset.getRowKeys();
+
+        // make sure that the order is always the same
+        proteinKeys = new ArrayList<String>();
+        for (String tempProteinAccession : allOrderedProteinKeys) {
+            if (rowKeys.contains(tempProteinAccession)) { // @TODO: there has to be a simpler and faster way of doing this...
+                proteinKeys.add(tempProteinAccession);
+            }
+        }
+
+        // update the table model
+        if (proteinTable.getRowCount() > 0) {
+            ((ProteinTableModel) proteinTable.getModel()).updateDataModel(identification, identificationFeaturesGenerator,
+                    reporterGUI.getReporterIonQuantification(), reporterGUI.getQuantificationFeaturesGenerator(),
+                    reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getExceptionHandler(), proteinKeys);
+        } else {
+            ProteinTableModel proteinTableModel = new ProteinTableModel(identification, identificationFeaturesGenerator,
+                    reporterGUI.getReporterIonQuantification(), reporterGUI.getQuantificationFeaturesGenerator(),
+                    reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getExceptionHandler(), proteinKeys);
+            proteinTable.setModel(proteinTableModel);
+        }
+
+        setProteinTableProperties();
+
+        ((DefaultTableModel) proteinTable.getModel()).fireTableDataChanged();
+        updateProteinTableCellRenderers();
+
+        String title = ReporterGUI.TITLED_BORDER_HORIZONTAL_PADDING + "Proteins (" + proteinTable.getRowCount() + ")";
+        ((TitledBorder) proteinsLayeredPanel.getBorder()).setTitle(title);
+        proteinsLayeredPanel.repaint();
     }
 
     /**
@@ -492,7 +529,7 @@ public class OverviewPanel extends javax.swing.JPanel {
             public void tableChanged(TableModelEvent e) {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        reselect();
+                        resetSelection();
                     }
                 });
             }
@@ -502,15 +539,62 @@ public class OverviewPanel extends javax.swing.JPanel {
     /**
      * Reselect the proteins.
      */
-    private void reselect() {
+    public void resetSelection() {
 
         ArrayList<String> selectedProteins = reporterGUI.getSelectedProteins();
+        proteinTable.clearSelection();
 
         for (String tempProteinKey : selectedProteins) {
             int proteinRow = getProteinRow(tempProteinKey);
             if (proteinRow != -1) {
                 proteinTable.addRowSelectionInterval(proteinRow, proteinRow);
             }
+        }
+    }
+
+    /**
+     * Update the selection.
+     *
+     * @param clearSelection if true, the current selection will be removed
+     */
+    public void updateSelection(boolean clearSelection) {
+
+        ArrayList<String> selectedProteins = reporterGUI.getSelectedProteins();
+
+        if (clearSelection) {
+            proteinTable.clearSelection();
+        }
+
+        // select the correct cluster
+        if (selectedProteins.size() == 1) {
+
+            int currentCluster = -1;
+            for (int i = 0; i < reporterGUI.getkMeansClutering().getNumberOfClusters() && currentCluster == -1; i++) {
+                if (reporterGUI.getkMeansClutering().getClusterMembers(i).contains(selectedProteins.get(0))) {
+                    currentCluster = i;
+                }
+            }
+
+            if (currentCluster != -1) {
+                ChartPanel currentChartPanel = (ChartPanel) plotPanel.getComponent(currentCluster);
+                selectCluster(currentChartPanel);
+            }
+        }
+
+        for (String tempProteinKey : selectedProteins) {
+            int proteinRow = getProteinRow(tempProteinKey);
+            if (proteinRow != -1) {
+                proteinTable.addRowSelectionInterval(proteinRow, proteinRow);
+            }
+        }
+
+        if (!selectedProteins.isEmpty()) {
+            int proteinRow = getProteinRow(selectedProteins.get(0));
+            if (proteinRow != -1) {
+                proteinTable.scrollRectToVisible(proteinTable.getCellRect(proteinRow, 0, false));
+            }
+
+            proteinTableMouseReleased(null);
         }
     }
 
@@ -539,6 +623,8 @@ public class OverviewPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        clusterPopupMenu = new javax.swing.JPopupMenu();
+        numberOfClustersMenuItem = new javax.swing.JMenuItem();
         backgroundLayeredPane = new javax.swing.JLayeredPane();
         overviewJPanel = new javax.swing.JPanel();
         overviewJSplitPane = new javax.swing.JSplitPane();
@@ -570,6 +656,15 @@ public class OverviewPanel extends javax.swing.JPanel {
                 };
             }
         };
+
+        numberOfClustersMenuItem.setText("Number of Clusters");
+        numberOfClustersMenuItem.setToolTipText("Set the number of clusters");
+        numberOfClustersMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                numberOfClustersMenuItemActionPerformed(evt);
+            }
+        });
+        clusterPopupMenu.add(numberOfClustersMenuItem);
 
         setBackground(new java.awt.Color(255, 255, 255));
         addComponentListener(new java.awt.event.ComponentAdapter() {
@@ -644,6 +739,7 @@ public class OverviewPanel extends javax.swing.JPanel {
         ratioPlotOptionsJButton.setBorder(null);
         ratioPlotOptionsJButton.setBorderPainted(false);
         ratioPlotOptionsJButton.setContentAreaFilled(false);
+        ratioPlotOptionsJButton.setEnabled(false);
         ratioPlotOptionsJButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/contextual_menu_black.png"))); // NOI18N
         ratioPlotOptionsJButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
@@ -918,7 +1014,7 @@ public class OverviewPanel extends javax.swing.JPanel {
                 selectedProteins.add(proteinKey);
             }
 
-            reporterGUI.setSelectedProteins(selectedProteins);
+            reporterGUI.setSelectedProteins(selectedProteins, false, false);
 
             // create the new dataset with the selected proteins in the front
             DefaultCategoryDataset newDataset = new DefaultCategoryDataset();
@@ -1214,7 +1310,9 @@ public class OverviewPanel extends javax.swing.JPanel {
      * @param evt
      */
     private void ratioPlotOptionsJButtonMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ratioPlotOptionsJButtonMouseEntered
-        setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        if (ratioPlotOptionsJButton.isEnabled()) {
+            setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        }
     }//GEN-LAST:event_ratioPlotOptionsJButtonMouseEntered
 
     /**
@@ -1225,15 +1323,6 @@ public class OverviewPanel extends javax.swing.JPanel {
     private void ratioPlotOptionsJButtonMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ratioPlotOptionsJButtonMouseExited
         setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_ratioPlotOptionsJButtonMouseExited
-
-    /**
-     * Show the contextual options for the ratio plots.
-     *
-     * @param evt
-     */
-    private void ratioPlotOptionsJButtonMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ratioPlotOptionsJButtonMouseReleased
-        //plotPopupMenu.show(ratioPlotOptionsJButton, evt.getX(), evt.getY()); // @TODO: implement?
-    }//GEN-LAST:event_ratioPlotOptionsJButtonMouseReleased
 
     /**
      * Set the optimal size of the components.
@@ -1318,12 +1407,43 @@ public class OverviewPanel extends javax.swing.JPanel {
         });
     }//GEN-LAST:event_formComponentResized
 
+    /**
+     * Let the user select the number of clusters to use.
+     *
+     * @param evt
+     */
+    private void numberOfClustersMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_numberOfClustersMenuItemActionPerformed
+        String value = JOptionPane.showInputDialog(this, "Number of clusters:", reporterGUI.getkMeansClutering().getNumberOfClusters());
+
+        if (value != null) {
+            try {
+                int numberOfClusters = Integer.valueOf(value);
+                reporterGUI.recluster(numberOfClusters);
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "The number of cluster has to be an integer value.", "Input Error", JOptionPane.WARNING_MESSAGE);
+            }
+        }
+    }//GEN-LAST:event_numberOfClustersMenuItemActionPerformed
+
+    /**
+     * Show the contextual options for the ratio plots.
+     *
+     * @param evt
+     */
+    private void ratioPlotOptionsJButtonMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ratioPlotOptionsJButtonMouseReleased
+        if (ratioPlotOptionsJButton.isEnabled()) {
+            clusterPopupMenu.show(ratioPlotOptionsJButton, evt.getX(), evt.getY());
+        }
+    }//GEN-LAST:event_ratioPlotOptionsJButtonMouseReleased
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLayeredPane backgroundLayeredPane;
+    private javax.swing.JPopupMenu clusterPopupMenu;
     private javax.swing.JPanel contextMenuProteinsBackgroundPanel;
     private javax.swing.JPanel contextMenuRatioPlotBackgroundPanel;
     private javax.swing.JButton exportProteinsJButton;
     private javax.swing.JButton exportRatioPlotContextJButton;
+    private javax.swing.JMenuItem numberOfClustersMenuItem;
     private javax.swing.JPanel overviewJPanel;
     private javax.swing.JSplitPane overviewJSplitPane;
     private javax.swing.JPanel plotPanel;

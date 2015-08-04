@@ -2,13 +2,10 @@ package eu.isas.reporter.gui.settings;
 
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
 import com.compomics.util.preferences.ModificationProfile;
-import eu.isas.reporter.gui.NewDialog;
 import eu.isas.reporter.myparameters.NormalizationSettings;
 import eu.isas.reporter.myparameters.RatioEstimationSettings;
 import eu.isas.reporter.myparameters.ReporterIonSelectionSettings;
-import eu.isas.reporter.myparameters.ReporterPreferences;
 import eu.isas.reporter.myparameters.ReporterSettings;
-import eu.isas.reporter.preferences.ReporterPathPreferences;
 import javax.swing.JDialog;
 
 /**
@@ -173,11 +170,11 @@ public class ReporterSettingsDialog extends javax.swing.JDialog {
             .addGroup(backgroundPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(reporterIonSelectionButton)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(ratioEstimationButton)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(normalizationButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 122, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 146, Short.MAX_VALUE)
                 .addGroup(backgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(okButton)
                     .addComponent(cancelButton))
@@ -207,11 +204,6 @@ public class ReporterSettingsDialog extends javax.swing.JDialog {
         dispose();
     }//GEN-LAST:event_okButtonActionPerformed
 
-    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
-        canceled = true;
-        dispose();
-    }//GEN-LAST:event_cancelButtonActionPerformed
-
     private void reporterIonSelectionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reporterIonSelectionButtonActionPerformed
         ReporterIonSelectionSettingsDialog reporterIonSelectionSettingsDialog = new ReporterIonSelectionSettingsDialog(this, reporterIonSelectionSettings, reporterMethod, editable);
         if (!reporterIonSelectionSettingsDialog.isCanceled()) {
@@ -232,6 +224,11 @@ public class ReporterSettingsDialog extends javax.swing.JDialog {
             normalizationSettings = normalizationSettingsDialog.getNormalizationSettings();
         }
     }//GEN-LAST:event_normalizationButtonActionPerformed
+
+    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+        canceled = true;
+        dispose();
+    }//GEN-LAST:event_cancelButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel backgroundPanel;
@@ -264,5 +261,4 @@ public class ReporterSettingsDialog extends javax.swing.JDialog {
         reporterSettings.setNormalizationSettings(normalizationSettings);
         return reporterSettings;
     }
-
 }

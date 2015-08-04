@@ -12,7 +12,6 @@ import java.io.File;
  */
 public class ReporterPreferences implements UrParameter {
 
-    
     /**
      * Location of the user preferences file.
      */
@@ -114,7 +113,7 @@ public class ReporterPreferences implements UrParameter {
 
     /**
      * Returns the file used to save the user preferences.
-     * 
+     *
      * @return the file used to save the user preferences
      */
     public static String getUserPreferencesFile() {
@@ -123,7 +122,7 @@ public class ReporterPreferences implements UrParameter {
 
     /**
      * Returns the folder used to save the user preferences.
-     * 
+     *
      * @return the folder used to save the user preferences
      */
     public static String getUserPreferencesFolder() {
@@ -133,7 +132,7 @@ public class ReporterPreferences implements UrParameter {
 
     /**
      * Sets the folder used to save the user preferences.
-     * 
+     *
      * @param userPreferencesFile the folder used to save the user preferences
      */
     public static void setUserPreferencesFolder(String userPreferencesFile) {

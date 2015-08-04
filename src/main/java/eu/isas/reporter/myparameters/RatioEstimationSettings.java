@@ -47,14 +47,14 @@ public class RatioEstimationSettings implements Serializable {
      * The validation threshold to use for PSM quantification.
      */
     private MatchValidationLevel psmValidation = MatchValidationLevel.confident;
-    
+
     /**
-     * Constructor
+     * Constructor.
      */
     public RatioEstimationSettings() {
-        
+
     }
-    
+
     @Override
     public RatioEstimationSettings clone() {
         RatioEstimationSettings clone = new RatioEstimationSettings();
@@ -258,6 +258,4 @@ public class RatioEstimationSettings implements Serializable {
     public void setPsmValidationLevel(MatchValidationLevel matchValidationLevel) {
         this.psmValidation = matchValidationLevel;
     }
-    
-    
 }

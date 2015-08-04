@@ -7,10 +7,10 @@ package eu.isas.reporter.calculation.normalization;
  */
 public enum NormalizationType {
 
-    none(0, "No normalization"), 
-    median(1, "Median"), 
-    mean(2, "Mean"), 
-    sum(3, "Sum"), 
+    none(0, "No normalization"),
+    median(1, "Median"),
+    mean(2, "Mean"),
+    sum(3, "Sum"),
     mode(4, "Mode");
 
     /**
@@ -64,5 +64,4 @@ public enum NormalizationType {
         }
         throw new IllegalArgumentException("No normalization type found for name " + name + ".");
     }
-
 }
