@@ -1,5 +1,6 @@
 package eu.isas.reporter.gui;
 
+import eu.isas.reporter.gui.settings.NormalizationSettingsDialog;
 import com.compomics.util.db.ObjectsCache;
 import com.compomics.util.examples.BareBonesBrowserLaunch;
 import com.compomics.util.experiment.MsExperiment;
@@ -19,7 +20,9 @@ import com.compomics.util.gui.renderers.AlignedListCellRenderer;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
 import eu.isas.peptideshaker.preferences.ProjectDetails;
 import eu.isas.peptideshaker.utils.CpsParent;
+import eu.isas.reporter.gui.settings.ReporterSettingsDialog;
 import eu.isas.reporter.myparameters.ReporterPreferences;
+import eu.isas.reporter.myparameters.ReporterSettings;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -72,9 +75,9 @@ public class NewDialog extends javax.swing.JDialog {
      */
     private ArrayList<File> mgfFiles = new ArrayList<File>();
     /**
-     * The quantification preferences.
+     * The reporter settings
      */
-    private ReporterPreferences reporterPreferences;
+    private ReporterSettings reporterSettings;
     /**
      * A simple progress dialog.
      */
@@ -126,7 +129,7 @@ public class NewDialog extends javax.swing.JDialog {
         setUpGui();
 
         // load the user preferences
-        loadUserPreferences();
+        loadDefaultPreferences();
 
         if (selectedMethod == null && methodsFactory.getMethodsNames() != null && methodsFactory.getMethodsNames().length > 0) {
             reporterMethodComboBox.setSelectedItem(methodsFactory.getMethodsNames()[0]);
@@ -729,7 +732,14 @@ public class NewDialog extends javax.swing.JDialog {
      * @param evt
      */
     private void editQuantPrefsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editQuantPrefsButtonActionPerformed
-        new PreferencesDialog(this, cpsBean.getIdentificationParameters().getSearchParameters(), true);
+        ReporterSettingsDialog reporterSettingsDialog = new ReporterSettingsDialog(this, reporterSettings, cpsBean.getIdentificationParameters().getSearchParameters().getModificationProfile(), getSelectedMethod(), true);
+        ReporterSettings newSettings = reporterSettingsDialog.getReporterSettings();
+        if (!reporterSettingsDialog.isCanceled() && !reporterSettings.isSameAs(newSettings)) {
+            reporterSettings = newSettings;
+            ReporterPreferences reporterPreferences = ReporterPreferences.getUserPreferences();
+            reporterPreferences.setDefaultSettings(newSettings);
+            ReporterPreferences.saveUserPreferences(reporterPreferences);
+        }
     }//GEN-LAST:event_editQuantPrefsButtonActionPerformed
 
     /**
@@ -889,8 +899,9 @@ public class NewDialog extends javax.swing.JDialog {
     /**
      * Loads the quantification preferences in the GUI.
      */
-    private void loadUserPreferences() {
-        reporterPreferences = ReporterPreferences.getUserPreferences();
+    private void loadDefaultPreferences() {
+        ReporterPreferences reporterPreferences = ReporterPreferences.getUserPreferences();
+        reporterSettings = reporterPreferences.getDefaultSettings();
     }
 
     /**
@@ -1060,14 +1071,14 @@ public class NewDialog extends javax.swing.JDialog {
                         } else {
                             selectedMethod = getMethod("TMT 6plex (ETD)");
                         }
-                        if (getReporterPreferences().getReporterIonSelectionSettings().getReporterIonsMzTolerance() > 0.0016) {
-                            getReporterPreferences().getReporterIonSelectionSettings().setReporterIonsMzTolerance(0.0016);
+                        if (reporterSettings.getReporterIonSelectionSettings().getReporterIonsMzTolerance() > 0.0016) {
+                            reporterSettings.getReporterIonSelectionSettings().setReporterIonsMzTolerance(0.0016);
                         }
                         break;
                     } else if (ptmName.contains("tmt") && ptmName.contains("10")) {
                         selectedMethod = getMethod("TMT 10plex");
-                        if (getReporterPreferences().getReporterIonSelectionSettings().getReporterIonsMzTolerance() > 0.0016) {
-                            getReporterPreferences().getReporterIonSelectionSettings().setReporterIonsMzTolerance(0.0016);
+                        if (reporterSettings.getReporterIonSelectionSettings().getReporterIonsMzTolerance() > 0.0016) {
+                            reporterSettings.getReporterIonSelectionSettings().setReporterIonsMzTolerance(0.0016);
                         }
                         break;
                     } else if (ptmName.contains("itraq")) {
@@ -1437,12 +1448,12 @@ public class NewDialog extends javax.swing.JDialog {
     }
 
     /**
-     * Returns the reporter preferences.
-     *
-     * @return the reporter preferences
+     * Returns the reporter settings.
+     * 
+     * @return the reporter settings
      */
-    public ReporterPreferences getReporterPreferences() {
-        return reporterPreferences;
+    public ReporterSettings getReporterSettings() {
+        return reporterSettings;
     }
 
     /**
