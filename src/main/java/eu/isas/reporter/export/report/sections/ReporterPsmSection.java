@@ -329,21 +329,21 @@ public class ReporterPsmSection {
                 PsmQuantificationDetails psmDetails = quantificationFeaturesGenerator.getPSMQuantificationDetails(spectrumKey);
                 return psmDetails.getRatio(sampleIndex).toString();
             case reporter_intensity:
-                SpectrumQuantificationDetails spectrumDetails = quantificationFeaturesGenerator.getSpectrumQuantificationDetails(reporterIonQuantification, reporterPreferences, spectrumKey);
+                SpectrumQuantificationDetails spectrumDetails = quantificationFeaturesGenerator.getSpectrumQuantificationDetails(reporterIonQuantification, reporterPreferences.getReporterIonSelectionSettings(), spectrumKey);
                 IonMatch ionMatch = spectrumDetails.getRepoterMatch(sampleIndex);
                 if (ionMatch == null) {
                     return "";
                 }
                 return ionMatch.peak.intensity + "";
             case reporter_mz:
-                spectrumDetails = quantificationFeaturesGenerator.getSpectrumQuantificationDetails(reporterIonQuantification, reporterPreferences, spectrumKey);
+                spectrumDetails = quantificationFeaturesGenerator.getSpectrumQuantificationDetails(reporterIonQuantification, reporterPreferences.getReporterIonSelectionSettings(), spectrumKey);
                 ionMatch = spectrumDetails.getRepoterMatch(sampleIndex);
                 if (ionMatch == null) {
                     return "";
                 }
                 return ionMatch.peak.mz + "";
             case deisotoped_intensity:
-                spectrumDetails = quantificationFeaturesGenerator.getSpectrumQuantificationDetails(reporterIonQuantification, reporterPreferences, spectrumKey);
+                spectrumDetails = quantificationFeaturesGenerator.getSpectrumQuantificationDetails(reporterIonQuantification, reporterPreferences.getReporterIonSelectionSettings(), spectrumKey);
                 return spectrumDetails.getDeisotopedIntensity(sampleIndex).toString();
             default:
                 return "Not implemented";

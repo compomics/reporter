@@ -377,8 +377,9 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * @param waitingHandler the waiting handler
      */
     private void displayResults(WaitingHandler waitingHandler) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
+        
         if (!reporterIonQuantification.hasNormalisationFactors()) {
-            Reporter.setNormalizationFactors(reporterIonQuantification, reporterPreferences, cpsBean.getIdentification(), quantificationFeaturesGenerator, progressDialog);
+            Reporter.setPeptideNormalizationFactors(reporterIonQuantification, reporterPreferences.getRatioEstimationSettings(), cpsBean.getIdentification(), quantificationFeaturesGenerator, progressDialog);
         }
 
         // cluster the protein profiles

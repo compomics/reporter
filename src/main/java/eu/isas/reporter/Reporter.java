@@ -29,6 +29,8 @@ import eu.isas.reporter.calculation.Deisotoper;
 import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
 import eu.isas.reporter.calculation.QuantificationFilter;
 import eu.isas.reporter.calculation.RatioEstimator;
+import eu.isas.reporter.myparameters.RatioEstimationSettings;
+import eu.isas.reporter.myparameters.ReporterIonSelectionSettings;
 import eu.isas.reporter.myparameters.ReporterPreferences;
 import eu.isas.reporter.quantificationdetails.PeptideQuantificationDetails;
 import eu.isas.reporter.quantificationdetails.ProteinQuantificationDetails;
@@ -63,7 +65,7 @@ public class Reporter {
      * Sets the normalization factors in the ReporterIonQuantification object.
      *
      * @param reporterIonQuantification the reporter ion quantification
-     * @param reporterPreferences the quantification preferences
+     * @param ratioEstimationSettings the ratio estimation settings
      * @param identification the identification
      * @param quantificationFeaturesGenerator the quantification features
      * generator
@@ -80,7 +82,7 @@ public class Reporter {
      * @throws java.lang.InterruptedException exception thrown whenever a
      * threading error occurred
      */
-    public static void setNormalizationFactors(ReporterIonQuantification reporterIonQuantification, ReporterPreferences reporterPreferences,
+    public static void setPeptideNormalizationFactors(ReporterIonQuantification reporterIonQuantification, RatioEstimationSettings ratioEstimationSettings,
             Identification identification, QuantificationFeaturesGenerator quantificationFeaturesGenerator, WaitingHandler waitingHandler)
             throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
 
@@ -114,7 +116,7 @@ public class Reporter {
 
                 for (String sampleIndex : reporterIonQuantification.getSampleIndexes()) {
                     Double ratio = matchQuantificationDetails.getRawRatio(sampleIndex);
-                    if (QuantificationFilter.isRatioValid(reporterPreferences, ratio) && ratio > 0) {
+                    if (QuantificationFilter.isRatioValid(ratioEstimationSettings, ratio) && ratio > 0) {
                         ratios.get(sampleIndex).add(ratio);
                     }
                 }
@@ -146,7 +148,7 @@ public class Reporter {
      * details
      * @param quantificationFeaturesGenerator the quantification features
      * generator used to store and retrieve quantification details
-     * @param reporterPreferences the quantification user settings
+     * @param ratioEstimationSettings the ratio estimation settings
      * @param reporterIonQuantification the reporter quantification settings
      * @param searchParameters the identification parameters
      * @param proteinMatch the protein match
@@ -167,7 +169,7 @@ public class Reporter {
      * threading error occurred
      */
     public static ProteinQuantificationDetails estimateProteinMatchQuantificationDetails(Identification identification,
-            QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterPreferences reporterPreferences,
+            QuantificationFeaturesGenerator quantificationFeaturesGenerator, RatioEstimationSettings ratioEstimationSettings,
             ReporterIonQuantification reporterIonQuantification, SearchParameters searchParameters, ProteinMatch proteinMatch, WaitingHandler waitingHandler)
             throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
 
@@ -185,7 +187,7 @@ public class Reporter {
 
             PeptideMatch peptideMatch = peptideMatchesIterator.next();
 
-            if (QuantificationFilter.isPeptideValid(reporterPreferences, identification, searchParameters, peptideMatch)) {
+            if (QuantificationFilter.isPeptideValid(ratioEstimationSettings, identification, searchParameters, peptideMatch)) {
                 for (String index : indexes) {
                     PeptideQuantificationDetails peptideQuantification = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideMatch, waitingHandler);
                     double ratio = peptideQuantification.getRatio(index, reporterIonQuantification);
@@ -194,7 +196,7 @@ public class Reporter {
                         channelRatios = new ArrayList<Double>(proteinMatch.getPeptideCount());
                         ratios.put(index, channelRatios);
                     }
-                    if (QuantificationFilter.isRatioValid(reporterPreferences, ratio)) {
+                    if (QuantificationFilter.isRatioValid(ratioEstimationSettings, ratio)) {
                         channelRatios.add(ratio);
                     }
                 }
@@ -203,7 +205,7 @@ public class Reporter {
 
         for (String index : indexes) {
             ArrayList<Double> channelRatios = ratios.get(index);
-            result.setRatio(index, RatioEstimator.estimateRatios(reporterPreferences, channelRatios));
+            result.setRatio(index, RatioEstimator.estimateRatios(ratioEstimationSettings, channelRatios));
         }
 
         return result;
@@ -217,7 +219,7 @@ public class Reporter {
      * details
      * @param quantificationFeaturesGenerator the quantification features
      * generator used to store and retrieve quantification details
-     * @param reporterPreferences the quantification user settings
+     * @param ratioEstimationSettings the ratio estimation settings
      * @param reporterIonQuantification the reporter quantification settings
      * @param searchParameters the identification settings used
      * @param sequenceMatchingPreferences the sequence matching preferences
@@ -241,7 +243,7 @@ public class Reporter {
      * threading error occurred
      */
     public static PtmSiteQuantificationDetails estimatePTMQuantificationDetails(Identification identification,
-            QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterPreferences reporterPreferences,
+            QuantificationFeaturesGenerator quantificationFeaturesGenerator, RatioEstimationSettings ratioEstimationSettings,
             ReporterIonQuantification reporterIonQuantification, SearchParameters searchParameters,
             SequenceMatchingPreferences sequenceMatchingPreferences, String ptmName, String matchKey, int site, WaitingHandler waitingHandler)
             throws IllegalArgumentException, SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
@@ -278,7 +280,7 @@ public class Reporter {
                     break;
                 }
             }
-            if (QuantificationFilter.isPeptideValid(reporterPreferences, identification, searchParameters, peptideMatch)) {
+            if (QuantificationFilter.isPeptideValid(ratioEstimationSettings, identification, searchParameters, peptideMatch)) {
                 for (String index : indexes) {
                     PeptideQuantificationDetails peptideQuantification = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideMatch, waitingHandler);
                     double ratio = peptideQuantification.getRatio(index, reporterIonQuantification);
@@ -287,7 +289,7 @@ public class Reporter {
                         channelRatios = new ArrayList<Double>(proteinMatch.getPeptideCount());
                         ratios.put(index, channelRatios);
                     }
-                    if (QuantificationFilter.isRatioValid(reporterPreferences, ratio)) {
+                    if (QuantificationFilter.isRatioValid(ratioEstimationSettings, ratio)) {
                         channelRatios.add(ratio);
                     }
                 }
@@ -296,7 +298,7 @@ public class Reporter {
 
         for (String index : indexes) {
             ArrayList<Double> channelRatios = ratios.get(index);
-            result.setRatio(index, RatioEstimator.estimateRatios(reporterPreferences, channelRatios));
+            result.setRatio(index, RatioEstimator.estimateRatios(ratioEstimationSettings, channelRatios));
         }
 
         return result;
@@ -309,7 +311,7 @@ public class Reporter {
      * details
      * @param quantificationFeaturesGenerator the quantification features
      * generator used to store and retrieve quantification details
-     * @param reporterPreferences the quantification user settings
+     * @param ratioEstimationSettings the ratio estimation settings
      * @param reporterIonQuantification the reporter quantification settings
      * @param peptideMatch the peptide match
      * @param waitingHandler waiting handler displaying progress to the user and
@@ -329,7 +331,7 @@ public class Reporter {
      * threading error occurred
      */
     public static PeptideQuantificationDetails estimatePeptideMatchQuantificationDetails(Identification identification,
-            QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterPreferences reporterPreferences,
+            QuantificationFeaturesGenerator quantificationFeaturesGenerator, RatioEstimationSettings ratioEstimationSettings,
             ReporterIonQuantification reporterIonQuantification, PeptideMatch peptideMatch, WaitingHandler waitingHandler)
             throws IOException, MzMLUnmarshallerException, SQLException, ClassNotFoundException, InterruptedException {
 
@@ -348,7 +350,7 @@ public class Reporter {
             SpectrumMatch spectrumMatch = psmIterator.next();
             String spectrumKey = spectrumMatch.getKey();
 
-            if (QuantificationFilter.isPsmValid(reporterPreferences, identification, spectrumKey)) {
+            if (QuantificationFilter.isPsmValid(ratioEstimationSettings, identification, spectrumKey)) {
                 for (String index : indexes) {
                     PsmQuantificationDetails spectrumQuantification = quantificationFeaturesGenerator.getPSMQuantificationDetails(spectrumKey);
                     double ratio = spectrumQuantification.getRatio(index);
@@ -357,7 +359,7 @@ public class Reporter {
                         channelRatios = new ArrayList<Double>(peptideMatch.getSpectrumCount());
                         ratios.put(index, channelRatios);
                     }
-                    if (QuantificationFilter.isRatioValid(reporterPreferences, ratio)) {
+                    if (QuantificationFilter.isRatioValid(ratioEstimationSettings, ratio)) {
                         channelRatios.add(ratio);
                     }
                 }
@@ -366,7 +368,7 @@ public class Reporter {
 
         for (String index : indexes) {
             ArrayList<Double> channelRatios = ratios.get(index);
-            result.setRawRatio(index, RatioEstimator.estimateRatios(reporterPreferences, channelRatios));
+            result.setRawRatio(index, RatioEstimator.estimateRatios(ratioEstimationSettings, channelRatios));
         }
 
         return result;
@@ -379,7 +381,8 @@ public class Reporter {
      * details
      * @param quantificationFeaturesGenerator the quantification features
      * generator used to store and retrieve quantification details
-     * @param reporterPreferences the quantification user settings
+     * @param reporterIonSelectionSettings the reporter ion selection settings
+     * @param ratioEstimationSettings the ratio estimation settings
      * @param reporterIonQuantification the reporter quantification settings
      * @param matchKey the key of the match of interest
      *
@@ -397,7 +400,7 @@ public class Reporter {
      * threading error occurred
      */
     public static PsmQuantificationDetails estimatePSMQuantificationDetails(Identification identification,
-            QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterPreferences reporterPreferences,
+            QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonSelectionSettings reporterIonSelectionSettings, RatioEstimationSettings ratioEstimationSettings,
             ReporterIonQuantification reporterIonQuantification, String matchKey)
             throws IOException, MzMLUnmarshallerException, SQLException, ClassNotFoundException, InterruptedException {
 
@@ -405,7 +408,7 @@ public class Reporter {
         // Find the spectra corresponding to this PSM according to the matching type selected by the user
         ArrayList<String> spectra = new ArrayList<String>();
 
-        if (reporterPreferences.isSameSpectra()) {
+        if (reporterIonSelectionSettings.isSameSpectra()) {
             spectra.add(matchKey);
         } else {
             SpectrumFactory spectrumFactory = SpectrumFactory.getInstance();
@@ -414,15 +417,15 @@ public class Reporter {
             // match spectra by mass and retention time
             for (String spectrumTitle : spectrumFactory.getSpectrumTitles(refFile)) {
                 Precursor precursor = spectrumFactory.getPrecursor(refFile, spectrumTitle);
-                if (Math.abs(precursor.getRt() - refPrecursor.getRt()) <= reporterPreferences.getPrecursorRTTolerance()) {
-                    if (reporterPreferences.isPrecursorMzPpm()) {
+                if (Math.abs(precursor.getRt() - refPrecursor.getRt()) <= reporterIonSelectionSettings.getPrecursorRTTolerance()) {
+                    if (reporterIonSelectionSettings.isPrecursorMzPpm()) {
                         double error = (precursor.getMz() - refPrecursor.getMz()) / refPrecursor.getMz() * 1000000;
-                        if (Math.abs(error) <= reporterPreferences.getPrecursorMzTolerance()) {
+                        if (Math.abs(error) <= reporterIonSelectionSettings.getPrecursorMzTolerance()) {
                             String key = Spectrum.getSpectrumKey(refFile, spectrumTitle);
                             spectra.add(key);
                         }
                     } else {
-                        if (Math.abs(precursor.getMz() - refPrecursor.getMz()) <= reporterPreferences.getPrecursorMzTolerance()) {
+                        if (Math.abs(precursor.getMz() - refPrecursor.getMz()) <= reporterIonSelectionSettings.getPrecursorMzTolerance()) {
                             String key = Spectrum.getSpectrumKey(refFile, spectrumTitle);
                             spectra.add(key);
                         }
@@ -436,7 +439,7 @@ public class Reporter {
         HashMap<String, ArrayList<Double>> ratios = new HashMap<String, ArrayList<Double>>();
 
         for (String spectrumKey : spectra) {
-            SpectrumQuantificationDetails spectrumQuantification = quantificationFeaturesGenerator.getSpectrumQuantificationDetails(reporterIonQuantification, reporterPreferences, spectrumKey);
+            SpectrumQuantificationDetails spectrumQuantification = quantificationFeaturesGenerator.getSpectrumQuantificationDetails(reporterIonQuantification, reporterIonSelectionSettings, spectrumKey);
             ArrayList<String> controlIndexes = reporterIonQuantification.getControlSamples();
             if (controlIndexes == null || controlIndexes.isEmpty()) {
                 controlIndexes = new ArrayList<String>(indexes);
@@ -471,7 +474,7 @@ public class Reporter {
                     channelRatios = new ArrayList<Double>(spectra.size());
                     ratios.put(index, channelRatios);
                 }
-                if (QuantificationFilter.isRatioValid(reporterPreferences, ratio)) {
+                if (QuantificationFilter.isRatioValid(ratioEstimationSettings, ratio)) {
                     channelRatios.add(ratio);
                 }
             }
@@ -479,7 +482,7 @@ public class Reporter {
 
         for (String index : indexes) {
             ArrayList<Double> channelRatios = ratios.get(index);
-            result.setRatio(index, RatioEstimator.estimateRatios(reporterPreferences, channelRatios));
+            result.setRatio(index, RatioEstimator.estimateRatios(ratioEstimationSettings, channelRatios));
         }
 
         return result;
@@ -493,7 +496,7 @@ public class Reporter {
      * @param quantificationFeaturesGenerator the quantification features
      * generator used to store and retrieve quantification details
      * @param reporterIonQuantification the reporter ion quantification details
-     * @param reporterPreferences the quantification preferences
+     * @param reporterIonSelectionSettings the reporter ion selection settings
      * @param matchKey the key of the spectrum of interest
      *
      * @return the quantification details of the spectrum
@@ -505,7 +508,7 @@ public class Reporter {
      */
     public static SpectrumQuantificationDetails estimateSpectrumQuantificationDetails(Identification identification,
             QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification,
-            ReporterPreferences reporterPreferences, String matchKey) throws IOException, MzMLUnmarshallerException {
+            ReporterIonSelectionSettings reporterIonSelectionSettings, String matchKey) throws IOException, MzMLUnmarshallerException {
 
         ReporterMethod reporterMethod = reporterIonQuantification.getReporterMethod();
         MSnSpectrum spectrum = (MSnSpectrum) SpectrumFactory.getInstance().getSpectrum(matchKey);
@@ -516,7 +519,7 @@ public class Reporter {
         HashMap<String, IonMatch> matchesMap = new HashMap<String, IonMatch>();
         for (String ionName : reporterIonQuantification.getSampleIndexes()) {
             ReporterIon reporterIon = reporterMethod.getReporterIon(ionName);
-            IonMatch bestMatch = getBestReporterIonMatch(reporterIon, 1, spectrum, reporterPreferences.getReporterIonsMzTolerance());
+            IonMatch bestMatch = getBestReporterIonMatch(reporterIon, 1, spectrum, reporterIonSelectionSettings.getReporterIonsMzTolerance());
             if (bestMatch != null) {
                 result.setReporterMatch(ionName, bestMatch);
                 matchesMap.put(ionName, bestMatch);
@@ -524,8 +527,8 @@ public class Reporter {
         }
 
         // get deisotoped intensities
-        Deisotoper deisotoper = quantificationFeaturesGenerator.getDeisotoper(reporterMethod, reporterPreferences.getReporterIonsMzTolerance());
-        HashMap<String, Double> deisotoped = deisotoper.deisotope(matchesMap, spectrum, reporterPreferences.getReporterIonsMzTolerance());
+        Deisotoper deisotoper = quantificationFeaturesGenerator.getDeisotoper(reporterMethod, reporterIonSelectionSettings.getReporterIonsMzTolerance());
+        HashMap<String, Double> deisotoped = deisotoper.deisotope(matchesMap, spectrum, reporterIonSelectionSettings.getReporterIonsMzTolerance());
         for (String index : reporterIonQuantification.getSampleIndexes()) {
             Double intensity = deisotoped.get(index);
             if (intensity == null || intensity < 0) {

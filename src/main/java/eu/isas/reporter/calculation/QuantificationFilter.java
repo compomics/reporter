@@ -7,7 +7,7 @@ import com.compomics.util.experiment.identification.SearchParameters;
 import com.compomics.util.experiment.identification.matches.ModificationMatch;
 import com.compomics.util.experiment.identification.matches.PeptideMatch;
 import eu.isas.peptideshaker.myparameters.PSParameter;
-import eu.isas.reporter.myparameters.ReporterPreferences;
+import eu.isas.reporter.myparameters.RatioEstimationSettings;
 import java.io.IOException;
 import java.sql.SQLException;
 
@@ -22,21 +22,21 @@ public class QuantificationFilter {
     /**
      * Filters out NaN and 0 ratios.
      *
-     * @param reporterPreferences the user quantification preferences
+     * @param ratioEstimationSettings the ratio estimation settings
      * @param ratio the ratio of interest
      *
      * @return true if the ratio is not NaN and should be accounted for
      * according to the user settings
      */
-    public static boolean isRatioValid(ReporterPreferences reporterPreferences, Double ratio) {
-        return !ratio.isNaN() && (!reporterPreferences.isIgnoreNullIntensities() || ratio > 0);
+    public static boolean isRatioValid(RatioEstimationSettings ratioEstimationSettings, Double ratio) {
+        return !ratio.isNaN() && (!ratioEstimationSettings.isIgnoreNullIntensities() || ratio > 0);
     }
 
     /**
      * Filters the PSMs to be used for quantification according to the user
      * quantification preferences.
      *
-     * @param reporterPreferences the user quantification preferences
+     * @param ratioEstimationSettings the ratio estimation settings
      * @param identification the identification where to get the information
      * from
      * @param matchKey the key of the match of interest
@@ -48,11 +48,11 @@ public class QuantificationFilter {
      * @throws ClassNotFoundException thrown if a ClassNotFoundException
      * @throws InterruptedException thrown if an InterruptedException
      */
-    public static boolean isPsmValid(ReporterPreferences reporterPreferences, Identification identification, String matchKey) throws SQLException, IOException, ClassNotFoundException, InterruptedException {
+    public static boolean isPsmValid(RatioEstimationSettings ratioEstimationSettings, Identification identification, String matchKey) throws SQLException, IOException, ClassNotFoundException, InterruptedException {
         // check match validation
         PSParameter psParameter = new PSParameter();
         psParameter = (PSParameter) identification.getSpectrumMatchParameter(matchKey, psParameter);
-        if (psParameter.getMatchValidationLevel().getIndex() < reporterPreferences.getPsmValidationLevel().getIndex()) {
+        if (psParameter.getMatchValidationLevel().getIndex() < ratioEstimationSettings.getPsmValidationLevel().getIndex()) {
             return false;
         }
         return true;
@@ -62,7 +62,7 @@ public class QuantificationFilter {
      * Filters the peptide to be used for quantification according to the user
      * quantification preferences.
      *
-     * @param reporterPreferences the user quantification preferences
+     * @param ratioEstimationSettings the ratio estimation settings
      * @param identification the identification where to get the information
      * from
      * @param searchParameters the identification parameters
@@ -75,13 +75,13 @@ public class QuantificationFilter {
      * @throws ClassNotFoundException thrown if a ClassNotFoundException
      * @throws InterruptedException thrown if an InterruptedException
      */
-    public static boolean isPeptideValid(ReporterPreferences reporterPreferences, Identification identification,
+    public static boolean isPeptideValid(RatioEstimationSettings ratioEstimationSettings, Identification identification,
             SearchParameters searchParameters, PeptideMatch peptideMatch) throws SQLException, IOException, ClassNotFoundException, InterruptedException {
 
         // check match validation
         PSParameter psParameter = new PSParameter();
         psParameter = (PSParameter) identification.getPeptideMatchParameter(peptideMatch.getKey(), psParameter);
-        if (psParameter.getMatchValidationLevel().getIndex() < reporterPreferences.getPeptideValidationLevel().getIndex()) {
+        if (psParameter.getMatchValidationLevel().getIndex() < ratioEstimationSettings.getPeptideValidationLevel().getIndex()) {
             return false;
         }
 
@@ -90,14 +90,14 @@ public class QuantificationFilter {
         Enzyme enzyme = searchParameters.getEnzyme();
         if (!enzyme.isSemiSpecific()) {
             int nMissedCleavages = peptide.getNMissedCleavages(searchParameters.getEnzyme());
-            if (reporterPreferences.isIgnoreMissedCleavages() && nMissedCleavages > 0) {
+            if (ratioEstimationSettings.isIgnoreMissedCleavages() && nMissedCleavages > 0) {
                 return false;
             }
         }
 
         // check modifications
         for (ModificationMatch modificationMatch : peptide.getModificationMatches()) {
-            if (reporterPreferences.getexcludingPtms().contains(modificationMatch.getTheoreticPtm())) {
+            if (ratioEstimationSettings.getexcludingPtms().contains(modificationMatch.getTheoreticPtm())) {
                 return false;
             }
         }
@@ -109,7 +109,7 @@ public class QuantificationFilter {
      * Filters the protein to be used for quantification according to the user
      * quantification preferences.
      *
-     * @param reporterPreferences the user quantification preferences
+     * @param ratioEstimationSettings the ratio estimation settings
      * @param identification the identification where to get the information
      * from
      * @param matchKey the key of the match of interest
@@ -121,12 +121,12 @@ public class QuantificationFilter {
      * @throws ClassNotFoundException thrown if a ClassNotFoundException
      * @throws InterruptedException thrown if an InterruptedException
      */
-    public static boolean isProteinValid(ReporterPreferences reporterPreferences, Identification identification,
+    public static boolean isProteinValid(RatioEstimationSettings ratioEstimationSettings, Identification identification,
             String matchKey) throws SQLException, IOException, ClassNotFoundException, InterruptedException {
         // check match validation
         PSParameter psParameter = new PSParameter();
         psParameter = (PSParameter) identification.getProteinMatchParameter(matchKey, psParameter);
-        if (psParameter.getMatchValidationLevel().getIndex() < reporterPreferences.getProteinValidationLevel().getIndex()) {
+        if (psParameter.getMatchValidationLevel().getIndex() < ratioEstimationSettings.getProteinValidationLevel().getIndex()) {
             return false;
         }
         return true;

@@ -4,6 +4,8 @@ import com.compomics.util.examples.BareBonesBrowserLaunch;
 import com.compomics.util.experiment.identification.SearchParameters;
 import com.compomics.util.gui.renderers.AlignedListCellRenderer;
 import eu.isas.peptideshaker.scoring.MatchValidationLevel;
+import eu.isas.reporter.myparameters.RatioEstimationSettings;
+import eu.isas.reporter.myparameters.ReporterIonSelectionSettings;
 import eu.isas.reporter.myparameters.ReporterPreferences;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -57,16 +59,17 @@ public class PreferencesDialog extends javax.swing.JDialog {
         proteinValidationCmb.setRenderer(new AlignedListCellRenderer(SwingConstants.CENTER));
         peptideValidationCmb.setRenderer(new AlignedListCellRenderer(SwingConstants.CENTER));
         psmValidationCmb.setRenderer(new AlignedListCellRenderer(SwingConstants.CENTER));
-
-        ionToleranceTxt.setText(newDialog.getReporterPreferences().getReporterIonsMzTolerance() + "");
-        if (newDialog.getReporterPreferences().isSameSpectra()) {
+        
+        ReporterIonSelectionSettings reporterIonSelectionSettings = newDialog.getReporterPreferences().getReporterIonSelectionSettings();
+        ionToleranceTxt.setText(reporterIonSelectionSettings.getReporterIonsMzTolerance() + "");
+        if (reporterIonSelectionSettings.isSameSpectra()) {
             sameSpectra.setSelected(true);
             precursorMatching.setSelected(false);
         } else {
             sameSpectra.setSelected(false);
             precursorMatching.setSelected(true);
-            mzTolTxt.setText(newDialog.getReporterPreferences().getPrecursorMzTolerance() + "");
-            rtTolTxt.setText(newDialog.getReporterPreferences().getPrecursorRTTolerance() + "");
+            mzTolTxt.setText(reporterIonSelectionSettings.getPrecursorMzTolerance() + "");
+            rtTolTxt.setText(reporterIonSelectionSettings.getPrecursorRTTolerance() + "");
         }
 
         mzTolTxt.setText(searchParameters.getPrecursorAccuracy() + "");
@@ -667,12 +670,14 @@ public class PreferencesDialog extends javax.swing.JDialog {
      * Loads values from the quantificationPreferences.
      */
     private void loadValues() {
-        miscleavageCheck.setSelected(newDialog.getReporterPreferences().isIgnoreMissedCleavages());
-        nullIntensitiesCheck.setSelected(newDialog.getReporterPreferences().isIgnoreNullIntensities());
-        widthTxt.setText(newDialog.getReporterPreferences().getPercentile() + "");
-        resolutionTxt.setText(newDialog.getReporterPreferences().getRatioResolution() + "");
+        
+        RatioEstimationSettings ratioEstimationSettings = newDialog.getReporterPreferences().getRatioEstimationSettings();
+        miscleavageCheck.setSelected(ratioEstimationSettings.isIgnoreMissedCleavages());
+        nullIntensitiesCheck.setSelected(ratioEstimationSettings.isIgnoreNullIntensities());
+        widthTxt.setText(ratioEstimationSettings.getPercentile() + "");
+        resolutionTxt.setText(ratioEstimationSettings.getRatioResolution() + "");
 
-        ArrayList<String> selectedModificationsList = newDialog.getReporterPreferences().getexcludingPtms();
+        ArrayList<String> selectedModificationsList = ratioEstimationSettings.getexcludingPtms();
         String[] allModificationsAsArray = new String[selectedModificationsList.size()];
         for (int i = 0; i < selectedModificationsList.size(); i++) {
             allModificationsAsArray[i] = selectedModificationsList.get(i);
@@ -680,9 +685,9 @@ public class PreferencesDialog extends javax.swing.JDialog {
         selectedPTMs.setListData(allModificationsAsArray);
         updateModificationList();
 
-        proteinValidationCmb.setSelectedIndex(newDialog.getReporterPreferences().getProteinValidationLevel().getIndex());
-        peptideValidationCmb.setSelectedIndex(newDialog.getReporterPreferences().getPeptideValidationLevel().getIndex());
-        psmValidationCmb.setSelectedIndex(newDialog.getReporterPreferences().getPsmValidationLevel().getIndex());
+        proteinValidationCmb.setSelectedIndex(ratioEstimationSettings.getProteinValidationLevel().getIndex());
+        peptideValidationCmb.setSelectedIndex(ratioEstimationSettings.getPeptideValidationLevel().getIndex());
+        psmValidationCmb.setSelectedIndex(ratioEstimationSettings.getPsmValidationLevel().getIndex());
     }
 
     /**
@@ -690,28 +695,30 @@ public class PreferencesDialog extends javax.swing.JDialog {
      */
     private void saveValues() {
 
-        newDialog.getReporterPreferences().setIgnoreMissedCleavages(miscleavageCheck.isSelected());
-        newDialog.getReporterPreferences().setIgnoreNullIntensities(nullIntensitiesCheck.isSelected());
-        newDialog.getReporterPreferences().setPercentile(new Double(widthTxt.getText()));
-        newDialog.getReporterPreferences().setRatioResolution(new Double(resolutionTxt.getText()));
-        newDialog.getReporterPreferences().emptyPTMList();
+        RatioEstimationSettings ratioEstimationSettings = newDialog.getReporterPreferences().getRatioEstimationSettings();
+        ratioEstimationSettings.setIgnoreMissedCleavages(miscleavageCheck.isSelected());
+        ratioEstimationSettings.setIgnoreNullIntensities(nullIntensitiesCheck.isSelected());
+        ratioEstimationSettings.setPercentile(new Double(widthTxt.getText()));
+        ratioEstimationSettings.setRatioResolution(new Double(resolutionTxt.getText()));
+        ratioEstimationSettings.emptyPTMList();
 
         for (int j = 0; j < selectedPTMs.getModel().getSize(); j++) {
             String name = (String) selectedPTMs.getModel().getElementAt(j);
-            newDialog.getReporterPreferences().addExcludingPtm(name);
+            ratioEstimationSettings.addExcludingPtm(name);
         }
 
-        newDialog.getReporterPreferences().setProteinValidationLevel(MatchValidationLevel.getMatchValidationLevel(proteinValidationCmb.getSelectedIndex()));
-        newDialog.getReporterPreferences().setPeptideValidationLevel(MatchValidationLevel.getMatchValidationLevel(peptideValidationCmb.getSelectedIndex()));
-        newDialog.getReporterPreferences().setPsmValidationLevel(MatchValidationLevel.getMatchValidationLevel(psmValidationCmb.getSelectedIndex()));
+        ratioEstimationSettings.setProteinValidationLevel(MatchValidationLevel.getMatchValidationLevel(proteinValidationCmb.getSelectedIndex()));
+        ratioEstimationSettings.setPeptideValidationLevel(MatchValidationLevel.getMatchValidationLevel(peptideValidationCmb.getSelectedIndex()));
+        ratioEstimationSettings.setPsmValidationLevel(MatchValidationLevel.getMatchValidationLevel(psmValidationCmb.getSelectedIndex()));
 
-        newDialog.getReporterPreferences().setReporterIonsMzTolerance(new Double(ionToleranceTxt.getText()));
+        ReporterIonSelectionSettings reporterIonSelectionSettings = newDialog.getReporterPreferences().getReporterIonSelectionSettings();
+        reporterIonSelectionSettings.setReporterIonsMzTolerance(new Double(ionToleranceTxt.getText()));
         if (sameSpectra.isSelected()) {
-            newDialog.getReporterPreferences().setSameSpectra(true);
+            reporterIonSelectionSettings.setSameSpectra(true);
         } else {
-            newDialog.getReporterPreferences().setSameSpectra(false);
-            newDialog.getReporterPreferences().setPrecursorMzTolerance(new Double(mzTolTxt.getText()));
-            newDialog.getReporterPreferences().setPrecursorRTTolerance(new Double(rtTolTxt.getText()));
+            reporterIonSelectionSettings.setSameSpectra(false);
+            reporterIonSelectionSettings.setPrecursorMzTolerance(new Double(mzTolTxt.getText()));
+            reporterIonSelectionSettings.setPrecursorRTTolerance(new Double(rtTolTxt.getText()));
         }
 
         ReporterPreferences.saveUserPreferences(newDialog.getReporterPreferences());

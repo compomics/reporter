@@ -14,81 +14,19 @@ import java.util.ArrayList;
  */
 public class ReporterPreferences implements UrParameter {
 
-    /**
-     * Fixed serial number for serialization backward compatibility.
-     */
-    static final long serialVersionUID = 3054710627326315328L;
+    
     /**
      * Location of the user preferences file.
      */
     private static String USER_PREFERENCES_FILE = System.getProperty("user.home") + "/.reporter/reporter_user_preferences.cup";
-    /////////////////////
-    // Import parameters
-    /////////////////////
-    /*
-     * Tolerance for reporter ion matching.
-     */
-    private double ReporterIonsMzTolerance = 0.0016;
     /**
-     * Quantification and identification are conducted on the same spectra
-     * (identification files import only).
+     * The settings for the selection fo the  reporter ions in spectra
      */
-    private boolean sameSpectra = true;
+    private ReporterIonSelectionSettings reporterIonSelectionSettings;
     /**
-     * Precursor mz tolerance used to link quantification to identifications in
-     * case these are not recorded on the same spectra. (identification files
-     * import only)
+     * The ratio estimation settings
      */
-    private double precursorMzTolerance = 1;
-    /**
-     * Indicates if the precursor mz tolerance in ppm.
-     */
-    private boolean precursorMzPpm;
-    /**
-     * Precursor RT tolerance used to link quantification to identifications in
-     * case these are not recorded on the same spectra. (identification files
-     * import only)
-     */
-    private double precursorRTTolerance = 10;
-    //////////////////////////
-    //  Processing parameters
-    //////////////////////////
-    /**
-     * Boolean indicating whether spectra presenting null intensities should be
-     * ignored.
-     */
-    private boolean ignoreNullIntensities = false;
-    /**
-     * Boolean indicating whether peptides presenting missed cleavages should be
-     * ignored.
-     */
-    private boolean ignoreMissedCleavages = false;
-    /**
-     * Percentage of ratios to consider for the likelihood estimator window
-     * setting.
-     */
-    private double percentile = 68;
-    /**
-     * Ratio resolution.
-     */
-    private double ratioResolution = 0.01;
-    /**
-     * List of PTMs to exclude. Peptides presenting these PTMs will not be
-     * accounted for during quantification.
-     */
-    private ArrayList<String> excludingPTM = new ArrayList<String>();
-    /**
-     * The validation threshold to use for protein quantification.
-     */
-    private MatchValidationLevel proteinValidation = MatchValidationLevel.confident;
-    /**
-     * The validation threshold to use for peptide quantification.
-     */
-    private MatchValidationLevel peptideValidation = MatchValidationLevel.confident;
-    /**
-     * The validation threshold to use for PSM quantification.
-     */
-    private MatchValidationLevel psmValidation = MatchValidationLevel.confident;
+    private RatioEstimationSettings ratioEstimationSettings;
 
     /**
      * Constructor.
@@ -96,212 +34,6 @@ public class ReporterPreferences implements UrParameter {
     private ReporterPreferences() {
     }
 
-    /**
-     * Returns the tolerance used to match reporter ions.
-     *
-     * @return the tolerance used to match reporter ions
-     */
-    public double getReporterIonsMzTolerance() {
-        return ReporterIonsMzTolerance;
-    }
-
-    /**
-     * Sets the tolerance used to match reporter ions.
-     *
-     * @param ReporterIonsMzTolerance the tolerance used to match reporter ions
-     */
-    public void setReporterIonsMzTolerance(double ReporterIonsMzTolerance) {
-        this.ReporterIonsMzTolerance = ReporterIonsMzTolerance;
-    }
-
-    /**
-     * Returns the precursor m/Z tolerance used to match quantification spectra
-     * to identification spectra.
-     *
-     * @return the precursor m/Z tolerance used to match quantification spectra
-     * to identification spectra
-     */
-    public double getPrecursorMzTolerance() {
-        return precursorMzTolerance;
-    }
-
-    /**
-     * Sets the precursor m/z tolerance used to match quantification spectra to
-     * identification spectra.
-     *
-     * @param precursorMzTolerance the precursor m/z tolerance used to match
-     * quantification spectra to identification spectra
-     */
-    public void setPrecursorMzTolerance(double precursorMzTolerance) {
-        this.precursorMzTolerance = precursorMzTolerance;
-    }
-
-    /**
-     * Returns the precursor RT tolerance used to match quantification spectra
-     * to identification spectra.
-     *
-     * @return the precursor RT tolerance used to match quantification spectra
-     * to identification spectra
-     */
-    public double getPrecursorRTTolerance() {
-        return precursorRTTolerance;
-    }
-
-    /**
-     * Sets the precursor RT tolerance used to match quantification spectra to
-     * identification spectra.
-     *
-     * @param precursorRTTolerance the precursor RT tolerance used to match
-     * quantification spectra to identification spectra
-     */
-    public void setPrecursorRTTolerance(double precursorRTTolerance) {
-        this.precursorRTTolerance = precursorRTTolerance;
-    }
-
-    /**
-     * Returns a boolean indicating whether identification and quantification
-     * are performed on the same spectra.
-     *
-     * @return a boolean indicating whether identification and quantification
-     * are performed on the same spectra
-     */
-    public boolean isSameSpectra() {
-        return sameSpectra;
-    }
-
-    /**
-     * Sets whether identification and quantification are performed on the same
-     * spectra.
-     *
-     * @param sameSpectra whether identification and quantification are
-     * performed on the same spectra
-     */
-    public void setSameSpectra(boolean sameSpectra) {
-        this.sameSpectra = sameSpectra;
-    }
-
-    /**
-     * Returns a boolean indicating whether miscleaved peptides should be
-     * ignored.
-     *
-     * @return a boolean indicating whether miscleaved peptides should be
-     * ignored
-     */
-    public boolean isIgnoreMissedCleavages() {
-        return ignoreMissedCleavages;
-    }
-
-    /**
-     * Sets whether miscleaved peptides should be ignored.
-     *
-     * @param ignoreMissedCleavages a boolean indicating whether miscleaved
-     * peptides should be ignored
-     */
-    public void setIgnoreMissedCleavages(boolean ignoreMissedCleavages) {
-        this.ignoreMissedCleavages = ignoreMissedCleavages;
-    }
-
-    /**
-     * Returns a boolean indicating whether null intensities should be ignored.
-     *
-     * @return a boolean indicating whether null intensities should be ignored
-     */
-    public boolean isIgnoreNullIntensities() {
-        return ignoreNullIntensities;
-    }
-
-    /**
-     * Sets whether null intensities should be ignored.
-     *
-     * @param ignoreNullIntensities a boolean indicating whether null
-     * intensities should be ignored
-     */
-    public void setIgnoreNullIntensities(boolean ignoreNullIntensities) {
-        this.ignoreNullIntensities = ignoreNullIntensities;
-    }
-
-    /**
-     * Returns the share in percent of ratios considered to set the width of the
-     * maximum likelihood estimators.
-     *
-     * @return the share in percent of ratios considered to set the width of the
-     * maximum likelihood estimators
-     */
-    public double getPercentile() {
-        return percentile;
-    }
-
-    /**
-     * Sets the share in percent of ratios considered to set the width of the
-     * maximum likelihood estimators.
-     *
-     * @param percentile the share in percent of ratios considered to set the
-     * width of the maximum likelihood estimators
-     */
-    public void setPercentile(double percentile) {
-        this.percentile = percentile;
-    }
-
-    /**
-     * Returns the ratio resolution.
-     *
-     * @return the ratio resolution
-     */
-    public double getRatioResolution() {
-        return ratioResolution;
-    }
-
-    /**
-     * Sets the ratio resolution.
-     *
-     * @param ratioResolution the ratio resolution
-     */
-    public void setRatioResolution(double ratioResolution) {
-        this.ratioResolution = ratioResolution;
-    }
-
-    /**
-     * Returns the list of PTMs to ignore.
-     *
-     * @return the list of PTMs to ignore
-     */
-    public ArrayList<String> getexcludingPtms() {
-        return excludingPTM;
-    }
-
-    /**
-     * Adds an excluding PTM.
-     *
-     * @param ptmName the name of the excluding ptm
-     */
-    public void addExcludingPtm(String ptmName) {
-        this.excludingPTM.add(ptmName);
-    }
-
-    /**
-     * Empty the list of ignored PTMs.
-     */
-    public void emptyPTMList() {
-        excludingPTM.clear();
-    }
-
-    /**
-     * Indicates whether the precursor matching tolerance is in ppm or in m/z
-     *
-     * @return true if ppm
-     */
-    public boolean isPrecursorMzPpm() {
-        return precursorMzPpm;
-    }
-
-    /**
-     * Sets whether the precursor matching tolerance is in ppm or in m/z
-     *
-     * @param precursorMzPpm true for ppm
-     */
-    public void setPrecursorMzPpm(boolean precursorMzPpm) {
-        this.precursorMzPpm = precursorMzPpm;
-    }
 
     /**
      * Convenience method saving the user preferences.
@@ -350,60 +82,39 @@ public class ReporterPreferences implements UrParameter {
     }
 
     /**
-     * Indicates the validation level to require for protein quantification.
-     *
-     * @return the minimal validation level for a protein to be accounted for
+     * Returns the reporter ion selection settings.
+     * 
+     * @return the reporter ion selection settings
      */
-    public MatchValidationLevel getProteinValidationLevel() {
-        return proteinValidation;
+    public ReporterIonSelectionSettings getReporterIonSelectionSettings() {
+        return reporterIonSelectionSettings;
     }
 
     /**
-     * Sets the validation level to require for quantification.
-     *
-     * @param matchValidationLevel the minimal validation level for a protein to
-     * be accounted for
+     * Sets the reporter ion selection settings.
+     * 
+     * @param reporterIonSelectionSettings the reporter ion selection settings
      */
-    public void setProteinValidationLevel(MatchValidationLevel matchValidationLevel) {
-        this.proteinValidation = matchValidationLevel;
+    public void setReporterIonSelectionSettings(ReporterIonSelectionSettings reporterIonSelectionSettings) {
+        this.reporterIonSelectionSettings = reporterIonSelectionSettings;
     }
 
     /**
-     * Indicates the validation level to require for peptide quantification.
-     *
-     * @return the minimal validation level for a protein to be accounted for
+     * Returns the ratio estimation settings.
+     * 
+     * @return the ratio estimation settings
      */
-    public MatchValidationLevel getPeptideValidationLevel() {
-        return peptideValidation;
+    public RatioEstimationSettings getRatioEstimationSettings() {
+        return ratioEstimationSettings;
     }
 
     /**
-     * Sets the validation level to require for quantification.
-     *
-     * @param matchValidationLevel the minimal validation level for a peptide to
-     * be accounted for
+     * Sets the ratio estimation settings.
+     * 
+     * @param ratioEstimationSettings the ratio estimation settings
      */
-    public void setPeptideValidationLevel(MatchValidationLevel matchValidationLevel) {
-        this.peptideValidation = matchValidationLevel;
-    }
-
-    /**
-     * Indicates the validation level to require for PSM quantification.
-     *
-     * @return the minimal validation level for a protein to be accounted for
-     */
-    public MatchValidationLevel getPsmValidationLevel() {
-        return psmValidation;
-    }
-
-    /**
-     * Sets the validation level to require for quantification.
-     *
-     * @param matchValidationLevel the minimal validation level for a PSM to be
-     * accounted for
-     */
-    public void setPsmValidationLevel(MatchValidationLevel matchValidationLevel) {
-        this.psmValidation = matchValidationLevel;
+    public void setRatioEstimationSettings(RatioEstimationSettings ratioEstimationSettings) {
+        this.ratioEstimationSettings = ratioEstimationSettings;
     }
 
     /**

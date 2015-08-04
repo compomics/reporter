@@ -1,7 +1,7 @@
 package eu.isas.reporter.calculation;
 
 import com.compomics.util.math.BasicMathFunctions;
-import eu.isas.reporter.myparameters.ReporterPreferences;
+import eu.isas.reporter.myparameters.RatioEstimationSettings;
 import java.util.ArrayList;
 import java.util.Collections;
 import org.apache.commons.math.util.FastMath;
@@ -17,11 +17,11 @@ public class RatioEstimator {
     /**
      * Estimate the ratio resulting from the compilation of several ratios.
      *
-     * @param reporterPreferences the quantification preferences
+     * @param ratioEstimationSettings the ratio estimation settings
      * @param ratios The input ratios
      * @return the resulting ratio
      */
-    public static Double estimateRatios(ReporterPreferences reporterPreferences, ArrayList<Double> ratios) {
+    public static Double estimateRatios(RatioEstimationSettings ratioEstimationSettings, ArrayList<Double> ratios) {
 
         if (ratios == null || ratios.isEmpty()) {
             return Double.NaN;
@@ -69,10 +69,10 @@ public class RatioEstimator {
             }
             logRatios[i] = logRatio;
         }
-        if (ratioMax - ratioMin <= reporterPreferences.getRatioResolution()) {
+        if (ratioMax - ratioMin <= ratioEstimationSettings.getRatioResolution()) {
             return BasicMathFunctions.median(ratios);
         }
-        double logResult = mEstimate(reporterPreferences, logRatios);
+        double logResult = mEstimate(ratioEstimationSettings, logRatios);
         double result = FastMath.pow(10, logResult);
         return result;
     }
@@ -81,14 +81,14 @@ public class RatioEstimator {
      * Returns the compilation of various ratios using a redescending
      * M-estimator.
      *
-     * @param reporterPreferences the reporter quantification preferences
+     * @param ratioEstimationSettings the ratio estimation settings
      * @param ratios various imput ratios
      *
      * @return the resulting ratio
      */
-    public static Double mEstimate(ReporterPreferences reporterPreferences, double[] ratios) {
+    public static Double mEstimate(RatioEstimationSettings ratioEstimationSettings, double[] ratios) {
 
-        double complement = (100 - reporterPreferences.getPercentile()) / 200;
+        double complement = (100 - ratioEstimationSettings.getPercentile()) / 200;
         if (complement < 0 || complement > 100) {
             throw new IllegalArgumentException("Incorrect complement window size of " + complement + ".");
         }
@@ -96,7 +96,7 @@ public class RatioEstimator {
         double percentileHigh = BasicMathFunctions.percentile(ratios, 1 - complement);
         double window = percentileHigh - percentileLow;
         double halfWindow = window / 2;
-        double resolution = reporterPreferences.getRatioResolution();
+        double resolution = ratioEstimationSettings.getRatioResolution();
 
         if (window == 0) {
             return BasicMathFunctions.median(ratios);
