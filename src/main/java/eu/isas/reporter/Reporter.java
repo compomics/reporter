@@ -29,6 +29,8 @@ import eu.isas.reporter.calculation.Deisotoper;
 import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
 import eu.isas.reporter.calculation.QuantificationFilter;
 import eu.isas.reporter.calculation.RatioEstimator;
+import eu.isas.reporter.calculation.normalization.NormalizationType;
+import eu.isas.reporter.myparameters.NormalizationSettings;
 import eu.isas.reporter.myparameters.RatioEstimationSettings;
 import eu.isas.reporter.myparameters.ReporterIonSelectionSettings;
 import eu.isas.reporter.myparameters.ReporterPreferences;
@@ -66,6 +68,7 @@ public class Reporter {
      *
      * @param reporterIonQuantification the reporter ion quantification
      * @param ratioEstimationSettings the ratio estimation settings
+     * @param normalizationSettings the normalization settings
      * @param identification the identification
      * @param quantificationFeaturesGenerator the quantification features
      * generator
@@ -82,7 +85,7 @@ public class Reporter {
      * @throws java.lang.InterruptedException exception thrown whenever a
      * threading error occurred
      */
-    public static void setPeptideNormalizationFactors(ReporterIonQuantification reporterIonQuantification, RatioEstimationSettings ratioEstimationSettings,
+    public static void setPeptideNormalizationFactors(ReporterIonQuantification reporterIonQuantification, RatioEstimationSettings ratioEstimationSettings, NormalizationSettings normalizationSettings,
             Identification identification, QuantificationFeaturesGenerator quantificationFeaturesGenerator, WaitingHandler waitingHandler)
             throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
 
@@ -95,45 +98,61 @@ public class Reporter {
         ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
         parameters.add(psParameter);
 
-        if (waitingHandler != null) {
-            waitingHandler.setWaitingText("Ratio Normalization. Please Wait...");
-            waitingHandler.resetPrimaryProgressCounter();
-            waitingHandler.setPrimaryProgressCounterIndeterminate(false);
-            waitingHandler.setMaxPrimaryProgressCounter(identification.getPeptideIdentification().size());
-        }
-
-        PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(parameters, true, parameters, waitingHandler);
-
-        while (peptideMatchesIterator.hasNext()) {
-
-            PeptideMatch peptideMatch = peptideMatchesIterator.next();
-            String peptideKey = peptideMatch.getKey();
-            psParameter = (PSParameter) identification.getPeptideMatchParameter(peptideKey, psParameter);
-
-            if (psParameter.getMatchValidationLevel().isValidated()) {
-
-                PeptideQuantificationDetails matchQuantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideMatch, waitingHandler);
-
-                for (String sampleIndex : reporterIonQuantification.getSampleIndexes()) {
-                    Double ratio = matchQuantificationDetails.getRawRatio(sampleIndex);
-                    if (QuantificationFilter.isRatioValid(ratioEstimationSettings, ratio) && ratio > 0) {
-                        ratios.get(sampleIndex).add(ratio);
-                    }
-                }
-            }
+        if (normalizationSettings.getPeptideNormalization() != NormalizationType.none) {
 
             if (waitingHandler != null) {
-                if (waitingHandler.isRunCanceled()) {
-                    return;
+                waitingHandler.setWaitingText("Ratio Normalization. Please Wait...");
+                waitingHandler.resetPrimaryProgressCounter();
+                waitingHandler.setPrimaryProgressCounterIndeterminate(false);
+                waitingHandler.setMaxPrimaryProgressCounter(identification.getPeptideIdentification().size());
+            }
+
+            PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(parameters, true, parameters, waitingHandler);
+
+            while (peptideMatchesIterator.hasNext()) {
+
+                PeptideMatch peptideMatch = peptideMatchesIterator.next();
+                String peptideKey = peptideMatch.getKey();
+                psParameter = (PSParameter) identification.getPeptideMatchParameter(peptideKey, psParameter);
+
+                if (psParameter.getMatchValidationLevel().isValidated()) {
+
+                    PeptideQuantificationDetails matchQuantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideMatch, waitingHandler);
+
+                    for (String sampleIndex : reporterIonQuantification.getSampleIndexes()) {
+                        Double ratio = matchQuantificationDetails.getRawRatio(sampleIndex);
+                        if (QuantificationFilter.isRatioValid(ratioEstimationSettings, ratio) && ratio > 0) {
+                            ratios.get(sampleIndex).add(ratio);
+                        }
+                    }
                 }
-                waitingHandler.increaseSecondaryProgressCounter();
+
+                if (waitingHandler != null) {
+                    if (waitingHandler.isRunCanceled()) {
+                        return;
+                    }
+                    waitingHandler.increaseSecondaryProgressCounter();
+                }
             }
         }
 
         for (String sampleIndex : reporterIonQuantification.getSampleIndexes()) {
             double normalisationFactor;
+            ArrayList<Double> rawRatios = ratios.get(sampleIndex);
             if (ratios.get(sampleIndex) != null && !ratios.get(sampleIndex).isEmpty()) {
-                normalisationFactor = BasicMathFunctions.median(ratios.get(sampleIndex));
+                if (normalizationSettings.getPeptideNormalization() == NormalizationType.none) {
+                    normalisationFactor = 1;
+                } else if (normalizationSettings.getPeptideNormalization() == NormalizationType.mean) {
+                    normalisationFactor = BasicMathFunctions.mean(rawRatios);
+                } else if (normalizationSettings.getPeptideNormalization() == NormalizationType.median) {
+                    normalisationFactor = BasicMathFunctions.median(rawRatios);
+                } else if (normalizationSettings.getPeptideNormalization() == NormalizationType.mode) {
+                    throw new UnsupportedOperationException("Normalization method not implemented.");
+                } else if (normalizationSettings.getPeptideNormalization() == NormalizationType.sum) {
+                    throw new UnsupportedOperationException("Normalization method not implemented.");
+                } else {
+                    throw new UnsupportedOperationException("Normalization method not implemented.");
+                }
             } else {
                 normalisationFactor = 1;
             }
