@@ -2,7 +2,6 @@ package eu.isas.reporter.gui.settings;
 
 import eu.isas.reporter.myparameters.NormalizationSettings;
 import eu.isas.reporter.myparameters.RatioEstimationSettings;
-import java.io.Serializable;
 import javax.swing.JDialog;
 
 /**
@@ -146,13 +145,13 @@ public class NormalizationSettingsDialog extends javax.swing.JDialog {
 
     /**
      * Indicates whether the user canceled the editing.
-     * 
+     *
      * @return a boolean indicating whether the user canceled the editing
      */
     public boolean isCanceled() {
         return canceled;
     }
-    
+
     /**
      * Methods which validates the user input (returns false in case of wrong
      * input).
@@ -163,7 +162,6 @@ public class NormalizationSettingsDialog extends javax.swing.JDialog {
 
         return true;
     }
-
 
     /**
      * Returns the settings as set by the user.

@@ -34,14 +34,13 @@ public class ReporterIonSelectionSettings implements Serializable {
      * import only)
      */
     private double precursorRTTolerance = 10;
-    
+
     /**
      * Constructor. Creates new reporter ion selection settings set to default.
      */
     public ReporterIonSelectionSettings() {
-        
+
     }
-    
     @Override
     public ReporterIonSelectionSettings clone() {
         ReporterIonSelectionSettings clone = new ReporterIonSelectionSettings();

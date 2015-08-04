@@ -6,8 +6,9 @@ import eu.isas.reporter.myparameters.ReporterSettings;
 import junit.framework.TestCase;
 
 /**
- *
- * @author Marc
+ * Ratio test.
+ * 
+ * @author Marc Vaudel
  */
 public class RatioTest extends TestCase {
 
@@ -20,5 +21,4 @@ public class RatioTest extends TestCase {
             e.printStackTrace();
         }
     }
-
 }

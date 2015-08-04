@@ -40,7 +40,6 @@ import eu.isas.reporter.ReporterWrapper;
 import eu.isas.reporter.calculation.QuantificationFeaturesCache;
 import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
 import eu.isas.reporter.gui.export.ReportDialog;
-import eu.isas.reporter.myparameters.ReporterPreferences;
 import eu.isas.reporter.gui.resultpanels.OverviewPanel;
 import eu.isas.reporter.myparameters.ReporterSettings;
 import eu.isas.reporter.preferences.DisplayPreferences;
@@ -56,7 +55,9 @@ import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import javax.swing.Box;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import net.jimmc.jshortcut.JShellLink;
@@ -163,6 +164,14 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * List of the currently selected proteins.
      */
     private ArrayList<String> selectedProteins = new ArrayList<String>();
+    /**
+     * The Jump To panel.
+     */
+    private JumpToPanel jumpToPanel;
+    /**
+     * The filtered protein keys used in the clustering.
+     */
+    private String[] filteredProteinKeys;
 
     /**
      * Creates a new ReporterGUI.
@@ -224,6 +233,13 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
 
             overviewPanel = new OverviewPanel(this);
             overviewJPanel.add(overviewPanel);
+
+            jumpToPanel = new JumpToPanel(this);
+            jumpToPanel.setEnabled(false);
+
+            menuBar.add(Box.createHorizontalGlue());
+
+            menuBar.add(jumpToPanel);
 
             // set the title of the frame and add the icon
             setTitle("Reporter " + new Properties().getVersion());
@@ -378,7 +394,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * @param waitingHandler the waiting handler
      */
     private void displayResults(WaitingHandler waitingHandler) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
-        
+
         if (!reporterIonQuantification.hasNormalisationFactors()) {
             Reporter.setPeptideNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(), reporterSettings.getNormalizationSettings(), cpsBean.getIdentification(), quantificationFeaturesGenerator, progressDialog);
         }
@@ -387,6 +403,12 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         clusterProteinProfiles(waitingHandler);
 
         overviewPanel.updateDisplay();
+
+        jumpToPanel.setEnabled(true);
+        jumpToPanel.setType(JumpToPanel.JumpType.proteinAndPeptides);
+        ArrayList<String> filteredProteinKeysArray = new ArrayList<String>();
+        filteredProteinKeysArray.addAll(Arrays.asList(filteredProteinKeys));
+        jumpToPanel.setProteinKeys(filteredProteinKeysArray);
     }
 
     /**
@@ -400,7 +422,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         waitingHandler.setWaitingText("Clustering Proteins. Please Wait...");
 
         // filter the proteins
-        String[] filteredProteinKeys = filterProteins(getMetrics().getProteinKeys(), waitingHandler);
+        filteredProteinKeys = filterProteins(getMetrics().getProteinKeys(), waitingHandler);
 
         // get the ratios
         double proteinRatios[][] = getProteinRatios(filteredProteinKeys, waitingHandler);
@@ -458,7 +480,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      */
     private String[] filterProteins(ArrayList<String> proteinKeys, WaitingHandler waitingHandler) {
 
-        ArrayList<String> tempFilteredProteinKeys = new ArrayList<String>();
+        ArrayList<String> tempFilteredProteinKeysArray = new ArrayList<String>();
 
         for (String tempProteinKey : proteinKeys) {
 
@@ -470,7 +492,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
                 PSParameter psParameter = (PSParameter) getIdentification().getProteinMatchParameter(tempProteinKey, new PSParameter(), true);
 
                 if (psParameter.getMatchValidationLevel().isValidated()) {
-                    tempFilteredProteinKeys.add(tempProteinKey);
+                    tempFilteredProteinKeysArray.add(tempProteinKey);
                 }
 
             } catch (Exception e) {
@@ -478,18 +500,18 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
             }
         }
 
-        String[] filteredProteinKeys = new String[tempFilteredProteinKeys.size()];
+        String[] tempFilteredProteinKeys = new String[tempFilteredProteinKeysArray.size()];
 
-        for (int i = 0; i < tempFilteredProteinKeys.size() && !waitingHandler.isRunCanceled(); i++) {
-            filteredProteinKeys[i] = tempFilteredProteinKeys.get(i);
+        for (int i = 0; i < tempFilteredProteinKeysArray.size() && !waitingHandler.isRunCanceled(); i++) {
+            tempFilteredProteinKeys[i] = tempFilteredProteinKeysArray.get(i);
         }
 
-        return filteredProteinKeys;
+        return tempFilteredProteinKeys;
     }
 
     /**
      * Returns the reporter settings.
-     * 
+     *
      * @return the reporter settings
      */
     public ReporterSettings getReporterSettings() {
@@ -1379,6 +1401,40 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
     }
 
     /**
+     * Set the number of clusters and recluster.
+     *
+     * @param numberOfClusters the new number of clusters
+     */
+    public void recluster(int numberOfClusters) {
+        this.numberOfClusters = numberOfClusters;
+
+        new Thread(new Runnable() {
+            public void run() {
+                try {
+                    progressDialog.setVisible(true);
+                } catch (IndexOutOfBoundsException e) {
+                    // ignore
+                }
+            }
+        }, "ProgressDialog").start();
+
+        new Thread("ClusterThread") {
+            @Override
+            public void run() {
+                try {
+                    clusterProteinProfiles(progressDialog);
+                    overviewPanel.updateDisplay();
+                } catch (Exception e) {
+                    catchException(e);
+                    progressDialog.setRunCanceled();
+                } finally {
+                    progressDialog.setRunFinished();
+                }
+            }
+        }.start();
+    }
+
+    /**
      * Returns the list of selected proteins.
      *
      * @return the list of selected proteins
@@ -1391,8 +1447,13 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * Set the list of selected proteins.
      *
      * @param selectedProteins the list of selected proteins
+     * @param updateSelection if true, the selection is updated in the GUI
+     * @param clearSelection if true, the current selection will be removed
      */
-    public void setSelectedProteins(ArrayList<String> selectedProteins) {
+    public void setSelectedProteins(ArrayList<String> selectedProteins, boolean updateSelection, boolean clearSelection) {
         this.selectedProteins = selectedProteins;
+        if (updateSelection) {
+            overviewPanel.updateSelection(clearSelection);
+        }
     }
 }

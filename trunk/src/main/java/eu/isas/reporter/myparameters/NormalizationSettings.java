@@ -12,15 +12,15 @@ import java.util.HashSet;
 public class NormalizationSettings implements Serializable {
 
     /**
-     * The normalization to conduct at the PSM level
+     * The normalization to conduct at the PSM level.
      */
     private NormalizationType psmNormalization = NormalizationType.none;
     /**
-     * The normalization to conduct at the peptide level
+     * The normalization to conduct at the peptide level.
      */
     private NormalizationType peptideNormalization = NormalizationType.none;
     /**
-     * The normalization to conduct at the protein level
+     * The normalization to conduct at the protein level.
      */
     private NormalizationType proteinNormalization = NormalizationType.median;
     /**
@@ -31,12 +31,12 @@ public class NormalizationSettings implements Serializable {
      * List of proteins to exclude for normalization.
      */
     private HashSet<String> proteinExcluded = new HashSet<String>();
-    
+
     /**
-     * Constructor
+     * Constructor.
      */
     public NormalizationSettings() {
-        
+
     }
     
     @Override
@@ -84,7 +84,7 @@ public class NormalizationSettings implements Serializable {
 
     /**
      * Returns the type of normalization used to normalize the PSMs.
-     * 
+     *
      * @return the type of normalization used to normalize the PSMs
      */
     public NormalizationType getPsmNormalization() {
@@ -93,8 +93,9 @@ public class NormalizationSettings implements Serializable {
 
     /**
      * Sets the type of normalization used to normalize the PSMs.
-     * 
-     * @param psmNormalization the type of normalization used to normalize the PSMs
+     *
+     * @param psmNormalization the type of normalization used to normalize the
+     * PSMs
      */
     public void setPsmNormalization(NormalizationType psmNormalization) {
         this.psmNormalization = psmNormalization;
@@ -102,7 +103,7 @@ public class NormalizationSettings implements Serializable {
 
     /**
      * Returns the type of normalization used to normalize the peptides.
-     * 
+     *
      * @return the type of normalization used to normalize the peptides
      */
     public NormalizationType getPeptideNormalization() {
@@ -111,8 +112,9 @@ public class NormalizationSettings implements Serializable {
 
     /**
      * Sets the type of normalization used to normalize the peptides.
-     * 
-     * @param peptideNormalization the type of normalization used to normalize the peptides
+     *
+     * @param peptideNormalization the type of normalization used to normalize
+     * the peptides
      */
     public void setPeptideNormalization(NormalizationType peptideNormalization) {
         this.peptideNormalization = peptideNormalization;
@@ -120,7 +122,7 @@ public class NormalizationSettings implements Serializable {
 
     /**
      * Returns the type of normalization used to normalize the proteins.
-     * 
+     *
      * @return the type of normalization used to normalize the proteins
      */
     public NormalizationType getProteinNormalization() {
@@ -129,8 +131,9 @@ public class NormalizationSettings implements Serializable {
 
     /**
      * Sets the type of normalization used to normalize the proteins.
-     * 
-     * @param proteinNormalization the type of normalization used to normalize the proteins
+     *
+     * @param proteinNormalization the type of normalization used to normalize
+     * the proteins
      */
     public void setProteinNormalization(NormalizationType proteinNormalization) {
         this.proteinNormalization = proteinNormalization;
@@ -138,7 +141,7 @@ public class NormalizationSettings implements Serializable {
 
     /**
      * Returns the accessions of proteins to use as seeds for normalization.
-     * 
+     *
      * @return the accessions of proteins to use as seeds for normalization
      */
     public HashSet<String> getProteinSeeds() {
@@ -165,7 +168,7 @@ public class NormalizationSettings implements Serializable {
 
     /**
      * Sets the accessions of proteins to use as seeds for normalization.
-     * 
+     *
      * @param proteinSeeds the accessions of proteins to use as seeds for normalization
      */
     public void setProteinSeeds(HashSet<String> proteinSeeds) {
@@ -174,7 +177,7 @@ public class NormalizationSettings implements Serializable {
 
     /**
      * Returns the list of accessions of proteins to exclude during the normalization.
-     * 
+     *
      * @return the list of accessions of proteins to exclude during the normalization
      */
     public HashSet<String> getProteinExcluded() {
@@ -201,13 +204,12 @@ public class NormalizationSettings implements Serializable {
 
     /**
      * Sets the list of accessions of proteins to exclude during the normalization.
-     * 
-     * @param proteinExcluded the list of accessions of proteins to exclude during the normalization
+     *
+     * @param proteinExcluded the list of proteins to exclude during the
+     * normalization
      */
     public void setProteinExcluded(HashSet<String> proteinExcluded) {
         this.proteinExcluded = proteinExcluded;
     }
-    
-    
-    
+
 }
