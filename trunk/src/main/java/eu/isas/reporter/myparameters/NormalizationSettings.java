@@ -18,7 +18,7 @@ public class NormalizationSettings implements Serializable {
     /**
      * The normalization to conduct at the peptide level
      */
-    private NormalizationType peptideNormalization = NormalizationType.median;
+    private NormalizationType peptideNormalization = NormalizationType.none;
     /**
      * The normalization to conduct at the protein level
      */
