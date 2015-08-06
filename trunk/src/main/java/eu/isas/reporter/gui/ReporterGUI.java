@@ -16,6 +16,9 @@ import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuant
 import com.compomics.util.exceptions.ExceptionHandler;
 import com.compomics.util.exceptions.exception_handlers.FrameExceptionHandler;
 import com.compomics.util.experiment.ShotgunProtocol;
+import com.compomics.util.experiment.identification.matches.ProteinMatch;
+import com.compomics.util.experiment.identification.matches_iterators.ProteinMatchesIterator;
+import com.compomics.util.experiment.personalization.UrParameter;
 import com.compomics.util.gui.PrivacySettingsDialog;
 import com.compomics.util.gui.UtilitiesGUIDefaults;
 import com.compomics.util.gui.error_handlers.BugReport;
@@ -171,7 +174,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
     /**
      * The filtered protein keys used in the clustering.
      */
-    private String[] filteredProteinKeys;
+    private ArrayList<String> filteredProteinKeys;
 
     /**
      * Creates a new ReporterGUI.
@@ -407,7 +410,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         jumpToPanel.setEnabled(true);
         jumpToPanel.setType(JumpToPanel.JumpType.proteinAndPeptides);
         ArrayList<String> filteredProteinKeysArray = new ArrayList<String>();
-        filteredProteinKeysArray.addAll(Arrays.asList(filteredProteinKeys));
+        filteredProteinKeysArray.addAll(filteredProteinKeys);
         jumpToPanel.setProteinKeys(filteredProteinKeysArray);
     }
 
@@ -416,7 +419,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      *
      * @param waitingHandler the waiting handler
      */
-    private void clusterProteinProfiles(WaitingHandler waitingHandler) {
+    private void clusterProteinProfiles(WaitingHandler waitingHandler) throws SQLException, IOException, ClassNotFoundException, InterruptedException {
 
         waitingHandler.setSecondaryProgressCounterIndeterminate(true);
         waitingHandler.setWaitingText("Clustering Proteins. Please Wait...");
@@ -428,7 +431,8 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         double proteinRatios[][] = getProteinRatios(filteredProteinKeys, waitingHandler);
 
         // set up the clustering
-        kMeansClutering = new KMeansClustering(proteinRatios, filteredProteinKeys, numberOfClusters);
+        String[] proteinKeysArray = filteredProteinKeys.toArray(new String[0]);
+        kMeansClutering = new KMeansClustering(proteinRatios, proteinKeysArray, numberOfClusters);
 
         // perform the clustering
         kMeansClutering.kMeanCluster(waitingHandler);
@@ -441,17 +445,26 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * @param waitingHandler the waiting handler
      * @return the protein ratios for the set of protein keys
      */
-    private double[][] getProteinRatios(String[] proteinKeys, WaitingHandler waitingHandler) {
+    private double[][] getProteinRatios(ArrayList<String> proteinKeys, WaitingHandler waitingHandler) throws SQLException, IOException, ClassNotFoundException, InterruptedException {
 
         ArrayList<String> sampleIndexes = new ArrayList<String>(reporterIonQuantification.getSampleIndexes());
         Collections.sort(sampleIndexes);
 
-        double proteinRatios[][] = new double[proteinKeys.length][sampleIndexes.size()];
+        double proteinRatios[][] = new double[proteinKeys.size()][sampleIndexes.size()];
 
-        for (int proteinIndex = 0; proteinIndex < proteinKeys.length && !waitingHandler.isRunCanceled(); proteinIndex++) {
+        Identification identification = cpsBean.getIdentification();
+
+        PSParameter psParameter = new PSParameter();
+        ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
+        parameters.add(psParameter);
+        ProteinMatchesIterator proteinMatchesIterator = identification.getProteinMatchesIterator(proteinKeys, parameters, true, parameters, true, parameters, waitingHandler);
+        int proteinIndex = 0;
+        while (proteinMatchesIterator.hasNext()) {
+            
+            ProteinMatch proteinMatch = proteinMatchesIterator.next();
 
             try {
-                String tempProteinKey = proteinKeys[proteinIndex];
+                String tempProteinKey = proteinMatch.getKey();
                 ProteinQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(tempProteinKey, null);
 
                 for (int sampleIndex = 0; sampleIndex < sampleIndexes.size() && !waitingHandler.isRunCanceled(); sampleIndex++) {
@@ -466,6 +479,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
             } catch (Exception e) {
                 e.printStackTrace(); // @TODO: better error handling!
             }
+            proteinIndex++;
         }
 
         return proteinRatios;
@@ -478,9 +492,9 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * @param waitingHandler the waiting handler
      * @return the filtered protein keys
      */
-    private String[] filterProteins(ArrayList<String> proteinKeys, WaitingHandler waitingHandler) {
+    private ArrayList<String> filterProteins(ArrayList<String> proteinKeys, WaitingHandler waitingHandler) {
 
-        ArrayList<String> tempFilteredProteinKeysArray = new ArrayList<String>();
+        ArrayList<String> tempFilteredProteinKeysArray = new ArrayList<String>(proteinKeys.size());
 
         for (String tempProteinKey : proteinKeys) {
 
@@ -500,13 +514,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
             }
         }
 
-        String[] tempFilteredProteinKeys = new String[tempFilteredProteinKeysArray.size()];
-
-        for (int i = 0; i < tempFilteredProteinKeysArray.size() && !waitingHandler.isRunCanceled(); i++) {
-            tempFilteredProteinKeys[i] = tempFilteredProteinKeysArray.get(i);
-        }
-
-        return tempFilteredProteinKeys;
+        return tempFilteredProteinKeysArray;
     }
 
     /**

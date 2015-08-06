@@ -1,6 +1,5 @@
 package eu.isas.reporter.gui;
 
-import eu.isas.reporter.gui.settings.NormalizationSettingsDialog;
 import com.compomics.util.db.ObjectsCache;
 import com.compomics.util.examples.BareBonesBrowserLaunch;
 import com.compomics.util.experiment.MsExperiment;
