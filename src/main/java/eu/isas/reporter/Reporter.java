@@ -171,8 +171,8 @@ public class Reporter {
      * @param reporterIonQuantification the reporter quantification settings
      * @param searchParameters the identification parameters
      * @param proteinMatch the protein match
-     * @param waitingHandler waitinghandler displaying progress to the user and
-     * allowing cancelling the process
+     * @param waitingHandler waiting handler displaying progress to the user and
+     * allowing canceling the process
      *
      * @return the quantification details of the match
      *
