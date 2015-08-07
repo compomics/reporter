@@ -25,6 +25,7 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -460,7 +461,7 @@ public class OverviewPanel extends javax.swing.JPanel {
 
         // get the current protein keys
         DefaultCategoryDataset dataset = (DefaultCategoryDataset) chartPanel.getChart().getCategoryPlot().getDataset();
-        List rowKeys = dataset.getRowKeys();
+        HashSet<String> rowKeys = new HashSet<String>(dataset.getRowKeys());
 
         // make sure that the order is always the same
         proteinKeys = new ArrayList<String>();
