@@ -58,7 +58,6 @@ import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import javax.swing.Box;
 import javax.swing.JOptionPane;
@@ -478,6 +477,10 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         int proteinIndex = 0;
 
         while (proteinMatchesIterator.hasNext()) {
+            
+            if (waitingHandler.isRunCanceled()) {
+                break;
+            }
 
             ProteinMatch proteinMatch = proteinMatchesIterator.next();
 
@@ -517,7 +520,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         for (String tempProteinKey : proteinKeys) {
 
             if (waitingHandler.isRunCanceled()) {
-                return null;
+                break;
             }
 
             try {
