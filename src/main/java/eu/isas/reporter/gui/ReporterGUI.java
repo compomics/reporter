@@ -174,6 +174,10 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * The filtered protein keys used in the clustering.
      */
     private ArrayList<String> filteredProteinKeys;
+    /**
+     * The protein ratios.
+     */
+    private double proteinRatios[][];
 
     /**
      * Creates a new ReporterGUI.
@@ -402,7 +406,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         }
 
         // cluster the protein profiles
-        clusterProteinProfiles(waitingHandler);
+        clusterProteinProfiles(true, waitingHandler);
 
         if (waitingHandler.isRunCanceled()) {
             return;
@@ -420,28 +424,40 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
     /**
      * Cluster the protein profiles.
      *
+     * @param loadData if true, the data is (re-)loaded
      * @param waitingHandler the waiting handler
+     * 
+     * @throws SQLException if an SQLException occurs
+     * @throws IOException if an IOException occurs
+     * @throws ClassNotFoundException if a ClassNotFoundException occurs
+     * @throws InterruptedException if an InterruptedException occurs
+     * @throws MzMLUnmarshallerException if an MzMLUnmarshallerException occurs
      */
-    private void clusterProteinProfiles(WaitingHandler waitingHandler) throws SQLException, IOException, ClassNotFoundException, InterruptedException {
+    private void clusterProteinProfiles(boolean loadData, WaitingHandler waitingHandler) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
 
         waitingHandler.setSecondaryProgressCounterIndeterminate(true);
-        waitingHandler.setWaitingText("Clustering Proteins. Please Wait...");
 
-        // filter the proteins
-        filteredProteinKeys = filterProteins(getMetrics().getProteinKeys(), waitingHandler);
+        if (loadData) {
+            // filter the proteins
+            waitingHandler.setWaitingText("Filtering Proteins. Please Wait...");
+            filteredProteinKeys = filterProteins(getMetrics().getProteinKeys(), waitingHandler);
 
-        if (waitingHandler.isRunCanceled()) {
-            return;
-        }
+            if (waitingHandler.isRunCanceled()) {
+                return;
+            }
 
-        // get the ratios
-        double proteinRatios[][] = getProteinRatios(filteredProteinKeys, waitingHandler);
+            // get the ratios
+            waitingHandler.setWaitingText("Extracting Quantification Data. Please Wait...");
+            proteinRatios = getProteinRatios(filteredProteinKeys, waitingHandler);
 
-        if (waitingHandler.isRunCanceled()) {
-            return;
+            if (waitingHandler.isRunCanceled()) {
+                return;
+            }
         }
 
         // set up the clustering
+        waitingHandler.setSecondaryProgressCounterIndeterminate(true);
+        waitingHandler.setWaitingText("Clustering Proteins. Please Wait...");
         String[] proteinKeysArray = filteredProteinKeys.toArray(new String[0]);
         kMeansClutering = new KMeansClustering(proteinRatios, proteinKeysArray, numberOfClusters);
 
@@ -460,50 +476,53 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * @throws IOException if an IOException occurs
      * @throws ClassNotFoundException if a ClassNotFoundException occurs
      * @throws InterruptedException if an InterruptedException occurs
+     * @throws MzMLUnmarshallerException if an MzMLUnmarshallerException occurs
      */
-    private double[][] getProteinRatios(ArrayList<String> proteinKeys, WaitingHandler waitingHandler) throws SQLException, IOException, ClassNotFoundException, InterruptedException {
+    private double[][] getProteinRatios(ArrayList<String> proteinKeys, WaitingHandler waitingHandler) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
+
+        waitingHandler.resetPrimaryProgressCounter();
+        waitingHandler.setPrimaryProgressCounterIndeterminate(false);
+        waitingHandler.setMaxPrimaryProgressCounter(proteinKeys.size() + 1);
+        waitingHandler.increasePrimaryProgressCounter();
 
         ArrayList<String> sampleIndexes = new ArrayList<String>(reporterIonQuantification.getSampleIndexes());
         Collections.sort(sampleIndexes);
 
-        double proteinRatios[][] = new double[proteinKeys.size()][sampleIndexes.size()];
-
-        Identification identification = cpsBean.getIdentification();
+        double tempProteinRatios[][] = new double[proteinKeys.size()][sampleIndexes.size()];
 
         PSParameter psParameter = new PSParameter();
         ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
         parameters.add(psParameter);
-        ProteinMatchesIterator proteinMatchesIterator = identification.getProteinMatchesIterator(proteinKeys, parameters, true, parameters, true, parameters, waitingHandler); // @TODO: why load the psms?
+        ProteinMatchesIterator proteinMatchesIterator = getIdentification().getProteinMatchesIterator(proteinKeys, parameters, true, parameters, true, parameters, waitingHandler);
+        proteinMatchesIterator.setBatchSize(50); // @TODO: not sure what the optimal batch size is? the default of 1000 seems a bit high when all peptides and psms are to be loaded? results in no progress for a long time...
         int proteinIndex = 0;
 
         while (proteinMatchesIterator.hasNext()) {
-            
+
             if (waitingHandler.isRunCanceled()) {
                 break;
             }
 
             ProteinMatch proteinMatch = proteinMatchesIterator.next();
+            String tempProteinKey = proteinMatch.getKey();
+            ProteinQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(tempProteinKey, waitingHandler);
 
-            try {
-                String tempProteinKey = proteinMatch.getKey();
-                ProteinQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(tempProteinKey, null);
-
-                for (int sampleIndex = 0; sampleIndex < sampleIndexes.size() && !waitingHandler.isRunCanceled(); sampleIndex++) {
-                    Double ratio = quantificationDetails.getRatio(sampleIndexes.get(sampleIndex));
-                    if (ratio != null) {
-                        if (ratio != 0) {
-                            ratio = Math.log(ratio) / Math.log(2);
-                        }
-                        proteinRatios[proteinIndex][sampleIndex] = ratio;
+            for (int sampleIndex = 0; sampleIndex < sampleIndexes.size() && !waitingHandler.isRunCanceled(); sampleIndex++) {
+                Double ratio = quantificationDetails.getRatio(sampleIndexes.get(sampleIndex));
+                if (ratio != null) {
+                    if (ratio != 0) {
+                        ratio = Math.log(ratio) / Math.log(2);
                     }
+                    tempProteinRatios[proteinIndex][sampleIndex] = ratio;
                 }
-            } catch (Exception e) {
-                e.printStackTrace(); // @TODO: better error handling!
             }
+
             proteinIndex++;
+
+            waitingHandler.increasePrimaryProgressCounter();
         }
 
-        return proteinRatios;
+        return tempProteinRatios;
     }
 
     /**
@@ -512,27 +531,41 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * @param proteinKeys the protein keys to filter
      * @param waitingHandler the waiting handler
      * @return the filtered protein keys
+     *
+     * @throws SQLException if an SQLException occurs
+     * @throws IOException if an IOException occurs
+     * @throws ClassNotFoundException if a ClassNotFoundException occurs
+     * @throws InterruptedException if an InterruptedException occurs
      */
-    private ArrayList<String> filterProteins(ArrayList<String> proteinKeys, WaitingHandler waitingHandler) {
+    private ArrayList<String> filterProteins(ArrayList<String> proteinKeys, WaitingHandler waitingHandler) throws SQLException, IOException, ClassNotFoundException, InterruptedException {
+
+        waitingHandler.resetPrimaryProgressCounter();
+        waitingHandler.setPrimaryProgressCounterIndeterminate(false);
+        waitingHandler.setMaxPrimaryProgressCounter(proteinKeys.size() + 1);
+        waitingHandler.increasePrimaryProgressCounter();
 
         ArrayList<String> tempFilteredProteinKeysArray = new ArrayList<String>(proteinKeys.size());
 
-        for (String tempProteinKey : proteinKeys) {
+        PSParameter psParameter = new PSParameter();
+        ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
+        parameters.add(psParameter);
+        ProteinMatchesIterator proteinMatchesIterator = getIdentification().getProteinMatchesIterator(proteinKeys, parameters, false, null, false, null, waitingHandler);
+
+        while (proteinMatchesIterator.hasNext()) {
 
             if (waitingHandler.isRunCanceled()) {
                 break;
             }
 
-            try {
-                PSParameter psParameter = (PSParameter) getIdentification().getProteinMatchParameter(tempProteinKey, new PSParameter(), true); // @TODO: batch loading..?
+            ProteinMatch proteinMatch = proteinMatchesIterator.next();
+            String proteinKey = proteinMatch.getKey();
+            psParameter = (PSParameter) getIdentification().getProteinMatchParameter(proteinKey, psParameter);
 
-                if (psParameter.getMatchValidationLevel().isValidated()) {
-                    tempFilteredProteinKeysArray.add(tempProteinKey);
-                }
-
-            } catch (Exception e) {
-                e.printStackTrace(); // @TODO: better error handling!
+            if (psParameter.getMatchValidationLevel().isValidated()) {
+                tempFilteredProteinKeysArray.add(proteinKey);
             }
+
+            waitingHandler.increasePrimaryProgressCounter();
         }
 
         return tempFilteredProteinKeysArray;
@@ -1451,7 +1484,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
             @Override
             public void run() {
                 try {
-                    clusterProteinProfiles(progressDialog);
+                    clusterProteinProfiles(false, progressDialog);
                     if (!progressDialog.isRunCanceled()) {
                         overviewPanel.updateDisplay();
                     }
