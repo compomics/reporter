@@ -1,6 +1,11 @@
 package eu.isas.reporter.myparameters;
 
+import com.compomics.util.experiment.identification.FastaIndex;
+import com.compomics.util.experiment.identification.SequenceFactory;
+import eu.isas.reporter.Reporter;
 import eu.isas.reporter.calculation.normalization.NormalizationType;
+import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashSet;
 
@@ -24,13 +29,13 @@ public class NormalizationSettings implements Serializable {
      */
     private NormalizationType proteinNormalization = NormalizationType.median;
     /**
-     * List of proteins to use as seed for normalization.
+     * Fasta file containing the proteins to consider stable.
      */
-    private HashSet<String> proteinSeeds = new HashSet<String>();
+    private File stableProteinsFastaFile = null;
     /**
-     * List of proteins to exclude for normalization.
+     * Fasta file containing the contaminants.
      */
-    private HashSet<String> proteinExcluded = new HashSet<String>();
+    private File contaminantsFastaFile = null;
 
     /**
      * Constructor.
@@ -38,48 +43,44 @@ public class NormalizationSettings implements Serializable {
     public NormalizationSettings() {
 
     }
-    
+
     @Override
     public NormalizationSettings clone() throws CloneNotSupportedException {
         NormalizationSettings clone = new NormalizationSettings();
         clone.setPsmNormalization(psmNormalization);
         clone.setPeptideNormalization(peptideNormalization);
         clone.setProteinNormalization(proteinNormalization);
-        for (String accession : proteinSeeds) {
-            clone.addSeedProtein(accession);
-        }
-        for (String accession : proteinExcluded) {
-            clone.addExcludedProtein(accession);
-        }
+        clone.setStableProteinsFastaFile(stableProteinsFastaFile);
+        clone.setContaminantsFastaFile(contaminantsFastaFile);
         return clone;
     }
-    
+
     /**
      * Indicates whether another setting is the same as this one.
-     * 
+     *
      * @param anotherSetting another setting
-     * 
-     * @return a boolean indicating whether another setting is the same as this one
+     *
+     * @return a boolean indicating whether another setting is the same as this
+     * one
      */
     public boolean isSameAs(NormalizationSettings anotherSetting) {
-        if (psmNormalization != anotherSetting.getPsmNormalization()
-                || peptideNormalization != anotherSetting.getPeptideNormalization()
-                || proteinNormalization != anotherSetting.getProteinNormalization()
-                || proteinSeeds.size() != anotherSetting.getProteinSeeds().size()
-                || proteinExcluded.size() != anotherSetting.getProteinExcluded().size()) {
+        if (stableProteinsFastaFile == null && anotherSetting.getStableProteinsFastaFile() != null
+                || stableProteinsFastaFile != null && anotherSetting.getStableProteinsFastaFile() == null) {
             return false;
         }
-        for (String accession : anotherSetting.getProteinSeeds()) {
-            if (!proteinSeeds.contains(accession)) {
-                return false;
-            }
+        if (contaminantsFastaFile == null && anotherSetting.getContaminantsFastaFile() != null
+                || contaminantsFastaFile != null && anotherSetting.getContaminantsFastaFile() == null) {
+            return false;
         }
-        for (String accession : anotherSetting.getProteinExcluded()) {
-            if (!proteinExcluded.contains(accession)) {
-                return false;
-            }
+        if (stableProteinsFastaFile != null && anotherSetting.getStableProteinsFastaFile() != null && !stableProteinsFastaFile.getAbsolutePath().equals(anotherSetting.getStableProteinsFastaFile().getAbsolutePath())) {
+            return false;
         }
-        return true;
+        if (contaminantsFastaFile != null && anotherSetting.getContaminantsFastaFile() != null && !contaminantsFastaFile.getAbsolutePath().equals(anotherSetting.getContaminantsFastaFile().getAbsolutePath())) {
+            return false;
+        }
+        return psmNormalization == anotherSetting.getPsmNormalization()
+                && peptideNormalization == anotherSetting.getPeptideNormalization()
+                && proteinNormalization == anotherSetting.getProteinNormalization();
     }
 
     /**
@@ -140,76 +141,87 @@ public class NormalizationSettings implements Serializable {
     }
 
     /**
-     * Returns the accessions of proteins to use as seeds for normalization.
+     * Returns the fasta file containing the stable proteins.
      *
-     * @return the accessions of proteins to use as seeds for normalization
+     * @return the fasta file containing the stable proteins
      */
-    public HashSet<String> getProteinSeeds() {
-        return proteinSeeds;
-    }
-    
-    /**
-     * Adds a protein to the seed list.
-     * 
-     * @param proteinAccession the accession of the protein
-     */
-    public void addSeedProtein(String proteinAccession) {
-        proteinSeeds.add(proteinAccession);
-    }
-    
-    /**
-     * Removes a protein from the seed list.
-     * 
-     * @param proteinAccession the accession of the protein
-     */
-    public void removeSeedProtein(String proteinAccession) {
-        proteinSeeds.remove(proteinAccession);
+    public File getStableProteinsFastaFile() {
+        return stableProteinsFastaFile;
     }
 
     /**
-     * Sets the accessions of proteins to use as seeds for normalization.
+     * Sets the fasta file containing the stable proteins.
      *
-     * @param proteinSeeds the accessions of proteins to use as seeds for normalization
+     * @param stableProteinsFastaFile the fasta file containing the stable
+     * proteins
      */
-    public void setProteinSeeds(HashSet<String> proteinSeeds) {
-        this.proteinSeeds = proteinSeeds;
+    public void setStableProteinsFastaFile(File stableProteinsFastaFile) {
+        this.stableProteinsFastaFile = stableProteinsFastaFile;
     }
 
     /**
-     * Returns the list of accessions of proteins to exclude during the normalization.
+     * Returns the fasta file containing the contaminant proteins.
      *
-     * @return the list of accessions of proteins to exclude during the normalization
+     * @return the fasta file containing the contaminant proteins
      */
-    public HashSet<String> getProteinExcluded() {
-        return proteinExcluded;
-    }
-    
-    /**
-     * Adds a protein to be excluded from normalization.
-     * 
-     * @param proteinAccession the accession of the protein
-     */
-    public void addExcludedProtein(String proteinAccession) {
-        proteinExcluded.add(proteinAccession);
-    }
-    
-    /**
-     * Removes a protein to be excluded from normalization.
-     * 
-     * @param proteinAccession the accession of the protein
-     */
-    public void removeExcludedProtein(String proteinAccession) {
-        proteinExcluded.remove(proteinAccession);
+    public File getContaminantsFastaFile() {
+        if (contaminantsFastaFile == null) {
+            return getDefaultContaminantFile();
+        }
+        return contaminantsFastaFile;
     }
 
     /**
-     * Sets the list of accessions of proteins to exclude during the normalization.
+     * Sets the fasta file containing the contaminant proteins.
      *
-     * @param proteinExcluded the list of proteins to exclude during the
-     * normalization
+     * @param contaminantsFastaFile the fasta file containing the contaminant
+     * proteins
      */
-    public void setProteinExcluded(HashSet<String> proteinExcluded) {
-        this.proteinExcluded = proteinExcluded;
+    public void setContaminantsFastaFile(File contaminantsFastaFile) {
+        this.contaminantsFastaFile = contaminantsFastaFile;
+    }
+
+    /**
+     * Returns the accessions of the stable proteins as a set taken from the
+     * stableProteinsFastaFile. Null if no file is set.
+     *
+     * @return the accessions of the stable proteins as a set
+     *
+     * @throws IOException exception thrown whenever an error occurred while
+     * accessing the file.
+     */
+    public HashSet<String> getStableProteins() throws IOException {
+        if (stableProteinsFastaFile != null) {
+            FastaIndex fastaIndex = SequenceFactory.getFastaIndex(stableProteinsFastaFile, true, null);
+            return new HashSet<String>(fastaIndex.getIndexes().keySet());
+        }
+        return null;
+    }
+
+    /**
+     * Returns the accessions of the contaminants as a set taken from the
+     * contaminantsFastaFile. Null if no file is set.
+     *
+     * @return the accessions of the contaminants as a set
+     *
+     * @throws IOException exception thrown whenever an error occurred while
+     * accessing the file.
+     */
+    public HashSet<String> getContaminants() throws IOException {
+        if (contaminantsFastaFile != null) {
+            FastaIndex fastaIndex = SequenceFactory.getFastaIndex(contaminantsFastaFile, true, null);
+            return new HashSet<String>(fastaIndex.getIndexes().keySet());
+        }
+        return null;
+    }
+
+    /**
+     * Returns the default contaminants file.
+     *
+     * @return the default contaminants file
+     */
+    public static File getDefaultContaminantFile() {
+        return new File(Reporter.getJarFilePath(), "resources\\crap.fasta"); //@TODO: implement as path setting
     }
 
 }

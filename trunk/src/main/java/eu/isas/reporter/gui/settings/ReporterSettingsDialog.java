@@ -219,7 +219,7 @@ public class ReporterSettingsDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_ratioEstimationButtonActionPerformed
 
     private void normalizationButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_normalizationButtonActionPerformed
-        NormalizationSettingsDialog normalizationSettingsDialog = new NormalizationSettingsDialog(this, ratioEstimationSettings, editable);
+        NormalizationSettingsDialog normalizationSettingsDialog = new NormalizationSettingsDialog(this, normalizationSettings, editable);
         if (!normalizationSettingsDialog.isCanceled()) {
             normalizationSettings = normalizationSettingsDialog.getNormalizationSettings();
         }

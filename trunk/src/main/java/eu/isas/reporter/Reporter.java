@@ -1,5 +1,6 @@
 package eu.isas.reporter;
 
+import com.compomics.software.CompomicsWrapper;
 import com.compomics.util.experiment.biology.Peptide;
 import com.compomics.util.experiment.biology.Protein;
 import com.compomics.util.experiment.biology.ions.ReporterIon;
@@ -33,7 +34,6 @@ import eu.isas.reporter.calculation.normalization.NormalizationType;
 import eu.isas.reporter.myparameters.NormalizationSettings;
 import eu.isas.reporter.myparameters.RatioEstimationSettings;
 import eu.isas.reporter.myparameters.ReporterIonSelectionSettings;
-import eu.isas.reporter.myparameters.ReporterPreferences;
 import eu.isas.reporter.quantificationdetails.PeptideQuantificationDetails;
 import eu.isas.reporter.quantificationdetails.ProteinQuantificationDetails;
 import eu.isas.reporter.quantificationdetails.PsmQuantificationDetails;
@@ -62,102 +62,12 @@ public class Reporter {
      * User modification file.
      */
     private static String USER_MODIFICATIONS_FILE = "resources/conf/reporter_usermods.xml";
-
+    
     /**
-     * Sets the normalization factors in the ReporterIonQuantification object.
-     *
-     * @param reporterIonQuantification the reporter ion quantification
-     * @param ratioEstimationSettings the ratio estimation settings
-     * @param normalizationSettings the normalization settings
-     * @param identification the identification
-     * @param quantificationFeaturesGenerator the quantification features
-     * generator
-     * @param waitingHandler waiting handler displaying progress to the user
-     *
-     * @throws java.sql.SQLException exception thrown whenever an error occurred
-     * while interacting with the database
-     * @throws java.io.IOException exception thrown whenever an error occurred
-     * while interacting with a file
-     * @throws java.lang.ClassNotFoundException exception thrown whenever an
-     * error occurred while deserializing an object
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown
-     * whenever an error occurred while reading an mzML file
-     * @throws java.lang.InterruptedException exception thrown whenever a
-     * threading error occurred
+     * Empty constructor for instantiation purposes.
      */
-    public static void setPeptideNormalizationFactors(ReporterIonQuantification reporterIonQuantification, RatioEstimationSettings ratioEstimationSettings, NormalizationSettings normalizationSettings,
-            Identification identification, QuantificationFeaturesGenerator quantificationFeaturesGenerator, WaitingHandler waitingHandler)
-            throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
-
-        HashMap<String, ArrayList<Double>> ratios = new HashMap<String, ArrayList<Double>>();
-        for (String sampleIndex : reporterIonQuantification.getSampleIndexes()) {
-            ratios.put(sampleIndex, new ArrayList<Double>());
-        }
-
-        PSParameter psParameter = new PSParameter();
-        ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
-        parameters.add(psParameter);
-
-        if (normalizationSettings.getPeptideNormalization() != NormalizationType.none) {
-
-            if (waitingHandler != null) {
-                waitingHandler.setWaitingText("Ratio Normalization. Please Wait...");
-                waitingHandler.resetPrimaryProgressCounter();
-                waitingHandler.setPrimaryProgressCounterIndeterminate(false);
-                waitingHandler.setMaxPrimaryProgressCounter(identification.getPeptideIdentification().size());
-            }
-
-            PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(parameters, true, parameters, waitingHandler);
-
-            while (peptideMatchesIterator.hasNext()) {
-
-                PeptideMatch peptideMatch = peptideMatchesIterator.next();
-                String peptideKey = peptideMatch.getKey();
-                psParameter = (PSParameter) identification.getPeptideMatchParameter(peptideKey, psParameter);
-
-                if (psParameter.getMatchValidationLevel().isValidated()) {
-
-                    PeptideQuantificationDetails matchQuantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideMatch, waitingHandler);
-
-                    for (String sampleIndex : reporterIonQuantification.getSampleIndexes()) {
-                        Double ratio = matchQuantificationDetails.getRawRatio(sampleIndex);
-                        if (QuantificationFilter.isRatioValid(ratioEstimationSettings, ratio) && ratio > 0) {
-                            ratios.get(sampleIndex).add(ratio);
-                        }
-                    }
-                }
-
-                if (waitingHandler != null) {
-                    if (waitingHandler.isRunCanceled()) {
-                        return;
-                    }
-                    waitingHandler.increaseSecondaryProgressCounter();
-                }
-            }
-        }
-
-        for (String sampleIndex : reporterIonQuantification.getSampleIndexes()) {
-            double normalisationFactor;
-            ArrayList<Double> rawRatios = ratios.get(sampleIndex);
-            if (ratios.get(sampleIndex) != null && !ratios.get(sampleIndex).isEmpty()) {
-                if (normalizationSettings.getPeptideNormalization() == NormalizationType.none) {
-                    normalisationFactor = 1;
-                } else if (normalizationSettings.getPeptideNormalization() == NormalizationType.mean) {
-                    normalisationFactor = BasicMathFunctions.mean(rawRatios);
-                } else if (normalizationSettings.getPeptideNormalization() == NormalizationType.median) {
-                    normalisationFactor = BasicMathFunctions.median(rawRatios);
-                } else if (normalizationSettings.getPeptideNormalization() == NormalizationType.mode) {
-                    throw new UnsupportedOperationException("Normalization method not implemented.");
-                } else if (normalizationSettings.getPeptideNormalization() == NormalizationType.sum) {
-                    throw new UnsupportedOperationException("Normalization method not implemented.");
-                } else {
-                    throw new UnsupportedOperationException("Normalization method not implemented.");
-                }
-            } else {
-                normalisationFactor = 1;
-            }
-            reporterIonQuantification.addNormalisationFactor(sampleIndex, normalisationFactor);
-        }
+    public Reporter() {
+        
     }
 
     /**
@@ -620,5 +530,14 @@ public class Reporter {
      */
     public static void setUserModificationFile(String modificationFile) {
         Reporter.USER_MODIFICATIONS_FILE = modificationFile;
+    }
+
+    /**
+     * Returns the path to the jar file.
+     *
+     * @return the path to the jar file
+     */
+    public static String getJarFilePath() {
+        return CompomicsWrapper.getJarFilePath((new Reporter()).getClass().getResource("Reporter.class").getPath(), "Reporter");
     }
 }
