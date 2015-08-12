@@ -20,7 +20,7 @@ public class ReporterPreferences implements UrParameter {
     /**
      * The default reporter settings.
      */
-    private ReporterSettings defaultSettings = new ReporterSettings();
+    private ReporterSettings defaultSettings = null;
 
     /**
      * Constructor. Creates new preferences set to default.
@@ -52,6 +52,10 @@ public class ReporterPreferences implements UrParameter {
      * @return the default settings
      */
     public ReporterSettings getDefaultSettings() {
+        if (defaultSettings == null) {
+            defaultSettings = new ReporterSettings();
+        }
+        // the 
         return defaultSettings;
     }
 

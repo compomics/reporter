@@ -42,6 +42,7 @@ import eu.isas.reporter.Reporter;
 import eu.isas.reporter.ReporterWrapper;
 import eu.isas.reporter.calculation.QuantificationFeaturesCache;
 import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
+import eu.isas.reporter.calculation.normalization.Normalizer;
 import eu.isas.reporter.gui.export.ReportDialog;
 import eu.isas.reporter.gui.resultpanels.OverviewPanel;
 import eu.isas.reporter.myparameters.ReporterSettings;
@@ -402,7 +403,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
     private void displayResults(WaitingHandler waitingHandler) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
 
         if (!reporterIonQuantification.hasNormalisationFactors()) {
-            Reporter.setPeptideNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(), reporterSettings.getNormalizationSettings(), cpsBean.getIdentification(), quantificationFeaturesGenerator, progressDialog);
+            Normalizer.setPeptideNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(), reporterSettings.getNormalizationSettings(), cpsBean.getIdentificationParameters().getSequenceMatchingPreferences(), cpsBean.getIdentification(), quantificationFeaturesGenerator, progressDialog);
         }
 
         // cluster the protein profiles
