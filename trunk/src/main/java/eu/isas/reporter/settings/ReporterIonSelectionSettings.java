@@ -1,4 +1,4 @@
-package eu.isas.reporter.myparameters;
+package eu.isas.reporter.settings;
 
 import java.io.Serializable;
 

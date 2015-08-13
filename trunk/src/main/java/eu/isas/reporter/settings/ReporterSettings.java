@@ -1,4 +1,4 @@
-package eu.isas.reporter.myparameters;
+package eu.isas.reporter.settings;
 
 import com.compomics.util.experiment.identification.spectrum_annotation.AnnotationSettings;
 import eu.isas.reporter.preferences.ProjectDetails;

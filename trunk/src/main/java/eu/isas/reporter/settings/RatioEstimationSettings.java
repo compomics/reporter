@@ -1,4 +1,4 @@
-package eu.isas.reporter.myparameters;
+package eu.isas.reporter.settings;
 
 import eu.isas.peptideshaker.scoring.MatchValidationLevel;
 import java.io.Serializable;
