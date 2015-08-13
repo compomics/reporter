@@ -1,5 +1,6 @@
 package eu.isas.reporter.calculation.normalization;
 
+import com.compomics.util.exceptions.ExceptionHandler;
 import com.compomics.util.experiment.biology.Peptide;
 import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.matches.PeptideMatch;
@@ -20,6 +21,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
 
 /**
@@ -40,6 +44,7 @@ public class Normalizer {
      * @param identification the identification
      * @param quantificationFeaturesGenerator the quantification features
      * generator
+     * @param exceptionHandler handler in case exception occur
      * @param waitingHandler waiting handler displaying progress to the user
      *
      * @throws java.sql.SQLException exception thrown whenever an error occurred
@@ -53,8 +58,8 @@ public class Normalizer {
      * @throws java.lang.InterruptedException exception thrown whenever a
      * threading error occurred
      */
-    public static void setPeptideNormalizationFactors(ReporterIonQuantification reporterIonQuantification, RatioEstimationSettings ratioEstimationSettings, NormalizationSettings normalizationSettings, SequenceMatchingPreferences sequenceMatchingPreferences,
-            Identification identification, QuantificationFeaturesGenerator quantificationFeaturesGenerator, WaitingHandler waitingHandler)
+    public void setPeptideNormalizationFactors(ReporterIonQuantification reporterIonQuantification, RatioEstimationSettings ratioEstimationSettings, NormalizationSettings normalizationSettings, SequenceMatchingPreferences sequenceMatchingPreferences,
+            Identification identification, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ExceptionHandler exceptionHandler, WaitingHandler waitingHandler)
             throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
 
         HashMap<String, ArrayList<Double>> allRawRatios = new HashMap<String, ArrayList<Double>>();
@@ -82,36 +87,39 @@ public class Normalizer {
             HashSet<String> seeds = normalizationSettings.getStableProteins();
             HashSet<String> exclusion = normalizationSettings.getContaminants();
 
-            while (peptideMatchesIterator.hasNext()) {
+            int nThreads = Runtime.getRuntime().availableProcessors(); //@TODO: make this a user parameter
+            ExecutorService pool = Executors.newFixedThreadPool(nThreads);
+            ArrayList<PeptideNormalizerRunnable> peptideNormalizerRunnables = new ArrayList<PeptideNormalizerRunnable>(nThreads);
 
-                PeptideMatch peptideMatch = peptideMatchesIterator.next();
-                Peptide peptide = peptideMatch.getTheoreticPeptide();
-
-                if (exclusion == null || !isContaminant(exclusion, peptide.getParentProteins(sequenceMatchingPreferences))) {
-                    String peptideKey = peptideMatch.getKey();
-                    psParameter = (PSParameter) identification.getPeptideMatchParameter(peptideKey, psParameter);
-
-                    if (psParameter.getMatchValidationLevel().isValidated()) {
-
-                        PeptideQuantificationDetails matchQuantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideMatch, waitingHandler);
-
-                        for (String sampleIndex : reporterIonQuantification.getSampleIndexes()) {
-                            Double ratio = matchQuantificationDetails.getRawRatio(sampleIndex);
-                            if (QuantificationFilter.isRatioValid(ratioEstimationSettings, ratio) && ratio > 0) {
-                                allRawRatios.get(sampleIndex).add(ratio);
-                                if (seeds != null && isSeed(seeds, peptide.getParentProteins(sequenceMatchingPreferences))) {
-                                    seedRawRatios.get(sampleIndex).add(ratio);
-                                }
-                            }
-                        }
+            for (int i = 1; i <= nThreads && waitingHandler != null && !waitingHandler.isRunCanceled(); i++) {
+                PeptideNormalizerRunnable peptideNormalizerRunnable = new PeptideNormalizerRunnable(reporterIonQuantification, quantificationFeaturesGenerator, identification, peptideMatchesIterator, seeds, exclusion, ratioEstimationSettings, sequenceMatchingPreferences, waitingHandler, exceptionHandler);
+                pool.submit(peptideNormalizerRunnable);
+                peptideNormalizerRunnables.add(peptideNormalizerRunnable);
+            }
+            if (waitingHandler != null && waitingHandler.isRunCanceled()) {
+                pool.shutdownNow();
+                return;
+            }
+            pool.shutdown();
+            if (!pool.awaitTermination(7, TimeUnit.DAYS)) {
+                throw new InterruptedException("PSM validation timed out. Please contact the developers.");
+            }
+            for (PeptideNormalizerRunnable peptideNormalizerRunnable : peptideNormalizerRunnables) {
+                for (String reagent : peptideNormalizerRunnable.getAllRawRatios().keySet()) {
+                    ArrayList<Double> ratios = allRawRatios.get(reagent);
+                    if (ratios == null) {
+                        ratios = new ArrayList<Double>();
+                        allRawRatios.put(reagent, ratios);
                     }
-
-                    if (waitingHandler != null) {
-                        if (waitingHandler.isRunCanceled()) {
-                            return;
-                        }
-                        waitingHandler.increaseSecondaryProgressCounter();
+                    ratios.addAll(peptideNormalizerRunnable.getAllRawRatios().get(reagent));
+                }
+                for (String reagent : peptideNormalizerRunnable.getSeedRawRatios().keySet()) {
+                    ArrayList<Double> ratios = seedRawRatios.get(reagent);
+                    if (ratios == null) {
+                        ratios = new ArrayList<Double>();
+                        seedRawRatios.put(reagent, ratios);
                     }
+                    ratios.addAll(peptideNormalizerRunnable.getSeedRawRatios().get(reagent));
                 }
             }
         }
@@ -183,6 +191,167 @@ public class Normalizer {
             }
         }
         return false;
+    }
+
+    /**
+     * Runnable gathering values for the normalization of peptides.
+     *
+     * @author Marc Vaudel
+     */
+    private class PeptideNormalizerRunnable implements Runnable {
+
+        /**
+         * The reporter ion quantification.
+         */
+        private ReporterIonQuantification reporterIonQuantification;
+        /**
+         * An iterator for the peptide matches.
+         */
+        private PeptideMatchesIterator peptideMatchesIterator;
+        /**
+         * The identification.
+         */
+        private Identification identification;
+        /**
+         * The quantification features generator.
+         */
+        private QuantificationFeaturesGenerator quantificationFeaturesGenerator;
+        /**
+         * The seed proteins.
+         */
+        private HashSet<String> seeds;
+        /**
+         * The excluded proteins.
+         */
+        private HashSet<String> exclusion;
+        /**
+         * The peptide to protein sequence matching preferences.
+         */
+        private SequenceMatchingPreferences sequenceMatchingPreferences;
+        /**
+         * The ratio estimation settings.
+         */
+        private RatioEstimationSettings ratioEstimationSettings;
+        /**
+         * The raw peptide ratios gathered in a map.
+         */
+        private HashMap<String, ArrayList<Double>> allRawRatios = new HashMap<String, ArrayList<Double>>();
+        /**
+         * The raw seed peptide ratios gathered in a map.
+         */
+        private HashMap<String, ArrayList<Double>> seedRawRatios = new HashMap<String, ArrayList<Double>>();
+        /**
+         * The waiting handler.
+         */
+        private WaitingHandler waitingHandler;
+        /**
+         * Handler for the exceptions.
+         */
+        private ExceptionHandler exceptionHandler;
+
+        /**
+         * Constructor.
+         * 
+         * @param reporterIonQuantification the reporter ion quantification object
+         * @param quantificationFeaturesGenerator the quantification features generator
+         * @param identification the identification object
+         * @param peptideMatchesIterator the iterator of the peptide matches
+         * @param seeds the seed proteins
+         * @param exclusion the exclusion proteins
+         * @param ratioEstimationSettings the ratio estimation settings
+         * @param sequenceMatchingPreferences the sequence matching preferences
+         * @param waitingHandler a waiting handler
+         * @param exceptionHandler an exception handler 
+         */
+        public PeptideNormalizerRunnable(ReporterIonQuantification reporterIonQuantification, QuantificationFeaturesGenerator quantificationFeaturesGenerator, Identification identification, PeptideMatchesIterator peptideMatchesIterator, HashSet<String> seeds, HashSet<String> exclusion, RatioEstimationSettings ratioEstimationSettings, SequenceMatchingPreferences sequenceMatchingPreferences, WaitingHandler waitingHandler, ExceptionHandler exceptionHandler) {
+            this.reporterIonQuantification = reporterIonQuantification;
+            this.quantificationFeaturesGenerator = quantificationFeaturesGenerator;
+            this.peptideMatchesIterator = peptideMatchesIterator;
+            this.identification = identification;
+            this.seeds = seeds;
+            this.exclusion = exclusion;
+            this.sequenceMatchingPreferences = sequenceMatchingPreferences;
+            this.ratioEstimationSettings = ratioEstimationSettings;
+            this.waitingHandler = waitingHandler;
+            this.exceptionHandler = exceptionHandler;
+        }
+
+        @Override
+        public void run() {
+            try {
+
+                PSParameter psParameter = new PSParameter();
+
+                while (peptideMatchesIterator.hasNext()) {
+
+                    PeptideMatch peptideMatch = peptideMatchesIterator.next();
+
+                    if (peptideMatch != null) {
+                        Peptide peptide = peptideMatch.getTheoreticPeptide();
+
+                        if (exclusion == null || !isContaminant(exclusion, peptide.getParentProteins(sequenceMatchingPreferences))) {
+                            String peptideKey = peptideMatch.getKey();
+                            psParameter = (PSParameter) identification.getPeptideMatchParameter(peptideKey, psParameter);
+
+                            if (psParameter.getMatchValidationLevel().isValidated()) {
+
+                                PeptideQuantificationDetails matchQuantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideMatch, waitingHandler);
+
+                                for (String sampleIndex : reporterIonQuantification.getSampleIndexes()) {
+                                    Double ratio = matchQuantificationDetails.getRawRatio(sampleIndex);
+                                    if (QuantificationFilter.isRatioValid(ratioEstimationSettings, ratio) && ratio > 0) {
+                                        ArrayList<Double> ratios = allRawRatios.get(sampleIndex);
+                                        if (ratios == null) {
+                                            ratios = new ArrayList<Double>();
+                                            allRawRatios.put(sampleIndex, ratios);
+                                        }
+                                        ratios.add(ratio);
+                                        if (seeds != null && isSeed(seeds, peptide.getParentProteins(sequenceMatchingPreferences))) {
+                                            ratios = seedRawRatios.get(sampleIndex);
+                                            if (ratios == null) {
+                                                ratios = new ArrayList<Double>();
+                                                seedRawRatios.put(sampleIndex, ratios);
+                                            }
+                                            ratios.add(ratio);
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (waitingHandler != null) {
+                                if (waitingHandler.isRunCanceled()) {
+                                    return;
+                                }
+                                waitingHandler.increaseSecondaryProgressCounter();
+                            }
+                        }
+                    }
+                }
+
+            } catch (Exception e) {
+                waitingHandler.setRunCanceled();
+                exceptionHandler.catchException(e);
+            }
+        }
+
+        /**
+         * Returns the raw ratios found while iterating.
+         *
+         * @return the raw ratios found while iterating
+         */
+        public HashMap<String, ArrayList<Double>> getAllRawRatios() {
+            return allRawRatios;
+        }
+
+        /**
+         * Returns the seed raw ratios found while iterating.
+         *
+         * @return the seed raw ratios found while iterating
+         */
+        public HashMap<String, ArrayList<Double>> getSeedRawRatios() {
+            return seedRawRatios;
+        }
+
     }
 
 }
