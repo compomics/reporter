@@ -1,7 +1,7 @@
 package eu.isas.reporter.gui.settings;
 
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
-import eu.isas.reporter.myparameters.ReporterIonSelectionSettings;
+import eu.isas.reporter.settings.ReporterIonSelectionSettings;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 

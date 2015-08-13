@@ -2,10 +2,10 @@ package eu.isas.reporter.gui.settings;
 
 import com.compomics.util.experiment.identification.identification_parameters.PtmSettings;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
-import eu.isas.reporter.myparameters.NormalizationSettings;
-import eu.isas.reporter.myparameters.RatioEstimationSettings;
-import eu.isas.reporter.myparameters.ReporterIonSelectionSettings;
-import eu.isas.reporter.myparameters.ReporterSettings;
+import eu.isas.reporter.settings.NormalizationSettings;
+import eu.isas.reporter.settings.RatioEstimationSettings;
+import eu.isas.reporter.settings.ReporterIonSelectionSettings;
+import eu.isas.reporter.settings.ReporterSettings;
 import javax.swing.JDialog;
 
 /**

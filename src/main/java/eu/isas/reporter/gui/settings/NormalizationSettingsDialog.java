@@ -2,8 +2,8 @@ package eu.isas.reporter.gui.settings;
 
 import static com.compomics.util.protein_sequences_manager.gui.SequenceDbDetailsDialog.lastFolderKey;
 import eu.isas.reporter.calculation.normalization.NormalizationType;
-import eu.isas.reporter.myparameters.NormalizationSettings;
-import eu.isas.reporter.myparameters.RatioEstimationSettings;
+import eu.isas.reporter.settings.NormalizationSettings;
+import eu.isas.reporter.settings.RatioEstimationSettings;
 import java.io.File;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JDialog;

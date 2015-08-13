@@ -1,8 +1,8 @@
 package eu.isas.reporter;
 
 import eu.isas.reporter.calculation.RatioEstimator;
-import eu.isas.reporter.myparameters.ReporterPreferences;
-import eu.isas.reporter.myparameters.ReporterSettings;
+import eu.isas.reporter.settings.ReporterPreferences;
+import eu.isas.reporter.settings.ReporterSettings;
 import junit.framework.TestCase;
 
 /**
