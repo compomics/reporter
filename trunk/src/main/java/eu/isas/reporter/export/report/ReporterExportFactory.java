@@ -40,7 +40,7 @@ import eu.isas.reporter.export.report.export_features.ReporterPsmFeatures;
 import eu.isas.reporter.export.report.sections.ReporterPeptideSection;
 import eu.isas.reporter.export.report.sections.ReporterProteinSection;
 import eu.isas.reporter.export.report.sections.ReporterPsmSection;
-import eu.isas.reporter.myparameters.ReporterSettings;
+import eu.isas.reporter.settings.ReporterSettings;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;

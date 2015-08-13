@@ -9,8 +9,8 @@ import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
 import com.compomics.util.preferences.SequenceMatchingPreferences;
 import com.compomics.util.waiting.WaitingHandler;
 import eu.isas.reporter.Reporter;
-import eu.isas.reporter.myparameters.ReporterIonSelectionSettings;
-import eu.isas.reporter.myparameters.ReporterSettings;
+import eu.isas.reporter.settings.ReporterIonSelectionSettings;
+import eu.isas.reporter.settings.ReporterSettings;
 import eu.isas.reporter.quantificationdetails.PeptideQuantificationDetails;
 import eu.isas.reporter.quantificationdetails.ProteinQuantificationDetails;
 import eu.isas.reporter.quantificationdetails.PsmQuantificationDetails;
@@ -200,9 +200,6 @@ public class QuantificationFeaturesGenerator {
      */
     public SpectrumQuantificationDetails getSpectrumQuantificationDetails(ReporterIonQuantification reporterIonQuantification,
             ReporterIonSelectionSettings reporterIonSelectionSettings, String matchKey) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
-        if (matchKey.contains("10019.10019")) {
-            int debug = 1;
-        }
         SpectrumQuantificationDetails result = quantificationFeaturesCache.getSpectrumQuantificationDetails(matchKey);
         if (result == null) {
             result = Reporter.estimateSpectrumQuantificationDetails(identification, this, reporterIonQuantification, reporterIonSelectionSettings, matchKey);

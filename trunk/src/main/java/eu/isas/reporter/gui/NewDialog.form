@@ -162,14 +162,14 @@
             </Component>
             <Component class="javax.swing.JLabel" name="idFilesLabel">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Identification File"/>
+                <Property name="text" type="java.lang.String" value="Project File"/>
               </Properties>
             </Component>
             <Component class="javax.swing.JTextField" name="txtIdFileLocation">
               <Properties>
                 <Property name="editable" type="boolean" value="false"/>
                 <Property name="horizontalAlignment" type="int" value="0"/>
-                <Property name="text" type="java.lang.String" value="Please import a PeptideShaker project"/>
+                <Property name="text" type="java.lang.String" value="Please import a project"/>
               </Properties>
             </Component>
             <Component class="javax.swing.JButton" name="addIdFilesButton">

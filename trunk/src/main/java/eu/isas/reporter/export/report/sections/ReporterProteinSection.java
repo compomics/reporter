@@ -25,7 +25,7 @@ import eu.isas.reporter.export.report.ReporterReportStyle;
 import eu.isas.reporter.export.report.export_features.ReporterPeptideFeature;
 import eu.isas.reporter.export.report.export_features.ReporterProteinFeatures;
 import eu.isas.reporter.export.report.export_features.ReporterPsmFeatures;
-import eu.isas.reporter.myparameters.ReporterSettings;
+import eu.isas.reporter.settings.ReporterSettings;
 import eu.isas.reporter.quantificationdetails.ProteinQuantificationDetails;
 import java.io.IOException;
 import java.sql.SQLException;

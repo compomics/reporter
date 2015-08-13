@@ -7,7 +7,7 @@ import com.compomics.util.experiment.identification.identification_parameters.Se
 import com.compomics.util.experiment.identification.matches.ModificationMatch;
 import com.compomics.util.experiment.identification.matches.PeptideMatch;
 import eu.isas.peptideshaker.parameters.PSParameter;
-import eu.isas.reporter.myparameters.RatioEstimationSettings;
+import eu.isas.reporter.settings.RatioEstimationSettings;
 import java.io.IOException;
 import java.sql.SQLException;
 

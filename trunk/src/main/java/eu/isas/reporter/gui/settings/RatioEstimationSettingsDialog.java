@@ -4,7 +4,7 @@ import com.compomics.util.examples.BareBonesBrowserLaunch;
 import com.compomics.util.experiment.identification.identification_parameters.PtmSettings;
 import com.compomics.util.gui.renderers.AlignedListCellRenderer;
 import eu.isas.peptideshaker.scoring.MatchValidationLevel;
-import eu.isas.reporter.myparameters.RatioEstimationSettings;
+import eu.isas.reporter.settings.RatioEstimationSettings;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;

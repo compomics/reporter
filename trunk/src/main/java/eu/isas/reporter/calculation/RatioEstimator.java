@@ -1,7 +1,7 @@
 package eu.isas.reporter.calculation;
 
 import com.compomics.util.math.BasicMathFunctions;
-import eu.isas.reporter.myparameters.RatioEstimationSettings;
+import eu.isas.reporter.settings.RatioEstimationSettings;
 import java.util.ArrayList;
 import java.util.Collections;
 import org.apache.commons.math.util.FastMath;
