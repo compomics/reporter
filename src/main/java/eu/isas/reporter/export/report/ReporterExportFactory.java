@@ -29,9 +29,9 @@ import eu.isas.peptideshaker.export.sections.PsPtmScoringSection;
 import eu.isas.peptideshaker.export.sections.PsSearchParametersSection;
 import eu.isas.peptideshaker.export.sections.PsSpectrumCountingSection;
 import eu.isas.peptideshaker.export.sections.PsValidationSection;
-import eu.isas.peptideshaker.myparameters.PSMaps;
 import eu.isas.peptideshaker.preferences.ProjectDetails;
 import eu.isas.peptideshaker.preferences.SpectrumCountingPreferences;
+import eu.isas.peptideshaker.scoring.PSMaps;
 import eu.isas.peptideshaker.utils.IdentificationFeaturesGenerator;
 import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
 import eu.isas.reporter.export.report.export_features.ReporterPeptideFeature;
@@ -40,7 +40,6 @@ import eu.isas.reporter.export.report.export_features.ReporterPsmFeatures;
 import eu.isas.reporter.export.report.sections.ReporterPeptideSection;
 import eu.isas.reporter.export.report.sections.ReporterProteinSection;
 import eu.isas.reporter.export.report.sections.ReporterPsmSection;
-import eu.isas.reporter.myparameters.ReporterPreferences;
 import eu.isas.reporter.myparameters.ReporterSettings;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -276,7 +275,7 @@ public class ReporterExportFactory implements ExportFactory {
                 section.writeSection(identificationParameters.getAnnotationPreferences(), waitingHandler);
             } else if (sectionName.equals(PsInputFilterFeature.type)) {
                 PsInputFilterSection section = new PsInputFilterSection(exportScheme.getExportFeatures(sectionName), exportScheme.isIndexes(), exportScheme.isHeader(), exportWriter);
-                section.writeSection(identificationParameters.getIdFilter(), waitingHandler);
+                section.writeSection(identificationParameters.getPeptideAssumptionFilter(), waitingHandler);
             } else if (sectionName.equals(ReporterPeptideFeature.type)) {
                 ReporterPeptideSection section = new ReporterPeptideSection(exportScheme.getExportFeatures(sectionName), exportScheme.isIndexes(), exportScheme.isHeader(), exportWriter);
                 section.writeSection(identification, identificationFeaturesGenerator, quantificationFeaturesGenerator, reporterIonQuantification, reporterSettings, shotgunProtocol, identificationParameters, peptideKeys, nSurroundingAA, "", exportScheme.isValidatedOnly(), exportScheme.isIncludeDecoy(), waitingHandler);

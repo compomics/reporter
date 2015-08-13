@@ -10,7 +10,6 @@ import com.compomics.util.experiment.MsExperiment;
 import com.compomics.util.experiment.biology.PTMFactory;
 import com.compomics.util.experiment.biology.Sample;
 import com.compomics.util.experiment.identification.Identification;
-import com.compomics.util.experiment.identification.SequenceFactory;
 import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.exceptions.ExceptionHandler;
@@ -18,6 +17,7 @@ import com.compomics.util.exceptions.exception_handlers.FrameExceptionHandler;
 import com.compomics.util.experiment.ShotgunProtocol;
 import com.compomics.util.experiment.identification.matches.ProteinMatch;
 import com.compomics.util.experiment.identification.matches_iterators.ProteinMatchesIterator;
+import com.compomics.util.experiment.identification.protein_sequences.SequenceFactory;
 import com.compomics.util.experiment.personalization.UrParameter;
 import com.compomics.util.gui.PrivacySettingsDialog;
 import com.compomics.util.gui.UtilitiesGUIDefaults;
@@ -30,7 +30,7 @@ import com.compomics.util.preferences.LastSelectedFolder;
 import com.compomics.util.preferences.UtilitiesUserPreferences;
 import com.compomics.util.waiting.WaitingHandler;
 import eu.isas.peptideshaker.PeptideShaker;
-import eu.isas.peptideshaker.myparameters.PSParameter;
+import eu.isas.peptideshaker.parameters.PSParameter;
 import eu.isas.peptideshaker.preferences.FilterPreferences;
 import eu.isas.peptideshaker.preferences.ProjectDetails;
 import eu.isas.peptideshaker.preferences.SpectrumCountingPreferences;
@@ -191,9 +191,6 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         // update the look and feel after adding the panels
         setLookAndFeel();
 
-        // load modifications
-        loadModifications();
-
         // load the utilities user preferences
         try {
             utilitiesUserPreferences = UtilitiesUserPreferences.loadUserPreferences();
@@ -263,27 +260,6 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
     }
 
     /**
-     * Loads the modifications from the modification file.
-     */
-    private void loadModifications() {
-
-        String path = getJarFilePath();
-
-        try {
-            ptmFactory.importModifications(new File(path, Reporter.getDefaultModificationFile()), false);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "An error (" + e.getMessage() + ") occurred when trying to load the modifications from " + Reporter.getDefaultModificationFile() + ".",
-                    "Configuration import Error", JOptionPane.ERROR_MESSAGE);
-        }
-        try {
-            ptmFactory.importModifications(new File(path, Reporter.getUserModificationFile()), true);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "An error (" + e.getMessage() + ") occurred when trying to load the modifications from " + Reporter.getUserModificationFile() + ".",
-                    "Configuration import Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    /**
      * Returns the path to the jar file.
      *
      * @return the path to the jar file
@@ -311,8 +287,8 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
             reporterIonQuantification = newDialog.getReporterIonQuantification();
             identificationFeaturesGenerator = new IdentificationFeaturesGenerator(cpsBean.getIdentification(), cpsBean.getShotgunProtocol(),
                     cpsBean.getIdentificationParameters(), cpsBean.getMetrics(), cpsBean.getSpectrumCountingPreferences());
-            displayFeaturesGenerator = new DisplayFeaturesGenerator(cpsBean.getIdentificationParameters().getSearchParameters().getModificationProfile(), exceptionHandler);
-//            displayFeaturesGenerator.setDisplayedPTMs(cpsBean.getDisplayPreferences().getDisplayedPtms()); //@TODO: this is null with the online version of PeptideShaker
+            displayFeaturesGenerator = new DisplayFeaturesGenerator(cpsBean.getIdentificationParameters().getSearchParameters().getPtmSettings(), exceptionHandler);
+            displayFeaturesGenerator.setDisplayedPTMs(cpsBean.getDisplayPreferences().getDisplayedPtms());
             setDisplayPreferencesFromShakerProject();
             selectedProteins = new ArrayList<String>();
 

@@ -1,10 +1,9 @@
 <xml>
 	<reporterMethod>
-		<name>iTRAQ 4plex</name>
+		<name>iTRAQ 4-plex</name>
 		<reagentList>
 			<reagent>
-				<name>iTRAQ 114</name>
-				<monoisotopicMass>114.1106</monoisotopicMass>
+				<name>iTRAQ4Plex_114</name>
 				<minus2>0.0</minus2>
 				<minus1>1.0</minus1>
 				<ref>100.0</ref>
@@ -12,8 +11,7 @@
 				<plus2>0.2</plus2>
 			</reagent>
 			<reagent>
-				<name>iTRAQ 115</name>
-				<monoisotopicMass>115.1077</monoisotopicMass>
+				<name>iTRAQ4Plex_115</name>
 				<minus2>0.0</minus2>
 				<minus1>2.0</minus1>
 				<ref>100.0</ref>
@@ -21,8 +19,7 @@
 				<plus2>0.1</plus2>
 			</reagent>
 			<reagent>
-				<name>iTRAQ 116</name>
-				<monoisotopicMass>116.111</monoisotopicMass>
+				<name>iTRAQ4Plex_116</name>
 				<minus2>0.0</minus2>
 				<minus1>3.0</minus1>
 				<ref>100.0</ref>
@@ -30,8 +27,7 @@
 				<plus2>0.1</plus2>
 			</reagent>
 			<reagent>
-				<name>iTRAQ 117</name>
-				<monoisotopicMass>117.1144</monoisotopicMass>
+				<name>iTRAQ4Plex_117</name>
 				<minus2>0.1</minus2>
 				<minus1>4.0</minus1>
 				<ref>100.0</ref>
@@ -41,11 +37,10 @@
 		</reagentList>
 	</reporterMethod>
 	<reporterMethod>
-		<name>iTRAQ 8plex</name>
+		<name>iTRAQ 8-plex</name>
 		<reagentList>
 			<reagent>
-				<name>iTRAQ 113</name>
-				<monoisotopicMass>113.1075</monoisotopicMass>
+				<name>iTRAQ8Plex_113</name>
 				<minus2>0.0</minus2>
 				<minus1>0.0</minus1>
 				<ref>100.0</ref>
@@ -53,8 +48,7 @@
 				<plus2>0.22</plus2>
 			</reagent>
 			<reagent>
-				<name>iTRAQ 114</name>
-				<monoisotopicMass>114.111</monoisotopicMass>
+				<name>iTRAQ8Plex_114</name>
 				<minus2>0.0</minus2>
 				<minus1>0.94</minus1>
 				<ref>100.0</ref>
@@ -62,8 +56,7 @@
 				<plus2>0.16</plus2>
 			</reagent>
 			<reagent>
-				<name>iTRAQ 115</name>
-				<monoisotopicMass>115.1079</monoisotopicMass>
+				<name>iTRAQ8Plex_115</name>
 				<minus2>0.0</minus2>
 				<minus1>1.88</minus1>
 				<ref>100.0</ref>
@@ -71,8 +64,7 @@
 				<plus2>0.1</plus2>
 			</reagent>
 			<reagent>
-				<name>iTRAQ 116</name>
-				<monoisotopicMass>116.1113</monoisotopicMass>
+				<name>iTRAQ8Plex_116</name>
 				<minus2>0.0</minus2>
 				<minus1>2.82</minus1>
 				<ref>100.0</ref>
@@ -80,8 +72,7 @@
 				<plus2>0.07</plus2>
 			</reagent>
 			<reagent>
-				<name>iTRAQ 117</name>
-				<monoisotopicMass>117.11465</monoisotopicMass>
+				<name>iTRAQ8Plex_117</name>
 				<minus2>0.06</minus2>
 				<minus1>3.77</minus1>
 				<ref>100.0</ref>
@@ -89,8 +80,7 @@
 				<plus2>0.0</plus2>
 			</reagent>
 			<reagent>
-				<name>iTRAQ 118</name>
-				<monoisotopicMass>118.1117</monoisotopicMass>
+				<name>iTRAQ8Plex_118</name>
 				<minus2>0.09</minus2>
 				<minus1>4.71</minus1>
 				<ref>100.0</ref>
@@ -98,8 +88,7 @@
 				<plus2>0.0</plus2>
 			</reagent>
 			<reagent>
-				<name>iTRAQ 119</name>
-				<monoisotopicMass>119.115</monoisotopicMass>
+				<name>iTRAQ8Plex_119</name>
 				<minus2>0.14</minus2>
 				<minus1>5.66</minus1>
 				<ref>100.0</ref>
@@ -107,8 +96,7 @@
 				<plus2>0.0</plus2>
 			</reagent>
 			<reagent>
-				<name>iTRAQ 121</name>
-				<monoisotopicMass>121.1217</monoisotopicMass>
+				<name>iTRAQ8Plex_121</name>
 				<minus2>0.27</minus2>
 				<minus1>7.44</minus1>
 				<ref>100.0</ref>
@@ -118,11 +106,10 @@
 		</reagentList>
 	</reporterMethod>
 	<reporterMethod>
-		<name>TMT 2plex</name>
+		<name>TMT 2-plex</name>
 		<reagentList>
 			<reagent>
-				<name>TMT 126</name>
-				<monoisotopicMass>126.127725</monoisotopicMass>
+				<name>TMT_126</name>
 				<minus2>0.0</minus2>
 				<minus1>0.0</minus1>
 				<ref>100.0</ref>
@@ -130,8 +117,7 @@
 				<plus2>0.0</plus2>
 			</reagent>
 			<reagent>
-				<name>TMT 127</name>
-				<monoisotopicMass>127.131079</monoisotopicMass>
+				<name>TMT_127C</name>
 				<minus2>0.0</minus2>
 				<minus1>0.0</minus1>
 				<ref>100.0</ref>
@@ -141,11 +127,10 @@
 		</reagentList>
 	</reporterMethod>
 	<reporterMethod>
-		<name>TMT 6plex (HCD)</name>
+		<name>TMT 6-plex (HCD)</name>
 		<reagentList>
 			<reagent>
-				<name>TMT 126</name>
-				<monoisotopicMass>126.127725</monoisotopicMass>
+				<name>TMT_126</name>
 				<minus2>0.0</minus2>
 				<minus1>0.0</minus1>
 				<ref>100.0</ref>
@@ -153,8 +138,7 @@
 				<plus2>0.0</plus2>
 			</reagent>
 			<reagent>
-				<name>TMT 127</name>
-				<monoisotopicMass>127.12476</monoisotopicMass>
+				<name>TMT_127N</name>
 				<minus2>0.0</minus2>
 				<minus1>0.5</minus1>
 				<ref>100.0</ref>
@@ -162,8 +146,7 @@
 				<plus2>0.0</plus2>
 			</reagent>
 			<reagent>
-				<name>TMT 128</name>
-				<monoisotopicMass>128.134433</monoisotopicMass>
+				<name>TMT_128C</name>
 				<minus2>0.0</minus2>
 				<minus1>1.1</minus1>
 				<ref>100.0</ref>
@@ -171,8 +154,7 @@
 				<plus2>0.0</plus2>
 			</reagent>
 			<reagent>
-				<name>TMT 129</name>
-				<monoisotopicMass>129.131468</monoisotopicMass>
+				<name>TMT_129N</name>
 				<minus2>0.0</minus2>
 				<minus1>1.7</minus1>
 				<ref>100.0</ref>
@@ -180,8 +162,7 @@
 				<plus2>0.0</plus2>
 			</reagent>
 			<reagent>
-				<name>TMT 130</name>
-				<monoisotopicMass>130.141141</monoisotopicMass>
+				<name>TMT_130C</name>
 				<minus2>0.0</minus2>
 				<minus1>2.8</minus1>
 				<ref>100.0</ref>
@@ -189,8 +170,7 @@
 				<plus2>0.0</plus2>
 			</reagent>
 			<reagent>
-				<name>TMT 131</name>
-				<monoisotopicMass>131.138176</monoisotopicMass>
+				<name>TMT_131</name>
 				<minus2>0.2</minus2>
 				<minus1>3.2</minus1>
 				<ref>100.0</ref>
@@ -200,11 +180,10 @@
 		</reagentList>
 	</reporterMethod>
 	<reporterMethod>
-		<name>TMT 6plex (ETD)</name>
+		<name>TMT 6-plex (ETD)</name>
 		<reagentList>
 			<reagent>
-				<name>TMT 114</name>
-				<monoisotopicMass>114.127725</monoisotopicMass>
+				<name>TMT_126_ETD</name>
 				<minus2>0.0</minus2>
 				<minus1>0.0</minus1>
 				<ref>100.0</ref>
@@ -212,8 +191,7 @@
 				<plus2>0.0</plus2>
 			</reagent>
 			<reagent>
-				<name>TMT 115</name>
-				<monoisotopicMass>115.12476</monoisotopicMass>
+				<name>TMT_127N_ETD</name>
 				<minus2>0.0</minus2>
 				<minus1>0.5</minus1>
 				<ref>100.0</ref>
@@ -221,8 +199,7 @@
 				<plus2>0.0</plus2>
 			</reagent>
 			<reagent>
-				<name>TMT 116</name>
-				<monoisotopicMass>116.134433</monoisotopicMass>
+				<name>TMT_128C_ETD</name>
 				<minus2>0.0</minus2>
 				<minus1>1.1</minus1>
 				<ref>100.0</ref>
@@ -230,8 +207,7 @@
 				<plus2>0.0</plus2>
 			</reagent>
 			<reagent>
-				<name>TMT 117</name>
-				<monoisotopicMass>117.131468</monoisotopicMass>
+				<name>TMT_129N_ETD</name>
 				<minus2>0.0</minus2>
 				<minus1>1.7</minus1>
 				<ref>100.0</ref>
@@ -239,8 +215,7 @@
 				<plus2>0.0</plus2>
 			</reagent>
 			<reagent>
-				<name>TMT 118</name>
-				<monoisotopicMass>118.141141</monoisotopicMass>
+				<name>TMT_130C_ETD</name>
 				<minus2>0.0</minus2>
 				<minus1>2.8</minus1>
 				<ref>100.0</ref>
@@ -248,8 +223,7 @@
 				<plus2>0.0</plus2>
 			</reagent>
 			<reagent>
-				<name>TMT 119</name>
-				<monoisotopicMass>119.138176</monoisotopicMass>
+				<name>TMT_131_ETD</name>
 				<minus2>0.2</minus2>
 				<minus1>3.2</minus1>
 				<ref>100.0</ref>
@@ -259,11 +233,10 @@
 		</reagentList>
 	</reporterMethod>
 	<reporterMethod>
-		<name>TMT 10plex</name>
+		<name>TMT 10-plex</name>
 		<reagentList>
 			<reagent>
-				<name>TMT 126</name>
-				<monoisotopicMass>126.127726</monoisotopicMass>
+				<name>TMT_126</name>
 				<minus2>0.0</minus2>
 				<minus1>0.0</minus1>
 				<ref>100.0</ref>
@@ -271,8 +244,7 @@
 				<plus2>0.0</plus2>
 			</reagent>
 			<reagent>
-				<name>TMT 127N</name>
-				<monoisotopicMass>127.124761</monoisotopicMass>
+				<name>TMT_127N</name>
 				<minus2>0.0</minus2>
 				<minus1>0.4</minus1>
 				<ref>100.0</ref>
@@ -280,8 +252,7 @@
 				<plus2>0.0</plus2>
 			</reagent>
 			<reagent>
-				<name>TMT 127C</name>
-				<monoisotopicMass>127.131081</monoisotopicMass>
+				<name>TMT_127C</name>
 				<minus2>0.0</minus2>
 				<minus1>0.2</minus1>
 				<ref>100.0</ref>
@@ -289,8 +260,7 @@
 				<plus2>0.3</plus2>
 			</reagent>
 			<reagent>
-				<name>TMT 128N</name>
-				<monoisotopicMass>128.128116</monoisotopicMass>
+				<name>TMT_128N</name>
 				<minus2>0.0</minus2>
 				<minus1>0.9</minus1>
 				<ref>100.0</ref>
@@ -298,8 +268,7 @@
 				<plus2>0.2</plus2>
 			</reagent>
 			<reagent>
-				<name>TMT 128C</name>
-				<monoisotopicMass>128.134436</monoisotopicMass>
+				<name>TMT_128C</name>
 				<minus2>0.1</minus2>
 				<minus1>0.53</minus1>
 				<ref>100.0</ref>
@@ -307,8 +276,7 @@
 				<plus2>0.0</plus2>
 			</reagent>
 			<reagent>
-				<name>TMT 129N</name>
-				<monoisotopicMass>129.131471</monoisotopicMass>
+				<name>TMT_129N</name>
 				<minus2>0.0</minus2>
 				<minus1>0.73</minus1>
 				<ref>100.0</ref>
@@ -316,8 +284,7 @@
 				<plus2>0.0</plus2>
 			</reagent>
 			<reagent>
-				<name>TMT 129C</name>
-				<monoisotopicMass>129.13779</monoisotopicMass>
+				<name>TMT_129C</name>
 				<minus2>0.0</minus2>
 				<minus1>1.3</minus1>
 				<ref>100.0</ref>
@@ -325,8 +292,7 @@
 				<plus2>0.0</plus2>
 			</reagent>
 			<reagent>
-				<name>TMT 130N</name>
-				<monoisotopicMass>130.134825</monoisotopicMass>
+				<name>TMT_130N</name>
 				<minus2>0.0</minus2>
 				<minus1>1.2</minus1>
 				<ref>100.0</ref>
@@ -334,8 +300,7 @@
 				<plus2>2.7</plus2>
 			</reagent>
 			<reagent>
-				<name>TMT 130C</name>
-				<monoisotopicMass>130.141145</monoisotopicMass>
+				<name>TMT_130C</name>
 				<minus2>0.1</minus2>
 				<minus1>2.9</minus1>
 				<ref>100.0</ref>
@@ -343,94 +308,11 @@
 				<plus2>0.0</plus2>
 			</reagent>
 			<reagent>
-				<name>TMT 131</name>
-				<monoisotopicMass>131.13818</monoisotopicMass>
+				<name>TMT_131</name>
 				<minus2>0.0</minus2>
 				<minus1>2.36</minus1>
 				<ref>100.0</ref>
 				<plus1>1.43</plus1>
-				<plus2>0.0</plus2>
-			</reagent>
-		</reagentList>
-	</reporterMethod>
-	<reporterMethod>
-		<name>TMT 2plex (deprecated)</name>
-		<reagentList>
-			<reagent>
-				<name>TMT 126</name>
-				<monoisotopicMass>126.127491</monoisotopicMass>
-				<minus2>0.0</minus2>
-				<minus1>0.0</minus1>
-				<ref>100.0</ref>
-				<plus1>0.0</plus1>
-				<plus2>0.0</plus2>
-			</reagent>
-			<reagent>
-				<name>TMT 127</name>
-				<monoisotopicMass>127.1308594</monoisotopicMass>
-				<minus2>0.0</minus2>
-				<minus1>0.0</minus1>
-				<ref>100.0</ref>
-				<plus1>0.0</plus1>
-				<plus2>0.0</plus2>
-			</reagent>
-		</reagentList>
-	</reporterMethod>
-	<reporterMethod>
-		<name>TMT 6plex (deprecated)</name>
-		<reagentList>
-			<reagent>
-				<name>TMT 126</name>
-				<monoisotopicMass>126.127491</monoisotopicMass>
-				<minus2>0.0</minus2>
-				<minus1>0.0</minus1>
-				<ref>100.0</ref>
-				<plus1>0.0</plus1>
-				<plus2>0.0</plus2>
-			</reagent>
-			<reagent>
-				<name>TMT 127</name>
-				<monoisotopicMass>127.1308594</monoisotopicMass>
-				<minus2>0.0</minus2>
-				<minus1>0.0</minus1>
-				<ref>100.0</ref>
-				<plus1>0.0</plus1>
-				<plus2>0.0</plus2>
-			</reagent>
-			<reagent>
-				<name>TMT 128</name>
-				<monoisotopicMass>128.1341553</monoisotopicMass>
-				<minus2>0.0</minus2>
-				<minus1>0.0</minus1>
-				<ref>100.0</ref>
-				<plus1>0.0</plus1>
-				<plus2>0.0</plus2>
-			</reagent>
-			<reagent>
-				<name>TMT 129</name>
-				<monoisotopicMass>129.1375046</monoisotopicMass>
-				<minus2>0.0</minus2>
-				<minus1>0.0</minus1>
-				<ref>100.0</ref>
-				<plus1>0.0</plus1>
-				<plus2>0.0</plus2>
-			</reagent>
-			<reagent>
-				<name>TMT 130</name>
-				<monoisotopicMass>130.1408768</monoisotopicMass>
-				<minus2>0.0</minus2>
-				<minus1>0.0</minus1>
-				<ref>100.0</ref>
-				<plus1>0.0</plus1>
-				<plus2>0.0</plus2>
-			</reagent>
-			<reagent>
-				<name>TMT 131</name>
-				<monoisotopicMass>131.1444851</monoisotopicMass>
-				<minus2>0.0</minus2>
-				<minus1>0.0</minus1>
-				<ref>100.0</ref>
-				<plus1>0.0</plus1>
 				<plus2>0.0</plus2>
 			</reagent>
 		</reagentList>

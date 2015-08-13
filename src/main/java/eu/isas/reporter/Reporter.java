@@ -5,9 +5,7 @@ import com.compomics.util.experiment.biology.Peptide;
 import com.compomics.util.experiment.biology.Protein;
 import com.compomics.util.experiment.biology.ions.ReporterIon;
 import com.compomics.util.experiment.identification.Identification;
-import com.compomics.util.experiment.identification.SearchParameters;
-import com.compomics.util.experiment.identification.SequenceFactory;
-import com.compomics.util.experiment.identification.SpectrumAnnotator;
+import com.compomics.util.experiment.identification.identification_parameters.SearchParameters;
 import com.compomics.util.experiment.identification.matches.IonMatch;
 import com.compomics.util.experiment.identification.matches.ModificationMatch;
 import com.compomics.util.experiment.identification.matches.PeptideMatch;
@@ -15,6 +13,8 @@ import com.compomics.util.experiment.identification.matches.ProteinMatch;
 import com.compomics.util.experiment.identification.matches.SpectrumMatch;
 import com.compomics.util.experiment.identification.matches_iterators.PeptideMatchesIterator;
 import com.compomics.util.experiment.identification.matches_iterators.PsmIterator;
+import com.compomics.util.experiment.identification.protein_sequences.SequenceFactory;
+import com.compomics.util.experiment.identification.spectrum_annotation.SpectrumAnnotator;
 import com.compomics.util.experiment.massspectrometry.MSnSpectrum;
 import com.compomics.util.experiment.massspectrometry.Precursor;
 import com.compomics.util.experiment.massspectrometry.Spectrum;
@@ -25,13 +25,11 @@ import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
 import com.compomics.util.math.BasicMathFunctions;
 import com.compomics.util.preferences.SequenceMatchingPreferences;
 import com.compomics.util.waiting.WaitingHandler;
-import eu.isas.peptideshaker.myparameters.PSParameter;
+import eu.isas.peptideshaker.parameters.PSParameter;
 import eu.isas.reporter.calculation.Deisotoper;
 import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
 import eu.isas.reporter.calculation.QuantificationFilter;
 import eu.isas.reporter.calculation.RatioEstimator;
-import eu.isas.reporter.calculation.normalization.NormalizationType;
-import eu.isas.reporter.myparameters.NormalizationSettings;
 import eu.isas.reporter.myparameters.RatioEstimationSettings;
 import eu.isas.reporter.myparameters.ReporterIonSelectionSettings;
 import eu.isas.reporter.quantificationdetails.PeptideQuantificationDetails;
@@ -272,7 +270,7 @@ public class Reporter {
         ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
         parameters.add(psParameter);
 
-        PsmIterator psmIterator = identification.getPsmIterator(peptideMatch.getSpectrumMatches(), parameters, false, waitingHandler);
+        PsmIterator psmIterator = identification.getPsmIterator(peptideMatch.getSpectrumMatchesKeys(), parameters, false, waitingHandler);
 
         while (psmIterator.hasNext()) {
 
@@ -335,7 +333,7 @@ public class Reporter {
 
         PsmQuantificationDetails result = new PsmQuantificationDetails();
         // Find the spectra corresponding to this PSM according to the matching type selected by the user
-        ArrayList<String> spectra = new ArrayList<String>();
+        ArrayList<String> spectra = new ArrayList<String>(1);
 
         if (reporterIonSelectionSettings.isSameSpectra()) {
             spectra.add(matchKey);
@@ -445,8 +443,9 @@ public class Reporter {
         SpectrumQuantificationDetails result = new SpectrumQuantificationDetails();
 
         // get reporter intensities
-        HashMap<String, IonMatch> matchesMap = new HashMap<String, IonMatch>();
-        for (String ionName : reporterIonQuantification.getSampleIndexes()) {
+        Set<String> labels = reporterIonQuantification.getSampleIndexes();
+        HashMap<String, IonMatch> matchesMap = new HashMap<String, IonMatch>(labels.size());
+        for (String ionName : labels) {
             ReporterIon reporterIon = reporterMethod.getReporterIon(ionName);
             IonMatch bestMatch = getBestReporterIonMatch(reporterIon, 1, spectrum, reporterIonSelectionSettings.getReporterIonsMzTolerance());
             if (bestMatch != null) {
