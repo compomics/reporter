@@ -1,4 +1,4 @@
-package eu.isas.reporter.myparameters;
+package eu.isas.reporter.settings;
 
 import com.compomics.util.experiment.identification.protein_sequences.FastaIndex;
 import com.compomics.util.experiment.identification.protein_sequences.SequenceFactory;
