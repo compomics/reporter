@@ -1,6 +1,6 @@
 package eu.isas.reporter.myparameters;
 
-import com.compomics.util.preferences.AnnotationPreferences;
+import com.compomics.util.experiment.identification.spectrum_annotation.AnnotationSettings;
 import eu.isas.reporter.preferences.ProjectDetails;
 import java.io.Serializable;
 
@@ -12,9 +12,9 @@ import java.io.Serializable;
 public class ReporterSettings implements Serializable {
 
     /**
-     * The annotation preferences. 
+     * The annotation settings. 
      */
-    private AnnotationPreferences annotationPreferences;
+    private AnnotationSettings annotationSettings;
     /**
      * The project details.
      */
@@ -44,7 +44,7 @@ public class ReporterSettings implements Serializable {
         clone.setReporterIonSelectionSettings(reporterIonSelectionSettings.clone());
         clone.setRatioEstimationSettings(ratioEstimationSettings.clone());
         clone.setNormalizationSettings(normalizationSettings.clone());
-        clone.setAnnotationPreferences(annotationPreferences); //@TODO add cloning of the annotation preferences after updating utilities
+        clone.setAnnotationPreferences(annotationSettings.clone());
         clone.setProjectDetails(projectDetails); //@TODO add cloning of the project details after implementation of the project details
         return clone;
     }
@@ -67,17 +67,17 @@ public class ReporterSettings implements Serializable {
      * 
      * @return the spectrum annotation preferences
      */
-    public AnnotationPreferences getAnnotationPreferences() {
-        return annotationPreferences;
+    public AnnotationSettings getAnnotationSettings() {
+        return annotationSettings;
     }
 
     /**
      * Sets the spectrum annotation preferences.
      * 
-     * @param annotationPreferences the spectrum annotation preferences
+     * @param annotationSettings the spectrum annotation preferences
      */
-    public void setAnnotationPreferences(AnnotationPreferences annotationPreferences) {
-        this.annotationPreferences = annotationPreferences;
+    public void setAnnotationPreferences(AnnotationSettings annotationSettings) {
+        this.annotationSettings = annotationSettings;
     }
 
     /**

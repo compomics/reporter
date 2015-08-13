@@ -10,7 +10,7 @@ import com.compomics.util.gui.tablemodels.SelfUpdatingTableModel;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
 import com.compomics.util.math.clustering.KMeansClustering;
 import com.compomics.util.waiting.WaitingHandler;
-import eu.isas.peptideshaker.myparameters.PSParameter;
+import eu.isas.peptideshaker.parameters.PSParameter;
 import eu.isas.peptideshaker.utils.IdentificationFeaturesGenerator;
 import eu.isas.reporter.gui.ReporterGUI;
 import eu.isas.reporter.gui.tablemodels.ProteinTableModel;

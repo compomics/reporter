@@ -2,11 +2,11 @@ package eu.isas.reporter.export.report.sections;
 
 import com.compomics.util.experiment.ShotgunProtocol;
 import com.compomics.util.experiment.identification.Identification;
-import com.compomics.util.experiment.identification.PeptideAssumption;
-import com.compomics.util.experiment.identification.TagAssumption;
 import com.compomics.util.experiment.identification.matches.IonMatch;
 import com.compomics.util.experiment.identification.matches.SpectrumMatch;
 import com.compomics.util.experiment.identification.matches_iterators.PsmIterator;
+import com.compomics.util.experiment.identification.spectrum_assumptions.PeptideAssumption;
+import com.compomics.util.experiment.identification.spectrum_assumptions.TagAssumption;
 import com.compomics.util.experiment.massspectrometry.Spectrum;
 import com.compomics.util.experiment.personalization.UrParameter;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
@@ -21,7 +21,7 @@ import eu.isas.peptideshaker.export.exportfeatures.PsPsmFeature;
 import eu.isas.peptideshaker.export.sections.PsFragmentSection;
 import eu.isas.peptideshaker.export.sections.PsIdentificationAlgorithmMatchesSection;
 import eu.isas.peptideshaker.export.sections.PsPsmSection;
-import eu.isas.peptideshaker.myparameters.PSParameter;
+import eu.isas.peptideshaker.parameters.PSParameter;
 import eu.isas.peptideshaker.utils.IdentificationFeaturesGenerator;
 import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
 import eu.isas.reporter.export.report.ReporterExportFeature;
@@ -35,6 +35,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
 
 /**
@@ -149,7 +150,7 @@ public class ReporterPsmSection {
             writeHeader(reporterIonQuantification);
         }
 
-        HashMap<String, ArrayList<String>> psmMap = new HashMap<String, ArrayList<String>>();
+        HashMap<String, HashSet<String>> psmMap = new HashMap<String, HashSet<String>>();
 
         if (keys == null) {
             psmMap = identification.getSpectrumIdentificationMap();
@@ -157,7 +158,7 @@ public class ReporterPsmSection {
             for (String key : keys) {
                 String fileName = Spectrum.getSpectrumFile(key);
                 if (!psmMap.containsKey(fileName)) {
-                    psmMap.put(fileName, new ArrayList<String>());
+                    psmMap.put(fileName, new HashSet<String>());
                 }
                 psmMap.get(fileName).add(key);
             }
@@ -194,7 +195,7 @@ public class ReporterPsmSection {
 
         for (String spectrumFile : psmMap.keySet()) {
             
-            ArrayList<String> fileKeys = psmMap.get(spectrumFile);
+            ArrayList<String> fileKeys = new ArrayList<String>(psmMap.get(spectrumFile));
             
             PsmIterator psmIterator = identification.getPsmIterator(spectrumFile, fileKeys, parameters, false, waitingHandler);
 

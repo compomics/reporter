@@ -17,7 +17,7 @@ import eu.isas.peptideshaker.export.exportfeatures.PsPeptideFeature;
 import eu.isas.peptideshaker.export.exportfeatures.PsProteinFeature;
 import eu.isas.peptideshaker.export.exportfeatures.PsPsmFeature;
 import eu.isas.peptideshaker.export.sections.PsProteinSection;
-import eu.isas.peptideshaker.myparameters.PSParameter;
+import eu.isas.peptideshaker.parameters.PSParameter;
 import eu.isas.peptideshaker.utils.IdentificationFeaturesGenerator;
 import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
 import eu.isas.reporter.export.report.ReporterExportFeature;
@@ -151,7 +151,7 @@ public class ReporterProteinSection {
         }
 
         if (keys == null) {
-            keys = identification.getProteinIdentification();
+            keys = new ArrayList<String>(identification.getProteinIdentification());
         }
         int line = 1;
         PSParameter psParameter = new PSParameter();

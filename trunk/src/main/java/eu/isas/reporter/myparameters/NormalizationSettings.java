@@ -1,7 +1,7 @@
 package eu.isas.reporter.myparameters;
 
-import com.compomics.util.experiment.identification.FastaIndex;
-import com.compomics.util.experiment.identification.SequenceFactory;
+import com.compomics.util.experiment.identification.protein_sequences.FastaIndex;
+import com.compomics.util.experiment.identification.protein_sequences.SequenceFactory;
 import eu.isas.reporter.Reporter;
 import eu.isas.reporter.calculation.normalization.NormalizationType;
 import java.io.File;

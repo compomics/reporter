@@ -16,14 +16,13 @@ import eu.isas.peptideshaker.export.exportfeatures.PsIdentificationAlgorithmMatc
 import eu.isas.peptideshaker.export.exportfeatures.PsPeptideFeature;
 import eu.isas.peptideshaker.export.exportfeatures.PsPsmFeature;
 import eu.isas.peptideshaker.export.sections.PsPeptideSection;
-import eu.isas.peptideshaker.myparameters.PSParameter;
+import eu.isas.peptideshaker.parameters.PSParameter;
 import eu.isas.peptideshaker.utils.IdentificationFeaturesGenerator;
 import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
 import eu.isas.reporter.export.report.ReporterExportFeature;
 import eu.isas.reporter.export.report.ReporterReportStyle;
 import eu.isas.reporter.export.report.export_features.ReporterPeptideFeature;
 import eu.isas.reporter.export.report.export_features.ReporterPsmFeatures;
-import eu.isas.reporter.myparameters.ReporterPreferences;
 import eu.isas.reporter.myparameters.ReporterSettings;
 import eu.isas.reporter.quantificationdetails.PeptideQuantificationDetails;
 import java.io.IOException;
@@ -144,7 +143,7 @@ public class ReporterPeptideSection {
         }
 
         if (keys == null) {
-            keys = identification.getPeptideIdentification();
+            keys = new ArrayList<String>(identification.getPeptideIdentification());
         }
 
         int line = 1;
@@ -233,7 +232,7 @@ public class ReporterPeptideSection {
                         psmSectionPrefix += line + ".";
                         writer.increaseDepth();
                         psmSection.writeSection(identification, identificationFeaturesGenerator, quantificationFeaturesGenerator, reporterIonQuantification, reporterSettings,
-                                shotgunProtocol, identificationParameters, peptideMatch.getSpectrumMatches(), psmSectionPrefix, validatedOnly, decoys, null);
+                                shotgunProtocol, identificationParameters, peptideMatch.getSpectrumMatchesKeys(), psmSectionPrefix, validatedOnly, decoys, null);
                         writer.decreseDepth();
                     }
                     line++;

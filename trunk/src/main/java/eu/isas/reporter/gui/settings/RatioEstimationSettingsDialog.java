@@ -1,8 +1,8 @@
 package eu.isas.reporter.gui.settings;
 
 import com.compomics.util.examples.BareBonesBrowserLaunch;
+import com.compomics.util.experiment.identification.identification_parameters.PtmSettings;
 import com.compomics.util.gui.renderers.AlignedListCellRenderer;
-import com.compomics.util.preferences.ModificationProfile;
 import eu.isas.peptideshaker.scoring.MatchValidationLevel;
 import eu.isas.reporter.myparameters.RatioEstimationSettings;
 import java.util.ArrayList;
@@ -27,19 +27,19 @@ public class RatioEstimationSettingsDialog extends javax.swing.JDialog {
     /**
      * The modification profile of the search.
      */
-    private ModificationProfile modificationProfile;
+    private PtmSettings ptmSettings;
 
     /**
      * Creates a new RatioEstimationSettingsDialog.
      *
      * @param parentDialog the parent dialog
      * @param ratioEstimationSettings the settings to display
-     * @param modificationProfile the modification profile of the search
+     * @param ptmSettings the modification profile of the search
      * @param editable boolean indicating whether the settings can be edited
      */
-    public RatioEstimationSettingsDialog(JDialog parentDialog, RatioEstimationSettings ratioEstimationSettings, ModificationProfile modificationProfile, boolean editable) {
+    public RatioEstimationSettingsDialog(JDialog parentDialog, RatioEstimationSettings ratioEstimationSettings, PtmSettings ptmSettings, boolean editable) {
         super(parentDialog, true);
-        this.modificationProfile = modificationProfile;
+        this.ptmSettings = ptmSettings;
         initComponents();
         setUpGui(editable);
         populateGUI(ratioEstimationSettings);
@@ -583,7 +583,7 @@ public class RatioEstimationSettingsDialog extends javax.swing.JDialog {
      * Updates the modification list (right).
      */
     private void updateModificationList() {
-        ArrayList<String> allModificationsList = new ArrayList<String>(modificationProfile.getAllNotFixedModifications());
+        ArrayList<String> allModificationsList = new ArrayList<String>(ptmSettings.getAllNotFixedModifications());
         int nSelected = selectedPTMs.getModel().getSize();
         ArrayList<String> allModifications = new ArrayList<String>();
 

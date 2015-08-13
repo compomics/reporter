@@ -7,8 +7,8 @@ import com.compomics.util.experiment.biology.Sample;
 import com.compomics.util.experiment.biology.ions.PeptideFragmentIon;
 import com.compomics.util.experiment.biology.ions.ReporterIon;
 import com.compomics.util.experiment.identification.Identification;
-import com.compomics.util.experiment.identification.SearchParameters;
-import com.compomics.util.experiment.identification.SequenceFactory;
+import com.compomics.util.experiment.identification.identification_parameters.SearchParameters;
+import com.compomics.util.experiment.identification.protein_sequences.SequenceFactory;
 import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
 import com.compomics.util.experiment.quantification.Quantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
@@ -677,13 +677,6 @@ public class NewDialog extends javax.swing.JDialog {
             } catch (IllegalArgumentException ex) {
                 ex.printStackTrace();
             }
-
-//            checkFastaFile(fastaFile);
-//            if (searchParameters == null) {
-//                searchParameters = new SearchParameters();
-//                searchParameters.setEnzyme(EnzymeFactory.getInstance().getEnzyme("Trypsin"));
-//            }
-//            searchParameters.setFastaFile(fastaFile);
         }
     }//GEN-LAST:event_addDbButtonActionPerformed
 
@@ -730,7 +723,7 @@ public class NewDialog extends javax.swing.JDialog {
      * @param evt
      */
     private void editQuantPrefsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editQuantPrefsButtonActionPerformed
-        ReporterSettingsDialog reporterSettingsDialog = new ReporterSettingsDialog(this, reporterSettings, cpsBean.getIdentificationParameters().getSearchParameters().getModificationProfile(), getSelectedMethod(), true);
+        ReporterSettingsDialog reporterSettingsDialog = new ReporterSettingsDialog(this, reporterSettings, cpsBean.getIdentificationParameters().getSearchParameters().getPtmSettings(), getSelectedMethod(), true);
         ReporterSettings newSettings = reporterSettingsDialog.getReporterSettings();
         if (!reporterSettingsDialog.isCanceled() && !reporterSettings.isSameAs(newSettings)) {
             reporterSettings = newSettings;
@@ -1052,35 +1045,32 @@ public class NewDialog extends javax.swing.JDialog {
                 SearchParameters searchParameters = getSearchParameters();
 
                 // try to detect the method used
-                for (String ptmName : searchParameters.getModificationProfile().getAllModifications()) {
-                    if (ptmName.contains("4plex")) {
-                        selectedMethod = getMethod("iTRAQ 4plex");
+                for (String ptmName : searchParameters.getPtmSettings().getAllModifications()) {
+                    if (ptmName.contains("iTRAQ 4-plex")) {
+                        selectedMethod = getMethod("iTRAQ 4-plex");
                         break;
-                    } else if (ptmName.contains("8plex")) {
-                        selectedMethod = getMethod("iTRAQ 8plex");
+                    } else if (ptmName.contains("iTRAQ 8-plex")) {
+                        selectedMethod = getMethod("iTRAQ 8-plex");
                         break;
-                    } else if (ptmName.contains("duplex")) {
-                        selectedMethod = getMethod("TMT 2plex");
+                    } else if (ptmName.contains("TMT 2-plex")) {
+                        selectedMethod = getMethod("TMT 2-plex");
                         break;
-                    } else if (ptmName.contains("tmt") && ptmName.contains("6")) {
+                    } else if (ptmName.contains("TMT") && ptmName.contains("6-plex")) {
                         if (searchParameters.getIonSearched1() == PeptideFragmentIon.Y_ION
                                 || searchParameters.getIonSearched2() == PeptideFragmentIon.Y_ION) {
-                            selectedMethod = getMethod("TMT 6plex (HCD)");
+                            selectedMethod = getMethod("TMT 6-plex (HCD)");
                         } else {
-                            selectedMethod = getMethod("TMT 6plex (ETD)");
+                            selectedMethod = getMethod("TMT 6-plex (ETD)");
                         }
                         if (reporterSettings.getReporterIonSelectionSettings().getReporterIonsMzTolerance() > 0.0016) {
                             reporterSettings.getReporterIonSelectionSettings().setReporterIonsMzTolerance(0.0016);
                         }
                         break;
-                    } else if (ptmName.contains("tmt") && ptmName.contains("10")) {
-                        selectedMethod = getMethod("TMT 10plex");
+                    } else if (ptmName.contains("TMT") && ptmName.contains("10-plex")) {
+                        selectedMethod = getMethod("TMT 10-plex");
                         if (reporterSettings.getReporterIonSelectionSettings().getReporterIonsMzTolerance() > 0.0016) {
                             reporterSettings.getReporterIonSelectionSettings().setReporterIonsMzTolerance(0.0016);
                         }
-                        break;
-                    } else if (ptmName.contains("itraq")) {
-                        selectedMethod = getMethod("iTRAQ 4plex");
                         break;
                     }
                 }
