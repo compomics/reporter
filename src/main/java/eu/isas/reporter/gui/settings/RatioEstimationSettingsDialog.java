@@ -128,7 +128,7 @@ public class RatioEstimationSettingsDialog extends javax.swing.JDialog {
         okButton1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Quantification Advanced Settings");
+        setTitle("Ratio Estimation Settings");
         setResizable(false);
 
         backgroundPanel.setBackground(new java.awt.Color(230, 230, 230));

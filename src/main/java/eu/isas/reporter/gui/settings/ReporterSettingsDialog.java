@@ -79,7 +79,7 @@ public class ReporterSettingsDialog extends javax.swing.JDialog {
     }
 
     /**
-     * Fills the gui with the given settings.
+     * Fills the GUI with the given settings.
      *
      * @param reporterSettings the settings to display
      */

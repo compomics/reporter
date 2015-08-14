@@ -141,18 +141,18 @@ public class NormalizationSettings implements Serializable {
     }
 
     /**
-     * Returns the fasta file containing the stable proteins.
+     * Returns the FASTA file containing the stable proteins.
      *
-     * @return the fasta file containing the stable proteins
+     * @return the FASTA file containing the stable proteins
      */
     public File getStableProteinsFastaFile() {
         return stableProteinsFastaFile;
     }
 
     /**
-     * Sets the fasta file containing the stable proteins.
+     * Sets the FASTA file containing the stable proteins.
      *
-     * @param stableProteinsFastaFile the fasta file containing the stable
+     * @param stableProteinsFastaFile the FASTA file containing the stable
      * proteins
      */
     public void setStableProteinsFastaFile(File stableProteinsFastaFile) {
@@ -160,21 +160,21 @@ public class NormalizationSettings implements Serializable {
     }
 
     /**
-     * Returns the fasta file containing the contaminant proteins.
+     * Returns the FASTA file containing the contaminant proteins.
      *
-     * @return the fasta file containing the contaminant proteins
+     * @return the FASTA file containing the contaminant proteins
      */
     public File getContaminantsFastaFile() {
         if (contaminantsFastaFile == null) {
-            return getDefaultContaminantFile();
+            return getDefaultContaminantFile(); // @TODO: should be possible to set to null
         }
         return contaminantsFastaFile;
     }
 
     /**
-     * Sets the fasta file containing the contaminant proteins.
+     * Sets the FASTA file containing the contaminant proteins.
      *
-     * @param contaminantsFastaFile the fasta file containing the contaminant
+     * @param contaminantsFastaFile the FASTA file containing the contaminant
      * proteins
      */
     public void setContaminantsFastaFile(File contaminantsFastaFile) {
@@ -223,5 +223,4 @@ public class NormalizationSettings implements Serializable {
     public static File getDefaultContaminantFile() {
         return new File(Reporter.getJarFilePath(), "resources\\crap.fasta"); //@TODO: implement as path setting
     }
-
 }

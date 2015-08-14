@@ -109,7 +109,7 @@ public class ReporterIonSelectionSettingsDialog extends javax.swing.JDialog {
         cancelButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Quantification Advanced Settings");
+        setTitle("Reporter Ion Selection Settings");
         setResizable(false);
 
         backgroundPanel.setBackground(new java.awt.Color(230, 230, 230));
