@@ -1,14 +1,11 @@
 package eu.isas.reporter.gui.settings;
 
-import static com.compomics.util.protein_sequences_manager.gui.SequenceDbDetailsDialog.lastFolderKey;
 import eu.isas.reporter.calculation.normalization.NormalizationType;
 import eu.isas.reporter.settings.NormalizationSettings;
-import eu.isas.reporter.settings.RatioEstimationSettings;
 import java.io.File;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 
 /**
@@ -36,11 +33,11 @@ public class NormalizationSettingsDialog extends javax.swing.JDialog {
      */
     private NormalizationType proteinNormalizationType;
     /**
-     * Fasta file containing the stable proteins.
+     * FASTA file containing the stable proteins.
      */
     private File stableProteinsFile;
     /**
-     * Fasta file containing the contaminant proteins.
+     * FASTA file containing the contaminant proteins.
      */
     private File contaminantsFile;
 
@@ -161,15 +158,15 @@ public class NormalizationSettingsDialog extends javax.swing.JDialog {
         matchesNormalizationPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Matches Normalization"));
         matchesNormalizationPanel.setOpaque(false);
 
-        psmNormalizationLbl.setText("PSM Normalization:");
+        psmNormalizationLbl.setText("PSM Normalization");
 
         psmNormalizationCmb.setModel(new DefaultComboBoxModel(NormalizationType.values()));
 
-        peptideNormalizationLbl.setText("Peptide Normalization:");
+        peptideNormalizationLbl.setText("Peptide Normalization");
 
         peptideNormalizationCmb.setModel(new DefaultComboBoxModel(NormalizationType.values()));
 
-        proteinNormalizationLbl.setText("Protein Normalization:");
+        proteinNormalizationLbl.setText("Protein Normalization");
 
         proteinNormalizationCmb.setModel(new DefaultComboBoxModel(NormalizationType.values()));
 
@@ -186,9 +183,8 @@ public class NormalizationSettingsDialog extends javax.swing.JDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(matchesNormalizationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(psmNormalizationCmb, 0, 140, Short.MAX_VALUE)
-                    .addGroup(matchesNormalizationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(peptideNormalizationCmb, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(proteinNormalizationCmb, 0, 140, Short.MAX_VALUE)))
+                    .addComponent(peptideNormalizationCmb, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(proteinNormalizationCmb, 0, 140, Short.MAX_VALUE))
                 .addContainerGap())
         );
         matchesNormalizationPanelLayout.setVerticalGroup(
@@ -212,9 +208,9 @@ public class NormalizationSettingsDialog extends javax.swing.JDialog {
         specialProteinsPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Special Proteins"));
         specialProteinsPanel.setOpaque(false);
 
-        jLabel1.setText("Stable Proteins:");
+        jLabel1.setText("Stable Proteins");
 
-        jLabel2.setText("Contaminants:");
+        jLabel2.setText("Contaminants");
 
         stableProteinsClearButton.setText("Clear");
         stableProteinsClearButton.addActionListener(new java.awt.event.ActionListener() {
@@ -444,11 +440,11 @@ public class NormalizationSettingsDialog extends javax.swing.JDialog {
     }
 
     /**
-     * Returns a fasta file selected by the user.
+     * Returns a FASTA file selected by the user.
      *
      * @param startLocation the folder to start browsing from
      *
-     * @return a fasta file selected by the user
+     * @return a FASTA file selected by the user
      */
     private File getFastaFile(File startLocation) {
 
@@ -477,5 +473,4 @@ public class NormalizationSettingsDialog extends javax.swing.JDialog {
 
         return null;
     }
-
 }
