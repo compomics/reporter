@@ -73,7 +73,7 @@ public class NormalizationSettingsDialog extends javax.swing.JDialog {
     }
 
     /**
-     * Fills the gui with the given settings.
+     * Fills the GUI with the given settings.
      *
      * @param ratioEstimationSettings the normalizationSettings to display
      */
@@ -136,7 +136,7 @@ public class NormalizationSettingsDialog extends javax.swing.JDialog {
         contaminantsTxt = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Quantification Advanced Settings");
+        setTitle("Normalization Settings");
         setResizable(false);
 
         backgroundPanel.setBackground(new java.awt.Color(230, 230, 230));
@@ -161,14 +161,29 @@ public class NormalizationSettingsDialog extends javax.swing.JDialog {
         psmNormalizationLbl.setText("PSM Normalization");
 
         psmNormalizationCmb.setModel(new DefaultComboBoxModel(NormalizationType.values()));
+        psmNormalizationCmb.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                psmNormalizationCmbActionPerformed(evt);
+            }
+        });
 
         peptideNormalizationLbl.setText("Peptide Normalization");
 
         peptideNormalizationCmb.setModel(new DefaultComboBoxModel(NormalizationType.values()));
+        peptideNormalizationCmb.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                peptideNormalizationCmbActionPerformed(evt);
+            }
+        });
 
         proteinNormalizationLbl.setText("Protein Normalization");
 
         proteinNormalizationCmb.setModel(new DefaultComboBoxModel(NormalizationType.values()));
+        proteinNormalizationCmb.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                proteinNormalizationCmbActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout matchesNormalizationPanelLayout = new javax.swing.GroupLayout(matchesNormalizationPanel);
         matchesNormalizationPanel.setLayout(matchesNormalizationPanelLayout);
@@ -176,16 +191,20 @@ public class NormalizationSettingsDialog extends javax.swing.JDialog {
             matchesNormalizationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(matchesNormalizationPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(matchesNormalizationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(proteinNormalizationLbl)
-                    .addComponent(peptideNormalizationLbl)
-                    .addComponent(psmNormalizationLbl))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(matchesNormalizationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(psmNormalizationCmb, 0, 140, Short.MAX_VALUE)
-                    .addComponent(peptideNormalizationCmb, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(proteinNormalizationCmb, 0, 140, Short.MAX_VALUE))
-                .addContainerGap())
+                    .addGroup(matchesNormalizationPanelLayout.createSequentialGroup()
+                        .addComponent(psmNormalizationLbl, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(psmNormalizationCmb, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(matchesNormalizationPanelLayout.createSequentialGroup()
+                        .addComponent(proteinNormalizationLbl, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(proteinNormalizationCmb, javax.swing.GroupLayout.PREFERRED_SIZE, 380, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(matchesNormalizationPanelLayout.createSequentialGroup()
+                        .addComponent(peptideNormalizationLbl, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(peptideNormalizationCmb, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addContainerGap(159, Short.MAX_VALUE))
         );
         matchesNormalizationPanelLayout.setVerticalGroup(
             matchesNormalizationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -194,11 +213,11 @@ public class NormalizationSettingsDialog extends javax.swing.JDialog {
                 .addGroup(matchesNormalizationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(psmNormalizationLbl)
                     .addComponent(psmNormalizationCmb, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(matchesNormalizationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(peptideNormalizationLbl)
                     .addComponent(peptideNormalizationCmb, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(matchesNormalizationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(proteinNormalizationLbl)
                     .addComponent(proteinNormalizationCmb, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -253,19 +272,19 @@ public class NormalizationSettingsDialog extends javax.swing.JDialog {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, specialProteinsPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(specialProteinsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1)
-                    .addComponent(jLabel2))
+                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(specialProteinsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(specialProteinsPanelLayout.createSequentialGroup()
-                        .addComponent(stableProteinsTxt)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(contaminantsTxt, javax.swing.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
+                    .addComponent(stableProteinsTxt, javax.swing.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(specialProteinsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, specialProteinsPanelLayout.createSequentialGroup()
                         .addComponent(stableProteinsBrowseButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(stableProteinsClearButton, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(specialProteinsPanelLayout.createSequentialGroup()
-                        .addComponent(contaminantsTxt)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, specialProteinsPanelLayout.createSequentialGroup()
                         .addComponent(contaminantsBrowseButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(contaminantsClearButton, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE)))
@@ -280,7 +299,7 @@ public class NormalizationSettingsDialog extends javax.swing.JDialog {
                     .addComponent(stableProteinsClearButton)
                     .addComponent(stableProteinsBrowseButton)
                     .addComponent(stableProteinsTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(specialProteinsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
                     .addComponent(contaminantsClearButton)
@@ -297,7 +316,7 @@ public class NormalizationSettingsDialog extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(backgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(backgroundPanelLayout.createSequentialGroup()
-                        .addGap(0, 579, Short.MAX_VALUE)
+                        .addGap(0, 585, Short.MAX_VALUE)
                         .addComponent(okButton, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(cancelButton, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -312,11 +331,11 @@ public class NormalizationSettingsDialog extends javax.swing.JDialog {
                 .addComponent(matchesNormalizationPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(specialProteinsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 324, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(backgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cancelButton)
                     .addComponent(okButton))
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -327,7 +346,7 @@ public class NormalizationSettingsDialog extends javax.swing.JDialog {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(backgroundPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(backgroundPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
 
         pack();
@@ -378,6 +397,18 @@ public class NormalizationSettingsDialog extends javax.swing.JDialog {
         contaminantsFile = fastaFile;
         updateGUI();
     }//GEN-LAST:event_contaminantsBrowseButtonActionPerformed
+
+    private void psmNormalizationCmbActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_psmNormalizationCmbActionPerformed
+        psmNormalizationType = (NormalizationType) psmNormalizationCmb.getSelectedItem();
+    }//GEN-LAST:event_psmNormalizationCmbActionPerformed
+
+    private void peptideNormalizationCmbActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_peptideNormalizationCmbActionPerformed
+        peptideNormalizationType = (NormalizationType) peptideNormalizationCmb.getSelectedItem();
+    }//GEN-LAST:event_peptideNormalizationCmbActionPerformed
+
+    private void proteinNormalizationCmbActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_proteinNormalizationCmbActionPerformed
+        proteinNormalizationType = (NormalizationType) proteinNormalizationCmb.getSelectedItem();
+    }//GEN-LAST:event_proteinNormalizationCmbActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel backgroundPanel;
@@ -433,7 +464,7 @@ public class NormalizationSettingsDialog extends javax.swing.JDialog {
         normalizationSettings.setPeptideNormalization(peptideNormalizationType);
         normalizationSettings.setProteinNormalization(proteinNormalizationType);
         normalizationSettings.setStableProteinsFastaFile(stableProteinsFile);
-        if (!contaminantsFile.getAbsolutePath().equals(NormalizationSettings.getDefaultContaminantFile())) {
+        if (contaminantsFile == null || !contaminantsFile.getAbsolutePath().equals(NormalizationSettings.getDefaultContaminantFile().getAbsolutePath())) {
             normalizationSettings.setContaminantsFastaFile(contaminantsFile);
         }
         return normalizationSettings;

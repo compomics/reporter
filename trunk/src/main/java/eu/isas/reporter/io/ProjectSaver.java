@@ -61,5 +61,4 @@ public class ProjectSaver {
 
         cpsParent.saveProject(waitingHandler, false);
     }
-
 }
