@@ -251,9 +251,11 @@ public class Normalizer {
 
         /**
          * Constructor.
-         * 
-         * @param reporterIonQuantification the reporter ion quantification object
-         * @param quantificationFeaturesGenerator the quantification features generator
+         *
+         * @param reporterIonQuantification the reporter ion quantification
+         * object
+         * @param quantificationFeaturesGenerator the quantification features
+         * generator
          * @param identification the identification object
          * @param peptideMatchesIterator the iterator of the peptide matches
          * @param seeds the seed proteins
@@ -261,7 +263,7 @@ public class Normalizer {
          * @param ratioEstimationSettings the ratio estimation settings
          * @param sequenceMatchingPreferences the sequence matching preferences
          * @param waitingHandler a waiting handler
-         * @param exceptionHandler an exception handler 
+         * @param exceptionHandler an exception handler
          */
         public PeptideNormalizerRunnable(ReporterIonQuantification reporterIonQuantification, QuantificationFeaturesGenerator quantificationFeaturesGenerator, Identification identification, PeptideMatchesIterator peptideMatchesIterator, HashSet<String> seeds, HashSet<String> exclusion, RatioEstimationSettings ratioEstimationSettings, SequenceMatchingPreferences sequenceMatchingPreferences, WaitingHandler waitingHandler, ExceptionHandler exceptionHandler) {
             this.reporterIonQuantification = reporterIonQuantification;
@@ -351,7 +353,5 @@ public class Normalizer {
         public HashMap<String, ArrayList<Double>> getSeedRawRatios() {
             return seedRawRatios;
         }
-
     }
-
 }

@@ -122,10 +122,8 @@
                       <EmptySpace max="32767" attributes="0"/>
                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
                           <Component id="psmNormalizationCmb" pref="140" max="32767" attributes="0"/>
-                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                              <Component id="peptideNormalizationCmb" max="32767" attributes="0"/>
-                              <Component id="proteinNormalizationCmb" pref="140" max="32767" attributes="0"/>
-                          </Group>
+                          <Component id="peptideNormalizationCmb" max="32767" attributes="0"/>
+                          <Component id="proteinNormalizationCmb" pref="140" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -157,7 +155,7 @@
           <SubComponents>
             <Component class="javax.swing.JLabel" name="psmNormalizationLbl">
               <Properties>
-                <Property name="text" type="java.lang.String" value="PSM Normalization:"/>
+                <Property name="text" type="java.lang.String" value="PSM Normalization"/>
               </Properties>
             </Component>
             <Component class="javax.swing.JComboBox" name="psmNormalizationCmb">
@@ -169,7 +167,7 @@
             </Component>
             <Component class="javax.swing.JLabel" name="peptideNormalizationLbl">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Peptide Normalization:"/>
+                <Property name="text" type="java.lang.String" value="Peptide Normalization"/>
               </Properties>
             </Component>
             <Component class="javax.swing.JComboBox" name="peptideNormalizationCmb">
@@ -181,7 +179,7 @@
             </Component>
             <Component class="javax.swing.JLabel" name="proteinNormalizationLbl">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Protein Normalization:"/>
+                <Property name="text" type="java.lang.String" value="Protein Normalization"/>
               </Properties>
             </Component>
             <Component class="javax.swing.JComboBox" name="proteinNormalizationCmb">
@@ -258,12 +256,12 @@
           <SubComponents>
             <Component class="javax.swing.JLabel" name="jLabel1">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Stable Proteins:"/>
+                <Property name="text" type="java.lang.String" value="Stable Proteins"/>
               </Properties>
             </Component>
             <Component class="javax.swing.JLabel" name="jLabel2">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Contaminants:"/>
+                <Property name="text" type="java.lang.String" value="Contaminants"/>
               </Properties>
             </Component>
             <Component class="javax.swing.JButton" name="stableProteinsClearButton">
