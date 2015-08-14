@@ -139,7 +139,7 @@ public class Normalizer {
                     }
                 } else if (normalizationSettings.getPeptideNormalization() == NormalizationType.median) {
                     if (seedRatios != null && !seedRatios.isEmpty()) {
-                        normalisationFactor = BasicMathFunctions.mean(seedRatios);
+                        normalisationFactor = BasicMathFunctions.median(seedRatios);
                     } else {
                         normalisationFactor = BasicMathFunctions.median(rawRatios);
                     }
