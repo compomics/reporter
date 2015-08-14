@@ -37,6 +37,7 @@ import eu.isas.reporter.quantificationdetails.ProteinQuantificationDetails;
 import eu.isas.reporter.quantificationdetails.PsmQuantificationDetails;
 import eu.isas.reporter.quantificationdetails.PtmSiteQuantificationDetails;
 import eu.isas.reporter.quantificationdetails.SpectrumQuantificationDetails;
+import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -51,15 +52,11 @@ import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
  * @author Harald Barsnes
  */
 public class Reporter {
-
+    
     /**
-     * Modification file.
+     * The location of the folder used for the database. //@TODO: make this editable by the user
      */
-    private static String MODIFICATIONS_FILE = "resources/conf/reporter_mods.xml";
-    /**
-     * User modification file.
-     */
-    private static String USER_MODIFICATIONS_FILE = "resources/conf/reporter_usermods.xml";
+    private static String MATCHES_FOLDER = "resources\\matches";
     
     /**
      * Empty constructor for instantiation purposes.
@@ -495,48 +492,20 @@ public class Reporter {
     }
 
     /**
-     * Returns the file used for default modifications pre-loading.
-     *
-     * @return the file used for default modifications pre-loading
-     */
-    public static String getDefaultModificationFile() {
-        return MODIFICATIONS_FILE;
-    }
-
-    /**
-     * Sets the file used for default modifications pre-loading.
-     *
-     * @param modificationFile the file used for default modifications
-     * pre-loading
-     */
-    public static void setDefaultModificationFile(String modificationFile) {
-        Reporter.MODIFICATIONS_FILE = modificationFile;
-    }
-
-    /**
-     * Returns the file used for user modifications pre-loading.
-     *
-     * @return the file used for user modifications pre-loading
-     */
-    public static String getUserModificationFile() {
-        return USER_MODIFICATIONS_FILE;
-    }
-
-    /**
-     * Sets the file used for user modifications pre-loading.
-     *
-     * @param modificationFile the file used for user modifications pre-loading
-     */
-    public static void setUserModificationFile(String modificationFile) {
-        Reporter.USER_MODIFICATIONS_FILE = modificationFile;
-    }
-
-    /**
      * Returns the path to the jar file.
      *
      * @return the path to the jar file
      */
     public static String getJarFilePath() {
         return CompomicsWrapper.getJarFilePath((new Reporter()).getClass().getResource("Reporter.class").getPath(), "Reporter");
+    }
+
+    /**
+     * Returns the file containing the database.
+     *
+     * @return the file containing the database
+     */
+    public static File getMatchesFolder() {
+        return new File(getJarFilePath(), MATCHES_FOLDER);
     }
 }

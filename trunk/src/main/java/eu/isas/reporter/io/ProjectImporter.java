@@ -56,7 +56,7 @@ public class ProjectImporter {
      * @param waitingHandler waiting handler used to display progress and cancel the import
      */
     public ProjectImporter(JFrame parentFrame, LastSelectedFolder lastSelectedFolder, File cpsFile, WaitingHandler waitingHandler) {
-        cpsParent = new CpsParent();
+        cpsParent = new CpsParent(Reporter.getMatchesFolder());
         this.parentFrame = parentFrame;
         this.lastSelectedFolder = lastSelectedFolder;
         importPeptideShakerFile(cpsFile, waitingHandler);
@@ -84,7 +84,7 @@ public class ProjectImporter {
             cpsParent.setCpsFile(cpsFile);
 
             try {
-                cpsParent.loadCpsFile(Reporter.getJarFilePath(), waitingHandler);
+                cpsParent.loadCpsFile(Reporter.getMatchesFolder(), waitingHandler);
             } catch (SQLException e) {
                 e.printStackTrace();
                 String errorText = "An error occurred while reading:\n" + cpsFile + ".\n\n"
