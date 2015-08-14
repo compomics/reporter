@@ -37,6 +37,7 @@ import eu.isas.peptideshaker.utils.CpsParent;
 import eu.isas.peptideshaker.utils.DisplayFeaturesGenerator;
 import eu.isas.peptideshaker.utils.IdentificationFeaturesGenerator;
 import eu.isas.peptideshaker.utils.Metrics;
+import eu.isas.reporter.Reporter;
 import eu.isas.reporter.ReporterWrapper;
 import eu.isas.reporter.calculation.QuantificationFeaturesCache;
 import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
@@ -1198,7 +1199,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         // empty the matches folder
         if (databaseClosed) {
 
-            File matchFolder = PeptideShaker.getSerializationDirectory(getJarFilePath());
+            File matchFolder = Reporter.getMatchesFolder();
 
             if (matchFolder.exists()) {
 

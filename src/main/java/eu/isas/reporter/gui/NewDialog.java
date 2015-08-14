@@ -66,7 +66,7 @@ public class NewDialog extends javax.swing.JDialog {
     /**
      * The cps parent used to manage the data.
      */
-    private CpsParent cpsParent = new CpsParent();
+    private CpsParent cpsParent;
     /**
      * The mgf files loaded.
      */
@@ -1234,7 +1234,7 @@ public class NewDialog extends javax.swing.JDialog {
 
         @Override
         public int getRowCount() {
-            if (selectedMethod == null) {
+            if (selectedMethod == null || cpsParent == null) {
                 return 0;
             }
             return reagents.size();
