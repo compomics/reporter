@@ -1,5 +1,7 @@
 package eu.isas.reporter.gui;
 
+import com.compomics.util.FileAndFileFilter;
+import com.compomics.util.Util;
 import com.compomics.util.db.ObjectsCache;
 import com.compomics.util.examples.BareBonesBrowserLaunch;
 import com.compomics.util.experiment.MsExperiment;
@@ -514,35 +516,27 @@ public class NewDialog extends javax.swing.JDialog {
      */
     private void addIdFilesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addIdFilesButtonActionPerformed
 
-        JFileChooser fileChooser = new JFileChooser(reporterGui.getLastSelectedFolder().getLastSelectedFolder());
-        fileChooser.setDialogTitle("Select Identification File(s)");
-        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        fileChooser.setMultiSelectionEnabled(false);
+        String cpsFileFilterDescription = "PeptideShaker (.cpsx)";
+        //String zipFileFilterDescription = "Zipped PeptideShaker (.zip)"; // @TODO: support zip files
+        String lastSelectedFolderPath = reporterGui.getLastSelectedFolder().getLastSelectedFolder();
+//        FileAndFileFilter selectedFileAndFilter = Util.getUserSelectedFile(this, new String[]{".cpsx", ".zip"}, 
+//                new String[]{cpsFileFilterDescription, zipFileFilterDescription}, "Select Identification File(s)", lastSelectedFolderPath, true, false, false, 0);
+        FileAndFileFilter selectedFileAndFilter = Util.getUserSelectedFile(this, new String[]{".cpsx"}, 
+                new String[]{cpsFileFilterDescription}, "Select Identification File(s)", lastSelectedFolderPath, true, false, false, 0);
 
-        FileFilter filter = new FileFilter() {
-            public boolean accept(File myFile) {
-                return myFile.getName().endsWith("cps")
-                        || myFile.isDirectory();
-            }
-
-            public String getDescription() {
-                return "Supported formats: Compomics PeptideShaker (.cps)";
-            }
-        };
-
-        fileChooser.setFileFilter(filter);
-
-        int returnVal = fileChooser.showDialog(this.getParent(), "OK");
-
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-            File newFile = fileChooser.getSelectedFile();
-
-            if (!newFile.exists()) {
-                JOptionPane.showMessageDialog(this, "The file\'" + newFile.getAbsolutePath() + "\' " + "does not exist!",
-                        "File Not Found.", JOptionPane.ERROR_MESSAGE);
+        if (selectedFileAndFilter != null) {
+            
+            File selectedFile = selectedFileAndFilter.getFile(); 
+            reporterGui.getLastSelectedFolder().setLastSelectedFolder(selectedFile.getParent());
+            
+            if (selectedFile.getName().endsWith(".zip")) {
+                //importPeptideShakerZipFile(selectedFile); // @TODO: support zip files
+            } else if (selectedFile.getName().endsWith(".cpsx")) {
+                importPeptideShakerFile(selectedFile);
+//                reporterGui.getUserPreferences().addRecentProject(selectedFile); // @TOOD: implement me?
+//                reporterGui.updateRecentProjectsList();
             } else {
-                reporterGui.getLastSelectedFolder().setLastSelectedFolder(newFile.getPath());
-                importFile(newFile);
+                JOptionPane.showMessageDialog(this, "Not a PeptideShaker file (.cpsx).", "Unsupported File.", JOptionPane.WARNING_MESSAGE);
             }
         }
     }//GEN-LAST:event_addIdFilesButtonActionPerformed
@@ -899,7 +893,7 @@ public class NewDialog extends javax.swing.JDialog {
      *
      * @param psFile a cps file
      */
-    private void importFile(final File psFile) {
+    private void importPeptideShakerFile(final File psFile) {
 
         progressDialog = new ProgressDialogX(this, reporterGui,
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
