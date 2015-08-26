@@ -101,7 +101,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
     /**
      * The exception handler.
      */
-    private ExceptionHandler exceptionHandler = new FrameExceptionHandler(this, "http://code.google.com/p/reporter/issues/list");
+    private ExceptionHandler exceptionHandler = new FrameExceptionHandler(this, "https://github.com/compomics/reporter/issues");
     /**
      * The cps parent used to manage the data.
      */

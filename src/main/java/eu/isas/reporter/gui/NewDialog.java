@@ -435,7 +435,7 @@ public class NewDialog extends javax.swing.JDialog {
             }
         });
 
-        reporterPublicationLabel.setText("<html>Please cite Reporter as <a href=\"http://reporter.googlecode.com\">http://reporter.googlecode.com</a></html>");
+        reporterPublicationLabel.setText("<html>Please cite Reporter as <a href=\"http://compomics.github.io/projects/reporter.html\">http://compomics.github.io/projects/reporter.html</a></html>");
         reporterPublicationLabel.setToolTipText("Open the Reporter web page");
         reporterPublicationLabel.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -751,7 +751,7 @@ public class NewDialog extends javax.swing.JDialog {
      */
     private void aboutButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutButtonActionPerformed
         this.setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
-        BareBonesBrowserLaunch.openURL("http://reporter.googlecode.com");
+        BareBonesBrowserLaunch.openURL("http://compomics.github.io/projects/reporter.html");
         this.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_aboutButtonActionPerformed
 
@@ -762,7 +762,7 @@ public class NewDialog extends javax.swing.JDialog {
      */
     private void reporterPublicationLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_reporterPublicationLabelMouseClicked
         this.setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
-        BareBonesBrowserLaunch.openURL("http://reporter.googlecode.com");
+        BareBonesBrowserLaunch.openURL("http://compomics.github.io/projects/reporter.html");
         this.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_reporterPublicationLabelMouseClicked
 
