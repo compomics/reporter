@@ -25,7 +25,7 @@ public class ReporterSettingsDialog extends javax.swing.JDialog {
      */
     private ReporterMethod reporterMethod = null;
     /**
-     * The ptm settings of the search.
+     * The PTM settings of the search.
      */
     private PtmSettings ptmSettings;
     /**
@@ -63,28 +63,8 @@ public class ReporterSettingsDialog extends javax.swing.JDialog {
         this.reporterMethod = reporterMethod;
         this.editable = editable;
         initComponents();
-        setUpGui(editable);
-        populateGUI(reporterSettings);
         setLocationRelativeTo(parentDialog);
         setVisible(true);
-    }
-
-    /**
-     * Set up the GUI.
-     *
-     * @param editable boolean indicating whether the settings can be edited
-     */
-    private void setUpGui(boolean editable) {
-
-    }
-
-    /**
-     * Fills the GUI with the given settings.
-     *
-     * @param reporterSettings the settings to display
-     */
-    private void populateGUI(ReporterSettings reporterSettings) {
-
     }
 
     /**
@@ -96,52 +76,52 @@ public class ReporterSettingsDialog extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        reporterLocationButtonGroup = new javax.swing.ButtonGroup();
         backgroundPanel = new javax.swing.JPanel();
-        okButton = new javax.swing.JButton();
         reporterIonSelectionButton = new javax.swing.JButton();
         ratioEstimationButton = new javax.swing.JButton();
         normalizationButton = new javax.swing.JButton();
-        cancelButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Quantification Advanced Settings");
         setResizable(false);
-
-        backgroundPanel.setBackground(new java.awt.Color(230, 230, 230));
-
-        okButton.setText("OK");
-        okButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                okButtonActionPerformed(evt);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
             }
         });
 
-        reporterIonSelectionButton.setText("Reporter Ion Selection");
+        backgroundPanel.setBackground(new java.awt.Color(230, 230, 230));
+
+        reporterIonSelectionButton.setFont(reporterIonSelectionButton.getFont().deriveFont(reporterIonSelectionButton.getFont().getStyle() | java.awt.Font.BOLD, reporterIonSelectionButton.getFont().getSize()+3));
+        reporterIonSelectionButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/RatioPencil.png"))); // NOI18N
+        reporterIonSelectionButton.setText("Reporter Ions");
+        reporterIonSelectionButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        reporterIonSelectionButton.setIconTextGap(40);
         reporterIonSelectionButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 reporterIonSelectionButtonActionPerformed(evt);
             }
         });
 
+        ratioEstimationButton.setFont(ratioEstimationButton.getFont().deriveFont(ratioEstimationButton.getFont().getStyle() | java.awt.Font.BOLD, ratioEstimationButton.getFont().getSize()+3));
+        ratioEstimationButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/RatioRuler.png"))); // NOI18N
         ratioEstimationButton.setText("Ratio Estimation");
+        ratioEstimationButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        ratioEstimationButton.setIconTextGap(38);
         ratioEstimationButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ratioEstimationButtonActionPerformed(evt);
             }
         });
 
+        normalizationButton.setFont(normalizationButton.getFont().deriveFont(normalizationButton.getFont().getStyle() | java.awt.Font.BOLD, normalizationButton.getFont().getSize()+3));
+        normalizationButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/RatioCalculator.png"))); // NOI18N
         normalizationButton.setText("Normalization");
+        normalizationButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        normalizationButton.setIconTextGap(40);
         normalizationButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 normalizationButtonActionPerformed(evt);
-            }
-        });
-
-        cancelButton.setText("Cancel");
-        cancelButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cancelButtonActionPerformed(evt);
             }
         });
 
@@ -150,35 +130,23 @@ public class ReporterSettingsDialog extends javax.swing.JDialog {
         backgroundPanelLayout.setHorizontalGroup(
             backgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(backgroundPanelLayout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(45, 45, 45)
                 .addGroup(backgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(backgroundPanelLayout.createSequentialGroup()
-                        .addGroup(backgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(reporterIonSelectionButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(ratioEstimationButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(normalizationButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(backgroundPanelLayout.createSequentialGroup()
-                        .addGap(0, 119, Short.MAX_VALUE)
-                        .addComponent(okButton, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cancelButton, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
+                    .addComponent(reporterIonSelectionButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(ratioEstimationButton, javax.swing.GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE)
+                    .addComponent(normalizationButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(45, 45, 45))
         );
         backgroundPanelLayout.setVerticalGroup(
             backgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(backgroundPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(reporterIonSelectionButton)
+                .addGap(25, 25, 25)
+                .addComponent(reporterIonSelectionButton, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(ratioEstimationButton)
+                .addComponent(ratioEstimationButton, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(normalizationButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 146, Short.MAX_VALUE)
-                .addGroup(backgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(okButton)
-                    .addComponent(cancelButton))
-                .addContainerGap())
+                .addComponent(normalizationButton, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(25, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -196,14 +164,10 @@ public class ReporterSettingsDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     /**
-     * Save the data and close the dialog.
-     *
-     * @param evt
+     * Open the ReporterIonSelectionSettingsDialog.
+     * 
+     * @param evt 
      */
-    private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
-        dispose();
-    }//GEN-LAST:event_okButtonActionPerformed
-
     private void reporterIonSelectionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reporterIonSelectionButtonActionPerformed
         ReporterIonSelectionSettingsDialog reporterIonSelectionSettingsDialog = new ReporterIonSelectionSettingsDialog(this, reporterIonSelectionSettings, reporterMethod, editable);
         if (!reporterIonSelectionSettingsDialog.isCanceled()) {
@@ -211,6 +175,11 @@ public class ReporterSettingsDialog extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_reporterIonSelectionButtonActionPerformed
 
+    /**
+     * Open the RatioEstimationSettingsDialog.
+     * 
+     * @param evt 
+     */
     private void ratioEstimationButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ratioEstimationButtonActionPerformed
         RatioEstimationSettingsDialog ratioEstimationSettingsDialog = new RatioEstimationSettingsDialog(this, ratioEstimationSettings, ptmSettings, editable);
         if (!ratioEstimationSettingsDialog.isCanceled()) {
@@ -218,6 +187,11 @@ public class ReporterSettingsDialog extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_ratioEstimationButtonActionPerformed
 
+    /**
+     * Open the NormalizationSettingsDialog.
+     * 
+     * @param evt 
+     */
     private void normalizationButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_normalizationButtonActionPerformed
         NormalizationSettingsDialog normalizationSettingsDialog = new NormalizationSettingsDialog(this, normalizationSettings, editable);
         if (!normalizationSettingsDialog.isCanceled()) {
@@ -225,19 +199,20 @@ public class ReporterSettingsDialog extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_normalizationButtonActionPerformed
 
-    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+    /**
+     * Close the dialog without saving the settings.
+     * 
+     * @param evt 
+     */
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         canceled = true;
-        dispose();
-    }//GEN-LAST:event_cancelButtonActionPerformed
+    }//GEN-LAST:event_formWindowClosing
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel backgroundPanel;
-    private javax.swing.JButton cancelButton;
     private javax.swing.JButton normalizationButton;
-    private javax.swing.JButton okButton;
     private javax.swing.JButton ratioEstimationButton;
     private javax.swing.JButton reporterIonSelectionButton;
-    private javax.swing.ButtonGroup reporterLocationButtonGroup;
     // End of variables declaration//GEN-END:variables
 
     /**

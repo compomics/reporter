@@ -29,13 +29,13 @@ public class NormalizationSettings implements Serializable {
      */
     private NormalizationType proteinNormalization = NormalizationType.median;
     /**
-     * Fasta file containing the proteins to consider stable.
+     * FASTA file containing the proteins to consider stable.
      */
     private File stableProteinsFastaFile = null;
     /**
-     * Fasta file containing the contaminants.
+     * FASTA file containing the contaminants.
      */
-    private File contaminantsFastaFile = null;
+    private File contaminantsFastaFile = getDefaultContaminantFile();
 
     /**
      * Constructor.
@@ -165,9 +165,6 @@ public class NormalizationSettings implements Serializable {
      * @return the FASTA file containing the contaminant proteins
      */
     public File getContaminantsFastaFile() {
-        if (contaminantsFastaFile == null) {
-            return getDefaultContaminantFile(); // @TODO: should be possible to set to null
-        }
         return contaminantsFastaFile;
     }
 

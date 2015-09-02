@@ -28,7 +28,6 @@ import com.compomics.util.preferences.IdentificationParameters;
 import com.compomics.util.preferences.LastSelectedFolder;
 import com.compomics.util.preferences.UtilitiesUserPreferences;
 import com.compomics.util.waiting.WaitingHandler;
-import eu.isas.peptideshaker.PeptideShaker;
 import eu.isas.peptideshaker.parameters.PSParameter;
 import eu.isas.peptideshaker.preferences.FilterPreferences;
 import eu.isas.peptideshaker.preferences.ProjectDetails;
@@ -246,12 +245,15 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
             this.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")));
             this.setExtendedState(MAXIMIZED_BOTH);
 
-            setLocationRelativeTo(null);
-            setVisible(true);
-
             overviewPanel.autoResizeComponents();
 
-            createNewProject();
+            // check for 64 bit java and for at least 4 gb memory 
+            boolean java64bit = CompomicsWrapper.is64BitJava();
+            boolean memoryOk = (utilitiesUserPreferences.getMemoryPreference() >= 4000);
+            String javaVersion = System.getProperty("java.version");
+            boolean javaVersionWarning = javaVersion.startsWith("1.5") || javaVersion.startsWith("1.6");
+
+            new WelcomeDialog(this, !java64bit || !memoryOk, javaVersionWarning, true);
         }
     }
 
@@ -267,61 +269,65 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
     /**
      * Closes the currently opened project, open the new project dialog and
      * loads the new project on the interface
+     *
+     * @param cpsParent the cps parent
+     * @param reporterSettings the reporter settings
+     * @param reporterIonQuantification the reporter quantification settings
      */
-    private void createNewProject() {
+    public void createNewProject(CpsParent cpsParent, ReporterSettings reporterSettings, ReporterIonQuantification reporterIonQuantification) {
 
         if (cpsParent != null) {
             closeOpenedProject();
         }
         projectSaved = true;
-        NewDialog newDialog = new NewDialog(ReporterGUI.this);
 
-        if (!newDialog.isCancelled()) {
+        setLocationRelativeTo(null);
+        setVisible(true);
 
-            cpsParent = newDialog.getCpsBean();
-            reporterSettings = newDialog.getReporterSettings();
-            reporterIonQuantification = newDialog.getReporterIonQuantification();
-            identificationFeaturesGenerator = new IdentificationFeaturesGenerator(cpsParent.getIdentification(), cpsParent.getShotgunProtocol(),
-                    cpsParent.getIdentificationParameters(), cpsParent.getMetrics(), cpsParent.getSpectrumCountingPreferences());
-            displayFeaturesGenerator = new DisplayFeaturesGenerator(cpsParent.getIdentificationParameters().getSearchParameters().getPtmSettings(), exceptionHandler);
-            displayFeaturesGenerator.setDisplayedPTMs(cpsParent.getDisplayPreferences().getDisplayedPtms());
-            setDisplayPreferencesFromShakerProject();
-            selectedProteins = new ArrayList<String>();
+        this.cpsParent = cpsParent;
+        this.reporterSettings = reporterSettings;
+        this.reporterIonQuantification = reporterIonQuantification;
 
-            projectSaved = false;
-            quantificationFeaturesGenerator = new QuantificationFeaturesGenerator(new QuantificationFeaturesCache(), cpsParent.getIdentification(), reporterSettings, reporterIonQuantification,
-                    cpsParent.getIdentificationParameters().getSearchParameters(), cpsParent.getIdentificationParameters().getSequenceMatchingPreferences());
+        identificationFeaturesGenerator = new IdentificationFeaturesGenerator(cpsParent.getIdentification(), cpsParent.getShotgunProtocol(),
+                cpsParent.getIdentificationParameters(), cpsParent.getMetrics(), cpsParent.getSpectrumCountingPreferences());
+        displayFeaturesGenerator = new DisplayFeaturesGenerator(cpsParent.getIdentificationParameters().getSearchParameters().getPtmSettings(), exceptionHandler);
+        displayFeaturesGenerator.setDisplayedPTMs(cpsParent.getDisplayPreferences().getDisplayedPtms());
+        setDisplayPreferencesFromShakerProject();
+        selectedProteins = new ArrayList<String>();
 
-            progressDialog = new ProgressDialogX(this,
-                    Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
-                    Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
-            progressDialog.setPrimaryProgressCounterIndeterminate(true);
-            progressDialog.setTitle("Quantifying Proteins. Please Wait...");
+        projectSaved = false;
+        quantificationFeaturesGenerator = new QuantificationFeaturesGenerator(new QuantificationFeaturesCache(), cpsParent.getIdentification(), reporterSettings, reporterIonQuantification,
+                cpsParent.getIdentificationParameters().getSearchParameters(), cpsParent.getIdentificationParameters().getSequenceMatchingPreferences());
 
-            new Thread(new Runnable() {
-                public void run() {
-                    try {
-                        progressDialog.setVisible(true);
-                    } catch (IndexOutOfBoundsException e) {
-                        // ignore
-                    }
+        progressDialog = new ProgressDialogX(this,
+                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
+                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
+        progressDialog.setPrimaryProgressCounterIndeterminate(true);
+        progressDialog.setTitle("Quantifying Proteins. Please Wait...");
+
+        new Thread(new Runnable() {
+            public void run() {
+                try {
+                    progressDialog.setVisible(true);
+                } catch (IndexOutOfBoundsException e) {
+                    // ignore
                 }
-            }, "ProgressDialog").start();
+            }
+        }, "ProgressDialog").start();
 
-            new Thread("ImportThread") {
-                @Override
-                public void run() {
-                    try {
-                        displayResults(progressDialog);
-                    } catch (Exception e) {
-                        catchException(e);
-                        progressDialog.setRunCanceled();
-                    } finally {
-                        progressDialog.setRunFinished();
-                    }
+        new Thread("ImportThread") {
+            @Override
+            public void run() {
+                try {
+                    displayResults(progressDialog);
+                } catch (Exception e) {
+                    catchException(e);
+                    progressDialog.setRunCanceled();
+                } finally {
+                    progressDialog.setRunFinished();
                 }
-            }.start();
-        }
+            }
+        }.start();
     }
 
     /**
@@ -387,6 +393,10 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         }
 
         overviewPanel.updateDisplay();
+
+        saveMenuItem.setEnabled(true);
+        saveAsMenuItem.setEnabled(true);
+        exportMenu.setEnabled(true);
 
         jumpToPanel.setEnabled(true);
         jumpToPanel.setType(JumpToPanel.JumpType.proteinAndPeptides);
@@ -759,6 +769,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         openMenuItem = new javax.swing.JMenuItem();
         jSeparator2 = new javax.swing.JPopupMenu.Separator();
         saveMenuItem = new javax.swing.JMenuItem();
+        saveAsMenuItem = new javax.swing.JMenuItem();
         jSeparator3 = new javax.swing.JPopupMenu.Separator();
         exitMenuItem = new javax.swing.JMenuItem();
         exportMenu = new javax.swing.JMenu();
@@ -829,12 +840,22 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         saveMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
         saveMenuItem.setMnemonic('S');
         saveMenuItem.setText("Save");
+        saveMenuItem.setEnabled(false);
         saveMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 saveMenuItemActionPerformed(evt);
             }
         });
         fileMenu.add(saveMenuItem);
+
+        saveAsMenuItem.setText("Save As...");
+        saveAsMenuItem.setEnabled(false);
+        saveAsMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveAsMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(saveAsMenuItem);
         fileMenu.add(jSeparator3);
 
         exitMenuItem.setMnemonic('x');
@@ -850,6 +871,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
 
         exportMenu.setMnemonic('E');
         exportMenu.setText("Export");
+        exportMenu.setEnabled(false);
 
         exportQuantificationFeaturesMenuItem.setMnemonic('P');
         exportQuantificationFeaturesMenuItem.setText("Quantification Features");
@@ -944,7 +966,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * @param evt
      */
     private void newMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newMenuItemActionPerformed
-        createNewProject();
+        new NewDialog(this, true);
     }//GEN-LAST:event_newMenuItemActionPerformed
 
     /**
@@ -1022,18 +1044,45 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         new JavaSettingsDialog(this, this, null, "Reporter", true);
     }//GEN-LAST:event_javaOptionsMenuItemActionPerformed
 
+    /**
+     * Save the current project.
+     *
+     * @param evt
+     */
     private void saveMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveMenuItemActionPerformed
-        save();
+        if (cpsParent.getCpsFile() != null && cpsParent.getCpsFile().exists()) {
+            saveProject(false, false);
+        } else {
+            saveProjectAs(false, false);
+        }
     }//GEN-LAST:event_saveMenuItemActionPerformed
 
+    /**
+     * Create a new project.
+     *
+     * @param evt
+     */
     private void openMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openMenuItemActionPerformed
-        createNewProject();
+        new NewDialog(this, true); // @TODO: implement open project option
     }//GEN-LAST:event_openMenuItemActionPerformed
 
     /**
-     * Saves the quantification details in the cps file.
+     * Saves the quantification details in the cpsx file.
+     *
+     * @param evt
      */
-    private void save() {
+    private void saveAsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAsMenuItemActionPerformed
+        saveProjectAs(false, false);
+    }//GEN-LAST:event_saveAsMenuItemActionPerformed
+
+    /**
+     * Saves the quantification details in the cpsx file.
+     *
+     * @param aCloseWhenDone if true, Reporter closes after saving
+     * @param aExportToZipWhenDone if true, the project is also saved as a zip
+     * file
+     */
+    private void saveProject(boolean aCloseWhenDone, boolean aExportToZipWhenDone) { // @TODO: implement aExportToZipWhenDone?
 
         progressDialog = new ProgressDialogX(this,
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
@@ -1041,6 +1090,8 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
                 true);
         progressDialog.setPrimaryProgressCounterIndeterminate(true);
         progressDialog.setTitle("Saving. Please Wait...");
+
+        final boolean closeWhenDone = aCloseWhenDone;
 
         new Thread(new Runnable() {
             public void run() {
@@ -1056,15 +1107,17 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
             @Override
             public void run() {
                 try {
-
                     progressDialog.setWaitingText("Saving Results. Please Wait...");
                     ProjectSaver.saveProject(reporterSettings, reporterIonQuantification, cpsParent, progressDialog);
                     if (!progressDialog.isRunCanceled()) {
-                        progressDialog.setRunFinished();
-                        JOptionPane.showMessageDialog(ReporterGUI.this, "Project successfully saved.", "Save Successful", JOptionPane.INFORMATION_MESSAGE);
-                        projectSaved = true;
+                        if (closeWhenDone) {
+                            closeReporter();
+                        } else {
+                            progressDialog.setRunFinished();
+                            JOptionPane.showMessageDialog(ReporterGUI.this, "Project successfully saved.", "Save Successful", JOptionPane.INFORMATION_MESSAGE);
+                            projectSaved = true;
+                        }
                     }
-
                 } catch (Exception e) {
                     progressDialog.setRunFinished();
                     e.printStackTrace();
@@ -1075,9 +1128,24 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
     }
 
     /**
+     * Save the project to the currentPSFile location.
+     *
+     * @param closeWhenDone if true, Reporter closes when done saving
+     * @param aExportToZipWhenDone if true, the project is also saved as a zip
+     * file
+     */
+    public void saveProjectAs(boolean closeWhenDone, boolean aExportToZipWhenDone) {
+        File selectedFile = getUserSelectedFile(".cpsx", "Compomics Peptide Shaker format (*.cpsx)", "Save As...", false);
+        cpsParent.setCpsFile(selectedFile);
+        if (selectedFile != null) {
+            saveProject(closeWhenDone, aExportToZipWhenDone);
+        }
+    }
+
+    /**
      * Closes Reporter.
      */
-    private void closeReporter() {
+    public void closeReporter() {
 
         progressDialog = new ProgressDialogX(this,
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
@@ -1266,6 +1334,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
     private javax.swing.JPanel overviewJPanel;
     private javax.swing.JMenuItem privacyMenuItem;
     private javax.swing.JMenu quantificationOptionsMenu;
+    private javax.swing.JMenuItem saveAsMenuItem;
     private javax.swing.JMenuItem saveMenuItem;
     private javax.swing.JTabbedPane tabPanel;
     // End of variables declaration//GEN-END:variables

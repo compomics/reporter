@@ -1,11 +1,13 @@
 package eu.isas.reporter.gui.settings;
 
+import com.compomics.util.gui.renderers.AlignedListCellRenderer;
 import eu.isas.reporter.calculation.normalization.NormalizationType;
 import eu.isas.reporter.settings.NormalizationSettings;
 import java.io.File;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileFilter;
 
 /**
@@ -70,6 +72,10 @@ public class NormalizationSettingsDialog extends javax.swing.JDialog {
         stableProteinsClearButton.setEnabled(editable);
         contaminantsBrowseButton.setEnabled(editable);
         contaminantsClearButton.setEnabled(editable);
+        
+        psmNormalizationCmb.setRenderer(new AlignedListCellRenderer(SwingConstants.CENTER));
+        peptideNormalizationCmb.setRenderer(new AlignedListCellRenderer(SwingConstants.CENTER));
+        proteinNormalizationCmb.setRenderer(new AlignedListCellRenderer(SwingConstants.CENTER));
     }
 
     /**
@@ -114,7 +120,6 @@ public class NormalizationSettingsDialog extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        reporterLocationButtonGroup = new javax.swing.ButtonGroup();
         backgroundPanel = new javax.swing.JPanel();
         cancelButton = new javax.swing.JButton();
         okButton = new javax.swing.JButton();
@@ -426,7 +431,6 @@ public class NormalizationSettingsDialog extends javax.swing.JDialog {
     private javax.swing.JLabel proteinNormalizationLbl;
     private javax.swing.JComboBox psmNormalizationCmb;
     private javax.swing.JLabel psmNormalizationLbl;
-    private javax.swing.ButtonGroup reporterLocationButtonGroup;
     private javax.swing.JPanel specialProteinsPanel;
     private javax.swing.JButton stableProteinsBrowseButton;
     private javax.swing.JButton stableProteinsClearButton;
@@ -449,7 +453,6 @@ public class NormalizationSettingsDialog extends javax.swing.JDialog {
      * @return true if the input can be processed
      */
     private boolean validateInput() {
-
         return true;
     }
 
@@ -464,9 +467,7 @@ public class NormalizationSettingsDialog extends javax.swing.JDialog {
         normalizationSettings.setPeptideNormalization(peptideNormalizationType);
         normalizationSettings.setProteinNormalization(proteinNormalizationType);
         normalizationSettings.setStableProteinsFastaFile(stableProteinsFile);
-        if (contaminantsFile == null || !contaminantsFile.getAbsolutePath().equals(NormalizationSettings.getDefaultContaminantFile().getAbsolutePath())) {
-            normalizationSettings.setContaminantsFastaFile(contaminantsFile);
-        }
+        normalizationSettings.setContaminantsFastaFile(contaminantsFile);
         return normalizationSettings;
     }
 
@@ -483,8 +484,8 @@ public class NormalizationSettingsDialog extends javax.swing.JDialog {
         FileFilter filter = new FileFilter() {
             @Override
             public boolean accept(File myFile) {
-                return myFile.getName().toLowerCase().endsWith("fasta")
-                        || myFile.getName().toLowerCase().endsWith("fas")
+                return myFile.getName().toLowerCase().endsWith(".fasta")
+                        || myFile.getName().toLowerCase().endsWith(".fas")
                         || myFile.isDirectory();
             }
 

@@ -81,6 +81,10 @@ public class NewDialog extends javax.swing.JDialog {
      * A simple progress dialog.
      */
     private ProgressDialogX progressDialog;
+    /*
+     * The welcome dialog parent, can be null.
+     */
+    private WelcomeDialog welcomeDialog;
     /**
      * The spectrum factory.
      */
@@ -114,11 +118,13 @@ public class NewDialog extends javax.swing.JDialog {
      * Constructor.
      *
      * @param reporterGui the reporter class
+     * @param modal if the dialog is modal or not
      */
-    public NewDialog(ReporterGUI reporterGui) {
-        super(reporterGui, true);
+    public NewDialog(ReporterGUI reporterGui, boolean modal) {
+        super(reporterGui, modal);
 
         this.reporterGui = reporterGui;
+        this.welcomeDialog = null;
 
         methodsFile = new File(reporterGui.getJarFilePath(), METHODS_FILE);
         importMethods();
@@ -148,6 +154,50 @@ public class NewDialog extends javax.swing.JDialog {
 
         pack();
         setLocationRelativeTo(reporterGui);
+        setVisible(true);
+    }
+    
+    /**
+     * Constructor.
+     *
+     * @param reporterGui the reporter class
+     * @param welcomeDialog the welcome dialog parent frame
+     * @param modal if the dialog is modal or not
+     */
+    public NewDialog(WelcomeDialog welcomeDialog, ReporterGUI reporterGui, boolean modal) {
+        super(welcomeDialog, modal);
+
+        this.reporterGui = reporterGui;
+        this.welcomeDialog = welcomeDialog;
+
+        methodsFile = new File(reporterGui.getJarFilePath(), METHODS_FILE);
+        importMethods();
+
+        initComponents();
+
+        setUpGui();
+
+        // load the user preferences
+        loadDefaultPreferences();
+
+        if (selectedMethod == null && methodsFactory.getMethodsNames() != null && methodsFactory.getMethodsNames().length > 0) {
+            reporterMethodComboBox.setSelectedItem(methodsFactory.getMethodsNames()[0]);
+        }
+
+        reporterMethodComboBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                selectedMethod = getMethod((String) reporterMethodComboBox.getSelectedItem());
+                reagents = selectedMethod.getReagentsSortedByMass();
+                refresh();
+            }
+        });
+
+        reporterGui.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")));
+
+        refresh();
+
+        pack();
+        setLocationRelativeTo(welcomeDialog);
         setVisible(true);
     }
 
@@ -797,6 +847,12 @@ public class NewDialog extends javax.swing.JDialog {
             }
             reporterIonQuantification.setMethod(selectedMethod);
             reporterIonQuantification.setControlSamples(controlSamples);
+            
+            if (welcomeDialog != null) {
+                welcomeDialog.setVisible(false);
+            }
+            
+            reporterGui.createNewProject(cpsParent, reporterSettings, reporterIonQuantification);
             dispose();
         }
     }//GEN-LAST:event_loadButtonActionPerformed
