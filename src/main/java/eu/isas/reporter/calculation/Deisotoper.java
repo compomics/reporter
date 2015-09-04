@@ -136,7 +136,7 @@ public class Deisotoper {
                             lineNumber = i;
                         }
                     }
-                    double reagentMass = correctionMatrix.getReagentMass(i) + ElementaryIon.proton.getTheoreticMass();
+                    double reagentMass = correctionMatrix.getReagentMass(i);
                     ReporterIon tempIon = new ReporterIon("tempIon", reagentMass, false);
                     IonMatch ionMatch = Reporter.getBestReporterIonMatch(tempIon, 1, spectrum, mzTolerance);
                     if (ionMatch != null) {
@@ -144,7 +144,7 @@ public class Deisotoper {
                     }
                 }
                 if (lineNumber == -1) {
-                    throw new IllegalArgumentException("Index of reagent " + label + " not found in the correction matrix.");
+                    throw new IllegalArgumentException("Index of reagent " + label + " not found in the isotope correction matrix.");
                 }
                 double resultInt = 0;
                 for (int j = 0; j < intensities.length; j++) {
