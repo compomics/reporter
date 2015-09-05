@@ -218,6 +218,6 @@ public class NormalizationSettings implements Serializable {
      * @return the default contaminants file
      */
     public static File getDefaultContaminantFile() {
-        return new File(Reporter.getJarFilePath(), "resources\\crap.fasta"); //@TODO: implement as path setting
+        return new File(Reporter.getJarFilePath(), "resources/crap.fasta"); //@TODO: implement as path setting
     }
 }

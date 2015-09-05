@@ -56,7 +56,7 @@ public class Reporter {
     /**
      * The location of the folder used for the database. //@TODO: make this editable by the user
      */
-    private static String MATCHES_FOLDER = "resources\\matches";
+    private static String MATCHES_FOLDER = "resources/matches";
     
     /**
      * Empty constructor for instantiation purposes.

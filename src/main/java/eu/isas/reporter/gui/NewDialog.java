@@ -156,7 +156,7 @@ public class NewDialog extends javax.swing.JDialog {
         setLocationRelativeTo(reporterGui);
         setVisible(true);
     }
-    
+
     /**
      * Constructor.
      *
@@ -571,14 +571,14 @@ public class NewDialog extends javax.swing.JDialog {
         String lastSelectedFolderPath = reporterGui.getLastSelectedFolder().getLastSelectedFolder();
 //        FileAndFileFilter selectedFileAndFilter = Util.getUserSelectedFile(this, new String[]{".cpsx", ".zip"}, 
 //                new String[]{cpsFileFilterDescription, zipFileFilterDescription}, "Select Identification File(s)", lastSelectedFolderPath, true, false, false, 0);
-        FileAndFileFilter selectedFileAndFilter = Util.getUserSelectedFile(this, new String[]{".cpsx"}, 
+        FileAndFileFilter selectedFileAndFilter = Util.getUserSelectedFile(this, new String[]{".cpsx"},
                 new String[]{cpsFileFilterDescription}, "Select Identification File(s)", lastSelectedFolderPath, true, false, false, 0);
 
         if (selectedFileAndFilter != null) {
-            
-            File selectedFile = selectedFileAndFilter.getFile(); 
+
+            File selectedFile = selectedFileAndFilter.getFile();
             reporterGui.getLastSelectedFolder().setLastSelectedFolder(selectedFile.getParent());
-            
+
             if (selectedFile.getName().endsWith(".zip")) {
                 //importPeptideShakerZipFile(selectedFile); // @TODO: support zip files
             } else if (selectedFile.getName().endsWith(".cpsx")) {
@@ -847,11 +847,11 @@ public class NewDialog extends javax.swing.JDialog {
             }
             reporterIonQuantification.setMethod(selectedMethod);
             reporterIonQuantification.setControlSamples(controlSamples);
-            
+
             if (welcomeDialog != null) {
                 welcomeDialog.setVisible(false);
             }
-            
+
             reporterGui.createNewProject(cpsParent, reporterSettings, reporterIonQuantification);
             dispose();
         }
@@ -951,9 +951,16 @@ public class NewDialog extends javax.swing.JDialog {
      */
     private void importPeptideShakerFile(final File psFile) {
 
-        progressDialog = new ProgressDialogX(this, reporterGui,
-                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
-                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
+        if (welcomeDialog != null) {
+            progressDialog = new ProgressDialogX(welcomeDialog, reporterGui,
+                    Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
+                    Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
+        } else {
+            progressDialog = new ProgressDialogX(this, reporterGui,
+                    Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
+                    Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
+        }
+
         progressDialog.setPrimaryProgressCounterIndeterminate(true);
         progressDialog.setTitle("Importing Project. Please Wait...");
 
@@ -995,7 +1002,7 @@ public class NewDialog extends javax.swing.JDialog {
                 }
 
                 reporterIonQuantification = projectImporter.getReporterIonQuantification();
-                
+
                 if (reporterIonQuantification != null) {
                     selectedMethod = reporterIonQuantification.getReporterMethod();
                 } else {
