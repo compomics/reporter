@@ -425,7 +425,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
             // filter the proteins
             waitingHandler.setWaitingText("Filtering Proteins. Please Wait...");
             filteredProteinKeys = filterProteins(getMetrics().getProteinKeys(), waitingHandler);
-
+            
             if (waitingHandler.isRunCanceled()) {
                 return;
             }
@@ -550,6 +550,11 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
             }
 
             waitingHandler.increasePrimaryProgressCounter();
+        }
+        
+        // fail safe for when all proteins are removed
+        if (tempFilteredProteinKeysArray.isEmpty()) {
+            tempFilteredProteinKeysArray = proteinKeys;
         }
 
         return tempFilteredProteinKeysArray;
