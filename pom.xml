@@ -363,7 +363,7 @@
         <dependency>
             <groupId>eu.isas.peptideshaker</groupId>
             <artifactId>PeptideShaker</artifactId>
-            <version>1.0.3</version>
+            <version>1.0.4</version>
             <exclusions>
                 <exclusion>
                     <groupId>de.proteinms.omxparser</groupId>
