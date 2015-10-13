@@ -1140,7 +1140,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * file
      */
     public void saveProjectAs(boolean closeWhenDone, boolean aExportToZipWhenDone) {
-        File selectedFile = getUserSelectedFile(".cpsx", "Compomics Peptide Shaker format (*.cpsx)", "Save As...", false);
+        File selectedFile = getUserSelectedFile(cpsParent.getExperiment().getReference(), ".cpsx", "Compomics Peptide Shaker format (*.cpsx)", "Save As...", false);
         cpsParent.setCpsFile(selectedFile);
         if (selectedFile != null) {
             saveProject(closeWhenDone, aExportToZipWhenDone);
@@ -1369,6 +1369,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
     /**
      * Returns the file selected by the user, or null if no file was selected.
      *
+     * @param aSuggestedFileName the suggested file name, can be null
      * @param aFileEnding the file type, e.g., .txt
      * @param aFileFormatDescription the file format description, e.g., (Mascot
      * Generic Format) *.mgf
@@ -1378,9 +1379,9 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * @return the file selected by the user, or null if no file or folder was
      * selected
      */
-    public File getUserSelectedFile(String aFileEnding, String aFileFormatDescription, String aDialogTitle, boolean openDialog) {
+    public File getUserSelectedFile(String aSuggestedFileName, String aFileEnding, String aFileFormatDescription, String aDialogTitle, boolean openDialog) {
 
-        File selectedFile = Util.getUserSelectedFile(this, aFileEnding, aFileFormatDescription, aDialogTitle, lastSelectedFolder.getLastSelectedFolder(), openDialog);
+        File selectedFile = Util.getUserSelectedFile(this, aFileEnding, aFileFormatDescription, aDialogTitle, lastSelectedFolder.getLastSelectedFolder(), aSuggestedFileName, openDialog);
 
         if (selectedFile != null) {
             if (selectedFile.isDirectory()) {

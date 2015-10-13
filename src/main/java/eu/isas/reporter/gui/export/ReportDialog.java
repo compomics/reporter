@@ -407,12 +407,13 @@ public class ReportDialog extends javax.swing.JDialog {
 
             final File selectedFile;
             final ExportFormat exportFormat = exportFormatSelectionDialog.getFormat();
+            final String schemeName = (String) reportsTable.getValueAt(reportsTable.getSelectedRow(), 1);
 
             // get the file to send the output to
             if (exportFormat == ExportFormat.text) {
-                selectedFile = reporterGUI.getUserSelectedFile(".txt", "Tab separated text file (.txt)", "Export...", false);
+                selectedFile = reporterGUI.getUserSelectedFile(schemeName + ".txt", ".txt", "Tab separated text file (.txt)", "Export...", false);
             } else {
-                selectedFile = reporterGUI.getUserSelectedFile(".xls", "Excel Workbook (.xls)", "Export...", false);
+                selectedFile = reporterGUI.getUserSelectedFile(schemeName + ".xls", ".xls", "Excel Workbook (.xls)", "Export...", false);
             }
 
             if (selectedFile != null) {
@@ -439,7 +440,6 @@ public class ReportDialog extends javax.swing.JDialog {
                     public void run() {
 
                         try {
-                            String schemeName = (String) reportsTable.getValueAt(reportsTable.getSelectedRow(), 1);
                             ExportScheme exportScheme = exportFactory.getExportScheme(schemeName);
                             progressDialog.setTitle("Exporting. Please Wait...");
                             ReporterExportFactory.writeExport(exportScheme, selectedFile, exportFormat, reporterGUI.getExperiment().getReference(),
@@ -483,12 +483,13 @@ public class ReportDialog extends javax.swing.JDialog {
 
             final File selectedFile;
             final ExportFormat exportFormat = exportFormatSelectionDialog.getFormat();
+            final String schemeName = (String) reportsTable.getValueAt(reportsTable.getSelectedRow(), 1);
 
             // get the file to send the output to
             if (exportFormat == ExportFormat.text) {
-                selectedFile = reporterGUI.getUserSelectedFile(".txt", "Tab separated text file (.txt)", "Export...", false);
+                selectedFile = reporterGUI.getUserSelectedFile(schemeName + ".txt", ".txt", "Tab separated text file (.txt)", "Export...", false);
             } else {
-                selectedFile = reporterGUI.getUserSelectedFile(".xls", "Excel Workbook (.xls)", "Export...", false);
+                selectedFile = reporterGUI.getUserSelectedFile(schemeName + ".xls", ".xls", "Excel Workbook (.xls)", "Export...", false);
             }
 
             if (selectedFile != null) {
@@ -512,7 +513,6 @@ public class ReportDialog extends javax.swing.JDialog {
                     public void run() {
                         boolean error = false;
                         try {
-                            String schemeName = (String) reportsTable.getValueAt(reportsTable.getSelectedRow(), 1);
                             ExportScheme exportScheme = exportFactory.getExportScheme(schemeName);
                             ReporterExportFactory.writeDocumentation(exportScheme, exportFormat, selectedFile);
                         } catch (Exception e) {

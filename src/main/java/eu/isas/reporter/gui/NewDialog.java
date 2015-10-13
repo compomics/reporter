@@ -570,9 +570,9 @@ public class NewDialog extends javax.swing.JDialog {
         //String zipFileFilterDescription = "Zipped PeptideShaker (.zip)"; // @TODO: support zip files
         String lastSelectedFolderPath = reporterGui.getLastSelectedFolder().getLastSelectedFolder();
 //        FileAndFileFilter selectedFileAndFilter = Util.getUserSelectedFile(this, new String[]{".cpsx", ".zip"}, 
-//                new String[]{cpsFileFilterDescription, zipFileFilterDescription}, "Select Identification File(s)", lastSelectedFolderPath, true, false, false, 0);
+//                new String[]{cpsFileFilterDescription, zipFileFilterDescription}, "Select Identification File(s)", lastSelectedFolderPath, null, true, false, false, 0);
         FileAndFileFilter selectedFileAndFilter = Util.getUserSelectedFile(this, new String[]{".cpsx"},
-                new String[]{cpsFileFilterDescription}, "Select Identification File(s)", lastSelectedFolderPath, true, false, false, 0);
+                new String[]{cpsFileFilterDescription}, "Select Identification File(s)", lastSelectedFolderPath, null, true, false, false, 0);
 
         if (selectedFileAndFilter != null) {
 

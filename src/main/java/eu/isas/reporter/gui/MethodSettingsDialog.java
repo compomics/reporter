@@ -210,7 +210,7 @@ public class MethodSettingsDialog extends javax.swing.JDialog {
         }
 
         File selectedFile = Util.getUserSelectedFile(this, ".xml", "Reporter Method File (*.xml)", "Select Settings File", 
-                newDialog.getReporterGui().getLastSelectedFolder().getLastSelectedFolder(), true);
+                newDialog.getReporterGui().getLastSelectedFolder().getLastSelectedFolder(), null, true);
 
         if (selectedFile != null) {
             try {
@@ -240,12 +240,15 @@ public class MethodSettingsDialog extends javax.swing.JDialog {
      * @param evt 
      */
     private void saveConfigButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveConfigButtonActionPerformed
+        
+        String tempFileName = null;
         if (txtConfigurationFileLocation.getText().length() > 0) {
             newDialog.getReporterGui().getLastSelectedFolder().setLastSelectedFolder(txtConfigurationFileLocation.getText());
+            tempFileName = new File(txtConfigurationFileLocation.getText()).getName();
         }
 
         File selectedFile = Util.getUserSelectedFile(this, ".xml", "Reporter Method File (*.xml)", "Save Settings File", 
-                newDialog.getReporterGui().getLastSelectedFolder().getLastSelectedFolder(), false);
+                newDialog.getReporterGui().getLastSelectedFolder().getLastSelectedFolder(), tempFileName, false);
 
         if (selectedFile != null) {
             try {
