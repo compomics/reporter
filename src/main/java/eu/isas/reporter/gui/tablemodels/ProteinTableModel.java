@@ -254,7 +254,7 @@ public class ProteinTableModel extends SelfUpdatingTableModel {
                         ProteinQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(proteinKey, null);
 
                         for (String sampleIndex : sampleIndexes) {
-                            Double ratio = quantificationDetails.getRatio(sampleIndex);
+                            Double ratio = quantificationDetails.getRatio(sampleIndex, reporterIonQuantification.getNormalizationFactors());
                             if (ratio != null) {
                                 if (ratio != 0) {
                                     ratio = Math.log(ratio) / Math.log(2);

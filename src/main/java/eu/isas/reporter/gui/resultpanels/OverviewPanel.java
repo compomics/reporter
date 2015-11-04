@@ -289,7 +289,7 @@ public class OverviewPanel extends javax.swing.JPanel {
 
                     if (psParameter.getMatchValidationLevel().isValidated()) {
                         ProteinQuantificationDetails quantificationDetails = reporterGUI.getQuantificationFeaturesGenerator().getProteinMatchQuantificationDetails(proteinKey, waitingHandler);
-                        Double ratio = quantificationDetails.getRatio(sampleIndex);
+                        Double ratio = quantificationDetails.getRatio(sampleIndex, reporterGUI.getReporterIonQuantification().getNormalizationFactors());
 
                         if (ratio != null) {
                             if (ratio != 0) {

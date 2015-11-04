@@ -8,6 +8,7 @@ import com.compomics.util.waiting.WaitingHandler;
 import eu.isas.peptideshaker.utils.CpsParent;
 import eu.isas.reporter.Reporter;
 import eu.isas.reporter.settings.ReporterSettings;
+import java.awt.Dialog;
 import java.io.EOFException;
 import java.io.File;
 import java.sql.SQLException;
@@ -23,9 +24,9 @@ import javax.swing.JOptionPane;
 public class ProjectImporter {
 
     /**
-     * The parent frame if operated from the GUI.
+     * The dialog owner if operated from the GUI.
      */
-    private JFrame parentFrame;
+    private Dialog owner;
 
     /**
      * The last selected folder.
@@ -49,25 +50,27 @@ public class ProjectImporter {
 
     /**
      * Constructor.
-     * 
-     * @param parentFrame the parent frame if operated from the gui
+     *
+     * @param owner the dialog owner if operated from the GUI
      * @param lastSelectedFolder the last selected folder
      * @param cpsFile the file to import the project from
-     * @param waitingHandler waiting handler used to display progress and cancel the import
+     * @param waitingHandler waiting handler used to display progress and cancel
+     * the import
      */
-    public ProjectImporter(JFrame parentFrame, LastSelectedFolder lastSelectedFolder, File cpsFile, WaitingHandler waitingHandler) {
+    public ProjectImporter(Dialog owner, LastSelectedFolder lastSelectedFolder, File cpsFile, WaitingHandler waitingHandler) {
         cpsParent = new CpsParent(Reporter.getMatchesFolder());
-        this.parentFrame = parentFrame;
+        this.owner = owner;
         this.lastSelectedFolder = lastSelectedFolder;
         importPeptideShakerFile(cpsFile, waitingHandler);
     }
 
     /**
      * Constructor.
-     * 
+     *
      * @param lastSelectedFolder the last selected folder
      * @param cpsFile the file to import the project from
-     * @param waitingHandler waiting handler used to display progress and cancel the import
+     * @param waitingHandler waiting handler used to display progress and cancel
+     * the import
      */
     public ProjectImporter(LastSelectedFolder lastSelectedFolder, File cpsFile, WaitingHandler waitingHandler) {
         this(null, lastSelectedFolder, cpsFile, waitingHandler);
@@ -90,8 +93,8 @@ public class ProjectImporter {
                 String errorText = "An error occurred while reading:\n" + cpsFile + ".\n\n"
                         + "It looks like another instance of PeptideShaker is still connected to the file.\n"
                         + "Please close all instances of PeptideShaker and try again.";
-                if (parentFrame != null) {
-                    JOptionPane.showMessageDialog(parentFrame,
+                if (owner != null) {
+                    JOptionPane.showMessageDialog(owner,
                             errorText,
                             "File Input Error", JOptionPane.ERROR_MESSAGE);
                 } else {
@@ -121,8 +124,8 @@ public class ProjectImporter {
             if (!fileFound) {
                 String errorText = "An error occurred while reading:\n" + cpsParent.getIdentificationParameters().getSearchParameters().getFastaFile() + "."
                         + "\n\nPlease select the file manually.";
-                if (parentFrame != null) {
-                    JOptionPane.showMessageDialog(parentFrame,
+                if (owner != null) {
+                    JOptionPane.showMessageDialog(owner,
                             errorText,
                             "Fasta File Error", JOptionPane.ERROR_MESSAGE);
                 } else {
@@ -158,8 +161,8 @@ public class ProjectImporter {
                 if (!found) {
                     String errorText = "Spectrum file not found: \'" + spectrumFileName + "\'."
                             + "\nPlease select the spectrum file or the folder containing it manually.";
-                    if (parentFrame != null) {
-                        JOptionPane.showMessageDialog(parentFrame,
+                    if (owner != null) {
+                        JOptionPane.showMessageDialog(owner,
                                 errorText,
                                 "Spectrum File Error", JOptionPane.ERROR_MESSAGE);
                     } else {
@@ -182,8 +185,8 @@ public class ProjectImporter {
                     + "Memory boundaries are changed in the the Welcome Dialog (Settings<br>"
                     + "& Help > Settings > Java Memory Settings) or in the Edit menu (Edit<br>"
                     + "Java Options). See also <a href=\"http://compomics.github.io/compomics-utilities/wiki/javatroubleshooting.html\">JavaTroubleShooting</a>.";
-            if (parentFrame != null) {
-                JOptionPane.showMessageDialog(parentFrame,
+            if (owner != null) {
+                JOptionPane.showMessageDialog(owner,
                         errorText,
                         "Out of Memory", JOptionPane.ERROR_MESSAGE);
             } else {
@@ -196,8 +199,8 @@ public class ProjectImporter {
             e.printStackTrace();
             String errorText = "An error occurred while reading:\n" + cpsFile + ".\n\n"
                     + "The file is corrupted and cannot be opened anymore.";
-            if (parentFrame != null) {
-                JOptionPane.showMessageDialog(parentFrame,
+            if (owner != null) {
+                JOptionPane.showMessageDialog(owner,
                         errorText,
                         "Out of Memory", JOptionPane.ERROR_MESSAGE);
             } else {
@@ -210,8 +213,8 @@ public class ProjectImporter {
             String errorText = "An error occurred while reading:\n" + cpsFile + ".\n\n"
                     + "Please verify that the PeptideShaker version used to create\n"
                     + "the file is compatible with your version of Reporter.";
-            if (parentFrame != null) {
-                JOptionPane.showMessageDialog(parentFrame,
+            if (owner != null) {
+                JOptionPane.showMessageDialog(owner,
                         errorText,
                         "Out of Memory", JOptionPane.ERROR_MESSAGE);
             } else {
@@ -230,8 +233,8 @@ public class ProjectImporter {
                 } catch (Exception e) {
                     e.printStackTrace();
                     String errorText = "An error occurred while importing the reporter settings.";
-                    if (parentFrame != null) {
-                        JOptionPane.showMessageDialog(parentFrame,
+                    if (owner != null) {
+                        JOptionPane.showMessageDialog(owner,
                                 errorText,
                                 "Import Error", JOptionPane.ERROR_MESSAGE);
                     } else {
@@ -245,8 +248,8 @@ public class ProjectImporter {
                 } catch (Exception e) {
                     e.printStackTrace();
                     String errorText = "An error occurred while importing the reporter settings.";
-                    if (parentFrame != null) {
-                        JOptionPane.showMessageDialog(parentFrame,
+                    if (owner != null) {
+                        JOptionPane.showMessageDialog(owner,
                                 errorText,
                                 "Import Error", JOptionPane.ERROR_MESSAGE);
                     } else {
@@ -259,8 +262,8 @@ public class ProjectImporter {
         } catch (Exception e) {
             e.printStackTrace();
             String errorText = "An error occurred while importing the quantification details from " + cpsFile + ".";
-            if (parentFrame != null) {
-                JOptionPane.showMessageDialog(parentFrame,
+            if (owner != null) {
+                JOptionPane.showMessageDialog(owner,
                         errorText,
                         "Import Error", JOptionPane.ERROR_MESSAGE);
             } else {
@@ -277,8 +280,8 @@ public class ProjectImporter {
     private void loadGeneMappings(WaitingHandler waitingHandler) {
         if (!cpsParent.loadGeneMappings(Reporter.getJarFilePath(), waitingHandler)) {
             String errorText = "Unable to load the gene/GO mapping file";
-            if (parentFrame != null) {
-                JOptionPane.showMessageDialog(parentFrame,
+            if (owner != null) {
+                JOptionPane.showMessageDialog(owner,
                         errorText,
                         "Gene File Error", JOptionPane.ERROR_MESSAGE);
             } else {
@@ -289,7 +292,7 @@ public class ProjectImporter {
 
     /**
      * Returns the cps parent used to import the file.
-     * 
+     *
      * @return the cps parent used to import the file
      */
     public CpsParent getCpsParent() {
@@ -298,7 +301,7 @@ public class ProjectImporter {
 
     /**
      * Returns the reporter settings loaded from the file.
-     * 
+     *
      * @return the reporter settings loaded from the file
      */
     public ReporterSettings getReporterSettings() {
@@ -307,7 +310,7 @@ public class ProjectImporter {
 
     /**
      * Returns the reporter ion quantification object loaded from the file.
-     * 
+     *
      * @return the reporter ion quantification object loaded from the file
      */
     public ReporterIonQuantification getReporterIonQuantification() {

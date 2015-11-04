@@ -114,7 +114,7 @@ public class Reporter {
             if (QuantificationFilter.isPeptideValid(ratioEstimationSettings, identification, searchParameters, peptideMatch)) {
                 for (String index : indexes) {
                     PeptideQuantificationDetails peptideQuantification = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideMatch, waitingHandler);
-                    double ratio = peptideQuantification.getRatio(index, reporterIonQuantification);
+                    double ratio = peptideQuantification.getRatio(index, reporterIonQuantification.getNormalizationFactors());
                     ArrayList<Double> channelRatios = ratios.get(index);
                     if (channelRatios == null) {
                         channelRatios = new ArrayList<Double>(proteinMatch.getPeptideCount());
@@ -129,7 +129,7 @@ public class Reporter {
 
         for (String index : indexes) {
             ArrayList<Double> channelRatios = ratios.get(index);
-            result.setRatio(index, RatioEstimator.estimateRatios(ratioEstimationSettings, channelRatios));
+            result.setRawRatio(index, RatioEstimator.estimateRatios(ratioEstimationSettings, channelRatios));
         }
 
         return result;
@@ -207,7 +207,7 @@ public class Reporter {
             if (QuantificationFilter.isPeptideValid(ratioEstimationSettings, identification, searchParameters, peptideMatch)) {
                 for (String index : indexes) {
                     PeptideQuantificationDetails peptideQuantification = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideMatch, waitingHandler);
-                    double ratio = peptideQuantification.getRatio(index, reporterIonQuantification);
+                    double ratio = peptideQuantification.getRatio(index, reporterIonQuantification.getNormalizationFactors());
                     ArrayList<Double> channelRatios = ratios.get(index);
                     if (channelRatios == null) {
                         channelRatios = new ArrayList<Double>(proteinMatch.getPeptideCount());
@@ -277,7 +277,7 @@ public class Reporter {
             if (QuantificationFilter.isPsmValid(ratioEstimationSettings, identification, spectrumKey)) {
                 for (String index : indexes) {
                     PsmQuantificationDetails spectrumQuantification = quantificationFeaturesGenerator.getPSMQuantificationDetails(spectrumKey);
-                    double ratio = spectrumQuantification.getRatio(index);
+                    double ratio = spectrumQuantification.getRatio(index, reporterIonQuantification.getNormalizationFactors());
                     ArrayList<Double> channelRatios = ratios.get(index);
                     if (channelRatios == null) {
                         channelRatios = new ArrayList<Double>(peptideMatch.getSpectrumCount());
@@ -406,7 +406,7 @@ public class Reporter {
 
         for (String index : indexes) {
             ArrayList<Double> channelRatios = ratios.get(index);
-            result.setRatio(index, RatioEstimator.estimateRatios(ratioEstimationSettings, channelRatios));
+            result.setRawRatio(index, RatioEstimator.estimateRatios(ratioEstimationSettings, channelRatios));
         }
 
         return result;

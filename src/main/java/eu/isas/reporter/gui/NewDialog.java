@@ -88,7 +88,7 @@ public class NewDialog extends javax.swing.JDialog {
     /**
      * The spectrum factory.
      */
-    private SpectrumFactory spectrumFactory = SpectrumFactory.getInstance(100);
+    private SpectrumFactory spectrumFactory = SpectrumFactory.getInstance(10000);
     /**
      * List of all sample names.
      */
@@ -978,7 +978,7 @@ public class NewDialog extends javax.swing.JDialog {
             @Override
             public void run() {
 
-                ProjectImporter projectImporter = new ProjectImporter(reporterGui, reporterGui.getLastSelectedFolder(), psFile, progressDialog);
+                ProjectImporter projectImporter = new ProjectImporter(NewDialog.this, reporterGui.getLastSelectedFolder(), psFile, progressDialog);
 
                 if (progressDialog.isRunCanceled()) {
                     progressDialog.dispose();

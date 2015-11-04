@@ -1,6 +1,6 @@
 package eu.isas.reporter.quantificationdetails;
 
-import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
+import com.compomics.util.experiment.normalization.NormalizationFactors;
 import java.util.HashMap;
 
 /**
@@ -20,20 +20,19 @@ public class PeptideQuantificationDetails {
      * quantification has normalization factors. null if not found.
      *
      * @param reporterIonName the index of sample of interest
-     * @param reporterIonQuantification the quantification object containing the
-     * normalization factors
+     * @param normalizationFactors the normalization factors
      *
      * @return the ratio for this sample, null if not set
      */
-    public Double getRatio(String reporterIonName, ReporterIonQuantification reporterIonQuantification) {
+    public Double getRatio(String reporterIonName, NormalizationFactors normalizationFactors) {
         if (rawRatios == null) {
             return null;
         }
         Double ratio = rawRatios.get(reporterIonName);
-        if (reporterIonQuantification.hasNormalisationFactors()
+        if (normalizationFactors.hasPeptideNormalisationFactors()
                 && ratio != null
                 && ratio != Double.NaN) {
-            ratio /= reporterIonQuantification.getNormalisationFactor(reporterIonName);
+            ratio /= normalizationFactors.getPeptideNormalisationFactor(reporterIonName);
         }
         return ratio;
     }

@@ -273,7 +273,7 @@ public class ReporterPeptideSection {
                 return quantificationDetails.getRawRatio(sampleIndex).toString();
             case normalized_ratio:
                 quantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideMatch, waitingHandler);
-                return quantificationDetails.getRatio(sampleIndex, reporterIonQuantification).toString();
+                return quantificationDetails.getRatio(sampleIndex, reporterIonQuantification.getNormalizationFactors()).toString();
             default:
                 return "Not implemented";
         }

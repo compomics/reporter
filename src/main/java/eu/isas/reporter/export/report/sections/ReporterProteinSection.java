@@ -268,7 +268,7 @@ public class ReporterProteinSection {
         switch (proteinFeatures) {
             case ratio:
                 ProteinQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(proteinKey, waitingHandler);
-                return quantificationDetails.getRatio(sampleIndex).toString();
+                return quantificationDetails.getRatio(sampleIndex, reporterIonQuantification.getNormalizationFactors()).toString();
             default:
                 return "Not implemented";
         }

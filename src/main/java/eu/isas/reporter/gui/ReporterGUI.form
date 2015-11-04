@@ -103,6 +103,14 @@
             <Property name="text" type="java.lang.String" value="Edit"/>
           </Properties>
           <SubComponents>
+            <MenuItem class="javax.swing.JMenuItem" name="processingSettingsMenuItem">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Processing Settings"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="processingSettingsMenuItemActionPerformed"/>
+              </Events>
+            </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="javaOptionsMenuItem">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Java Settings"/>

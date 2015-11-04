@@ -328,7 +328,7 @@ public class ReporterPsmSection {
         switch (psmFeatures) {
             case ratio:
                 PsmQuantificationDetails psmDetails = quantificationFeaturesGenerator.getPSMQuantificationDetails(spectrumKey);
-                return psmDetails.getRatio(sampleIndex).toString();
+                return psmDetails.getRatio(sampleIndex, reporterIonQuantification.getNormalizationFactors()).toString();
             case reporter_intensity:
                 SpectrumQuantificationDetails spectrumDetails = quantificationFeaturesGenerator.getSpectrumQuantificationDetails(reporterIonQuantification, reporterSettings.getReporterIonSelectionSettings(), spectrumKey);
                 IonMatch ionMatch = spectrumDetails.getRepoterMatch(sampleIndex);

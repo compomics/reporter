@@ -1,5 +1,6 @@
 package eu.isas.reporter.quantificationdetails;
 
+import com.compomics.util.experiment.normalization.NormalizationFactors;
 import java.util.HashMap;
 
 /**
@@ -10,35 +11,57 @@ import java.util.HashMap;
 public class PsmQuantificationDetails {
 
     /**
-     * The reporter ratios.
+     * The reporter raw (not normalized) ratios.
      */
-    private HashMap<String, Double> ratios = null;
+    private HashMap<String, Double> rawRatios = null;
 
     /**
-     * Sets a ratio.
+     * Returns the ratio of a given sample normalized if the given reporter ion
+     * quantification has normalization factors. null if not found.
      *
-     * @param reporterIonName the index of the sample
-     * @param value the value of the ratio
+     * @param reporterIonName the index of sample of interest
+     * @param normalizationFactors the normalization factors
+     *
+     * @return the ratio for this sample, null if not set
      */
-    public void setRatio(String reporterIonName, double value) {
-        if (ratios == null) {
-            ratios = new HashMap<String, Double>();
+    public Double getRatio(String reporterIonName, NormalizationFactors normalizationFactors) {
+        if (rawRatios == null) {
+            return null;
         }
-        ratios.put(reporterIonName, value);
+        Double ratio = rawRatios.get(reporterIonName);
+        if (normalizationFactors.hasPsmNormalisationFactors()
+                && ratio != null
+                && ratio != Double.NaN) {
+            ratio /= normalizationFactors.getPsmNormalisationFactor(reporterIonName);
+        }
+        return ratio;
     }
 
     /**
-     * Returns the ratio of a given sample. null if not found. null if not
+     * Sets a raw (not normalized) normalized ratio.
+     *
+     * @param reporterIonName the index of the sample
+     * @param value the value of the raw (not normalized) ratio
+     */
+    public void setRawRatio(String reporterIonName, double value) {
+        if (rawRatios == null) {
+            rawRatios = new HashMap<String, Double>();
+        }
+        rawRatios.put(reporterIonName, value);
+    }
+
+    /**
+     * Returns the raw (not normalized) ratio of a given sample. null if not
      * found.
      *
      * @param reporterIonName the index of sample of interest
      *
-     * @return the ratio for this sample, null if not set
+     * @return the raw (not normalized) ratio for this sample, null if not set
      */
-    public Double getRatio(String reporterIonName) {
-        if (ratios == null) {
+    public Double getRawRatio(String reporterIonName) {
+        if (rawRatios == null) {
             return null;
         }
-        return ratios.get(reporterIonName);
+        return rawRatios.get(reporterIonName);
     }
 }

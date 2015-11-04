@@ -17,15 +17,18 @@ import com.compomics.util.experiment.ShotgunProtocol;
 import com.compomics.util.experiment.identification.matches.ProteinMatch;
 import com.compomics.util.experiment.identification.matches_iterators.ProteinMatchesIterator;
 import com.compomics.util.experiment.identification.protein_sequences.SequenceFactory;
+import com.compomics.util.experiment.normalization.NormalizationFactors;
 import com.compomics.util.experiment.personalization.UrParameter;
 import com.compomics.util.gui.PrivacySettingsDialog;
 import com.compomics.util.gui.UtilitiesGUIDefaults;
 import com.compomics.util.gui.error_handlers.BugReport;
 import com.compomics.util.gui.error_handlers.HelpDialog;
+import com.compomics.util.gui.parameters.ProcessingPreferencesDialog;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
 import com.compomics.util.math.clustering.KMeansClustering;
 import com.compomics.util.preferences.IdentificationParameters;
 import com.compomics.util.preferences.LastSelectedFolder;
+import com.compomics.util.preferences.ProcessingPreferences;
 import com.compomics.util.preferences.UtilitiesUserPreferences;
 import com.compomics.util.waiting.WaitingHandler;
 import eu.isas.peptideshaker.parameters.PSParameter;
@@ -136,6 +139,10 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * The display preferences.
      */
     private DisplayPreferences displayPreferences = new DisplayPreferences();
+    /**
+     * The processing preferences.
+     */
+    private ProcessingPreferences processingPreferences = new ProcessingPreferences();
     /**
      * The horizontal padding used before and after the text in the titled
      * borders. (Needed to make it look as good in Java 7 as it did in Java
@@ -380,9 +387,18 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      */
     private void displayResults(WaitingHandler waitingHandler) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
 
-        if (!reporterIonQuantification.hasNormalisationFactors()) {
+        NormalizationFactors normalizationFactors = reporterIonQuantification.getNormalizationFactors();
+        if (!normalizationFactors.hasNormalizationFactors()) {
             Normalizer normalizer = new Normalizer();
-            normalizer.setPeptideNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(), reporterSettings.getNormalizationSettings(), cpsParent.getIdentificationParameters().getSequenceMatchingPreferences(), cpsParent.getIdentification(), quantificationFeaturesGenerator, exceptionHandler, progressDialog);
+            if (!normalizationFactors.hasPsmNormalisationFactors()) {
+                normalizer.setPsmNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(), reporterSettings.getNormalizationSettings(), cpsParent.getIdentificationParameters().getSequenceMatchingPreferences(), cpsParent.getIdentification(), quantificationFeaturesGenerator, processingPreferences, exceptionHandler, progressDialog);
+            }
+            if (!normalizationFactors.hasPeptideNormalisationFactors()) {
+                normalizer.setPeptideNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(), reporterSettings.getNormalizationSettings(), cpsParent.getIdentificationParameters().getSequenceMatchingPreferences(), cpsParent.getIdentification(), quantificationFeaturesGenerator, processingPreferences, exceptionHandler, progressDialog);
+            }
+            if (!normalizationFactors.hasProteinNormalisationFactors()) {
+                normalizer.setProteinNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(), reporterSettings.getNormalizationSettings(), cpsParent.getIdentification(), quantificationFeaturesGenerator, processingPreferences, exceptionHandler, progressDialog);
+            }
         }
 
         // cluster the protein profiles
@@ -478,7 +494,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
         parameters.add(psParameter);
         ProteinMatchesIterator proteinMatchesIterator = getIdentification().getProteinMatchesIterator(proteinKeys, parameters, true, parameters, true, parameters, waitingHandler);
-        proteinMatchesIterator.setBatchSize(50); // @TODO: not sure what the optimal batch size is? the default of 1000 seems a bit high when all peptides and psms are to be loaded? results in no progress for a long time...
+        proteinMatchesIterator.setBatchSize(50);
         int proteinIndex = 0;
 
         while (proteinMatchesIterator.hasNext()) {
@@ -492,7 +508,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
             ProteinQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(tempProteinKey, waitingHandler);
 
             for (int sampleIndex = 0; sampleIndex < sampleIndexes.size() && !waitingHandler.isRunCanceled(); sampleIndex++) {
-                Double ratio = quantificationDetails.getRatio(sampleIndexes.get(sampleIndex));
+                Double ratio = quantificationDetails.getRatio(sampleIndexes.get(sampleIndex), reporterIonQuantification.getNormalizationFactors());
                 if (ratio != null) {
                     if (ratio != 0) {
                         ratio = Math.log(ratio) / Math.log(2);
@@ -781,6 +797,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         exportQuantificationFeaturesMenuItem = new javax.swing.JMenuItem();
         exportFollowUpJMenuItem = new javax.swing.JMenuItem();
         quantificationOptionsMenu = new javax.swing.JMenu();
+        processingSettingsMenuItem = new javax.swing.JMenuItem();
         javaOptionsMenuItem = new javax.swing.JMenuItem();
         privacyMenuItem = new javax.swing.JMenuItem();
         helpMenu = new javax.swing.JMenu();
@@ -895,6 +912,14 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
 
         quantificationOptionsMenu.setMnemonic('E');
         quantificationOptionsMenu.setText("Edit");
+
+        processingSettingsMenuItem.setText("Processing Settings");
+        processingSettingsMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                processingSettingsMenuItemActionPerformed(evt);
+            }
+        });
+        quantificationOptionsMenu.add(processingSettingsMenuItem);
 
         javaOptionsMenuItem.setText("Java Settings");
         javaOptionsMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -1079,6 +1104,13 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
     private void saveAsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAsMenuItemActionPerformed
         saveProjectAs(false, false);
     }//GEN-LAST:event_saveAsMenuItemActionPerformed
+
+    private void processingSettingsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_processingSettingsMenuItemActionPerformed
+        ProcessingPreferencesDialog processingPreferencesDialog = new ProcessingPreferencesDialog(this, processingPreferences, true);
+        if (!processingPreferencesDialog.isCanceled()) {
+            processingPreferences = processingPreferencesDialog.getProcessingPreferences();
+        }
+    }//GEN-LAST:event_processingSettingsMenuItemActionPerformed
 
     /**
      * Saves the quantification details in the cpsx file.
@@ -1338,6 +1370,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
     private javax.swing.JMenuItem openMenuItem;
     private javax.swing.JPanel overviewJPanel;
     private javax.swing.JMenuItem privacyMenuItem;
+    private javax.swing.JMenuItem processingSettingsMenuItem;
     private javax.swing.JMenu quantificationOptionsMenu;
     private javax.swing.JMenuItem saveAsMenuItem;
     private javax.swing.JMenuItem saveMenuItem;
