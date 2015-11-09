@@ -15,8 +15,7 @@
    ===================
 
    For updated information about Reporter please visit:
-
-   http://reporter.googlecode.com
+   http://compomics.github.io/projects/reporter.html
 
 
 
