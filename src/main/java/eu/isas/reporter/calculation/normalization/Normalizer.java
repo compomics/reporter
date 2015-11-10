@@ -557,7 +557,7 @@ public class Normalizer {
                         if (exclusion == null || !isContaminant(exclusion, proteinMatch.getTheoreticProteinsAccessions())) {
 
                             String proteinMatchKey = proteinMatch.getKey();
-                            psParameter = (PSParameter) identification.getSpectrumMatchParameter(proteinMatchKey, psParameter);
+                            psParameter = (PSParameter) identification.getProteinMatchParameter(proteinMatchKey, psParameter);
 
                             if (psParameter.getMatchValidationLevel().getIndex() >= ratioEstimationSettings.getProteinValidationLevel().getIndex()) {
 
