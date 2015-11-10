@@ -16,8 +16,10 @@ import com.compomics.util.experiment.quantification.Quantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethodFactory;
+import com.compomics.util.gui.parameters.ProcessingPreferencesDialog;
 import com.compomics.util.gui.renderers.AlignedListCellRenderer;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
+import com.compomics.util.preferences.ProcessingPreferences;
 import eu.isas.peptideshaker.preferences.ProjectDetails;
 import eu.isas.peptideshaker.utils.CpsParent;
 import eu.isas.reporter.gui.settings.ReporterSettingsDialog;
@@ -74,9 +76,13 @@ public class NewDialog extends javax.swing.JDialog {
      */
     private ArrayList<File> mgfFiles = new ArrayList<File>();
     /**
-     * The reporter settings
+     * The reporter settings.
      */
     private ReporterSettings reporterSettings;
+    /**
+     * The processing preferences.
+     */
+    private ProcessingPreferences processingPreferences = new ProcessingPreferences();
     /**
      * A simple progress dialog.
      */
@@ -205,14 +211,18 @@ public class NewDialog extends javax.swing.JDialog {
      * Set up the GUI.
      */
     private void setUpGui() {
+        
         // make sure that the scroll panes are see-through
         sampleAssignmentJScrollPane.getViewport().setOpaque(false);
 
         // centrally align the comboboxes
         reporterMethodComboBox.setRenderer(new AlignedListCellRenderer(SwingConstants.CENTER));
 
-        // disables the user to drag column headers to reorder columns
+        // disable the user to drag column headers to reorder columns
         sampleAssignmentTable.getTableHeader().setReorderingAllowed(false);
+
+        processingTxt.setText(processingPreferences.getnThreads() + " threads");
+
     }
 
     /**
@@ -262,6 +272,9 @@ public class NewDialog extends javax.swing.JDialog {
         quantPreferencesLabel = new javax.swing.JLabel();
         quantificationPreferencesTxt = new javax.swing.JTextField();
         editQuantPrefsButton = new javax.swing.JButton();
+        editProcessingButton = new javax.swing.JButton();
+        processingTxt = new javax.swing.JTextField();
+        processingLbl = new javax.swing.JLabel();
         aboutButton = new javax.swing.JButton();
         reporterPublicationLabel = new javax.swing.JLabel();
         loadButton = new javax.swing.JButton();
@@ -421,7 +434,7 @@ public class NewDialog extends javax.swing.JDialog {
                     .add(reporterMethodComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(methodSettingsButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(sampleAssignmentJScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 190, Short.MAX_VALUE)
+                .add(sampleAssignmentJScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -442,17 +455,38 @@ public class NewDialog extends javax.swing.JDialog {
             }
         });
 
+        editProcessingButton.setText("Edit");
+        editProcessingButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editProcessingButtonActionPerformed(evt);
+            }
+        });
+
+        processingTxt.setEditable(false);
+        processingTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        processingTxt.setText("Default Settings");
+
+        processingLbl.setText("Processing");
+
         org.jdesktop.layout.GroupLayout advancedSettingsPanelLayout = new org.jdesktop.layout.GroupLayout(advancedSettingsPanel);
         advancedSettingsPanel.setLayout(advancedSettingsPanelLayout);
         advancedSettingsPanelLayout.setHorizontalGroup(
             advancedSettingsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(advancedSettingsPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(quantPreferencesLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 120, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(quantificationPreferencesTxt)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(editQuantPrefsButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 66, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(advancedSettingsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(advancedSettingsPanelLayout.createSequentialGroup()
+                        .add(quantPreferencesLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 120, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(quantificationPreferencesTxt, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 505, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(editQuantPrefsButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 66, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(advancedSettingsPanelLayout.createSequentialGroup()
+                        .add(processingLbl, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 120, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(processingTxt)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(editProcessingButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 66, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         advancedSettingsPanelLayout.setVerticalGroup(
@@ -463,6 +497,11 @@ public class NewDialog extends javax.swing.JDialog {
                     .add(quantPreferencesLabel)
                     .add(quantificationPreferencesTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(editQuantPrefsButton))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(advancedSettingsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(processingLbl)
+                    .add(processingTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(editProcessingButton))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -539,7 +578,7 @@ public class NewDialog extends javax.swing.JDialog {
                 .add(samplePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(advancedSettingsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(18, 18, 18)
                 .add(backgroundPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
                     .add(aboutButton)
                     .add(reporterPublicationLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 45, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -555,7 +594,7 @@ public class NewDialog extends javax.swing.JDialog {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(backgroundPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            .add(backgroundPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -768,11 +807,8 @@ public class NewDialog extends javax.swing.JDialog {
     private void editQuantPrefsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editQuantPrefsButtonActionPerformed
         ReporterSettingsDialog reporterSettingsDialog = new ReporterSettingsDialog(this, reporterSettings, cpsParent.getIdentificationParameters().getSearchParameters().getPtmSettings(), getSelectedMethod(), true);
         ReporterSettings newSettings = reporterSettingsDialog.getReporterSettings();
-        if (!reporterSettingsDialog.isCanceled() && !reporterSettings.isSameAs(newSettings)) {
+        if (!reporterSettingsDialog.isCanceled()) {
             reporterSettings = newSettings;
-            ReporterPreferences reporterPreferences = ReporterPreferences.getUserPreferences();
-            reporterPreferences.setDefaultSettings(newSettings);
-            ReporterPreferences.saveUserPreferences(reporterPreferences);
         }
     }//GEN-LAST:event_editQuantPrefsButtonActionPerformed
 
@@ -852,10 +888,18 @@ public class NewDialog extends javax.swing.JDialog {
                 welcomeDialog.setVisible(false);
             }
 
-            reporterGui.createNewProject(cpsParent, reporterSettings, reporterIonQuantification);
+            reporterGui.createNewProject(cpsParent, reporterSettings, reporterIonQuantification, processingPreferences);
             dispose();
         }
     }//GEN-LAST:event_loadButtonActionPerformed
+
+    private void editProcessingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editProcessingButtonActionPerformed
+        ProcessingPreferencesDialog processingPreferencesDialog = new ProcessingPreferencesDialog(this, reporterGui, processingPreferences, true);
+        if (!processingPreferencesDialog.isCanceled()) {
+            processingPreferences = processingPreferencesDialog.getProcessingPreferences();
+            processingTxt.setText(processingPreferences.getnThreads() + " threads");
+        }
+    }//GEN-LAST:event_editProcessingButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton aboutButton;
@@ -865,12 +909,15 @@ public class NewDialog extends javax.swing.JDialog {
     private javax.swing.JPanel advancedSettingsPanel;
     private javax.swing.JPanel backgroundPanel;
     private javax.swing.JLabel databaseFileLabel;
+    private javax.swing.JButton editProcessingButton;
     private javax.swing.JButton editQuantPrefsButton;
     private javax.swing.JTextField fastaTxt;
     private javax.swing.JPanel fileSelectiontPanel;
     private javax.swing.JLabel idFilesLabel;
     private javax.swing.JButton loadButton;
     private javax.swing.JButton methodSettingsButton;
+    private javax.swing.JLabel processingLbl;
+    private javax.swing.JTextField processingTxt;
     private javax.swing.JLabel quantPreferencesLabel;
     private javax.swing.JTextField quantificationPreferencesTxt;
     private javax.swing.JComboBox reporterMethodComboBox;

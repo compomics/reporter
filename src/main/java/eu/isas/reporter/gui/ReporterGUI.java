@@ -280,8 +280,9 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * @param cpsParent the cps parent
      * @param reporterSettings the reporter settings
      * @param reporterIonQuantification the reporter quantification settings
+     * @param processingPreferences the processing preferences
      */
-    public void createNewProject(CpsParent cpsParent, ReporterSettings reporterSettings, ReporterIonQuantification reporterIonQuantification) {
+    public void createNewProject(CpsParent cpsParent, ReporterSettings reporterSettings, ReporterIonQuantification reporterIonQuantification, ProcessingPreferences processingPreferences) {
 
         if (cpsParent != null) {
             closeOpenedProject();
@@ -294,6 +295,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         this.cpsParent = cpsParent;
         this.reporterSettings = reporterSettings;
         this.reporterIonQuantification = reporterIonQuantification;
+        this.processingPreferences = processingPreferences;
 
         identificationFeaturesGenerator = new IdentificationFeaturesGenerator(cpsParent.getIdentification(), cpsParent.getShotgunProtocol(),
                 cpsParent.getIdentificationParameters(), cpsParent.getMetrics(), cpsParent.getSpectrumCountingPreferences());

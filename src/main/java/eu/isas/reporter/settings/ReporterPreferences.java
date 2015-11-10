@@ -3,6 +3,7 @@ package eu.isas.reporter.settings;
 import com.compomics.util.experiment.personalization.UrParameter;
 import com.compomics.util.io.SerializationUtils;
 import java.io.File;
+import java.io.Serializable;
 
 /**
  * This class contains the quantification options set by the user.
@@ -10,7 +11,7 @@ import java.io.File;
  * @author Marc Vaudel
  * @author Harald Barsnes
  */
-public class ReporterPreferences implements UrParameter {
+public class ReporterPreferences implements Serializable {
 
     /**
      * Location of the user preferences file.
@@ -55,7 +56,6 @@ public class ReporterPreferences implements UrParameter {
         if (defaultSettings == null) {
             defaultSettings = new ReporterSettings();
         }
-        // the 
         return defaultSettings;
     }
 
@@ -141,15 +141,5 @@ public class ReporterPreferences implements UrParameter {
      */
     public static void setUserPreferencesFolder(String userPreferencesFile) {
         ReporterPreferences.USER_PREFERENCES_FILE = userPreferencesFile + "/reporter_user_preferences.cup";
-    }
-
-    @Override
-    public String getFamilyName() {
-        return "Reporter";
-    }
-
-    @Override
-    public int getIndex() {
-        return 0;
     }
 }

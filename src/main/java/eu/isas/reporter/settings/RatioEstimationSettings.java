@@ -38,15 +38,15 @@ public class RatioEstimationSettings implements Serializable {
     /**
      * The validation threshold to use for protein quantification.
      */
-    private MatchValidationLevel proteinValidation = MatchValidationLevel.confident;
+    private MatchValidationLevel proteinValidation = MatchValidationLevel.doubtful;
     /**
      * The validation threshold to use for peptide quantification.
      */
-    private MatchValidationLevel peptideValidation = MatchValidationLevel.confident;
+    private MatchValidationLevel peptideValidation = MatchValidationLevel.doubtful;
     /**
      * The validation threshold to use for PSM quantification.
      */
-    private MatchValidationLevel psmValidation = MatchValidationLevel.confident;
+    private MatchValidationLevel psmValidation = MatchValidationLevel.doubtful;
 
     /**
      * Constructor.
