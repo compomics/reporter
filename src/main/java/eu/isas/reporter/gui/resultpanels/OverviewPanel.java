@@ -1,9 +1,9 @@
 package eu.isas.reporter.gui.resultpanels;
 
 import com.compomics.util.examples.BareBonesBrowserLaunch;
-import com.compomics.util.experiment.annotation.gene.GeneFactory;
+import com.compomics.util.experiment.biology.genes.GeneMaps;
 import com.compomics.util.experiment.identification.Identification;
-import com.compomics.util.gui.GeneDetailsDialog;
+import com.compomics.util.gui.genes.GeneDetailsDialog;
 import com.compomics.util.gui.GuiUtilities;
 import com.compomics.util.gui.error_handlers.HelpDialog;
 import com.compomics.util.gui.tablemodels.SelfUpdatingTableModel;
@@ -79,6 +79,10 @@ public class OverviewPanel extends javax.swing.JPanel {
      */
     private Identification identification;
     /**
+     * The gene maps.
+     */
+    private GeneMaps geneMaps;
+    /**
      * PeptideShaker identification features generator.
      */
     private IdentificationFeaturesGenerator identificationFeaturesGenerator;
@@ -122,10 +126,6 @@ public class OverviewPanel extends javax.swing.JPanel {
      * The color used for the not selected protein profiles.
      */
     private Color notSelectedProteinProfileColor = new Color(200, 200, 200, 100);
-    /**
-     * The gene factory.
-     */
-    private GeneFactory geneFactory = GeneFactory.getInstance();
     /**
      * The complete list of ordered protein keys.
      */
@@ -176,6 +176,7 @@ public class OverviewPanel extends javax.swing.JPanel {
     public void updateDisplay() {
 
         identification = reporterGUI.getIdentification();
+        geneMaps = reporterGUI.getGeneMaps();
         identificationFeaturesGenerator = reporterGUI.getIdentificationFeaturesGenerator();
 
         progressDialog = new ProgressDialogX(reporterGUI,
@@ -227,7 +228,7 @@ public class OverviewPanel extends javax.swing.JPanel {
                                 reporterGUI.getReporterIonQuantification(), reporterGUI.getQuantificationFeaturesGenerator(),
                                 reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getExceptionHandler(), proteinKeys);
                     } else {
-                        ProteinTableModel proteinTableModel = new ProteinTableModel(identification, identificationFeaturesGenerator,
+                        ProteinTableModel proteinTableModel = new ProteinTableModel(identification, identificationFeaturesGenerator, geneMaps,
                                 reporterGUI.getReporterIonQuantification(), reporterGUI.getQuantificationFeaturesGenerator(),
                                 reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getExceptionHandler(), proteinKeys);
                         proteinTable.setModel(proteinTableModel);
@@ -476,7 +477,7 @@ public class OverviewPanel extends javax.swing.JPanel {
                     reporterGUI.getReporterIonQuantification(), reporterGUI.getQuantificationFeaturesGenerator(),
                     reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getExceptionHandler(), proteinKeys);
         } else {
-            ProteinTableModel proteinTableModel = new ProteinTableModel(identification, identificationFeaturesGenerator,
+            ProteinTableModel proteinTableModel = new ProteinTableModel(identification, identificationFeaturesGenerator, geneMaps,
                     reporterGUI.getReporterIonQuantification(), reporterGUI.getQuantificationFeaturesGenerator(),
                     reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getExceptionHandler(), proteinKeys);
             proteinTable.setModel(proteinTableModel);
@@ -1071,9 +1072,9 @@ public class OverviewPanel extends javax.swing.JPanel {
 
                 // open the gene details dialog
                 if (column == proteinTable.getColumn("Chr").getModelIndex() && evt != null
-                        && evt.getButton() == MouseEvent.BUTTON1 && geneFactory.isMappingFileOpen()) {
+                        && evt.getButton() == MouseEvent.BUTTON1) {
                     try {
-                        new GeneDetailsDialog(reporterGUI, proteinKey);
+                        new GeneDetailsDialog(reporterGUI, proteinKey, geneMaps);
                     } catch (Exception ex) {
                         reporterGUI.catchException(ex);
                     }
@@ -1143,7 +1144,7 @@ public class OverviewPanel extends javax.swing.JPanel {
             }
         } else if (column == proteinTable.getColumn("PI").getModelIndex() && proteinTable.getValueAt(row, column) != null) {
             this.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        } else if (column == proteinTable.getColumn("Chr").getModelIndex() && proteinTable.getValueAt(row, column) != null && geneFactory.isMappingFileOpen()) {
+        } else if (column == proteinTable.getColumn("Chr").getModelIndex() && proteinTable.getValueAt(row, column) != null) {
             this.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         } else if (column == proteinTable.getColumn("Description").getModelIndex() && proteinTable.getValueAt(row, column) != null) {
             if (GuiUtilities.getPreferredWidthOfCell(proteinTable, row, column) > proteinTable.getColumn("Description").getWidth()) {

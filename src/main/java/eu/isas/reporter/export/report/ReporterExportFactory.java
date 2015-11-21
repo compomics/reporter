@@ -1,6 +1,7 @@
 package eu.isas.reporter.export.report;
 
 import com.compomics.util.experiment.ShotgunProtocol;
+import com.compomics.util.experiment.biology.genes.GeneMaps;
 import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.io.SerializationUtils;
@@ -219,6 +220,7 @@ public class ReporterExportFactory implements ExportFactory {
      * Peptide and PSM sections)
      * @param identificationFeaturesGenerator the identification features
      * generator (mandatory for the Protein, Peptide and PSM sections)
+     * @param geneMaps the gene maps
      * @param quantificationFeaturesGenerator the object generating the
      * quantification features
      * @param reporterIonQuantification the reporter ion quantification object
@@ -249,7 +251,7 @@ public class ReporterExportFactory implements ExportFactory {
      * @throws org.apache.commons.math.MathException thrown if a MathException occurs
      */
     public static void writeExport(ExportScheme exportScheme, File destinationFile, ExportFormat exportFormat, String experiment, String sample, int replicateNumber,
-            ProjectDetails projectDetails, Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator,
+            ProjectDetails projectDetails, Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, GeneMaps geneMaps,
             QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, ReporterSettings reporterSettings,
             ShotgunProtocol shotgunProtocol, IdentificationParameters identificationParameters, ArrayList<String> proteinKeys, ArrayList<String> peptideKeys, ArrayList<String> psmKeys,
             String proteinMatchKey, int nSurroundingAA, SpectrumCountingPreferences spectrumCountingPreferences, WaitingHandler waitingHandler)
@@ -284,7 +286,7 @@ public class ReporterExportFactory implements ExportFactory {
                 section.writeSection(experiment, sample, replicateNumber, projectDetails, waitingHandler);
             } else if (sectionName.equals(ReporterProteinFeatures.type)) {
                 ReporterProteinSection section = new ReporterProteinSection(exportScheme.getExportFeatures(sectionName), exportScheme.isIndexes(), exportScheme.isHeader(), exportWriter);
-                section.writeSection(identification, identificationFeaturesGenerator, quantificationFeaturesGenerator, reporterIonQuantification, reporterSettings, shotgunProtocol, identificationParameters, psmKeys, nSurroundingAA, exportScheme.isValidatedOnly(), exportScheme.isIncludeDecoy(), waitingHandler);
+                section.writeSection(identification, identificationFeaturesGenerator, geneMaps, quantificationFeaturesGenerator, reporterIonQuantification, reporterSettings, shotgunProtocol, identificationParameters, psmKeys, nSurroundingAA, exportScheme.isValidatedOnly(), exportScheme.isIncludeDecoy(), waitingHandler);
             } else if (sectionName.equals(ReporterPsmFeatures.type)) {
                 ReporterPsmSection section = new ReporterPsmSection(exportScheme.getExportFeatures(sectionName), exportScheme.isIndexes(), exportScheme.isHeader(), exportWriter);
                 section.writeSection(identification, identificationFeaturesGenerator, quantificationFeaturesGenerator, reporterIonQuantification, reporterSettings, shotgunProtocol, identificationParameters, psmKeys, "", exportScheme.isValidatedOnly(), exportScheme.isIncludeDecoy(), waitingHandler);

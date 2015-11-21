@@ -1,8 +1,9 @@
 package eu.isas.reporter.gui.tablemodels;
 
 import com.compomics.util.exceptions.ExceptionHandler;
-import com.compomics.util.experiment.annotation.gene.GeneFactory;
+import com.compomics.util.experiment.biology.genes.GeneFactory;
 import com.compomics.util.experiment.biology.Protein;
+import com.compomics.util.experiment.biology.genes.GeneMaps;
 import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.matches.ProteinMatch;
 import com.compomics.util.experiment.identification.matches_iterators.ProteinMatchesIterator;
@@ -56,10 +57,6 @@ public class ProteinTableModel extends SelfUpdatingTableModel {
      */
     private SequenceFactory sequenceFactory = SequenceFactory.getInstance();
     /**
-     * The gene factory.
-     */
-    private GeneFactory geneFactory = GeneFactory.getInstance();
-    /**
      * The identification of this project.
      */
     private Identification identification;
@@ -68,6 +65,10 @@ public class ProteinTableModel extends SelfUpdatingTableModel {
      * on the matches.
      */
     private IdentificationFeaturesGenerator identificationFeaturesGenerator;
+    /**
+     * The gene maps.
+     */
+    protected GeneMaps geneMaps;
     /**
      * The display features generator provides display features.
      */
@@ -114,6 +115,7 @@ public class ProteinTableModel extends SelfUpdatingTableModel {
      * information
      * @param identificationFeaturesGenerator the identification features
      * generator generating the features of the identification
+     * @param geneMaps the gene maps
      * @param reporterIonQuantification the reporter quantification information
      * @param quantificationFeaturesGenerator the quantification feature
      * generator
@@ -122,11 +124,12 @@ public class ProteinTableModel extends SelfUpdatingTableModel {
      * @param exceptionHandler an exception handler catching exceptions
      * @param proteinKeys the keys of the protein matches to display
      */
-    public ProteinTableModel(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator,
+    public ProteinTableModel(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, GeneMaps geneMaps,
             ReporterIonQuantification reporterIonQuantification, QuantificationFeaturesGenerator quantificationFeaturesGenerator,
             DisplayFeaturesGenerator displayFeaturesGenerator, ExceptionHandler exceptionHandler, ArrayList<String> proteinKeys) {
         this.identification = identification;
         this.identificationFeaturesGenerator = identificationFeaturesGenerator;
+        this.geneMaps = geneMaps;
         this.reporterIonQuantification = reporterIonQuantification;
         this.quantificationFeaturesGenerator = quantificationFeaturesGenerator;
         this.displayFeaturesGenerator = displayFeaturesGenerator;
@@ -328,7 +331,7 @@ public class ProteinTableModel extends SelfUpdatingTableModel {
                             }
                         }
                         String geneName = sequenceFactory.getHeader(proteinMatch.getMainMatch()).getGeneName();
-                        String chromosomeNumber = geneFactory.getChromosomeForGeneName(geneName);
+                        String chromosomeNumber = geneMaps.getChromosome(geneName);
                         return new Chromosome(chromosomeNumber);
                     case 6:
                         if (isScrolling) {

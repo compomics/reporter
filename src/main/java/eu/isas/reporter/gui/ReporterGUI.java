@@ -14,6 +14,7 @@ import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuant
 import com.compomics.util.exceptions.ExceptionHandler;
 import com.compomics.util.exceptions.exception_handlers.FrameExceptionHandler;
 import com.compomics.util.experiment.ShotgunProtocol;
+import com.compomics.util.experiment.biology.genes.GeneMaps;
 import com.compomics.util.experiment.identification.matches.ProteinMatch;
 import com.compomics.util.experiment.identification.matches_iterators.ProteinMatchesIterator;
 import com.compomics.util.experiment.identification.protein_sequences.SequenceFactory;
@@ -597,6 +598,18 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
             return null;
         }
         return cpsParent.getIdentification();
+    }
+    
+    /**
+     * Returns the gene maps of the loaded project. Null if none.
+     * 
+     * @return the gene maps
+     */
+    public GeneMaps getGeneMaps() {
+        if (cpsParent == null) {
+            return null;
+        }
+        return cpsParent.getGeneMaps();
     }
 
     /**

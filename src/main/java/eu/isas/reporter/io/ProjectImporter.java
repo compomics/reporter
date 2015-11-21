@@ -13,7 +13,6 @@ import java.io.EOFException;
 import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 /**
@@ -103,10 +102,6 @@ public class ProjectImporter {
                 return;
             }
 
-            waitingHandler.setWaitingText("Loading Gene Mappings. Please Wait...");
-            loadGeneMappings(waitingHandler); // have to load the new gene mappings
-
-            // @TODO: check if the used gene mapping files are available and download if not?
             if (waitingHandler.isRunCanceled()) {
                 waitingHandler.setRunFinished();
                 return;
@@ -271,22 +266,6 @@ public class ProjectImporter {
             }
             waitingHandler.setRunFinished();
             return;
-        }
-    }
-
-    /**
-     * Imports the gene mapping.
-     */
-    private void loadGeneMappings(WaitingHandler waitingHandler) {
-        if (!cpsParent.loadGeneMappings(Reporter.getJarFilePath(), waitingHandler)) {
-            String errorText = "Unable to load the gene/GO mapping file";
-            if (owner != null) {
-                JOptionPane.showMessageDialog(owner,
-                        errorText,
-                        "Gene File Error", JOptionPane.ERROR_MESSAGE);
-            } else {
-                throw new IllegalArgumentException(errorText);
-            }
         }
     }
 

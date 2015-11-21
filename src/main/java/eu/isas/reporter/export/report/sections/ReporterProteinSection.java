@@ -1,6 +1,7 @@
 package eu.isas.reporter.export.report.sections;
 
 import com.compomics.util.experiment.ShotgunProtocol;
+import com.compomics.util.experiment.biology.genes.GeneMaps;
 import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.matches.ProteinMatch;
 import com.compomics.util.experiment.identification.matches_iterators.ProteinMatchesIterator;
@@ -116,6 +117,7 @@ public class ReporterProteinSection {
      * @param identification the identification of the project
      * @param identificationFeaturesGenerator the identification features
      * generator of the project
+     * @param geneMaps the gene maps
      * @param quantificationFeaturesGenerator the quantification features
      * generator containing the quantification information
      * @param reporterIonQuantification the reporter ion quantification object
@@ -138,7 +140,7 @@ public class ReporterProteinSection {
      * @throws java.lang.InterruptedException exception thrown whenever a threading error occurred
      * @throws org.apache.commons.math.MathException exception thrown whenever an error occurred while transforming the ratios
      */
-    public void writeSection(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, ReporterSettings reporterSettings,
+    public void writeSection(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, GeneMaps geneMaps, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, ReporterSettings reporterSettings,
             ShotgunProtocol shotgunProtocol, IdentificationParameters identificationParameters, ArrayList<String> keys, int nSurroundingAas, boolean validatedOnly, boolean decoys, WaitingHandler waitingHandler)
             throws IOException, IllegalArgumentException, SQLException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException, MathException {
 
@@ -198,7 +200,7 @@ public class ReporterProteinSection {
                             first = false;
                         }
                         PsProteinFeature tempProteinFeatures = (PsProteinFeature) exportFeature;
-                        writer.write(PsProteinSection.getFeature(identificationFeaturesGenerator, shotgunProtocol, identificationParameters,
+                        writer.write(PsProteinSection.getFeature(identificationFeaturesGenerator, geneMaps, shotgunProtocol, identificationParameters,
                                 keys, nSurroundingAas, proteinKey, proteinMatch, psParameter, tempProteinFeatures, waitingHandler));
                     }
 

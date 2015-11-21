@@ -444,7 +444,7 @@ public class ReportDialog extends javax.swing.JDialog {
                             progressDialog.setTitle("Exporting. Please Wait...");
                             ReporterExportFactory.writeExport(exportScheme, selectedFile, exportFormat, reporterGUI.getExperiment().getReference(),
                                     reporterGUI.getSample().getReference(), reporterGUI.getReplicateNumber(),
-                                    reporterGUI.getProjectDetails(), reporterGUI.getIdentification(), reporterGUI.getIdentificationFeaturesGenerator(),
+                                    reporterGUI.getProjectDetails(), reporterGUI.getIdentification(), reporterGUI.getIdentificationFeaturesGenerator(), reporterGUI.getGeneMaps(),
                                     reporterGUI.getQuantificationFeaturesGenerator(), reporterGUI.getReporterIonQuantification(), reporterGUI.getReporterSettings(), reporterGUI.getShotgunProtocol(),
                                     reporterGUI.getIdentificationParameters(), null, null, null, null, reporterGUI.getIdentificationDisplayPreferences().getnAASurroundingPeptides(),
                                     reporterGUI.getSpectrumCountingPreferences(), progressDialog);
