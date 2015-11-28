@@ -1061,7 +1061,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
     private void logReportMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logReportMenuActionPerformed
         new BugReport(this, lastSelectedFolder, "Reporter", "reporter",
                 new Properties().getVersion(), "reporter_software", "Reporter",
-                new File(getJarFilePath() + "/resources/ReporterGUI.log"));
+                new File(getJarFilePath() + "/resources/Reporter.log"));
     }//GEN-LAST:event_logReportMenuActionPerformed
 
     /**
@@ -1461,10 +1461,9 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * Set up the log file.
      */
     private void setUpLogFile() {
-
         try {
             if (useLogFile && !getJarFilePath().equalsIgnoreCase(".")) {
-                String path = getJarFilePath() + "/resources/ReporterGUI.log";
+                String path = getJarFilePath() + "/resources/Reporter.log";
 
                 File file = new File(path);
                 System.setOut(new java.io.PrintStream(new FileOutputStream(file, true)));
