@@ -1,6 +1,5 @@
 package eu.isas.reporter.settings;
 
-import com.compomics.util.experiment.personalization.UrParameter;
 import com.compomics.util.io.SerializationUtils;
 import java.io.File;
 import java.io.Serializable;

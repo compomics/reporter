@@ -17,9 +17,9 @@ import org.apache.commons.compress.archivers.ArchiveException;
 public class ProjectSaver {
 
     /**
-     * Name for the reporter settings table
+     * Name for the reporter settings table.
      */
-    public static final String reporterSettingsTableName = "reporter_settings";
+    public static final String REPORTER_SETTINGS_TABLE_NAME = "reporter_settings";
 
     /**
      * Saves the Reporter project information in the given database.
@@ -42,21 +42,22 @@ public class ProjectSaver {
      * @throws ArchiveException thrown of ArchiveException occurs exception
      * thrown whenever an error occurred while taring the project
      */
-    public static void saveProject(ReporterSettings reporterSettings, ReporterIonQuantification reporterIonQuantification, CpsParent cpsParent, WaitingHandler waitingHandler) throws IOException, SQLException, ClassNotFoundException, InterruptedException, ArchiveException {
+    public static void saveProject(ReporterSettings reporterSettings, ReporterIonQuantification reporterIonQuantification, CpsParent cpsParent, 
+            WaitingHandler waitingHandler) throws IOException, SQLException, ClassNotFoundException, InterruptedException, ArchiveException {
 
         ObjectsDB objectsDB = cpsParent.getIdentification().getIdentificationDB().getObjectsDB();
-        if (!objectsDB.hasTable(reporterSettingsTableName)) {
-            objectsDB.addTable(reporterSettingsTableName);
+        if (!objectsDB.hasTable(REPORTER_SETTINGS_TABLE_NAME)) {
+            objectsDB.addTable(REPORTER_SETTINGS_TABLE_NAME);
         }
-        if (objectsDB.inDB(reporterSettingsTableName, ReporterSettings.class.getName(), false)) {
-            objectsDB.updateObject(reporterSettingsTableName, ReporterSettings.class.getName(), reporterSettings, false);
+        if (objectsDB.inDB(REPORTER_SETTINGS_TABLE_NAME, ReporterSettings.class.getName(), false)) {
+            objectsDB.updateObject(REPORTER_SETTINGS_TABLE_NAME, ReporterSettings.class.getName(), reporterSettings, false);
         } else {
-            objectsDB.insertObject(reporterSettingsTableName, ReporterSettings.class.getName(), reporterSettings, false);
+            objectsDB.insertObject(REPORTER_SETTINGS_TABLE_NAME, ReporterSettings.class.getName(), reporterSettings, false);
         }
-        if (objectsDB.inDB(reporterSettingsTableName, ReporterIonQuantification.class.getName(), false)) {
-            objectsDB.updateObject(reporterSettingsTableName, ReporterIonQuantification.class.getName(), reporterIonQuantification, false);
+        if (objectsDB.inDB(REPORTER_SETTINGS_TABLE_NAME, ReporterIonQuantification.class.getName(), false)) {
+            objectsDB.updateObject(REPORTER_SETTINGS_TABLE_NAME, ReporterIonQuantification.class.getName(), reporterIonQuantification, false);
         } else {
-            objectsDB.insertObject(reporterSettingsTableName, ReporterIonQuantification.class.getName(), reporterIonQuantification, false);
+            objectsDB.insertObject(REPORTER_SETTINGS_TABLE_NAME, ReporterIonQuantification.class.getName(), reporterIonQuantification, false);
         }
 
         cpsParent.saveProject(waitingHandler, false);

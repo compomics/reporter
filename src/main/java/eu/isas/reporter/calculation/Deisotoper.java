@@ -1,7 +1,6 @@
 package eu.isas.reporter.calculation;
 
 import com.compomics.util.experiment.biology.Atom;
-import com.compomics.util.experiment.biology.ions.ElementaryIon;
 import com.compomics.util.experiment.biology.ions.ReporterIon;
 import com.compomics.util.experiment.identification.matches.IonMatch;
 import com.compomics.util.experiment.massspectrometry.Spectrum;

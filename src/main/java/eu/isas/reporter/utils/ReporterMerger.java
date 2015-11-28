@@ -27,7 +27,7 @@ import org.apache.commons.math.util.FastMath;
  */
 public class ReporterMerger {
 
-    private static final String separator = "\t";
+    private static final String SEPARATOR = "\t";
 
     public static void main(String[] args) {
         ReporterMerger rm = new ReporterMerger();
@@ -94,7 +94,7 @@ public class ReporterMerger {
                 BufferedReader br = new BufferedReader(new FileReader(myFile));
 
                 String line = br.readLine();
-                String[] split = line.split(separator);
+                String[] split = line.split(SEPARATOR);
                 for (int i = ratioIndex; i < split.length; i++) {
                     String value = split[i];
                     ratios.get(experiment).add(value);
@@ -104,7 +104,7 @@ public class ReporterMerger {
 
                 // read the data from the input file
                 while ((line = br.readLine()) != null && !line.equals("")) {
-                    split = line.split(separator);
+                    split = line.split(SEPARATOR);
                     String completeProteinGroup = split[2];
 
                     Integer numberOfValidatedPeptides = new Integer(split[6]);
@@ -224,64 +224,64 @@ public class ReporterMerger {
             BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile));
 
             // first header row
-            writer.write("Protein" + separator + "Description" + separator + "MW" + separator + "Other Protein(s) (alphabetical order)"
-                    + separator + "Complete Protein Group (alphabetical order)" + separator + "Group Class" + separator + "#Peptides");
+            writer.write("Protein" + SEPARATOR + "Description" + SEPARATOR + "MW" + SEPARATOR + "Other Protein(s) (alphabetical order)"
+                    + SEPARATOR + "Complete Protein Group (alphabetical order)" + SEPARATOR + "Group Class" + SEPARATOR + "#Peptides");
             for (int i = 0; i < nFiles; i++) {
-                writer.write(separator);
+                writer.write(SEPARATOR);
             }
             writer.write("#Spectra");
             for (int i = 0; i < nFiles; i++) {
-                writer.write(separator);
+                writer.write(SEPARATOR);
             }
             writer.write("#Validated Peptides");
             for (int i = 0; i < nFiles; i++) {
-                writer.write(separator);
+                writer.write(SEPARATOR);
             }
             writer.write("#Validated Spectra");
             for (int i = 0; i < nFiles; i++) {
-                writer.write(separator);
+                writer.write(SEPARATOR);
             }
             writer.write("Confidence");
             for (int i = 0; i < nFiles; i++) {
-                writer.write(separator);
+                writer.write(SEPARATOR);
             }
             writer.write("Validated in mix");
             for (int i = 0; i < nFiles; i++) {
-                writer.write(separator);
+                writer.write(SEPARATOR);
             }
-            writer.write("score" + separator + "Overall Confidence" + separator + "decoy" + separator + "FDR" + separator + "Validated" + separator);
+            writer.write("score" + SEPARATOR + "Overall Confidence" + SEPARATOR + "decoy" + SEPARATOR + "FDR" + SEPARATOR + "Validated" + SEPARATOR);
             for (String experiment : orderedExperiments) {
                 writer.write(experiment + " ratios");
                 for (int i = 0; i < nRatios; i++) {
-                    writer.write(separator);
+                    writer.write(SEPARATOR);
                 }
             }
             writer.newLine();
 
             // second header row
-            writer.write(separator + separator + separator + separator + separator + separator);
+            writer.write(SEPARATOR + SEPARATOR + SEPARATOR + SEPARATOR + SEPARATOR + SEPARATOR);
             for (String experiment : orderedExperiments) {
-                writer.write(experiment + separator);
+                writer.write(experiment + SEPARATOR);
             }
             for (String experiment : orderedExperiments) {
-                writer.write(experiment + separator);
+                writer.write(experiment + SEPARATOR);
             }
             for (String experiment : orderedExperiments) {
-                writer.write(experiment + separator);
+                writer.write(experiment + SEPARATOR);
             }
             for (String experiment : orderedExperiments) {
-                writer.write(experiment + separator);
+                writer.write(experiment + SEPARATOR);
             }
             for (String experiment : orderedExperiments) {
-                writer.write(experiment + separator);
+                writer.write(experiment + SEPARATOR);
             }
             for (String experiment : orderedExperiments) {
-                writer.write(experiment + separator);
+                writer.write(experiment + SEPARATOR);
             }
-            writer.write(separator + separator + separator + separator + separator);
+            writer.write(SEPARATOR + SEPARATOR + SEPARATOR + SEPARATOR + SEPARATOR);
             for (String experiment : orderedExperiments) {
                 for (String ratioName : ratios.get(experiment)) {
-                    writer.write(ratioName + separator);
+                    writer.write(ratioName + SEPARATOR);
                 }
             }
             writer.newLine();
@@ -289,39 +289,39 @@ public class ReporterMerger {
             // print the protein details
             for (String key : keyToMainMatchMap.keySet()) {
 
-                writer.write(keyToMainMatchMap.get(key) + separator);
-                writer.write(descriptionMap.get(key) + separator);
-                writer.write(mwMap.get(key) + separator);
-                writer.write(keyToOtherMatchesMap.get(key) + separator);
-                writer.write(key + separator);
-                writer.write(groupClassMap.get(key) + separator);
+                writer.write(keyToMainMatchMap.get(key) + SEPARATOR);
+                writer.write(descriptionMap.get(key) + SEPARATOR);
+                writer.write(mwMap.get(key) + SEPARATOR);
+                writer.write(keyToOtherMatchesMap.get(key) + SEPARATOR);
+                writer.write(key + SEPARATOR);
+                writer.write(groupClassMap.get(key) + SEPARATOR);
                 for (String experiment : orderedExperiments) {
                     Object value = peptidesMap.get(experiment).get(key);
                     if (value != null) {
                         writer.write(value.toString());
                     }
-                    writer.write(separator);
+                    writer.write(SEPARATOR);
                 }
                 for (String experiment : orderedExperiments) {
                     Object value = spectraMap.get(experiment).get(key);
                     if (value != null) {
                         writer.write(value.toString());
                     }
-                    writer.write(separator);
+                    writer.write(SEPARATOR);
                 }
                 for (String experiment : orderedExperiments) {
                     Object value = validatedPeptidesMap.get(experiment).get(key);
                     if (value != null) {
                         writer.write(value.toString());
                     }
-                    writer.write(separator);
+                    writer.write(SEPARATOR);
                 }
                 for (String experiment : orderedExperiments) {
                     Object value = validatedSpectraMap.get(experiment).get(key);
                     if (value != null) {
                         writer.write(value.toString());
                     }
-                    writer.write(separator);
+                    writer.write(SEPARATOR);
                 }
                 for (String experiment : orderedExperiments) {
                     Double value = pepMap.get(experiment).get(key);
@@ -329,26 +329,26 @@ public class ReporterMerger {
                         value = 1 - value;
                         writer.write(value.toString());
                     }
-                    writer.write(separator);
+                    writer.write(SEPARATOR);
                 }
                 for (String experiment : orderedExperiments) {
                     String value = validatedMap.get(experiment).get(key);
                     if (value != null) {
                         writer.write(value);
                     }
-                    writer.write(separator);
+                    writer.write(SEPARATOR);
                 }
                 double score = keyToScoreMap.get(key);
-                writer.write(score + separator);
+                writer.write(score + SEPARATOR);
                 double pep = peps.get(score);
                 double confidence = 1 - pep;
-                writer.write(confidence + separator);
-                writer.write(decoyMap.get(key) + separator);
-                writer.write(fdr.get(score) + separator);
+                writer.write(confidence + SEPARATOR);
+                writer.write(decoyMap.get(key) + SEPARATOR);
+                writer.write(fdr.get(score) + SEPARATOR);
                 if (score <= lastValidatedScore) {
-                    writer.write(1 + separator);
+                    writer.write(1 + SEPARATOR);
                 } else {
-                    writer.write(0 + separator);
+                    writer.write(0 + SEPARATOR);
                 }
 
                 // write the raw ratios
@@ -358,7 +358,7 @@ public class ReporterMerger {
                         if (value != null && !value.isNaN()) {
                             writer.write(value.toString());
                         }
-                        writer.write(separator);
+                        writer.write(SEPARATOR);
                     }
                 }
 
@@ -451,28 +451,28 @@ public class ReporterMerger {
             // Output medians
             outputFile = new File(path, "medians.txt");
             writer = new BufferedWriter(new FileWriter(outputFile));
-            writer.write(separator);
+            writer.write(SEPARATOR);
             for (String experiment : orderedExperiments) {
                 writer.write(experiment);
                 for (String ratio : ratios.get(experiment)) {
-                    writer.write(separator);
+                    writer.write(SEPARATOR);
                 }
             }
             writer.newLine();
-            writer.write(separator);
+            writer.write(SEPARATOR);
             for (String experiment : orderedExperiments) {
                 for (String ratio : ratios.get(experiment)) {
-                    writer.write(ratio + separator);
+                    writer.write(ratio + SEPARATOR);
                 }
             }
             writer.newLine();
-            writer.write("Median" + separator);
+            writer.write("Median" + SEPARATOR);
             HashMap<String, HashMap<String, Double>> medianes = new HashMap<String, HashMap<String, Double>>();
             for (String experiment : orderedExperiments) {
                 medianes.put(experiment, new HashMap<String, Double>());
                 for (String ratio : ratios.get(experiment)) {
                     double median = BasicMathFunctions.median(validatedRatios.get(experiment).get(ratio));
-                    writer.write(median + separator);
+                    writer.write(median + SEPARATOR);
                     medianes.get(experiment).put(ratio, median);
                 }
             }
@@ -546,7 +546,7 @@ public class ReporterMerger {
                             }
                         }
                         if (!allIntensities.isEmpty()) {
-                            double normalizationIntensity = 1;
+                            double normalizationIntensity;
                             if (!controlIntensities.isEmpty()) {
                                 normalizationIntensity = BasicMathFunctions.median(controlIntensities);
                             } else {
@@ -621,86 +621,86 @@ public class ReporterMerger {
             writer = new BufferedWriter(new FileWriter(outputFile));
 
             // first header row
-            writer.write("Protein" + separator + "Description" + separator + "MW" + separator + "Other Protein(s) (alphabetical order)"
-                    + separator + "Complete Protein Group (alphabetical order)" + separator + "Group Class" + separator + "#Peptides");
+            writer.write("Protein" + SEPARATOR + "Description" + SEPARATOR + "MW" + SEPARATOR + "Other Protein(s) (alphabetical order)"
+                    + SEPARATOR + "Complete Protein Group (alphabetical order)" + SEPARATOR + "Group Class" + SEPARATOR + "#Peptides");
             for (int i = 0; i < nFiles; i++) {
-                writer.write(separator);
+                writer.write(SEPARATOR);
             }
             writer.write("#Spectra");
             for (int i = 0; i < nFiles; i++) {
-                writer.write(separator);
+                writer.write(SEPARATOR);
             }
             writer.write("#Validated Peptides");
             for (int i = 0; i < nFiles; i++) {
-                writer.write(separator);
+                writer.write(SEPARATOR);
             }
             writer.write("#Validated Spectra");
             for (int i = 0; i < nFiles; i++) {
-                writer.write(separator);
+                writer.write(SEPARATOR);
             }
             writer.write("Confidence");
             for (int i = 0; i < nFiles; i++) {
-                writer.write(separator);
+                writer.write(SEPARATOR);
             }
             writer.write("Validated in mix");
             for (int i = 0; i < nFiles; i++) {
-                writer.write(separator);
+                writer.write(SEPARATOR);
             }
-            writer.write("score" + separator + "Overall Confidence" + separator + "Validated" + separator);
+            writer.write("score" + SEPARATOR + "Overall Confidence" + SEPARATOR + "Validated" + SEPARATOR);
             for (String experiment : orderedExperiments) {
                 writer.write(experiment + " raw ratios");
                 for (int i = 0; i < nRatios; i++) {
-                    writer.write(separator);
+                    writer.write(SEPARATOR);
                 }
             }
             for (String experiment : orderedExperiments) {
                 writer.write(experiment + " normalized ratios");
                 for (int i = 0; i < nRatios; i++) {
-                    writer.write(separator);
+                    writer.write(SEPARATOR);
                 }
             }
             for (String experiment : orderedExperiments) {
                 writer.write(experiment + " p");
                 for (int i = 0; i < nRatios; i++) {
-                    writer.write(separator);
+                    writer.write(SEPARATOR);
                 }
             }
             writer.newLine();
 
             // second header row
-            writer.write(separator + separator + separator + separator + separator + separator);
+            writer.write(SEPARATOR + SEPARATOR + SEPARATOR + SEPARATOR + SEPARATOR + SEPARATOR);
             for (String experiment : orderedExperiments) {
-                writer.write(experiment + separator);
+                writer.write(experiment + SEPARATOR);
             }
             for (String experiment : orderedExperiments) {
-                writer.write(experiment + separator);
+                writer.write(experiment + SEPARATOR);
             }
             for (String experiment : orderedExperiments) {
-                writer.write(experiment + separator);
+                writer.write(experiment + SEPARATOR);
             }
             for (String experiment : orderedExperiments) {
-                writer.write(experiment + separator);
+                writer.write(experiment + SEPARATOR);
             }
             for (String experiment : orderedExperiments) {
-                writer.write(experiment + separator);
+                writer.write(experiment + SEPARATOR);
             }
             for (String experiment : orderedExperiments) {
-                writer.write(experiment + separator);
+                writer.write(experiment + SEPARATOR);
             }
-            writer.write(separator + separator + separator);
+            writer.write(SEPARATOR + SEPARATOR + SEPARATOR);
             for (String experiment : orderedExperiments) {
                 for (String ratioName : ratios.get(experiment)) {
-                    writer.write(ratioName + separator);
+                    writer.write(ratioName + SEPARATOR);
                 }
             }
             for (String experiment : orderedExperiments) {
                 for (String ratioName : ratios.get(experiment)) {
-                    writer.write(ratioName + separator);
+                    writer.write(ratioName + SEPARATOR);
                 }
             }
             for (String experiment : orderedExperiments) {
                 for (String ratioName : ratios.get(experiment)) {
-                    writer.write(ratioName + separator);
+                    writer.write(ratioName + SEPARATOR);
                 }
             }
             writer.newLine();
@@ -708,39 +708,39 @@ public class ReporterMerger {
             // print the protein details
             for (String key : quantificationMatches) {
 
-                writer.write(keyToMainMatchMap.get(key) + separator);
-                writer.write(descriptionMap.get(key) + separator);
-                writer.write(mwMap.get(key) + separator);
-                writer.write(keyToOtherMatchesMap.get(key) + separator);
-                writer.write(key + separator);
-                writer.write(groupClassMap.get(key) + separator);
+                writer.write(keyToMainMatchMap.get(key) + SEPARATOR);
+                writer.write(descriptionMap.get(key) + SEPARATOR);
+                writer.write(mwMap.get(key) + SEPARATOR);
+                writer.write(keyToOtherMatchesMap.get(key) + SEPARATOR);
+                writer.write(key + SEPARATOR);
+                writer.write(groupClassMap.get(key) + SEPARATOR);
                 for (String experiment : orderedExperiments) {
                     Object value = peptidesMap.get(experiment).get(key);
                     if (value != null) {
                         writer.write(value.toString());
                     }
-                    writer.write(separator);
+                    writer.write(SEPARATOR);
                 }
                 for (String experiment : orderedExperiments) {
                     Object value = spectraMap.get(experiment).get(key);
                     if (value != null) {
                         writer.write(value.toString());
                     }
-                    writer.write(separator);
+                    writer.write(SEPARATOR);
                 }
                 for (String experiment : orderedExperiments) {
                     Object value = validatedPeptidesMap.get(experiment).get(key);
                     if (value != null) {
                         writer.write(value.toString());
                     }
-                    writer.write(separator);
+                    writer.write(SEPARATOR);
                 }
                 for (String experiment : orderedExperiments) {
                     Object value = validatedSpectraMap.get(experiment).get(key);
                     if (value != null) {
                         writer.write(value.toString());
                     }
-                    writer.write(separator);
+                    writer.write(SEPARATOR);
                 }
                 for (String experiment : orderedExperiments) {
                     Double value = pepMap.get(experiment).get(key);
@@ -748,24 +748,24 @@ public class ReporterMerger {
                         value = 1 - value;
                         writer.write(value.toString());
                     }
-                    writer.write(separator);
+                    writer.write(SEPARATOR);
                 }
                 for (String experiment : orderedExperiments) {
                     String value = validatedMap.get(experiment).get(key);
                     if (value != null) {
                         writer.write(value);
                     }
-                    writer.write(separator);
+                    writer.write(SEPARATOR);
                 }
                 double score = keyToScoreMap.get(key);
-                writer.write(score + separator);
+                writer.write(score + SEPARATOR);
                 double pep = peps.get(score);
                 double confidence = 1 - pep;
-                writer.write(confidence + separator);
+                writer.write(confidence + SEPARATOR);
                 if (score <= lastValidatedScore) {
-                    writer.write(1 + separator);
+                    writer.write(1 + SEPARATOR);
                 } else {
-                    writer.write(0 + separator);
+                    writer.write(0 + SEPARATOR);
                 }
 
                 // write the raw ratios
@@ -778,7 +778,7 @@ public class ReporterMerger {
                                 writer.write(value.toString());
                             }
                         }
-                        writer.write(separator);
+                        writer.write(SEPARATOR);
                     }
                 }
 
@@ -792,7 +792,7 @@ public class ReporterMerger {
                                 writer.write(value.toString());
                             }
                         }
-                        writer.write(separator);
+                        writer.write(SEPARATOR);
                     }
                 }
 
@@ -808,7 +808,7 @@ public class ReporterMerger {
                                 BigDecimal p = distribution.getProbabilityAt(logValue, mathContext);
                                 writer.write(p.toString());
                             }
-                            writer.write(separator);
+                            writer.write(SEPARATOR);
                         }
                     }
                 }
@@ -824,75 +824,75 @@ public class ReporterMerger {
                 writer = new BufferedWriter(new FileWriter(outputFile));
 
                 // first header row
-                writer.write("Protein" + separator + "Description" + separator + "MW" + separator + "Other Protein(s) (alphabetical order)"
-                        + separator + "Complete Protein Group (alphabetical order)" + separator + "Group Class" + separator + "#Peptides");
+                writer.write("Protein" + SEPARATOR + "Description" + SEPARATOR + "MW" + SEPARATOR + "Other Protein(s) (alphabetical order)"
+                        + SEPARATOR + "Complete Protein Group (alphabetical order)" + SEPARATOR + "Group Class" + SEPARATOR + "#Peptides");
                 for (int i = 0; i < nFiles; i++) {
-                    writer.write(separator);
+                    writer.write(SEPARATOR);
                 }
                 writer.write("#Spectra");
                 for (int i = 0; i < nFiles; i++) {
-                    writer.write(separator);
+                    writer.write(SEPARATOR);
                 }
                 writer.write("#Validated Peptides");
                 for (int i = 0; i < nFiles; i++) {
-                    writer.write(separator);
+                    writer.write(SEPARATOR);
                 }
                 writer.write("#Validated Spectra");
                 for (int i = 0; i < nFiles; i++) {
-                    writer.write(separator);
+                    writer.write(SEPARATOR);
                 }
                 writer.write("Confidence");
                 for (int i = 0; i < nFiles; i++) {
-                    writer.write(separator);
+                    writer.write(SEPARATOR);
                 }
                 writer.write("Validated in mix");
                 for (int i = 0; i < nFiles; i++) {
-                    writer.write(separator);
+                    writer.write(SEPARATOR);
                 }
-                writer.write("score" + separator + "Overall Confidence" + separator + "Validated" + separator);
+                writer.write("score" + SEPARATOR + "Overall Confidence" + SEPARATOR + "Validated" + SEPARATOR);
                 for (String experiment : orderedExperiments) {
                     writer.write(experiment + " raw ratios");
                     for (int i = 0; i < nRatios; i++) {
-                        writer.write(separator);
+                        writer.write(SEPARATOR);
                     }
                 }
                 for (String experiment : orderedExperiments) {
                     writer.write(experiment + " normalized ratios");
                     for (int i = 0; i < nRatios; i++) {
-                        writer.write(separator);
+                        writer.write(SEPARATOR);
                     }
                 }
                 writer.newLine();
 
                 // second header row
-                writer.write(separator + separator + separator + separator + separator + separator);
+                writer.write(SEPARATOR + SEPARATOR + SEPARATOR + SEPARATOR + SEPARATOR + SEPARATOR);
                 for (String experiment : orderedExperiments) {
-                    writer.write(experiment + separator);
+                    writer.write(experiment + SEPARATOR);
                 }
                 for (String experiment : orderedExperiments) {
-                    writer.write(experiment + separator);
+                    writer.write(experiment + SEPARATOR);
                 }
                 for (String experiment : orderedExperiments) {
-                    writer.write(experiment + separator);
+                    writer.write(experiment + SEPARATOR);
                 }
                 for (String experiment : orderedExperiments) {
-                    writer.write(experiment + separator);
+                    writer.write(experiment + SEPARATOR);
                 }
                 for (String experiment : orderedExperiments) {
-                    writer.write(experiment + separator);
+                    writer.write(experiment + SEPARATOR);
                 }
                 for (String experiment : orderedExperiments) {
-                    writer.write(experiment + separator);
+                    writer.write(experiment + SEPARATOR);
                 }
-                writer.write(separator + separator + separator);
+                writer.write(SEPARATOR + SEPARATOR + SEPARATOR);
                 for (String experiment : orderedExperiments) {
                     for (String ratioName : ratios.get(experiment)) {
-                        writer.write(ratioName + separator);
+                        writer.write(ratioName + SEPARATOR);
                     }
                 }
                 for (String experiment : orderedExperiments) {
                     for (String ratioName : ratios.get(experiment)) {
-                        writer.write(ratioName + separator);
+                        writer.write(ratioName + SEPARATOR);
                     }
                 }
                 writer.newLine();
@@ -900,39 +900,39 @@ public class ReporterMerger {
                 // print the protein details
                 for (String key : normalizedPathwaysRatiosMap.get(pathway).keySet()) {
                     
-                    writer.write(keyToMainMatchMap.get(key) + separator);
-                    writer.write(descriptionMap.get(key) + separator);
-                    writer.write(mwMap.get(key) + separator);
-                    writer.write(keyToOtherMatchesMap.get(key) + separator);
-                    writer.write(key + separator);
-                    writer.write(groupClassMap.get(key) + separator);
+                    writer.write(keyToMainMatchMap.get(key) + SEPARATOR);
+                    writer.write(descriptionMap.get(key) + SEPARATOR);
+                    writer.write(mwMap.get(key) + SEPARATOR);
+                    writer.write(keyToOtherMatchesMap.get(key) + SEPARATOR);
+                    writer.write(key + SEPARATOR);
+                    writer.write(groupClassMap.get(key) + SEPARATOR);
                     for (String experiment : orderedExperiments) {
                         Object value = peptidesMap.get(experiment).get(key);
                         if (value != null) {
                             writer.write(value.toString());
                         }
-                        writer.write(separator);
+                        writer.write(SEPARATOR);
                     }
                     for (String experiment : orderedExperiments) {
                         Object value = spectraMap.get(experiment).get(key);
                         if (value != null) {
                             writer.write(value.toString());
                         }
-                        writer.write(separator);
+                        writer.write(SEPARATOR);
                     }
                     for (String experiment : orderedExperiments) {
                         Object value = validatedPeptidesMap.get(experiment).get(key);
                         if (value != null) {
                             writer.write(value.toString());
                         }
-                        writer.write(separator);
+                        writer.write(SEPARATOR);
                     }
                     for (String experiment : orderedExperiments) {
                         Object value = validatedSpectraMap.get(experiment).get(key);
                         if (value != null) {
                             writer.write(value.toString());
                         }
-                        writer.write(separator);
+                        writer.write(SEPARATOR);
                     }
                     for (String experiment : orderedExperiments) {
                         Double value = pepMap.get(experiment).get(key);
@@ -940,24 +940,24 @@ public class ReporterMerger {
                             value = 1 - value;
                             writer.write(value.toString());
                         }
-                        writer.write(separator);
+                        writer.write(SEPARATOR);
                     }
                     for (String experiment : orderedExperiments) {
                         String value = validatedMap.get(experiment).get(key);
                         if (value != null) {
                             writer.write(value);
                         }
-                        writer.write(separator);
+                        writer.write(SEPARATOR);
                     }
                     double score = keyToScoreMap.get(key);
-                    writer.write(score + separator);
+                    writer.write(score + SEPARATOR);
                     double pep = peps.get(score);
                     double confidence = 1 - pep;
-                    writer.write(confidence + separator);
+                    writer.write(confidence + SEPARATOR);
                     if (score <= lastValidatedScore) {
-                        writer.write(1 + separator);
+                        writer.write(1 + SEPARATOR);
                     } else {
-                        writer.write(0 + separator);
+                        writer.write(0 + SEPARATOR);
                     }
 
                     // write the raw ratios
@@ -967,7 +967,7 @@ public class ReporterMerger {
                             if (value != null && !value.isNaN()) {
                                 writer.write(value.toString());
                             }
-                            writer.write(separator);
+                            writer.write(SEPARATOR);
                         }
                     }
 
@@ -980,7 +980,7 @@ public class ReporterMerger {
                                     writer.write(value.toString());
                                 }
                             }
-                            writer.write(separator);
+                            writer.write(SEPARATOR);
                         }
                     }
 

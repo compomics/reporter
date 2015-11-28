@@ -222,9 +222,9 @@ public class ProjectImporter {
         // Load Reporter settings files
         ObjectsDB objectsDB = cpsParent.getIdentification().getIdentificationDB().getObjectsDB();
         try {
-            if (objectsDB.hasTable(ProjectSaver.reporterSettingsTableName)) {
+            if (objectsDB.hasTable(ProjectSaver.REPORTER_SETTINGS_TABLE_NAME)) {
                 try {
-                    reporterSettings = (ReporterSettings) objectsDB.retrieveObject(ProjectSaver.reporterSettingsTableName, ReporterSettings.class.getName(), true, false);
+                    reporterSettings = (ReporterSettings) objectsDB.retrieveObject(ProjectSaver.REPORTER_SETTINGS_TABLE_NAME, ReporterSettings.class.getName(), true, false);
                 } catch (Exception e) {
                     e.printStackTrace();
                     String errorText = "An error occurred while importing the reporter settings.";
@@ -239,7 +239,7 @@ public class ProjectImporter {
                     return;
                 }
                 try {
-                    reporterIonQuantification = (ReporterIonQuantification) objectsDB.retrieveObject(ProjectSaver.reporterSettingsTableName, ReporterIonQuantification.class.getName(), true, false);
+                    reporterIonQuantification = (ReporterIonQuantification) objectsDB.retrieveObject(ProjectSaver.REPORTER_SETTINGS_TABLE_NAME, ReporterIonQuantification.class.getName(), true, false);
                 } catch (Exception e) {
                     e.printStackTrace();
                     String errorText = "An error occurred while importing the reporter settings.";
@@ -251,7 +251,6 @@ public class ProjectImporter {
                         throw new IllegalArgumentException(errorText);
                     }
                     waitingHandler.setRunFinished();
-                    return;
                 }
             }
         } catch (Exception e) {
@@ -265,7 +264,6 @@ public class ProjectImporter {
                 throw new IllegalArgumentException(errorText);
             }
             waitingHandler.setRunFinished();
-            return;
         }
     }
 
@@ -295,5 +293,4 @@ public class ProjectImporter {
     public ReporterIonQuantification getReporterIonQuantification() {
         return reporterIonQuantification;
     }
-
 }

@@ -1,7 +1,6 @@
 package eu.isas.reporter.gui.tablemodels;
 
 import com.compomics.util.exceptions.ExceptionHandler;
-import com.compomics.util.experiment.biology.genes.GeneFactory;
 import com.compomics.util.experiment.biology.Protein;
 import com.compomics.util.experiment.biology.genes.GeneMaps;
 import com.compomics.util.experiment.identification.Identification;

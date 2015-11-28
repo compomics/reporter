@@ -6,9 +6,7 @@ import com.compomics.util.db.ObjectsCache;
 import com.compomics.util.experiment.biology.PTM;
 import com.compomics.util.experiment.biology.PTMFactory;
 import com.compomics.util.experiment.biology.Peptide;
-import com.compomics.util.experiment.biology.ions.PeptideFragmentIon;
 import com.compomics.util.experiment.identification.Identification;
-import static com.compomics.util.experiment.identification.IdentificationMatch.MatchType.PTM;
 import com.compomics.util.experiment.identification.identification_parameters.PtmSettings;
 import com.compomics.util.experiment.identification.identification_parameters.SearchParameters;
 import com.compomics.util.experiment.identification.matches.ModificationMatch;
@@ -24,10 +22,8 @@ import com.compomics.util.preferences.SequenceMatchingPreferences;
 import eu.isas.peptideshaker.parameters.PSParameter;
 import eu.isas.peptideshaker.utils.CpsParent;
 import eu.isas.reporter.io.ProjectImporter;
-import eu.isas.reporter.settings.ReporterSettings;
 import java.awt.Dialog;
 import java.awt.Image;
-import java.awt.Toolkit;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -35,15 +31,12 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import javax.swing.ImageIcon;
-import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
-import no.uib.jsparklines.extra.TrueFalseIconRenderer;
 
 /**
  *

@@ -28,8 +28,8 @@
         <developer>
             <name>Marc Vaudel</name>
             <id>Marc</id>
-            <email>marc.vaudel AT isas.de</email>
-            <organization>ISAS</organization>
+            <email>marc.vaudel AT uib.no</email>
+            <organization>University of Bergen</organization>
             <roles>
                 <role>Java Developer</role>
             </roles>
@@ -37,7 +37,7 @@
         <developer>
             <name>Harald Barsnes</name>
             <id>harald</id>
-            <email>harald.barsnes AT biomed.uib.no</email>
+            <email>harald.barsnes AT uib.no</email>
             <organization>University of Bergen</organization>
             <roles>
                 <role>Java Developer</role>

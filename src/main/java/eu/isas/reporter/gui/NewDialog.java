@@ -158,7 +158,6 @@ public class NewDialog extends javax.swing.JDialog {
 
         refresh();
 
-        pack();
         setLocationRelativeTo(reporterGui);
         setVisible(true);
     }
@@ -202,7 +201,6 @@ public class NewDialog extends javax.swing.JDialog {
 
         refresh();
 
-        pack();
         setLocationRelativeTo(welcomeDialog);
         setVisible(true);
     }
@@ -222,7 +220,6 @@ public class NewDialog extends javax.swing.JDialog {
         sampleAssignmentTable.getTableHeader().setReorderingAllowed(false);
 
         processingTxt.setText(processingPreferences.getnThreads() + " threads");
-
     }
 
     /**
@@ -342,7 +339,7 @@ public class NewDialog extends javax.swing.JDialog {
                 .add(10, 10, 10)
                 .add(fileSelectiontPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(txtIdFileLocation)
-                    .add(txtSpectraFileLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 504, Short.MAX_VALUE)
+                    .add(txtSpectraFileLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 531, Short.MAX_VALUE)
                     .add(fastaTxt))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(fileSelectiontPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -416,7 +413,7 @@ public class NewDialog extends javax.swing.JDialog {
             .add(samplePanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(samplePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(sampleAssignmentJScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 707, Short.MAX_VALUE)
+                    .add(sampleAssignmentJScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 734, Short.MAX_VALUE)
                     .add(samplePanelLayout.createSequentialGroup()
                         .add(reporterMethodLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 120, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
@@ -434,7 +431,7 @@ public class NewDialog extends javax.swing.JDialog {
                     .add(reporterMethodComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(methodSettingsButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(sampleAssignmentJScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
+                .add(sampleAssignmentJScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 205, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -478,7 +475,7 @@ public class NewDialog extends javax.swing.JDialog {
                     .add(advancedSettingsPanelLayout.createSequentialGroup()
                         .add(quantPreferencesLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 120, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(quantificationPreferencesTxt, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 505, Short.MAX_VALUE)
+                        .add(quantificationPreferencesTxt, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 532, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(editQuantPrefsButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 66, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(advancedSettingsPanelLayout.createSequentialGroup()
@@ -497,7 +494,7 @@ public class NewDialog extends javax.swing.JDialog {
                     .add(quantPreferencesLabel)
                     .add(quantificationPreferencesTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(editQuantPrefsButton))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(advancedSettingsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(processingLbl)
                     .add(processingTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -558,11 +555,11 @@ public class NewDialog extends javax.swing.JDialog {
                 .addContainerGap()
                 .add(backgroundPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(advancedSettingsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(backgroundPanelLayout.createSequentialGroup()
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, backgroundPanelLayout.createSequentialGroup()
                         .add(aboutButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .add(54, 54, 54)
                         .add(reporterPublicationLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 406, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .add(loadButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 167, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .add(14, 14, 14))
                     .add(org.jdesktop.layout.GroupLayout.LEADING, fileSelectiontPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -596,6 +593,8 @@ public class NewDialog extends javax.swing.JDialog {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(backgroundPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
+
+        pack();
     }// </editor-fold>//GEN-END:initComponents
 
     /**

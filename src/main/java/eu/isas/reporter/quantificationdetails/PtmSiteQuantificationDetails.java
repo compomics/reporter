@@ -34,7 +34,7 @@ public class PtmSiteQuantificationDetails {
      *
      * @return the ratio for this sample, null if not set
      */
-    public Double getRatio(int reporterIonName) {
+    public Double getRatio(String reporterIonName) {
         if (ratios == null) {
             return null;
         }

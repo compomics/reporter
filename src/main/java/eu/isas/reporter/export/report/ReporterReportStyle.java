@@ -36,7 +36,7 @@ public class ReporterReportStyle implements WorkbookStyle {
     /**
      * Map of the different styles available.
      */
-    private final static HashMap<HSSFWorkbook, ReporterReportStyle> styles = new HashMap<HSSFWorkbook, ReporterReportStyle>();
+    private static HashMap<HSSFWorkbook, ReporterReportStyle> styles = new HashMap<HSSFWorkbook, ReporterReportStyle>();
 
     /**
      * Returns the style attached to that writer or create a new one if none
