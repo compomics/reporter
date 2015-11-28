@@ -87,10 +87,11 @@ public class Normalizer {
         if (normalizationSettings.getPsmNormalization() != NormalizationType.none) {
 
             if (waitingHandler != null) {
-                waitingHandler.setWaitingText("Ratio Normalization. Please Wait...");
+                waitingHandler.setWaitingText("PSM Ratio Normalization. Please Wait...");
                 waitingHandler.resetPrimaryProgressCounter();
                 waitingHandler.setPrimaryProgressCounterIndeterminate(false);
-                waitingHandler.setMaxPrimaryProgressCounter(identification.getSpectrumIdentificationSize());
+                waitingHandler.setMaxPrimaryProgressCounter(identification.getSpectrumIdentificationSize() + 1);
+                waitingHandler.increasePrimaryProgressCounter();
             }
 
             HashSet<String> seeds = normalizationSettings.getStableProteins();
@@ -105,7 +106,9 @@ public class Normalizer {
                 ArrayList<PsmNormalizerRunnable> runnables = new ArrayList<PsmNormalizerRunnable>(nThreads);
 
                 for (int i = 1; i <= nThreads && waitingHandler != null && !waitingHandler.isRunCanceled(); i++) {
-                    PsmNormalizerRunnable runnable = new PsmNormalizerRunnable(reporterIonQuantification, quantificationFeaturesGenerator, identification, psmIterator, seeds, exclusion, ratioEstimationSettings, sequenceMatchingPreferences, waitingHandler, exceptionHandler);
+                    PsmNormalizerRunnable runnable = new PsmNormalizerRunnable(
+                            reporterIonQuantification, quantificationFeaturesGenerator, identification, psmIterator, seeds,
+                            exclusion, ratioEstimationSettings, sequenceMatchingPreferences, waitingHandler, exceptionHandler);
                     pool.submit(runnable);
                     runnables.add(runnable);
                 }
@@ -218,10 +221,11 @@ public class Normalizer {
         if (normalizationSettings.getPeptideNormalization() != NormalizationType.none) {
 
             if (waitingHandler != null) {
-                waitingHandler.setWaitingText("Ratio Normalization. Please Wait...");
+                waitingHandler.setWaitingText("Peptide Ratio Normalization. Please Wait...");
                 waitingHandler.resetPrimaryProgressCounter();
                 waitingHandler.setPrimaryProgressCounterIndeterminate(false);
-                waitingHandler.setMaxPrimaryProgressCounter(identification.getPeptideIdentification().size());
+                waitingHandler.setMaxPrimaryProgressCounter(identification.getPeptideIdentification().size() + 1);
+                waitingHandler.increasePrimaryProgressCounter();
             }
 
             PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(parameters, true, parameters, waitingHandler);
@@ -234,7 +238,9 @@ public class Normalizer {
             ArrayList<PeptideNormalizerRunnable> runnables = new ArrayList<PeptideNormalizerRunnable>(nThreads);
 
             for (int i = 1; i <= nThreads && waitingHandler != null && !waitingHandler.isRunCanceled(); i++) {
-                PeptideNormalizerRunnable runnable = new PeptideNormalizerRunnable(reporterIonQuantification, quantificationFeaturesGenerator, identification, peptideMatchesIterator, seeds, exclusion, ratioEstimationSettings, sequenceMatchingPreferences, waitingHandler, exceptionHandler);
+                PeptideNormalizerRunnable runnable = new PeptideNormalizerRunnable(
+                        reporterIonQuantification, quantificationFeaturesGenerator, identification, peptideMatchesIterator,
+                        seeds, exclusion, ratioEstimationSettings, sequenceMatchingPreferences, waitingHandler, exceptionHandler);
                 pool.submit(runnable);
                 runnables.add(runnable);
             }
@@ -244,7 +250,7 @@ public class Normalizer {
             }
             pool.shutdown();
             if (!pool.awaitTermination(7, TimeUnit.DAYS)) {
-                throw new InterruptedException("PSM validation timed out. Please contact the developers.");
+                throw new InterruptedException("Peptide validation timed out. Please contact the developers.");
             }
             for (PeptideNormalizerRunnable runnable : runnables) {
                 for (String reagent : runnable.getAllRawRatios().keySet()) {
@@ -326,7 +332,7 @@ public class Normalizer {
      * @throws java.lang.InterruptedException exception thrown whenever a
      * threading error occurred
      */
-    public void setProteinNormalizationFactors(ReporterIonQuantification reporterIonQuantification, RatioEstimationSettings ratioEstimationSettings, NormalizationSettings normalizationSettings, 
+    public void setProteinNormalizationFactors(ReporterIonQuantification reporterIonQuantification, RatioEstimationSettings ratioEstimationSettings, NormalizationSettings normalizationSettings,
             Identification identification, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ProcessingPreferences processingPreferences, ExceptionHandler exceptionHandler, WaitingHandler waitingHandler)
             throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
 
@@ -344,10 +350,11 @@ public class Normalizer {
         if (normalizationSettings.getPeptideNormalization() != NormalizationType.none) {
 
             if (waitingHandler != null) {
-                waitingHandler.setWaitingText("Ratio Normalization. Please Wait...");
+                waitingHandler.setWaitingText("Protein Ratio Normalization. Please Wait...");
                 waitingHandler.resetPrimaryProgressCounter();
                 waitingHandler.setPrimaryProgressCounterIndeterminate(false);
-                waitingHandler.setMaxPrimaryProgressCounter(identification.getPeptideIdentification().size());
+                waitingHandler.setMaxPrimaryProgressCounter(identification.getPeptideIdentification().size() + 1);
+                waitingHandler.increasePrimaryProgressCounter();
             }
 
             ProteinMatchesIterator proteinMatchesIterator = identification.getProteinMatchesIterator(parameters, true, parameters, true, parameters, waitingHandler);
@@ -360,7 +367,9 @@ public class Normalizer {
             ArrayList<ProteinNormalizerRunnable> runnables = new ArrayList<ProteinNormalizerRunnable>(nThreads);
 
             for (int i = 1; i <= nThreads && waitingHandler != null && !waitingHandler.isRunCanceled(); i++) {
-                ProteinNormalizerRunnable runnable = new ProteinNormalizerRunnable(reporterIonQuantification, quantificationFeaturesGenerator, identification, proteinMatchesIterator, seeds, exclusion, ratioEstimationSettings, waitingHandler, exceptionHandler);
+                ProteinNormalizerRunnable runnable = new ProteinNormalizerRunnable(
+                        reporterIonQuantification, quantificationFeaturesGenerator, identification, proteinMatchesIterator,
+                        seeds, exclusion, ratioEstimationSettings, waitingHandler, exceptionHandler);
                 pool.submit(runnable);
                 runnables.add(runnable);
             }
@@ -370,7 +379,7 @@ public class Normalizer {
             }
             pool.shutdown();
             if (!pool.awaitTermination(7, TimeUnit.DAYS)) {
-                throw new InterruptedException("PSM validation timed out. Please contact the developers.");
+                throw new InterruptedException("Protein validation timed out. Please contact the developers.");
             }
             for (ProteinNormalizerRunnable runnable : runnables) {
                 for (String reagent : runnable.getAllRawRatios().keySet()) {
@@ -456,7 +465,7 @@ public class Normalizer {
      */
     private static boolean isContaminant(HashSet<String> contaminants, ArrayList<String> accessions) {
         for (String accession : accessions) {
-            if (!contaminants.contains(accession)) {
+            if (contaminants.contains(accession)) {
                 return true;
             }
         }
@@ -544,8 +553,8 @@ public class Normalizer {
 
         @Override
         public void run() {
-            try {
 
+            try {
                 PSParameter psParameter = new PSParameter();
 
                 while (proteinMatchesIterator.hasNext()) {
@@ -583,14 +592,14 @@ public class Normalizer {
                                     }
                                 }
                             }
-
-                            if (waitingHandler != null) {
-                                if (waitingHandler.isRunCanceled()) {
-                                    return;
-                                }
-                                waitingHandler.increaseSecondaryProgressCounter();
-                            }
                         }
+                    }
+
+                    if (waitingHandler != null) {
+                        if (waitingHandler.isRunCanceled()) {
+                            return;
+                        }
+                        waitingHandler.increaseSecondaryProgressCounter();
                     }
                 }
 
@@ -706,8 +715,8 @@ public class Normalizer {
 
         @Override
         public void run() {
-            try {
 
+            try {
                 PSParameter psParameter = new PSParameter();
 
                 while (peptideMatchesIterator.hasNext()) {
@@ -745,14 +754,14 @@ public class Normalizer {
                                     }
                                 }
                             }
-
-                            if (waitingHandler != null) {
-                                if (waitingHandler.isRunCanceled()) {
-                                    return;
-                                }
-                                waitingHandler.increaseSecondaryProgressCounter();
-                            }
                         }
+                    }
+
+                    if (waitingHandler != null) {
+                        if (waitingHandler.isRunCanceled()) {
+                            return;
+                        }
+                        waitingHandler.increaseSecondaryProgressCounter();
                     }
                 }
 
@@ -868,8 +877,8 @@ public class Normalizer {
 
         @Override
         public void run() {
-            try {
 
+            try {
                 PSParameter psParameter = new PSParameter();
 
                 while (psmIterator.hasNext()) {
@@ -913,15 +922,15 @@ public class Normalizer {
                                         }
                                     }
                                 }
-
-                                if (waitingHandler != null) {
-                                    if (waitingHandler.isRunCanceled()) {
-                                        return;
-                                    }
-                                    waitingHandler.increaseSecondaryProgressCounter();
-                                }
                             }
                         }
+                    }
+                    
+                    if (waitingHandler != null) {
+                        if (waitingHandler.isRunCanceled()) {
+                            return;
+                        }
+                        waitingHandler.increaseSecondaryProgressCounter();
                     }
                 }
 

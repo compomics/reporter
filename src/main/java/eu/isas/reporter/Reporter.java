@@ -52,17 +52,18 @@ import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
  * @author Harald Barsnes
  */
 public class Reporter {
-    
+
     /**
-     * The location of the folder used for the database. //@TODO: make this editable by the user
+     * The location of the folder used for the database. //@TODO: make this
+     * editable by the user
      */
     private static String MATCHES_FOLDER = "resources/matches";
-    
+
     /**
      * Empty constructor for instantiation purposes.
      */
     public Reporter() {
-        
+
     }
 
     /**
@@ -186,22 +187,24 @@ public class Reporter {
 
             PeptideMatch peptideMatch = peptideMatchesIterator.next();
             Peptide peptide = peptideMatch.getTheoreticPeptide();
-            boolean modified = false;
-            for (ModificationMatch modificationMatch : peptide.getModificationMatches()) {
-                if (modificationMatch.getTheoreticPtm().equals(ptmName) && modificationMatch.isConfident()) {
-                    String leadingAccession = proteinMatch.getMainMatch();
-                    Protein leadingProtein = SequenceFactory.getInstance().getProtein(leadingAccession);
-                    ArrayList<Integer> peptideIndexes = leadingProtein.getPeptideStart(peptide.getSequence(),
-                            sequenceMatchingPreferences);
-                    for (int index : peptideIndexes) {
-                        if (index + modificationMatch.getModificationSite() == site) {
-                            modified = true;
-                            break;
+            if (peptide.isModified()) {
+                boolean modified = false;
+                for (ModificationMatch modificationMatch : peptide.getModificationMatches()) {
+                    if (modificationMatch.getTheoreticPtm().equals(ptmName) && modificationMatch.isConfident()) {
+                        String leadingAccession = proteinMatch.getMainMatch();
+                        Protein leadingProtein = SequenceFactory.getInstance().getProtein(leadingAccession);
+                        ArrayList<Integer> peptideIndexes = leadingProtein.getPeptideStart(peptide.getSequence(),
+                                sequenceMatchingPreferences);
+                        for (int index : peptideIndexes) {
+                            if (index + modificationMatch.getModificationSite() == site) {
+                                modified = true;
+                                break;
+                            }
                         }
                     }
-                }
-                if (modified) {
-                    break;
+                    if (modified) {
+                        break;
+                    }
                 }
             }
             if (QuantificationFilter.isPeptideValid(ratioEstimationSettings, identification, searchParameters, peptideMatch)) {
@@ -348,11 +351,9 @@ public class Reporter {
                             String key = Spectrum.getSpectrumKey(refFile, spectrumTitle);
                             spectra.add(key);
                         }
-                    } else {
-                        if (Math.abs(precursor.getMz() - refPrecursor.getMz()) <= reporterIonSelectionSettings.getPrecursorMzTolerance()) {
-                            String key = Spectrum.getSpectrumKey(refFile, spectrumTitle);
-                            spectra.add(key);
-                        }
+                    } else if (Math.abs(precursor.getMz() - refPrecursor.getMz()) <= reporterIonSelectionSettings.getPrecursorMzTolerance()) {
+                        String key = Spectrum.getSpectrumKey(refFile, spectrumTitle);
+                        spectra.add(key);
                     }
                 }
             }

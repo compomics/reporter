@@ -96,9 +96,11 @@ public class QuantificationFilter {
         }
 
         // check modifications
-        for (ModificationMatch modificationMatch : peptide.getModificationMatches()) {
-            if (ratioEstimationSettings.getExcludingPtms().contains(modificationMatch.getTheoreticPtm())) {
-                return false;
+        if (peptide.isModified()) {
+            for (ModificationMatch modificationMatch : peptide.getModificationMatches()) {
+                if (ratioEstimationSettings.getExcludingPtms().contains(modificationMatch.getTheoreticPtm())) {
+                    return false;
+                }
             }
         }
 

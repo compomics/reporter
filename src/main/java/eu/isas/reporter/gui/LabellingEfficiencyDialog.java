@@ -387,13 +387,11 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
                                 }
                             }
                         }
-                    } else {
-                        if (newFile.getName().toLowerCase().endsWith(".mgf")) {
-                            if (!mgfFiles.contains(newFile)) {
-                                mgfFiles.add(newFile);
-                                cpsParent.getProjectDetails().addSpectrumFile(newFile);
-                                spectrumFactory.addSpectra(newFile, null); // @TODO: add progress dialog!!
-                            }
+                    } else if (newFile.getName().toLowerCase().endsWith(".mgf")) {
+                        if (!mgfFiles.contains(newFile)) {
+                            mgfFiles.add(newFile);
+                            cpsParent.getProjectDetails().addSpectrumFile(newFile);
+                            spectrumFactory.addSpectra(newFile, null); // @TODO: add progress dialog!!
                         }
                     }
 
@@ -568,7 +566,7 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
     }
 
     /**
-     * Estimates the labelling efficiency for the variable modifications in the
+     * Estimates the labeling efficiency for the variable modifications in the
      * cps parent.
      *
      *
@@ -621,9 +619,11 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
                     nPossibleMap.put(ptmName, nPossible);
                 }
                 nNew = 0;
-                for (ModificationMatch modificationMatch : peptide.getModificationMatches()) {
-                    if (modificationMatch.isVariable() && modificationMatch.getTheoreticPtm().equals(ptmName)) {
-                        nNew++;
+                if (peptide.isModified()) {
+                    for (ModificationMatch modificationMatch : peptide.getModificationMatches()) {
+                        if (modificationMatch.isVariable() && modificationMatch.getTheoreticPtm().equals(ptmName)) {
+                            nNew++;
+                        }
                     }
                 }
                 if (nNew > 0) {
@@ -632,7 +632,6 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
                     nModifiedMap.put(ptmName, nModified);
                 }
             }
-
         }
 
         for (String ptmName : sortedModifications) {
@@ -643,7 +642,6 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
             labellingEfficiency.put(ptmName, efficiency);
 
         }
-
     }
 
     /**
