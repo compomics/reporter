@@ -131,7 +131,6 @@ public class ReporterPsmSection {
      * @param decoys whether decoy matches should be exported as well
      * @param waitingHandler the waiting handler
      * 
-     * 
      * @throws java.sql.SQLException exception thrown whenever an error occurred while interacting with the database
      * @throws java.io.IOException exception thrown whenever an error occurred while interacting with a file
      * @throws java.lang.ClassNotFoundException exception thrown whenever an error occurred while deserializing an object
@@ -260,11 +259,6 @@ public class ReporterPsmSection {
                         ArrayList<String> sampleIndexes = new ArrayList<String>(reporterIonQuantification.getSampleIndexes());
                         Collections.sort(sampleIndexes);
                         for (ExportFeature exportFeature : quantificationFeatures) {
-                            if (!first) {
-                                writer.addSeparator();
-                            } else {
-                                first = false;
-                            }
                             ReporterPsmFeatures psmFeature = (ReporterPsmFeatures) exportFeature;
                             if (psmFeature.hasChannels()) {
                                 for (String sampleIndex : sampleIndexes) {
@@ -283,7 +277,6 @@ public class ReporterPsmSection {
                                 }
                                 writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, reporterSettings, spectrumKey, psmFeature, ""), reporterStyle);
                             }
-
                         }
                         writer.newLine();
                         if (fragmentSection != null) {

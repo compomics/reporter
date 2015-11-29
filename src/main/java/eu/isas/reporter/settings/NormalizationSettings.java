@@ -189,7 +189,7 @@ public class NormalizationSettings implements Serializable {
      */
     public HashSet<String> getStableProteins() throws IOException {
         if (stableProteinsFastaFile != null) {
-            FastaIndex fastaIndex = SequenceFactory.getFastaIndex(stableProteinsFastaFile, true, null);
+            FastaIndex fastaIndex = SequenceFactory.getFastaIndex(stableProteinsFastaFile, false, null);
             return new HashSet<String>(fastaIndex.getIndexes().keySet());
         }
         return null;
@@ -206,7 +206,7 @@ public class NormalizationSettings implements Serializable {
      */
     public HashSet<String> getContaminants() throws IOException {
         if (contaminantsFastaFile != null) {
-            FastaIndex fastaIndex = SequenceFactory.getFastaIndex(contaminantsFastaFile, true, null);
+            FastaIndex fastaIndex = SequenceFactory.getFastaIndex(contaminantsFastaFile, false, null);
             return new HashSet<String>(fastaIndex.getIndexes().keySet());
         }
         return null;
