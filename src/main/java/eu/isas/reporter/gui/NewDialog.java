@@ -808,6 +808,7 @@ public class NewDialog extends javax.swing.JDialog {
         ReporterSettings newSettings = reporterSettingsDialog.getReporterSettings();
         if (!reporterSettingsDialog.isCanceled()) {
             reporterSettings = newSettings;
+            quantificationPreferencesTxt.setText("Custom Settings");
         }
     }//GEN-LAST:event_editQuantPrefsButtonActionPerformed
 
