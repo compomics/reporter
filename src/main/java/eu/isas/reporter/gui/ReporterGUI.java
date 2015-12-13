@@ -53,6 +53,7 @@ import eu.isas.reporter.preferences.DisplayPreferences;
 import eu.isas.reporter.quantificationdetails.ProteinQuantificationDetails;
 import eu.isas.reporter.utils.Properties;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Toolkit;
 import java.io.*;
@@ -65,7 +66,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import javax.swing.Box;
 import javax.swing.JOptionPane;
+import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
+import javax.swing.UIDefaults;
+import javax.swing.UIManager;
 import net.jimmc.jshortcut.JShellLink;
 import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
 
@@ -1453,6 +1457,11 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         try {
             // update the look and feel after adding the panels
             UtilitiesGUIDefaults.setLookAndFeel();
+            
+            // fix for the scroll bar thumb disappearing...
+            LookAndFeel lookAndFeel = UIManager.getLookAndFeel();
+            UIDefaults defaults = lookAndFeel.getDefaults();
+            defaults.put("ScrollBar.minimumThumbSize", new Dimension(30, 30));
         } catch (Exception w) {
         }
     }
