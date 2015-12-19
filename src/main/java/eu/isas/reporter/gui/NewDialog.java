@@ -219,7 +219,7 @@ public class NewDialog extends javax.swing.JDialog {
         // disable the user to drag column headers to reorder columns
         sampleAssignmentTable.getTableHeader().setReorderingAllowed(false);
 
-        processingTxt.setText(processingPreferences.getnThreads() + " threads");
+        processingTxt.setText(processingPreferences.getnThreads() + " cores");
     }
 
     /**
@@ -893,11 +893,16 @@ public class NewDialog extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_loadButtonActionPerformed
 
+    /**
+     * Edit the processing preferences.
+     * 
+     * @param evt 
+     */
     private void editProcessingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editProcessingButtonActionPerformed
         ProcessingPreferencesDialog processingPreferencesDialog = new ProcessingPreferencesDialog(this, reporterGui, processingPreferences, true);
         if (!processingPreferencesDialog.isCanceled()) {
             processingPreferences = processingPreferencesDialog.getProcessingPreferences();
-            processingTxt.setText(processingPreferences.getnThreads() + " threads");
+            processingTxt.setText(processingPreferences.getnThreads() + " cores");
         }
     }//GEN-LAST:event_editProcessingButtonActionPerformed
 
