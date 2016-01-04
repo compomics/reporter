@@ -709,12 +709,11 @@ public class NewDialog extends javax.swing.JDialog {
 
                         int cpt = 0;
                         for (File newFile : newFiles) {
-
                             progressDialog.setWaitingText("Loading Spectrum Files (" + ++cpt + " of " + newFiles.size() + "). Please Wait...");
                             progressDialog.increasePrimaryProgressCounter();
                             mgfFiles.add(newFile);
                             cpsParent.getProjectDetails().addSpectrumFile(newFile);
-                            spectrumFactory.addSpectra(newFile, progressDialog); // @TODO: add progress dialog!!
+                            spectrumFactory.addSpectra(newFile, null); // @TODO: add progress dialog!!
                         }
 
                         progressDialog.setRunFinished();
@@ -998,10 +997,10 @@ public class NewDialog extends javax.swing.JDialog {
     // End of variables declaration//GEN-END:variables
 
     /**
-     * Verifies that the fasta file is loaded and updates the corresponding text
+     * Verifies that the FASTA file is loaded and updates the corresponding text
      * box.
      *
-     * @return a boolean indicating that the fasta file is loaded
+     * @return a boolean indicating that the FASTA file is loaded
      */
     private boolean verifyFastaFile() {
         SequenceFactory sequenceFactory = SequenceFactory.getInstance();
@@ -1010,7 +1009,7 @@ public class NewDialog extends javax.swing.JDialog {
             fastaTxt.setText(fastaFile.getName());
             return true;
         }
-        String errorText = "Fasta file not found or incorrectly loaded:\n" + getSearchParameters().getFastaFile().getName()
+        String errorText = "FASTA file not found or incorrectly loaded:\n" + getSearchParameters().getFastaFile().getName()
                 + "\nPlease locate it manually.";
         JOptionPane.showMessageDialog(this,
                 errorText,
