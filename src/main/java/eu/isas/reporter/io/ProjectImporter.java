@@ -109,23 +109,11 @@ public class ProjectImporter {
 
             waitingHandler.setWaitingText("Loading FASTA File. Please Wait...");
 
-            boolean fileFound;
             try {
-                fileFound = cpsParent.loadFastaFile(new File(lastSelectedFolder.getLastSelectedFolder()), waitingHandler);
+                cpsParent.loadFastaFile(new File(lastSelectedFolder.getLastSelectedFolder()), waitingHandler);
             } catch (Exception e) {
-                fileFound = false;
-            }
-
-            if (!fileFound) {
-                String errorText = "An error occurred while reading:\n" + cpsParent.getIdentificationParameters().getSearchParameters().getFastaFile() + "."
-                        + "\n\nPlease select the file manually.";
-                if (owner != null) {
-                    JOptionPane.showMessageDialog(owner,
-                            errorText,
-                            "Fasta File Error", JOptionPane.ERROR_MESSAGE);
-                } else {
-                    throw new IllegalArgumentException(errorText);
-                }
+                    //Ignore
+                    e.printStackTrace(); 
             }
 
             if (waitingHandler.isRunCanceled()) {
@@ -147,27 +135,16 @@ public class ProjectImporter {
                 waitingHandler.setWaitingText("Loading Spectrum Files (" + ++cpt + " of " + total + "). Please Wait...");
                 waitingHandler.increasePrimaryProgressCounter();
 
-                boolean found;
                 try {
-                    found = cpsParent.loadSpectrumFile(spectrumFileName, waitingHandler);
+                    cpsParent.loadSpectrumFile(spectrumFileName, waitingHandler);
                 } catch (Exception e) {
-                    found = false;
-                }
-                if (!found) {
-                    String errorText = "Spectrum file not found: \'" + spectrumFileName + "\'."
-                            + "\nPlease select the spectrum file or the folder containing it manually.";
-                    if (owner != null) {
-                        JOptionPane.showMessageDialog(owner,
-                                errorText,
-                                "Spectrum File Error", JOptionPane.ERROR_MESSAGE);
-                    } else {
-                        throw new IllegalArgumentException(errorText);
-                    }
+                    //Ignore
+                    e.printStackTrace(); 
                 }
 
                 if (waitingHandler.isRunCanceled()) {
                     waitingHandler.setRunFinished();
-                    return;
+                    break;
                 }
             }
             waitingHandler.setPrimaryProgressCounterIndeterminate(true);

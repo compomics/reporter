@@ -209,7 +209,7 @@ public class NewDialog extends javax.swing.JDialog {
      * Set up the GUI.
      */
     private void setUpGui() {
-        
+
         // make sure that the scroll panes are see-through
         sampleAssignmentJScrollPane.getViewport().setOpaque(false);
 
@@ -637,8 +637,8 @@ public class NewDialog extends javax.swing.JDialog {
     private void addSpectraFilesJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addSpectraFilesJButtonActionPerformed
 
         // @TODO: add mgf validation etc like for PeptideShaker
-        JFileChooser fileChooser = new JFileChooser(reporterGui.getLastSelectedFolder().getLastSelectedFolder());
-        fileChooser.setDialogTitle("Select Spectra File(s)");
+        final JFileChooser fileChooser = new JFileChooser(reporterGui.getLastSelectedFolder().getLastSelectedFolder());
+        fileChooser.setDialogTitle("Select Spectrum File(s)");
         fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         fileChooser.setMultiSelectionEnabled(true);
 
@@ -657,38 +657,76 @@ public class NewDialog extends javax.swing.JDialog {
 
         int returnVal = fileChooser.showDialog(this.getParent(), "Add");
 
-        try {
-            if (returnVal == JFileChooser.APPROVE_OPTION) {
-                for (File newFile : fileChooser.getSelectedFiles()) {
-                    if (newFile.isDirectory()) {
-                        File[] tempFiles = newFile.listFiles();
-                        for (File file : tempFiles) {
-                            if (file.getName().toLowerCase().endsWith(".mgf")) {
-                                if (!mgfFiles.contains(file)) {
-                                    mgfFiles.add(file);
-                                    cpsParent.getProjectDetails().addSpectrumFile(file);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            if (welcomeDialog != null) {
+                progressDialog = new ProgressDialogX(welcomeDialog, reporterGui,
+                        Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
+                        Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
+            } else {
+                progressDialog = new ProgressDialogX(this, reporterGui,
+                        Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
+                        Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
+            }
+
+            progressDialog.setPrimaryProgressCounterIndeterminate(true);
+            progressDialog.setWaitingText("Loading Spectrum Files. Please Wait...");
+
+            new Thread(new Runnable() {
+                public void run() {
+                    try {
+                        progressDialog.setVisible(true);
+                    } catch (IndexOutOfBoundsException e) {
+                        // ignore
+                    }
+                }
+            }, "ProgressDialog").start();
+
+            new Thread("ImportThread") {
+                @Override
+                public void run() {
+                    try {
+                        ArrayList<File> newFiles = new ArrayList<File>();
+                        for (File newFile : fileChooser.getSelectedFiles()) {
+                            if (newFile.isDirectory()) {
+                                File[] tempFiles = newFile.listFiles();
+                                for (File file : tempFiles) {
+                                    if (file.getName().toLowerCase().endsWith(".mgf")) {
+                                        if (!mgfFiles.contains(file) && !newFiles.contains(file)) {
+                                            newFiles.add(file);
+                                        }
+                                    }
+                                }
+                            } else {
+                                if (newFile.getName().toLowerCase().endsWith(".mgf")) {
+                                    if (!mgfFiles.contains(newFile) && !newFiles.contains(newFile)) {
+                                        newFiles.add(newFile);
+                                    }
                                 }
                             }
+
+                            reporterGui.getLastSelectedFolder().setLastSelectedFolder(newFile.getPath());
                         }
-                    } else {
-                        if (newFile.getName().toLowerCase().endsWith(".mgf")) {
-                            if (!mgfFiles.contains(newFile)) {
-                                mgfFiles.add(newFile);
-                                cpsParent.getProjectDetails().addSpectrumFile(newFile);
-                                spectrumFactory.addSpectra(newFile, null); // @TODO: add progress dialog!!
-                            }
+
+                        int cpt = 0;
+                        for (File newFile : newFiles) {
+
+                            progressDialog.setWaitingText("Loading Spectrum Files (" + ++cpt + " of " + newFiles.size() + "). Please Wait...");
+                            progressDialog.increasePrimaryProgressCounter();
+                            mgfFiles.add(newFile);
+                            cpsParent.getProjectDetails().addSpectrumFile(newFile);
+                            spectrumFactory.addSpectra(newFile, progressDialog); // @TODO: add progress dialog!!
                         }
+
+                        progressDialog.setRunFinished();
+
+                    } catch (IOException e) {
+                        progressDialog.setRunFinished();
+                        e.printStackTrace();
+                        JOptionPane.showMessageDialog(NewDialog.this, "An error occurred while reading the mgf file.", "Mgf Error", JOptionPane.WARNING_MESSAGE);
                     }
-
-                    reporterGui.getLastSelectedFolder().setLastSelectedFolder(newFile.getPath());
+                    verifySpectrumFiles();
                 }
-
-                txtSpectraFileLocation.setText(mgfFiles.size() + " file(s) selected");
-            }
-        } catch (IOException e) {
-            progressDialog.setRunFinished();
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "An error occurred while reading the mgf file.", "Mgf Error", JOptionPane.WARNING_MESSAGE);
+            }.start();
         }
     }//GEN-LAST:event_addSpectraFilesJButtonActionPerformed
 
@@ -710,14 +748,13 @@ public class NewDialog extends javax.swing.JDialog {
      * @param evt
      */
     private void addDbButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addDbButtonActionPerformed
-        JFileChooser fileChooser;
 
 //        if (searchParameters != null && searchParameters.getFastaFile() != null && searchParameters.getFastaFile().exists()) {
 //            fileChooser = new JFileChooser(searchParameters.getFastaFile());
 //        } else {
 //            fileChooser = new JFileChooser(peptideShakerGUI.getLastSelectedFolder());
 //        }
-        fileChooser = new JFileChooser(reporterGui.getLastSelectedFolder().getLastSelectedFolder());
+        final JFileChooser fileChooser = new JFileChooser(reporterGui.getLastSelectedFolder().getLastSelectedFolder());
 
         fileChooser.setDialogTitle("Select FASTA File(s)");
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -741,23 +778,47 @@ public class NewDialog extends javax.swing.JDialog {
         fileChooser.setFileFilter(filter);
         int returnVal = fileChooser.showDialog(this.getParent(), "Open");
         if (returnVal == JFileChooser.APPROVE_OPTION) {
-            File fastaFile = fileChooser.getSelectedFile();
-            reporterGui.getLastSelectedFolder().setLastSelectedFolder(fastaFile.getAbsolutePath());
-            try {
-                SequenceFactory.getInstance().loadFastaFile(fastaFile, null); // @TODO: use waiting handler
-                getSearchParameters().setFastaFile(fastaFile);
-                fastaTxt.setText(fastaFile.getName());
-            } catch (FileNotFoundException ex) {
-                ex.printStackTrace();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            } catch (ClassNotFoundException ex) {
-                ex.printStackTrace();
-            } catch (StringIndexOutOfBoundsException ex) {
-                ex.printStackTrace();
-            } catch (IllegalArgumentException ex) {
-                ex.printStackTrace();
+            if (welcomeDialog != null) {
+                progressDialog = new ProgressDialogX(welcomeDialog, reporterGui,
+                        Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
+                        Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
+            } else {
+                progressDialog = new ProgressDialogX(this, reporterGui,
+                        Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
+                        Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
             }
+
+            progressDialog.setPrimaryProgressCounterIndeterminate(true);
+            progressDialog.setWaitingText("Loading Fasta File. Please Wait...");
+
+            new Thread(new Runnable() {
+                public void run() {
+                    try {
+                        progressDialog.setVisible(true);
+                    } catch (IndexOutOfBoundsException e) {
+                        // ignore
+                    }
+                }
+            }, "ProgressDialog").start();
+
+            new Thread("ImportThread") {
+                @Override
+                public void run() {
+                    File fastaFile = fileChooser.getSelectedFile();
+                    reporterGui.getLastSelectedFolder().setLastSelectedFolder(fastaFile.getAbsolutePath());
+                    try {
+                        SequenceFactory.getInstance().loadFastaFile(fastaFile, progressDialog);
+
+                        progressDialog.setRunFinished();
+
+                    } catch (Exception e) {
+                        progressDialog.setRunFinished();
+                        e.printStackTrace();
+                        JOptionPane.showMessageDialog(NewDialog.this, "An error occurred while reading the mgf file.", "Mgf Error", JOptionPane.WARNING_MESSAGE);
+                    }
+                    verifyFastaFile();
+                }
+            }.start();
         }
     }//GEN-LAST:event_addDbButtonActionPerformed
 
@@ -895,8 +956,8 @@ public class NewDialog extends javax.swing.JDialog {
 
     /**
      * Edit the processing preferences.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void editProcessingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editProcessingButtonActionPerformed
         ProcessingPreferencesDialog processingPreferencesDialog = new ProcessingPreferencesDialog(this, reporterGui, processingPreferences, true);
@@ -935,6 +996,65 @@ public class NewDialog extends javax.swing.JDialog {
     private javax.swing.JTextField txtIdFileLocation;
     private javax.swing.JTextField txtSpectraFileLocation;
     // End of variables declaration//GEN-END:variables
+
+    /**
+     * Verifies that the fasta file is loaded and updates the corresponding text
+     * box.
+     *
+     * @return a boolean indicating that the fasta file is loaded
+     */
+    private boolean verifyFastaFile() {
+        SequenceFactory sequenceFactory = SequenceFactory.getInstance();
+        File fastaFile = sequenceFactory.getCurrentFastaFile();
+        if (fastaFile != null) {
+            fastaTxt.setText(fastaFile.getName());
+            return true;
+        }
+        String errorText = "Fasta file not found or incorrectly loaded:\n" + getSearchParameters().getFastaFile().getName()
+                + "\nPlease locate it manually.";
+        JOptionPane.showMessageDialog(this,
+                errorText,
+                "Spectrum File(s) Not Found", JOptionPane.ERROR_MESSAGE);
+        return false;
+    }
+
+    /**
+     * Verifies that all spectrum files are loaded and updates the corresponding
+     * text box.
+     *
+     * @return a boolean indicating that all spectrum files are loaded
+     */
+    private boolean verifySpectrumFiles() {
+        boolean allFound = true;
+        String missing = "";
+        for (String spectrumFileName : cpsParent.getIdentification().getSpectrumFiles()) {
+            boolean found = false;
+            for (File spectrumFile : mgfFiles) {
+                if (spectrumFile.getName().equals(spectrumFileName)) {
+                    found = true;
+                }
+            }
+            if (!found) {
+                allFound = false;
+                missing += spectrumFileName + "\n";
+            }
+        }
+        if (!allFound) {
+            String errorText = "Spectrum file(s) not found:\n" + missing
+                    + "\nPlease locate them manually.";
+            JOptionPane.showMessageDialog(this,
+                    errorText,
+                    "Spectrum File(s) Not Found", JOptionPane.ERROR_MESSAGE);
+        }
+        if (mgfFiles.size() > 1) {
+            txtSpectraFileLocation.setText(mgfFiles.size() + " files loaded"); //@TODO: allow editing
+        } else if (mgfFiles.size() == 1) {
+            txtSpectraFileLocation.setText(mgfFiles.get(0).getName()); //@TODO: allow editing
+        } else {
+            txtSpectraFileLocation.setText("");
+        }
+        return allFound;
+    }
 
     /**
      * Returns the reporter method corresponding to the given name.
@@ -1041,8 +1161,8 @@ public class NewDialog extends javax.swing.JDialog {
 
                 loadButton.setEnabled(true);
                 editQuantPrefsButton.setEnabled(true);
-                txtSpectraFileLocation.setText(cpsParent.getIdentification().getSpectrumFiles().size() + " files loaded"); //@TODO: allow editing
-                fastaTxt.setText(cpsParent.getIdentificationParameters().getSearchParameters().getFastaFile().getName());
+                verifySpectrumFiles();
+                verifyFastaFile();
                 txtIdFileLocation.setText(cpsParent.getCpsFile().getName());
 
                 cache = new ObjectsCache();
