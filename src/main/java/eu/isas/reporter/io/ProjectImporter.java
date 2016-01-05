@@ -125,15 +125,12 @@ public class ProjectImporter {
             ArrayList<String> spectrumFiles = identification.getSpectrumFiles();
 
             waitingHandler.setWaitingText("Loading Spectrum Files. Please Wait...");
-            waitingHandler.setPrimaryProgressCounterIndeterminate(false);
-            waitingHandler.setMaxPrimaryProgressCounter(spectrumFiles.size() + 1);
-            waitingHandler.increasePrimaryProgressCounter();
+            waitingHandler.setPrimaryProgressCounterIndeterminate(true);
 
             int cpt = 0, total = identification.getSpectrumFiles().size();
             for (String spectrumFileName : spectrumFiles) {
 
                 waitingHandler.setWaitingText("Loading Spectrum Files (" + ++cpt + " of " + total + "). Please Wait...");
-                waitingHandler.increasePrimaryProgressCounter();
 
                 try {
                     cpsParent.loadSpectrumFile(spectrumFileName, waitingHandler);
