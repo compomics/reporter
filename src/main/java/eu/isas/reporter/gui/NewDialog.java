@@ -710,10 +710,9 @@ public class NewDialog extends javax.swing.JDialog {
                         int cpt = 0;
                         for (File newFile : newFiles) {
                             progressDialog.setWaitingText("Loading Spectrum Files (" + ++cpt + " of " + newFiles.size() + "). Please Wait...");
-                            progressDialog.increasePrimaryProgressCounter();
                             mgfFiles.add(newFile);
                             cpsParent.getProjectDetails().addSpectrumFile(newFile);
-                            spectrumFactory.addSpectra(newFile, null); // @TODO: add progress dialog!!
+                            spectrumFactory.addSpectra(newFile, progressDialog);
                         }
 
                         progressDialog.setRunFinished();
