@@ -57,8 +57,9 @@ public class QuantificationFeaturesCache {
     /**
      * Checks whether there is still memory left and empties the cache if not.
      */
-    private void adaptCacheSize() {
-        if (memoryCheck()) {
+    private synchronized void adaptCacheSize() {
+        
+        if (memoryCheck() || peptideRatios.isEmpty() && proteinRatios.isEmpty() && spectrumRatios.isEmpty() && proteinPtmRatios.isEmpty()) {
             return;
         }
         for (int i = 1; i < 10; i++) {
@@ -96,7 +97,7 @@ public class QuantificationFeaturesCache {
             }
         }
         for (String ptm : proteinPtmRatios.keySet()) {
-            proteinPtmRatios.get(ptm).clear();
+            proteinPtmRatios.remove(ptm);
             if (memoryCheck()) {
                 return;
             }
