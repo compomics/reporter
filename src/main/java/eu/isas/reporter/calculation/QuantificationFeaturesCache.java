@@ -47,6 +47,10 @@ public class QuantificationFeaturesCache {
      * as the PSM ratios.
      */
     private HashMap<String, HashMap<String, SpectrumQuantificationDetails>> spectrumRatios = new HashMap<String, HashMap<String, SpectrumQuantificationDetails>>();
+    /**
+     * Boolean indicating whether a thread is editing the cache.
+     */
+    private boolean editing = false;
 
     /**
      * Constructor.
@@ -57,35 +61,64 @@ public class QuantificationFeaturesCache {
     /**
      * Checks whether there is still memory left and empties the cache if not.
      */
-    private synchronized void adaptCacheSize() {
-        
-        if (memoryCheck() || peptideRatios.isEmpty() && proteinRatios.isEmpty() && spectrumRatios.isEmpty() && proteinPtmRatios.isEmpty()) {
+    private void adaptCacheSize() {
+        if (!editing
+                && !memoryCheck()
+                && !isEmpty()) {
+            adaptCacheSizeSynchronized();
+        }
+    }
+
+    /**
+     * Indicates whether the cache is empty
+     *
+     * @return
+     */
+    public boolean isEmpty() {
+        return peptideRatios.isEmpty()
+                && proteinRatios.isEmpty()
+                && spectrumRatios.isEmpty()
+                && proteinPtmRatios.isEmpty();
+    }
+
+    /**
+     * Checks whether there is still memory left and empties the cache if not.
+     */
+    private synchronized void adaptCacheSizeSynchronized() {
+
+        if (editing || memoryCheck() || isEmpty()) {
             return;
         }
+        editing = true;
         for (int i = 1; i < 10; i++) {
             peptideRatios.remove(i);
             if (memoryCheck()) {
+                editing = false;
                 return;
             }
         }
         for (int i = 1; i < 10; i++) {
             proteinRatios.remove(i);
             if (memoryCheck()) {
+                editing = false;
                 return;
             }
         }
         spectrumRatios.clear();
         if (memoryCheck()) {
+            editing = false;
             return;
         }
         psmRatios.clear();
         if (memoryCheck()) {
+            editing = false;
             return;
         }
         int keyMax = Collections.max(peptideRatios.keySet());
         for (int i = 10; i <= keyMax; i++) {
             peptideRatios.remove(i);
             if (memoryCheck()) {
+                editing = false;
                 return;
             }
         }
@@ -93,12 +126,14 @@ public class QuantificationFeaturesCache {
         for (int i = 10; i <= keyMax; i++) {
             proteinRatios.remove(i);
             if (memoryCheck()) {
+                editing = false;
                 return;
             }
         }
         for (String ptm : proteinPtmRatios.keySet()) {
             proteinPtmRatios.remove(ptm);
             if (memoryCheck()) {
+                editing = false;
                 return;
             }
         }
@@ -122,13 +157,15 @@ public class QuantificationFeaturesCache {
      * @param matchKey the key of the protein match
      * @param matchQuantificationDetails The protein quantification details
      */
-    public void addProteinMatchQuantificationDetails(int nPeptides, String matchKey, ProteinQuantificationDetails matchQuantificationDetails) {
+    public synchronized void addProteinMatchQuantificationDetails(int nPeptides, String matchKey, ProteinQuantificationDetails matchQuantificationDetails) {
+        editing = true;
         HashMap<String, ProteinQuantificationDetails> submap = proteinRatios.get(nPeptides);
         if (submap == null) {
             submap = new HashMap<String, ProteinQuantificationDetails>();
             proteinRatios.put(nPeptides, submap);
         }
         submap.put(matchKey, matchQuantificationDetails);
+        editing = false;
         adaptCacheSize();
     }
 
@@ -158,7 +195,8 @@ public class QuantificationFeaturesCache {
      * @param site the site of the PTM on the protein sequence
      * @param matchQuantificationDetails The protein quantification details
      */
-    public void addPtmQuantificationDetails(String ptmName, String matchKey, int site, PtmSiteQuantificationDetails matchQuantificationDetails) {
+    public synchronized void addPtmQuantificationDetails(String ptmName, String matchKey, int site, PtmSiteQuantificationDetails matchQuantificationDetails) {
+        editing = true;
         HashMap<String, HashMap<String, PtmSiteQuantificationDetails>> submap = proteinPtmRatios.get(ptmName);
         if (submap == null) {
             submap = new HashMap<String, HashMap<String, PtmSiteQuantificationDetails>>();
@@ -170,6 +208,7 @@ public class QuantificationFeaturesCache {
             submap.put(matchKey, subsubmap);
         }
         subsubmap.put(site + "", matchQuantificationDetails); //@TODO: implement site key
+        editing = false;
         adaptCacheSize();
     }
 
@@ -202,13 +241,15 @@ public class QuantificationFeaturesCache {
      * @param matchKey the key of the protein match
      * @param matchQuantificationDetails The protein quantification details
      */
-    public void addPeptideMatchQuantificationDetails(int nPeptides, String matchKey, PeptideQuantificationDetails matchQuantificationDetails) {
+    public synchronized void addPeptideMatchQuantificationDetails(int nPeptides, String matchKey, PeptideQuantificationDetails matchQuantificationDetails) {
+        editing = true;
         HashMap<String, PeptideQuantificationDetails> submap = peptideRatios.get(nPeptides);
         if (submap == null) {
             submap = new HashMap<String, PeptideQuantificationDetails>();
             peptideRatios.put(nPeptides, submap);
         }
         submap.put(matchKey, matchQuantificationDetails);
+        editing = false;
         adaptCacheSize();
     }
 
@@ -236,7 +277,8 @@ public class QuantificationFeaturesCache {
      * @param matchKey the key of spectrum
      * @param matchQuantificationDetails The protein quantification details
      */
-    public void addPSMQuantificationDetails(String matchKey, PsmQuantificationDetails matchQuantificationDetails) {
+    public synchronized void addPSMQuantificationDetails(String matchKey, PsmQuantificationDetails matchQuantificationDetails) {
+        editing = true;
         String spectrumFile = Spectrum.getSpectrumFile(matchKey);
         HashMap<String, PsmQuantificationDetails> submap = psmRatios.get(spectrumFile);
         if (submap == null) {
@@ -244,6 +286,7 @@ public class QuantificationFeaturesCache {
             psmRatios.put(spectrumFile, submap);
         }
         submap.put(matchKey, matchQuantificationDetails);
+        editing = false;
         adaptCacheSize();
     }
 
@@ -271,7 +314,8 @@ public class QuantificationFeaturesCache {
      * @param matchKey the key of spectrum
      * @param matchQuantificationDetails The protein quantification details
      */
-    public void addSpectrumQuantificationDetails(String matchKey, SpectrumQuantificationDetails matchQuantificationDetails) {
+    public synchronized void addSpectrumQuantificationDetails(String matchKey, SpectrumQuantificationDetails matchQuantificationDetails) {
+        editing = true;
         String spectrumFile = Spectrum.getSpectrumFile(matchKey);
         HashMap<String, SpectrumQuantificationDetails> submap = spectrumRatios.get(spectrumFile);
         if (submap == null) {
@@ -279,6 +323,7 @@ public class QuantificationFeaturesCache {
             spectrumRatios.put(spectrumFile, submap);
         }
         submap.put(matchKey, matchQuantificationDetails);
+        editing = false;
         adaptCacheSize();
     }
 
