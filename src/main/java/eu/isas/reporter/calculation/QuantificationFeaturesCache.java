@@ -72,7 +72,7 @@ public class QuantificationFeaturesCache {
     /**
      * Indicates whether the cache is empty
      *
-     * @return
+     * @return true if the cache is empty
      */
     public boolean isEmpty() {
         return peptideRatios.isEmpty()

@@ -1122,9 +1122,15 @@ public class NewDialog extends javax.swing.JDialog {
      */
     private void importPeptideShakerFile(final File psFile) {
 
-        progressDialog = new ProgressDialogX(this, reporterGui,
+        if (welcomeDialog != null) {
+            progressDialog = new ProgressDialogX(welcomeDialog, reporterGui,
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
+        } else {
+            progressDialog = new ProgressDialogX(this, reporterGui,
+                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
+                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
+        }
 
         progressDialog.setPrimaryProgressCounterIndeterminate(true);
         progressDialog.setTitle("Importing Project. Please Wait...");
@@ -1173,7 +1179,7 @@ public class NewDialog extends javax.swing.JDialog {
                 } else {
                     SearchParameters searchParameters = getSearchParameters();
 
-                    // Load project specific PTMs
+                    // load project specific PTMs
                     String error = PeptideShaker.loadModifications(searchParameters);
                     if (error != null) {
                         JOptionPane.showMessageDialog(NewDialog.this,
