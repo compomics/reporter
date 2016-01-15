@@ -102,6 +102,9 @@ public class Normalizer {
             for (String spectrumFile : identification.getOrderedSpectrumFileNames()) {
 
                 PsmIterator psmIterator = identification.getPsmIterator(spectrumFile, parameters, false, waitingHandler);
+                int nSpectra = identification.getSpectrumIdentification(spectrumFile).size();
+                int batchSize = Math.min(Math.max(nSpectra / 100, 100), 10000);
+                psmIterator.setBatchSize(batchSize);
                 ExecutorService pool = Executors.newFixedThreadPool(nThreads);
                 ArrayList<PsmNormalizerRunnable> runnables = new ArrayList<PsmNormalizerRunnable>(nThreads);
 
@@ -229,6 +232,9 @@ public class Normalizer {
             }
 
             PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(parameters, true, parameters, waitingHandler);
+            int nPeptides = identification.getPeptideIdentification().size();
+            int batchSize = Math.min(Math.max(nPeptides / 100, 100), 10000);
+            peptideMatchesIterator.setBatchSize(batchSize);
 
             HashSet<String> seeds = normalizationSettings.getStableProteins();
             HashSet<String> exclusion = normalizationSettings.getContaminants();
@@ -358,6 +364,9 @@ public class Normalizer {
             }
 
             ProteinMatchesIterator proteinMatchesIterator = identification.getProteinMatchesIterator(parameters, true, parameters, true, parameters, waitingHandler);
+            int nProteins = identification.getProteinIdentification().size();
+            int batchSize = Math.min(Math.max(nProteins / 100, 100), 10000);
+            proteinMatchesIterator.setBatchSize(batchSize);
 
             HashSet<String> seeds = normalizationSettings.getStableProteins();
             HashSet<String> exclusion = normalizationSettings.getContaminants();
@@ -925,7 +934,7 @@ public class Normalizer {
                             }
                         }
                     }
-                    
+
                     if (waitingHandler != null) {
                         if (waitingHandler.isRunCanceled()) {
                             return;
