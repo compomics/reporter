@@ -20,6 +20,7 @@ import com.compomics.util.gui.parameters.ProcessingPreferencesDialog;
 import com.compomics.util.gui.renderers.AlignedListCellRenderer;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
 import com.compomics.util.preferences.ProcessingPreferences;
+import eu.isas.peptideshaker.PeptideShaker;
 import eu.isas.peptideshaker.preferences.ProjectDetails;
 import eu.isas.peptideshaker.utils.CpsParent;
 import eu.isas.reporter.gui.settings.ReporterSettingsDialog;
@@ -1121,15 +1122,9 @@ public class NewDialog extends javax.swing.JDialog {
      */
     private void importPeptideShakerFile(final File psFile) {
 
-        if (welcomeDialog != null) {
-            progressDialog = new ProgressDialogX(welcomeDialog, reporterGui,
-                    Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
-                    Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
-        } else {
-            progressDialog = new ProgressDialogX(this, reporterGui,
-                    Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
-                    Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
-        }
+        progressDialog = new ProgressDialogX(this, reporterGui,
+                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
+                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
 
         progressDialog.setPrimaryProgressCounterIndeterminate(true);
         progressDialog.setTitle("Importing Project. Please Wait...");
@@ -1177,6 +1172,14 @@ public class NewDialog extends javax.swing.JDialog {
                     selectedMethod = reporterIonQuantification.getReporterMethod();
                 } else {
                     SearchParameters searchParameters = getSearchParameters();
+
+                    // Load project specific PTMs
+                    String error = PeptideShaker.loadModifications(searchParameters);
+                    if (error != null) {
+                        JOptionPane.showMessageDialog(NewDialog.this,
+                                error,
+                                "PTM Definition Changed", JOptionPane.WARNING_MESSAGE);
+                    }
 
                     // try to detect the method used
                     for (String ptmName : searchParameters.getPtmSettings().getAllModifications()) {
