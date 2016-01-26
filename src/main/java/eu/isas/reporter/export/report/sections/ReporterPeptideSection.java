@@ -232,7 +232,7 @@ public class ReporterPeptideSection {
                         psmSectionPrefix += line + ".";
                         writer.increaseDepth();
                         psmSection.writeSection(identification, identificationFeaturesGenerator, quantificationFeaturesGenerator, reporterIonQuantification, reporterSettings,
-                                shotgunProtocol, identificationParameters, peptideMatch.getSpectrumMatchesKeys(), psmSectionPrefix, validatedOnly, decoys, null);
+                                shotgunProtocol, identificationParameters, peptideMatch.getSpectrumMatchesKeys(), psmSectionPrefix, nSurroundingAA, validatedOnly, decoys, null);
                         writer.decreseDepth();
                     }
                     line++;
