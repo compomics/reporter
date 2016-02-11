@@ -120,6 +120,14 @@ public class NewDialog extends javax.swing.JDialog {
      * A reporter ion quantification object containing the input from the user.
      */
     private ReporterIonQuantification reporterIonQuantification = null;
+    /**
+     * The default reporter ion tolerance for TMT data.
+     */
+    private final double DEFAULT_REPORTER_ION_TOLERANCE_TMT = 0.0016;
+    /**
+     * The default reporter ion tolerance for iTRAQ data.
+     */
+    private final double DEFAULT_REPORTER_ION_TOLERANCE_ITRAQ = 0.05;
 
     /**
      * Constructor.
@@ -697,11 +705,9 @@ public class NewDialog extends javax.swing.JDialog {
                                         }
                                     }
                                 }
-                            } else {
-                                if (newFile.getName().toLowerCase().endsWith(".mgf")) {
-                                    if (!mgfFiles.contains(newFile) && !newFiles.contains(newFile)) {
-                                        newFiles.add(newFile);
-                                    }
+                            } else if (newFile.getName().toLowerCase().endsWith(".mgf")) {
+                                if (!mgfFiles.contains(newFile) && !newFiles.contains(newFile)) {
+                                    newFiles.add(newFile);
                                 }
                             }
 
@@ -738,6 +744,16 @@ public class NewDialog extends javax.swing.JDialog {
         sampleNames = new HashMap<String, String>();
         selectedMethod = getMethod((String) reporterMethodComboBox.getSelectedItem());
         reagents = selectedMethod.getReagentsSortedByMass();
+
+        // update the reporter ion mz tolerance
+        if (selectedMethod.getName().lastIndexOf("TMT") != -1) {
+            if (reporterSettings.getReporterIonSelectionSettings().getReporterIonsMzTolerance() > DEFAULT_REPORTER_ION_TOLERANCE_TMT) {
+                reporterSettings.getReporterIonSelectionSettings().setReporterIonsMzTolerance(DEFAULT_REPORTER_ION_TOLERANCE_TMT);
+            }
+        } else {
+            reporterSettings.getReporterIonSelectionSettings().setReporterIonsMzTolerance(DEFAULT_REPORTER_ION_TOLERANCE_ITRAQ);
+        }
+
         refresh();
     }//GEN-LAST:event_reporterMethodComboBoxActionPerformed
 
@@ -1124,12 +1140,12 @@ public class NewDialog extends javax.swing.JDialog {
 
         if (welcomeDialog != null) {
             progressDialog = new ProgressDialogX(welcomeDialog, reporterGui,
-                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
-                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
+                    Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
+                    Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
         } else {
             progressDialog = new ProgressDialogX(this, reporterGui,
-                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
-                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
+                    Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
+                    Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
         }
 
         progressDialog.setPrimaryProgressCounterIndeterminate(true);
@@ -1191,12 +1207,17 @@ public class NewDialog extends javax.swing.JDialog {
                     for (String ptmName : searchParameters.getPtmSettings().getAllModifications()) {
                         if (ptmName.contains("iTRAQ 4-plex")) {
                             selectedMethod = getMethod("iTRAQ 4-plex");
+                            reporterSettings.getReporterIonSelectionSettings().setReporterIonsMzTolerance(DEFAULT_REPORTER_ION_TOLERANCE_ITRAQ);
                             break;
                         } else if (ptmName.contains("iTRAQ 8-plex")) {
                             selectedMethod = getMethod("iTRAQ 8-plex");
+                            reporterSettings.getReporterIonSelectionSettings().setReporterIonsMzTolerance(DEFAULT_REPORTER_ION_TOLERANCE_ITRAQ);
                             break;
                         } else if (ptmName.contains("TMT 2-plex")) {
                             selectedMethod = getMethod("TMT 2-plex");
+                            if (reporterSettings.getReporterIonSelectionSettings().getReporterIonsMzTolerance() > DEFAULT_REPORTER_ION_TOLERANCE_TMT) {
+                                reporterSettings.getReporterIonSelectionSettings().setReporterIonsMzTolerance(DEFAULT_REPORTER_ION_TOLERANCE_TMT);
+                            }
                             break;
                         } else if (ptmName.contains("TMT") && ptmName.contains("6-plex")) {
                             if (searchParameters.getIonSearched1() == PeptideFragmentIon.Y_ION
@@ -1205,14 +1226,14 @@ public class NewDialog extends javax.swing.JDialog {
                             } else {
                                 selectedMethod = getMethod("TMT 6-plex (ETD)");
                             }
-                            if (reporterSettings.getReporterIonSelectionSettings().getReporterIonsMzTolerance() > 0.0016) {
-                                reporterSettings.getReporterIonSelectionSettings().setReporterIonsMzTolerance(0.0016);
+                            if (reporterSettings.getReporterIonSelectionSettings().getReporterIonsMzTolerance() > DEFAULT_REPORTER_ION_TOLERANCE_TMT) {
+                                reporterSettings.getReporterIonSelectionSettings().setReporterIonsMzTolerance(DEFAULT_REPORTER_ION_TOLERANCE_TMT);
                             }
                             break;
                         } else if (ptmName.contains("TMT") && ptmName.contains("10-plex")) {
                             selectedMethod = getMethod("TMT 10-plex");
-                            if (reporterSettings.getReporterIonSelectionSettings().getReporterIonsMzTolerance() > 0.0016) {
-                                reporterSettings.getReporterIonSelectionSettings().setReporterIonsMzTolerance(0.0016);
+                            if (reporterSettings.getReporterIonSelectionSettings().getReporterIonsMzTolerance() > DEFAULT_REPORTER_ION_TOLERANCE_TMT) {
+                                reporterSettings.getReporterIonSelectionSettings().setReporterIonsMzTolerance(DEFAULT_REPORTER_ION_TOLERANCE_TMT);
                             }
                             break;
                         }
@@ -1221,6 +1242,14 @@ public class NewDialog extends javax.swing.JDialog {
                     // no method detected, default to the first
                     if (selectedMethod == null) {
                         reporterMethodComboBox.setSelectedItem(methodsFactory.getMethodsNames()[0]);
+
+                        if (methodsFactory.getMethodsNames()[0].lastIndexOf("TMT") != -1) {
+                            if (reporterSettings.getReporterIonSelectionSettings().getReporterIonsMzTolerance() > DEFAULT_REPORTER_ION_TOLERANCE_TMT) {
+                                reporterSettings.getReporterIonSelectionSettings().setReporterIonsMzTolerance(DEFAULT_REPORTER_ION_TOLERANCE_TMT);
+                            }
+                        } else {
+                            reporterSettings.getReporterIonSelectionSettings().setReporterIonsMzTolerance(DEFAULT_REPORTER_ION_TOLERANCE_ITRAQ);
+                        }
                     }
                 }
 
