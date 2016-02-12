@@ -306,7 +306,7 @@ public class ReporterExportFactory implements ExportFactory {
                 PsValidationSection section = new PsValidationSection(exportScheme.getExportFeatures(sectionName), exportScheme.isIndexes(), exportScheme.isHeader(), exportWriter);
                 PSMaps psMaps = new PSMaps();
                 psMaps = (PSMaps) identification.getUrParam(psMaps);
-                section.writeSection(psMaps, waitingHandler);
+                section.writeSection(psMaps, identificationParameters, waitingHandler);
             } else {
                 throw new UnsupportedOperationException("Section " + sectionName + " not implemented.");
             }
