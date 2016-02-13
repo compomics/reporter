@@ -35,10 +35,16 @@ public class ProjectImporter {
         ArrayList<ProteinClusterClassKey> proteinClasses = new ArrayList<ProteinClusterClassKey>(1);
         ProteinClusterClassKey proteinClusterClassKey = new ProteinClusterClassKey();
         proteinClasses.add(proteinClusterClassKey);
+        proteinClusterClassKey = new ProteinClusterClassKey();
+        proteinClusterClassKey.setStarred(Boolean.TRUE);
+        proteinClasses.add(proteinClusterClassKey);
 
         PtmSettings ptmSettings = identificationParameters.getSearchParameters().getPtmSettings();
         ArrayList<PeptideClusterClassKey> peptideClasses = new ArrayList<PeptideClusterClassKey>(4);
         PeptideClusterClassKey peptidelusterClassKey = new PeptideClusterClassKey();
+        peptideClasses.add(peptidelusterClassKey);
+        peptidelusterClassKey = new PeptideClusterClassKey();
+        peptidelusterClassKey.setStarred(Boolean.TRUE);
         peptideClasses.add(peptidelusterClassKey);
         peptidelusterClassKey = new PeptideClusterClassKey();
         peptidelusterClassKey.setnTerm(Boolean.TRUE);
@@ -54,6 +60,9 @@ public class ProjectImporter {
 
         ArrayList<PsmClusterClassKey> psmClasses = new ArrayList<PsmClusterClassKey>(1);
         PsmClusterClassKey psmClusterClassKey = new PsmClusterClassKey();
+        psmClasses.add(psmClusterClassKey);
+        psmClusterClassKey = new PsmClusterClassKey();
+        psmClusterClassKey.setStarred(Boolean.TRUE);
         psmClasses.add(psmClusterClassKey);
         ArrayList<String> spectrumFiles = identification.getOrderedSpectrumFileNames();
         if (spectrumFiles.size() > 1) {

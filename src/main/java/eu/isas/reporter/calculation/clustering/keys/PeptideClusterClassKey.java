@@ -11,6 +11,11 @@ import java.util.ArrayList;
 public class PeptideClusterClassKey implements ClusterClassKey {
 
     /**
+     * Indicates whether the psms must be starred.
+     */
+    private Boolean starred = false;
+
+    /**
      * The PTM carried by the peptides in this class.
      */
     private String ptm = null;
@@ -30,6 +35,24 @@ public class PeptideClusterClassKey implements ClusterClassKey {
      */
     public PeptideClusterClassKey() {
 
+    }
+
+    /**
+     * Indicates whether the psms must be starred.
+     *
+     * @return a boolean indicating whether the psms must be starred
+     */
+    public Boolean isStarred() {
+        return starred;
+    }
+
+    /**
+     * Sets whether the psms must be starre.
+     *
+     * @param starred a boolean indicating whether the psms must be starred
+     */
+    public void setStarred(Boolean starred) {
+        this.starred = starred;
     }
 
     /**
@@ -94,21 +117,26 @@ public class PeptideClusterClassKey implements ClusterClassKey {
             return "C-term";
         } else if (ptm != null) {
             return ptm;
+        } else if (starred) {
+            return "Starred";
         } else {
-            return "Other";
+            return "All";
         }
     }
 
     @Override
     public String getDescription() {
         StringBuilder description = new StringBuilder();
-        if (nTerm) {
-            description.append("N-terminal peptides");
+        if (starred) {
+            description.append("Starred ");
+        } else if (nTerm) {
+            description.append("N-terminal ");
         } else if (cTerm) {
-            description.append("C-terminal peptides");
-        } else {
-            description.append("Peptides");
+            description.append("C-terminal ");
+        } else if (ptm == null) {
+            description.append("All ");
         }
+        description.append("peptides");
         if (ptm != null) {
             description.append(" carrying ").append(ptm);
         }

@@ -10,6 +10,10 @@ import eu.isas.reporter.calculation.clustering.ClusterClassKey;
 public class PsmClusterClassKey implements ClusterClassKey {
 
     /**
+     * Indicates whether the psms must be starred.
+     */
+    private Boolean starred = false;
+    /**
      * The name of the spectrum file.
      */
     private String file = null;
@@ -19,6 +23,24 @@ public class PsmClusterClassKey implements ClusterClassKey {
      */
     public PsmClusterClassKey() {
 
+    }
+
+    /**
+     * Indicates whether the psms must be starred.
+     *
+     * @return a boolean indicating whether the psms must be starred
+     */
+    public Boolean isStarred() {
+        return starred;
+    }
+
+    /**
+     * Sets whether the psms must be starre.
+     *
+     * @param starred a boolean indicating whether the psms must be starred
+     */
+    public void setStarred(Boolean starred) {
+        this.starred = starred;
     }
 
     /**
@@ -41,11 +63,27 @@ public class PsmClusterClassKey implements ClusterClassKey {
 
     @Override
     public String getName() {
-        return file;
+        if (starred) {
+            return "Sarred";
+        }
+        if (file != null) {
+            return file;
+        }
+        return "All";
     }
 
     @Override
     public String getDescription() {
-        return "PSMs from" + file;
+        StringBuilder desciption = new StringBuilder();
+        if (starred) {
+            desciption.append("Starred ");
+        } else if (file == null) {
+            desciption.append("All ");
+        }
+        desciption.append("PSMs");
+        if (file != null) {
+            desciption.append(" from ").append(file);
+        }
+        return desciption.toString();
     }
 }
