@@ -10,7 +10,7 @@ import eu.isas.reporter.calculation.clustering.ClusterClassKey;
 public class ProteinClusterClassKey implements ClusterClassKey {
 
     /**
-     * Indicates whether the psms must be starred.
+     * Indicates whether the proteins must be starred.
      */
     private Boolean starred = false;
 
@@ -22,18 +22,18 @@ public class ProteinClusterClassKey implements ClusterClassKey {
     }
 
     /**
-     * Indicates whether the psms must be starred.
+     * Indicates whether the proteins must be starred.
      *
-     * @return a boolean indicating whether the psms must be starred
+     * @return a boolean indicating whether the proteins must be starred
      */
     public Boolean isStarred() {
         return starred;
     }
 
     /**
-     * Sets whether the psms must be starre.
+     * Sets whether the proteins must be starre.
      *
-     * @param starred a boolean indicating whether the psms must be starred
+     * @param starred a boolean indicating whether the proteins must be starred
      */
     public void setStarred(Boolean starred) {
         this.starred = starred;
@@ -57,6 +57,11 @@ public class ProteinClusterClassKey implements ClusterClassKey {
         }
         description.append("proteins");
         return description.toString();
+    }
+    
+    @Override
+    public String toString() {
+        return "Protein_" + getName();
     }
 
 }

@@ -11,14 +11,24 @@ import java.util.ArrayList;
 public class PeptideClusterClassKey implements ClusterClassKey {
 
     /**
-     * Indicates whether the psms must be starred.
+     * Indicates whether the peptides must be starred.
      */
     private Boolean starred = false;
 
     /**
-     * The PTM carried by the peptides in this class.
+     * The PTMs eventually carried by the peptides in this class.
      */
-    private String ptm = null;
+    private ArrayList<String> possiblePtms = null;
+
+    /**
+     * The PTMs not carried by the peptides in this class.
+     */
+    private ArrayList<String> forbiddenPtms = null;
+
+    /**
+     * Indicates whether the peptides are not modified.
+     */
+    private boolean notModified = false;
 
     /**
      * Boolean indicating whether the peptides are N-term
@@ -38,39 +48,76 @@ public class PeptideClusterClassKey implements ClusterClassKey {
     }
 
     /**
-     * Indicates whether the psms must be starred.
+     * Indicates whether the peptides must be starred.
      *
-     * @return a boolean indicating whether the psms must be starred
+     * @return a boolean indicating whether the peptides must be starred
      */
     public Boolean isStarred() {
         return starred;
     }
 
     /**
-     * Sets whether the psms must be starre.
+     * Sets whether the peptides must be starred.
      *
-     * @param starred a boolean indicating whether the psms must be starred
+     * @param starred a boolean indicating whether the peptides must be starred
      */
     public void setStarred(Boolean starred) {
         this.starred = starred;
     }
 
     /**
-     * Returns the PTM carried by the peptide.
+     * Returns the PTMs possibly carried by the peptides.
      *
-     * @return the PTM carried by the peptide
+     * @return the PTMs possibly carried by the peptides
      */
-    public String getPtm() {
-        return ptm;
+    public ArrayList<String> getPossiblePtms() {
+        return possiblePtms;
     }
 
     /**
-     * Sets the PTM carried by the peptide.
+     * Sets the PTMs possibly carried by the peptides.
      *
-     * @param ptm the PTM carried by the peptide
+     * @param possiblePtms the PTMs possibly carried by the peptides
      */
-    public void setPtm(String ptm) {
-        this.ptm = ptm;
+    public void setPossiblePtms(ArrayList<String> possiblePtms) {
+        this.possiblePtms = possiblePtms;
+    }
+
+    /**
+     * Returns the PTMs not carried by the peptide.
+     *
+     * @return the PTMs not carried by the peptide
+     */
+    public ArrayList<String> getForbiddenPtms() {
+        return forbiddenPtms;
+    }
+
+    /**
+     * Sets the PTMs not carried by the peptide.
+     *
+     * @param forbiddenPtms the PTMs not carried by the peptide
+     */
+    public void setForbiddenPtms(ArrayList<String> forbiddenPtms) {
+        this.forbiddenPtms = forbiddenPtms;
+    }
+
+    /**
+     * Indicates whether the peptides must be not modified.
+     *
+     * @return a boolean indicating whether the peptides must be not modified
+     */
+    public boolean isNotModified() {
+        return notModified;
+    }
+
+    /**
+     * Sets whether the peptides must be not modified.
+     *
+     * @param notModified a boolean indicating whether the peptides must be not
+     * modified
+     */
+    public void setNotModified(boolean notModified) {
+        this.notModified = notModified;
     }
 
     /**
@@ -111,16 +158,52 @@ public class PeptideClusterClassKey implements ClusterClassKey {
 
     @Override
     public String getName() {
+        StringBuilder name = new StringBuilder();
         if (nTerm) {
-            return "N-term";
+            name.append("N-term");
         } else if (cTerm) {
-            return "C-term";
-        } else if (ptm != null) {
-            return ptm;
+            name.append("C-term");
+        } else if (notModified) {
+            name.append("Not modified");
         } else if (starred) {
-            return "Starred";
-        } else {
+            name.append("Starred");
+        }
+        if (possiblePtms != null || forbiddenPtms != null) {
+            StringBuilder possible = new StringBuilder();
+            for (String possiblePtm : possiblePtms) {
+                if (possible.length() > 0) {
+                    possible.append(", ");
+                }
+                possible.append(possiblePtm);
+            }
+            StringBuilder forbidden = new StringBuilder();
+            for (String possiblePtm : forbiddenPtms) {
+                if (forbidden.length() > 0) {
+                    forbidden.append(", ");
+                }
+                forbidden.append(possiblePtm);
+            }
+            if (possible.length() > 0 && forbidden.length() > 0) {
+                if (name.length() > 0) {
+                    name.append(" ");
+                }
+                name.append(possible).append("; but not ").append(forbidden);
+            } else if (possible.length() > 0) {
+                if (name.length() > 0) {
+                    name.append(" ");
+                }
+                name.append(possible);
+            } else if (forbidden.length() > 0) {
+                if (name.length() > 0) {
+                    name.append(" ");
+                }
+                name.append(forbidden);
+            }
+        }
+        if (name.length() == 0) {
             return "All";
+        } else {
+            return name.toString();
         }
     }
 
@@ -133,14 +216,39 @@ public class PeptideClusterClassKey implements ClusterClassKey {
             description.append("N-terminal ");
         } else if (cTerm) {
             description.append("C-terminal ");
-        } else if (ptm == null) {
+        } else if (notModified) {
+            description.append("Not Modified ");
+        } else {
             description.append("All ");
         }
         description.append("peptides");
-        if (ptm != null) {
-            description.append(" carrying ").append(ptm);
+        StringBuilder possible = new StringBuilder();
+        for (String possiblePtm : possiblePtms) {
+            if (possible.length() > 0) {
+                possible.append(", ");
+            }
+            possible.append(possiblePtm);
+        }
+        StringBuilder forbidden = new StringBuilder();
+        for (String possiblePtm : forbiddenPtms) {
+            if (forbidden.length() > 0) {
+                forbidden.append(", ");
+            }
+            forbidden.append(possiblePtm);
+        }
+        if (possible.length() > 0 && forbidden.length() > 0) {
+            description.append(" carrying ").append(possible).append("; but not ").append(forbidden);
+        } else if (possible.length() > 0) {
+            description.append(" carrying ").append(possible);
+        } else {
+            description.append(" not carrying ").append(possible);
         }
         return description.toString();
+    }
+
+    @Override
+    public String toString() {
+        return "Peptide_" + getName();
     }
 
 }

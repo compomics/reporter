@@ -86,4 +86,9 @@ public class PsmClusterClassKey implements ClusterClassKey {
         }
         return desciption.toString();
     }
+    
+    @Override
+    public String toString() {
+        return "PSM_" + getName();
+    }
 }

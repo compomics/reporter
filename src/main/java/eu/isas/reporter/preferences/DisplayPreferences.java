@@ -1,6 +1,6 @@
 package eu.isas.reporter.preferences;
 
-import java.util.ArrayList;
+import eu.isas.reporter.settings.ClusteringSettings;
 
 /**
  * Reporter display preferences.
@@ -10,19 +10,9 @@ import java.util.ArrayList;
 public class DisplayPreferences {
 
     /**
-     * The protein classes selected.
+     * The clustering settings.
      */
-    private ArrayList<String> selectedProteinClasses = new ArrayList<String>();
-
-    /**
-     * The peptide classes selected.
-     */
-    private ArrayList<String> selectedPeptideClasses = new ArrayList<String>();
-
-    /**
-     * The PSM classes selected.
-     */
-    private ArrayList<String> selectedPsmClasses = new ArrayList<String>();
+    private ClusteringSettings clusteringSettings;
     
     /**
      * Constructor.
@@ -32,57 +22,21 @@ public class DisplayPreferences {
     }
 
     /**
-     * Returns the selected protein classes.
+     * Returns the clustering settings.
      * 
-     * @return the selected protein classes
+     * @return the clustering settings
      */
-    public ArrayList<String> getSelectedProteinClasses() {
-        return selectedProteinClasses;
+    public ClusteringSettings getClusteringSettings() {
+        return clusteringSettings;
     }
 
     /**
-     * Sets the selected protein classes.
+     * Sets the clustering settings.
      * 
-     * @param selectedProteinClasses the selected protein classes
+     * @param clusteringSettings 
      */
-    public void setSelectedProteinClasses(ArrayList<String> selectedProteinClasses) {
-        this.selectedProteinClasses = selectedProteinClasses;
+    public void setClusteringSettings(ClusteringSettings clusteringSettings) {
+        this.clusteringSettings = clusteringSettings;
     }
 
-    /**
-     * Returns the selected peptide classes.
-     * 
-     * @return the selected peptide classes
-     */
-    public ArrayList<String> getSelectedPeptideClasses() {
-        return selectedPeptideClasses;
-    }
-
-    /**
-     * Sets the selected peptide classes.
-     * 
-     * @param selectedPeptideClasses the selected peptide classes
-     */
-    public void setSelectedPeptideClasses(ArrayList<String> selectedPeptideClasses) {
-        this.selectedPeptideClasses = selectedPeptideClasses;
-    }
-
-    /**
-     * Returns the selected PSM classes.
-     * 
-     * @return the selected PSM classes
-     */
-    public ArrayList<String> getSelectedPsmClasses() {
-        return selectedPsmClasses;
-    }
-
-    /**
-     * Sets the selected PSM classes.
-     * 
-     * @param selectedPsmClasses the selected PSM classes
-     */
-    public void setSelectedPsmClasses(ArrayList<String> selectedPsmClasses) {
-        this.selectedPsmClasses = selectedPsmClasses;
-    }
-    
 }

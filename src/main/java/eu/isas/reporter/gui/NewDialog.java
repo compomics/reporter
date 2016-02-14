@@ -25,6 +25,7 @@ import eu.isas.peptideshaker.preferences.ProjectDetails;
 import eu.isas.peptideshaker.utils.CpsParent;
 import eu.isas.reporter.gui.settings.ReporterSettingsDialog;
 import eu.isas.reporter.io.ProjectImporter;
+import eu.isas.reporter.project.attributes.ClusterMetrics;
 import eu.isas.reporter.settings.ReporterPreferences;
 import eu.isas.reporter.settings.ReporterSettings;
 import java.awt.Toolkit;
@@ -80,6 +81,10 @@ public class NewDialog extends javax.swing.JDialog {
      * The reporter settings.
      */
     private ReporterSettings reporterSettings;
+    /**
+     * The metrics to use for clustering.
+     */
+    private ClusterMetrics clusterMetrics;
     /**
      * The processing preferences.
      */
@@ -964,7 +969,7 @@ public class NewDialog extends javax.swing.JDialog {
                 welcomeDialog.setVisible(false);
             }
 
-            reporterGui.createNewProject(cpsParent, reporterSettings, reporterIonQuantification, processingPreferences);
+            reporterGui.createNewProject(cpsParent, reporterSettings, reporterIonQuantification, processingPreferences, clusterMetrics);
             dispose();
         }
     }//GEN-LAST:event_loadButtonActionPerformed

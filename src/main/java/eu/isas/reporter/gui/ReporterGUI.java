@@ -47,9 +47,11 @@ import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
 import eu.isas.reporter.calculation.normalization.Normalizer;
 import eu.isas.reporter.gui.export.ReportDialog;
 import eu.isas.reporter.gui.resultpanels.OverviewPanel;
+import eu.isas.reporter.io.ProjectImporter;
 import eu.isas.reporter.io.ProjectSaver;
 import eu.isas.reporter.settings.ReporterSettings;
 import eu.isas.reporter.preferences.DisplayPreferences;
+import eu.isas.reporter.project.attributes.ClusterMetrics;
 import eu.isas.reporter.quantificationdetails.ProteinQuantificationDetails;
 import eu.isas.reporter.utils.Properties;
 import java.awt.Color;
@@ -117,6 +119,10 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * The reporter settings
      */
     private ReporterSettings reporterSettings;
+    /**
+     * The metrics to use for clustering.
+     */
+    private ClusterMetrics clusterMetrics;
     /**
      * The reporter ion quantification containing the quantification parameters.
      */
@@ -286,8 +292,9 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * @param reporterSettings the reporter settings
      * @param reporterIonQuantification the reporter quantification settings
      * @param processingPreferences the processing preferences
+     * @param clusterMetrics the cluster metrics
      */
-    public void createNewProject(CpsParent cpsParent, ReporterSettings reporterSettings, ReporterIonQuantification reporterIonQuantification, ProcessingPreferences processingPreferences) {
+    public void createNewProject(CpsParent cpsParent, ReporterSettings reporterSettings, ReporterIonQuantification reporterIonQuantification, ProcessingPreferences processingPreferences, ClusterMetrics clusterMetrics) {
 
         if (cpsParent != null) {
             closeOpenedProject();
@@ -301,6 +308,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         this.reporterSettings = reporterSettings;
         this.reporterIonQuantification = reporterIonQuantification;
         this.processingPreferences = processingPreferences;
+        this.clusterMetrics = clusterMetrics;
 
         identificationFeaturesGenerator = new IdentificationFeaturesGenerator(cpsParent.getIdentification(), cpsParent.getShotgunProtocol(),
                 cpsParent.getIdentificationParameters(), cpsParent.getMetrics(), cpsParent.getSpectrumCountingPreferences());
@@ -394,6 +402,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      */
     private void displayResults(WaitingHandler waitingHandler) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
 
+        // Set Normalization factors
         NormalizationFactors normalizationFactors = reporterIonQuantification.getNormalizationFactors();
         if (!normalizationFactors.hasNormalizationFactors()) {
             Normalizer normalizer = new Normalizer();
@@ -407,7 +416,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
                 normalizer.setProteinNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(), reporterSettings.getNormalizationSettings(), cpsParent.getIdentification(), quantificationFeaturesGenerator, processingPreferences, exceptionHandler, progressDialog);
             }
         }
-
+        
         // cluster the protein profiles
         clusterProteinProfiles(true, waitingHandler);
 

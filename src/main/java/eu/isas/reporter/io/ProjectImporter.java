@@ -1,18 +1,28 @@
 package eu.isas.reporter.io;
 
 import com.compomics.util.db.ObjectsDB;
+import com.compomics.util.experiment.biology.PTM;
+import com.compomics.util.experiment.biology.PTMFactory;
 import com.compomics.util.experiment.identification.Identification;
+import com.compomics.util.experiment.identification.identification_parameters.PtmSettings;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
+import com.compomics.util.preferences.IdentificationParameters;
 import com.compomics.util.preferences.LastSelectedFolder;
 import com.compomics.util.waiting.WaitingHandler;
 import eu.isas.peptideshaker.utils.CpsParent;
 import eu.isas.reporter.Reporter;
+import eu.isas.reporter.calculation.clustering.keys.PeptideClusterClassKey;
+import eu.isas.reporter.calculation.clustering.keys.ProteinClusterClassKey;
+import eu.isas.reporter.calculation.clustering.keys.PsmClusterClassKey;
+import eu.isas.reporter.project.attributes.ClusterMetrics;
 import eu.isas.reporter.settings.ReporterSettings;
 import java.awt.Dialog;
 import java.io.EOFException;
 import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import javax.swing.JOptionPane;
 
 /**
@@ -46,6 +56,11 @@ public class ProjectImporter {
      * The reporter ion quantification object loaded from the file.
      */
     private ReporterIonQuantification reporterIonQuantification;
+
+    /**
+     * The metrics to use for clustering.
+     */
+    private ClusterMetrics clusterMetrics;
 
     /**
      * Constructor.
@@ -112,8 +127,8 @@ public class ProjectImporter {
             try {
                 cpsParent.loadFastaFile(new File(lastSelectedFolder.getLastSelectedFolder()), waitingHandler);
             } catch (Exception e) {
-                    //Ignore
-                    e.printStackTrace(); 
+                //Ignore
+                e.printStackTrace();
             }
 
             if (waitingHandler.isRunCanceled()) {
@@ -136,7 +151,7 @@ public class ProjectImporter {
                     cpsParent.loadSpectrumFile(spectrumFileName, waitingHandler);
                 } catch (Exception e) {
                     //Ignore
-                    e.printStackTrace(); 
+                    e.printStackTrace();
                 }
 
                 if (waitingHandler.isRunCanceled()) {
@@ -144,7 +159,12 @@ public class ProjectImporter {
                     break;
                 }
             }
+
             waitingHandler.setPrimaryProgressCounterIndeterminate(true);
+
+            // Load the possible cluster classes
+            clusterMetrics = getClusterMetrics(cpsParent.getIdentificationParameters(), identification);
+
             waitingHandler.setRunFinished();
 
         } catch (OutOfMemoryError error) {
@@ -242,6 +262,80 @@ public class ProjectImporter {
     }
 
     /**
+     * Returns the cluster metrics for a given project.
+     *
+     * @param identificationParameters the identification parameters
+     * @param identification the identification
+     *
+     * @return the cluster metrics for a given project
+     */
+    public ClusterMetrics getClusterMetrics(IdentificationParameters identificationParameters, Identification identification) {
+
+        ArrayList<ProteinClusterClassKey> proteinClasses = new ArrayList<ProteinClusterClassKey>(1);
+        ProteinClusterClassKey proteinClusterClassKey = new ProteinClusterClassKey();
+        proteinClasses.add(proteinClusterClassKey);
+        proteinClusterClassKey = new ProteinClusterClassKey();
+        proteinClusterClassKey.setStarred(Boolean.TRUE);
+        proteinClasses.add(proteinClusterClassKey);
+
+        PtmSettings ptmSettings = identificationParameters.getSearchParameters().getPtmSettings();
+        ArrayList<PeptideClusterClassKey> peptideClasses = new ArrayList<PeptideClusterClassKey>(4);
+        PeptideClusterClassKey peptidelusterClassKey = new PeptideClusterClassKey();
+        peptideClasses.add(peptidelusterClassKey);
+        peptidelusterClassKey = new PeptideClusterClassKey();
+        peptidelusterClassKey.setStarred(Boolean.TRUE);
+        peptideClasses.add(peptidelusterClassKey);
+        peptidelusterClassKey = new PeptideClusterClassKey();
+        peptidelusterClassKey.setnTerm(Boolean.TRUE);
+        peptideClasses.add(peptidelusterClassKey);
+        peptidelusterClassKey = new PeptideClusterClassKey();
+        peptidelusterClassKey.setcTerm(Boolean.TRUE);
+        peptideClasses.add(peptidelusterClassKey);
+        peptidelusterClassKey = new PeptideClusterClassKey();
+        peptidelusterClassKey.setNotModified(Boolean.TRUE);
+        peptideClasses.add(peptidelusterClassKey);
+        PTMFactory ptmFactory = PTMFactory.getInstance();
+        HashMap<Double, ArrayList<String>> ptmMap = new HashMap<Double, ArrayList<String>>();
+        for (String ptmName : ptmSettings.getAllNotFixedModifications()) {
+            PTM ptm = ptmFactory.getPTM(ptmName);
+            Double ptmMass = ptm.getMass();
+            ArrayList<String> ptms = ptmMap.get(ptmMass);
+            if (ptms == null) {
+                ptms = new ArrayList<String>(2);
+                ptmMap.put(ptmMass, ptms);
+            }
+            ptms.add(ptmName);
+        }
+        for (ArrayList<String> ptms : ptmMap.values()) {
+            Collections.sort(ptms);
+            peptidelusterClassKey = new PeptideClusterClassKey();
+            peptidelusterClassKey.setPossiblePtms(ptms);
+            peptideClasses.add(peptidelusterClassKey);
+        }
+
+        ArrayList<PsmClusterClassKey> psmClasses = new ArrayList<PsmClusterClassKey>(1);
+        PsmClusterClassKey psmClusterClassKey = new PsmClusterClassKey();
+        psmClasses.add(psmClusterClassKey);
+        psmClusterClassKey = new PsmClusterClassKey();
+        psmClusterClassKey.setStarred(Boolean.TRUE);
+        psmClasses.add(psmClusterClassKey);
+        ArrayList<String> spectrumFiles = identification.getOrderedSpectrumFileNames();
+        if (spectrumFiles.size() > 1) {
+            for (String spectrumFile : spectrumFiles) {
+                psmClusterClassKey = new PsmClusterClassKey();
+                psmClusterClassKey.setFile(spectrumFile);
+                psmClasses.add(psmClusterClassKey);
+            }
+        }
+
+        ClusterMetrics clusterMetrics = new ClusterMetrics();
+        clusterMetrics.setProteinClassKeys(proteinClasses);
+        clusterMetrics.setPeptideClassKeys(peptideClasses);
+        clusterMetrics.setPsmClassKeys(psmClasses);
+        return clusterMetrics;
+    }
+
+    /**
      * Returns the cps parent used to import the file.
      *
      * @return the cps parent used to import the file
@@ -266,5 +360,14 @@ public class ProjectImporter {
      */
     public ReporterIonQuantification getReporterIonQuantification() {
         return reporterIonQuantification;
+    }
+
+    /**
+     * Returns the cluster metrics for this project.
+     *
+     * @return the cluster metrics for this project
+     */
+    public ClusterMetrics getClusterMetrics() {
+        return clusterMetrics;
     }
 }
