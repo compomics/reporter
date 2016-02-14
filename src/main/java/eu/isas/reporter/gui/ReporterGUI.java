@@ -44,14 +44,13 @@ import eu.isas.reporter.Reporter;
 import eu.isas.reporter.ReporterWrapper;
 import eu.isas.reporter.calculation.QuantificationFeaturesCache;
 import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
+import eu.isas.reporter.calculation.clustering.ClusterBuilder;
 import eu.isas.reporter.calculation.normalization.Normalizer;
 import eu.isas.reporter.gui.export.ReportDialog;
 import eu.isas.reporter.gui.resultpanels.OverviewPanel;
-import eu.isas.reporter.io.ProjectImporter;
 import eu.isas.reporter.io.ProjectSaver;
 import eu.isas.reporter.settings.ReporterSettings;
 import eu.isas.reporter.preferences.DisplayPreferences;
-import eu.isas.reporter.project.attributes.ClusterMetrics;
 import eu.isas.reporter.quantificationdetails.ProteinQuantificationDetails;
 import eu.isas.reporter.utils.Properties;
 import java.awt.Color;
@@ -66,6 +65,7 @@ import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import javax.swing.Box;
 import javax.swing.JOptionPane;
 import javax.swing.LookAndFeel;
@@ -119,10 +119,6 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * The reporter settings
      */
     private ReporterSettings reporterSettings;
-    /**
-     * The metrics to use for clustering.
-     */
-    private ClusterMetrics clusterMetrics;
     /**
      * The reporter ion quantification containing the quantification parameters.
      */
@@ -181,13 +177,9 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      */
     private JumpToPanel jumpToPanel;
     /**
-     * The filtered protein keys used in the clustering.
+     * The cluster builder.
      */
-    private ArrayList<String> filteredProteinKeys;
-    /**
-     * The protein ratios.
-     */
-    private double proteinRatios[][];
+    private ClusterBuilder clusterBuilder;
 
     /**
      * Creates a new ReporterGUI.
@@ -288,9 +280,8 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * @param reporterSettings the reporter settings
      * @param reporterIonQuantification the reporter quantification settings
      * @param processingPreferences the processing preferences
-     * @param clusterMetrics the cluster metrics
      */
-    public void createNewProject(CpsParent cpsParent, ReporterSettings reporterSettings, ReporterIonQuantification reporterIonQuantification, ProcessingPreferences processingPreferences, ClusterMetrics clusterMetrics) {
+    public void createNewProject(CpsParent cpsParent, ReporterSettings reporterSettings, ReporterIonQuantification reporterIonQuantification, ProcessingPreferences processingPreferences, DisplayPreferences displayPreferences) {
 
         if (cpsParent != null) {
             closeOpenedProject();
@@ -304,7 +295,6 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         this.reporterSettings = reporterSettings;
         this.reporterIonQuantification = reporterIonQuantification;
         this.processingPreferences = processingPreferences;
-        this.clusterMetrics = clusterMetrics;
         this.displayPreferences = displayPreferences;
 
         identificationFeaturesGenerator = new IdentificationFeaturesGenerator(cpsParent.getIdentification(), cpsParent.getShotgunProtocol(),
@@ -404,18 +394,19 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         if (!normalizationFactors.hasNormalizationFactors()) {
             Normalizer normalizer = new Normalizer();
             if (!normalizationFactors.hasPsmNormalisationFactors()) {
-                normalizer.setPsmNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(), reporterSettings.getNormalizationSettings(), cpsParent.getIdentificationParameters().getSequenceMatchingPreferences(), cpsParent.getIdentification(), quantificationFeaturesGenerator, processingPreferences, exceptionHandler, progressDialog);
+                normalizer.setPsmNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(), reporterSettings.getNormalizationSettings(), getIdentificationParameters().getSequenceMatchingPreferences(), getIdentification(), quantificationFeaturesGenerator, processingPreferences, exceptionHandler, progressDialog);
             }
             if (!normalizationFactors.hasPeptideNormalisationFactors()) {
-                normalizer.setPeptideNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(), reporterSettings.getNormalizationSettings(), cpsParent.getIdentificationParameters().getSequenceMatchingPreferences(), cpsParent.getIdentification(), quantificationFeaturesGenerator, processingPreferences, exceptionHandler, progressDialog);
+                normalizer.setPeptideNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(), reporterSettings.getNormalizationSettings(), getIdentificationParameters().getSequenceMatchingPreferences(), getIdentification(), quantificationFeaturesGenerator, processingPreferences, exceptionHandler, progressDialog);
             }
             if (!normalizationFactors.hasProteinNormalisationFactors()) {
-                normalizer.setProteinNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(), reporterSettings.getNormalizationSettings(), cpsParent.getIdentification(), quantificationFeaturesGenerator, processingPreferences, exceptionHandler, progressDialog);
+                normalizer.setProteinNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(), reporterSettings.getNormalizationSettings(), getIdentification(), quantificationFeaturesGenerator, processingPreferences, exceptionHandler, progressDialog);
             }
         }
 
         // cluster the protein profiles
-        clusterProteinProfiles(true, waitingHandler);
+        clusterBuilder = new ClusterBuilder();
+        clusterBuilder.clusterProfiles(getIdentification(), reporterIonQuantification, quantificationFeaturesGenerator, displayPreferences, true, waitingHandler);
 
         if (waitingHandler.isRunCanceled()) {
             return;
@@ -429,164 +420,8 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
 
         jumpToPanel.setEnabled(true);
         jumpToPanel.setType(JumpToPanel.JumpType.proteinAndPeptides);
-        ArrayList<String> filteredProteinKeysArray = new ArrayList<String>();
-        filteredProteinKeysArray.addAll(filteredProteinKeys);
+        ArrayList<String> filteredProteinKeysArray = new ArrayList<String>(clusterBuilder.getFilteredProteins());
         jumpToPanel.setProteinKeys(filteredProteinKeysArray);
-    }
-
-    /**
-     * Cluster the protein profiles.
-     *
-     * @param loadData if true, the data is (re-)loaded
-     * @param waitingHandler the waiting handler
-     *
-     * @throws SQLException if an SQLException occurs
-     * @throws IOException if an IOException occurs
-     * @throws ClassNotFoundException if a ClassNotFoundException occurs
-     * @throws InterruptedException if an InterruptedException occurs
-     * @throws MzMLUnmarshallerException if an MzMLUnmarshallerException occurs
-     */
-    private void clusterProteinProfiles(boolean loadData, WaitingHandler waitingHandler) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
-
-        waitingHandler.setSecondaryProgressCounterIndeterminate(true);
-
-        if (loadData) {
-            // filter the proteins
-            waitingHandler.setWaitingText("Filtering Proteins. Please Wait...");
-            filteredProteinKeys = filterProteins(getMetrics().getProteinKeys(), waitingHandler);
-
-            if (waitingHandler.isRunCanceled()) {
-                return;
-            }
-
-            // get the ratios
-            waitingHandler.setWaitingText("Extracting Quantification Data. Please Wait...");
-            proteinRatios = getProteinRatios(filteredProteinKeys, waitingHandler);
-
-            if (waitingHandler.isRunCanceled()) {
-                return;
-            }
-        }
-
-        // set up the clustering
-        waitingHandler.setSecondaryProgressCounterIndeterminate(true);
-        waitingHandler.setWaitingText("Clustering Proteins. Please Wait...");
-        String[] proteinKeysArray = filteredProteinKeys.toArray(new String[0]);
-        kMeansClutering = new KMeansClustering(proteinRatios, proteinKeysArray, displayPreferences.getClusteringSettings().getKMeansClusteringSettings().getnClusters());
-
-        // perform the clustering
-        kMeansClutering.kMeanCluster(waitingHandler);
-    }
-
-    /**
-     * Get the protein ratios for the set of protein keys.
-     *
-     * @param proteinKeys the protein keys
-     * @param waitingHandler the waiting handler
-     * @return the protein ratios for the set of protein keys
-     *
-     * @throws SQLException if an SQLException occurs
-     * @throws IOException if an IOException occurs
-     * @throws ClassNotFoundException if a ClassNotFoundException occurs
-     * @throws InterruptedException if an InterruptedException occurs
-     * @throws MzMLUnmarshallerException if an MzMLUnmarshallerException occurs
-     */
-    private double[][] getProteinRatios(ArrayList<String> proteinKeys, WaitingHandler waitingHandler) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
-
-        waitingHandler.resetPrimaryProgressCounter();
-        waitingHandler.setPrimaryProgressCounterIndeterminate(false);
-        waitingHandler.setMaxPrimaryProgressCounter(proteinKeys.size() + 1);
-        waitingHandler.increasePrimaryProgressCounter();
-
-        ArrayList<String> sampleIndexes = new ArrayList<String>(reporterIonQuantification.getSampleIndexes());
-        Collections.sort(sampleIndexes);
-
-        double tempProteinRatios[][] = new double[proteinKeys.size()][sampleIndexes.size()];
-
-        PSParameter psParameter = new PSParameter();
-        ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
-        parameters.add(psParameter);
-        ProteinMatchesIterator proteinMatchesIterator = getIdentification().getProteinMatchesIterator(proteinKeys, parameters, true, parameters, true, parameters, waitingHandler);
-        proteinMatchesIterator.setBatchSize(50);
-        int proteinIndex = 0;
-
-        while (proteinMatchesIterator.hasNext()) {
-
-            if (waitingHandler.isRunCanceled()) {
-                break;
-            }
-
-            ProteinMatch proteinMatch = proteinMatchesIterator.next();
-            String tempProteinKey = proteinMatch.getKey();
-            ProteinQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(tempProteinKey, waitingHandler);
-
-            for (int sampleIndex = 0; sampleIndex < sampleIndexes.size() && !waitingHandler.isRunCanceled(); sampleIndex++) {
-                Double ratio = quantificationDetails.getRatio(sampleIndexes.get(sampleIndex), reporterIonQuantification.getNormalizationFactors());
-                if (ratio != null) {
-                    if (ratio != 0) {
-                        ratio = Math.log(ratio) / Math.log(2);
-                    }
-                    tempProteinRatios[proteinIndex][sampleIndex] = ratio;
-                }
-            }
-
-            proteinIndex++;
-
-            waitingHandler.increasePrimaryProgressCounter();
-        }
-
-        return tempProteinRatios;
-    }
-
-    /**
-     * Filter the proteins.
-     *
-     * @param proteinKeys the protein keys to filter
-     * @param waitingHandler the waiting handler
-     * @return the filtered protein keys
-     *
-     * @throws SQLException if an SQLException occurs
-     * @throws IOException if an IOException occurs
-     * @throws ClassNotFoundException if a ClassNotFoundException occurs
-     * @throws InterruptedException if an InterruptedException occurs
-     */
-    private ArrayList<String> filterProteins(ArrayList<String> proteinKeys, WaitingHandler waitingHandler) throws SQLException, IOException, ClassNotFoundException, InterruptedException {
-
-        waitingHandler.resetPrimaryProgressCounter();
-        waitingHandler.setPrimaryProgressCounterIndeterminate(false);
-        waitingHandler.setMaxPrimaryProgressCounter(proteinKeys.size() + 1);
-        waitingHandler.increasePrimaryProgressCounter();
-
-        ArrayList<String> tempFilteredProteinKeysArray = new ArrayList<String>(proteinKeys.size());
-
-        PSParameter psParameter = new PSParameter();
-        ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
-        parameters.add(psParameter);
-        ProteinMatchesIterator proteinMatchesIterator = getIdentification().getProteinMatchesIterator(proteinKeys, parameters, false, null, false, null, waitingHandler);
-
-        while (proteinMatchesIterator.hasNext()) {
-
-            if (waitingHandler.isRunCanceled()) {
-                break;
-            }
-
-            ProteinMatch proteinMatch = proteinMatchesIterator.next();
-            String proteinKey = proteinMatch.getKey();
-            psParameter = (PSParameter) getIdentification().getProteinMatchParameter(proteinKey, psParameter);
-
-            if (psParameter.getMatchValidationLevel().isValidated()) {
-                tempFilteredProteinKeysArray.add(proteinKey);
-            }
-
-            waitingHandler.increasePrimaryProgressCounter();
-        }
-
-        // fail safe for when all proteins are removed
-        if (tempFilteredProteinKeysArray.isEmpty()) {
-            tempFilteredProteinKeysArray = proteinKeys;
-        }
-
-        return tempFilteredProteinKeysArray;
     }
 
     /**
@@ -1170,7 +1005,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
             public void run() {
                 try {
                     progressDialog.setWaitingText("Saving Results. Please Wait...");
-                    ProjectSaver.saveProject(reporterSettings, reporterIonQuantification, clusterMetrics, displayPreferences, cpsParent, progressDialog);
+                    ProjectSaver.saveProject(reporterSettings, reporterIonQuantification, displayPreferences, cpsParent, progressDialog);
                     if (!progressDialog.isRunCanceled()) {
                         if (closeWhenDone) {
                             closeReporter();
@@ -1655,7 +1490,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
             @Override
             public void run() {
                 try {
-                    clusterProteinProfiles(false, progressDialog);
+                    clusterBuilder.clusterProfiles(getIdentification(), reporterIonQuantification, quantificationFeaturesGenerator, displayPreferences, false, progressDialog);
                     if (!progressDialog.isRunCanceled()) {
                         overviewPanel.updateDisplay();
                     }

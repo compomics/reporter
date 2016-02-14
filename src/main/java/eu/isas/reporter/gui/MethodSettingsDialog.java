@@ -199,9 +199,9 @@ public class MethodSettingsDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     /**
-     * Opens a file chooser for importing method settings. 
-     * 
-     * @param evt 
+     * Opens a file chooser for importing method settings.
+     *
+     * @param evt
      */
     private void browseConfigButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseConfigButtonActionPerformed
 
@@ -209,13 +209,13 @@ public class MethodSettingsDialog extends javax.swing.JDialog {
             newDialog.getReporterGui().getLastSelectedFolder().setLastSelectedFolder(txtConfigurationFileLocation.getText());
         }
 
-        File selectedFile = Util.getUserSelectedFile(this, ".xml", "Reporter Method File (*.xml)", "Select Settings File", 
+        File selectedFile = Util.getUserSelectedFile(this, ".xml", "Reporter Method File (*.xml)", "Select Settings File",
                 newDialog.getReporterGui().getLastSelectedFolder().getLastSelectedFolder(), null, true);
 
         if (selectedFile != null) {
             try {
                 methodsFactory.importMethods(selectedFile);
-                newDialog.setSelectedMethod(newDialog.getMethod(newDialog.getSelectedMethod().getName()));
+                newDialog.setSelectedMethod(methodsFactory.getReporterMethod(newDialog.getSelectedMethod().getName()));
                 newDialog.setReagents(newDialog.getSelectedMethod().getReagentsSortedByMass());
                 refresh();
                 txtConfigurationFileLocation.setText(selectedFile.getAbsolutePath());
@@ -236,18 +236,18 @@ public class MethodSettingsDialog extends javax.swing.JDialog {
 
     /**
      * Save the method settings.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void saveConfigButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveConfigButtonActionPerformed
-        
+
         String tempFileName = null;
         if (txtConfigurationFileLocation.getText().length() > 0) {
             newDialog.getReporterGui().getLastSelectedFolder().setLastSelectedFolder(txtConfigurationFileLocation.getText());
             tempFileName = new File(txtConfigurationFileLocation.getText()).getName();
         }
 
-        File selectedFile = Util.getUserSelectedFile(this, ".xml", "Reporter Method File (*.xml)", "Save Settings File", 
+        File selectedFile = Util.getUserSelectedFile(this, ".xml", "Reporter Method File (*.xml)", "Save Settings File",
                 newDialog.getReporterGui().getLastSelectedFolder().getLastSelectedFolder(), tempFileName, false);
 
         if (selectedFile != null) {
@@ -270,11 +270,11 @@ public class MethodSettingsDialog extends javax.swing.JDialog {
 
     /**
      * Close the dialog.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
-        
+
         if (valuesChanged) {
             int selection = JOptionPane.showConfirmDialog(this, "Do you want to save the new settings to a file?", "Save File?", JOptionPane.YES_NO_CANCEL_OPTION);
             if (selection == JOptionPane.YES_OPTION) {
@@ -315,7 +315,7 @@ public class MethodSettingsDialog extends javax.swing.JDialog {
             }
         });
     }
-    
+
     /**
      * Table model for the correction factors table.
      */

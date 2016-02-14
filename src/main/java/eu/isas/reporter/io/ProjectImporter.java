@@ -3,9 +3,15 @@ package eu.isas.reporter.io;
 import com.compomics.util.db.ObjectsDB;
 import com.compomics.util.experiment.biology.PTM;
 import com.compomics.util.experiment.biology.PTMFactory;
+import com.compomics.util.experiment.biology.ions.PeptideFragmentIon;
+import com.compomics.util.experiment.biology.ions.ReporterIon;
 import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.identification_parameters.PtmSettings;
+import com.compomics.util.experiment.identification.identification_parameters.SearchParameters;
+import com.compomics.util.experiment.quantification.Quantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
+import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
+import com.compomics.util.experiment.quantification.reporterion.ReporterMethodFactory;
 import com.compomics.util.preferences.IdentificationParameters;
 import com.compomics.util.preferences.LastSelectedFolder;
 import com.compomics.util.waiting.WaitingHandler;
@@ -15,7 +21,6 @@ import eu.isas.reporter.calculation.clustering.keys.PeptideClusterClassKey;
 import eu.isas.reporter.calculation.clustering.keys.ProteinClusterClassKey;
 import eu.isas.reporter.calculation.clustering.keys.PsmClusterClassKey;
 import eu.isas.reporter.preferences.DisplayPreferences;
-import eu.isas.reporter.project.attributes.ClusterMetrics;
 import eu.isas.reporter.settings.ClusteringSettings;
 import eu.isas.reporter.settings.ReporterSettings;
 import java.awt.Dialog;
@@ -60,14 +65,14 @@ public class ProjectImporter {
     private ReporterIonQuantification reporterIonQuantification;
 
     /**
-     * The metrics to use for clustering.
-     */
-    private ClusterMetrics clusterMetrics;
-    
-    /**
      * The display preferences.
      */
     private DisplayPreferences displayPreferences;
+
+    /**
+     * The default reporter ion tolerance for TMT data.
+     */
+    public static final double DEFAULT_REPORTER_ION_TOLERANCE_TMT = 0.0016;
 
     /**
      * Constructor.
@@ -169,9 +174,6 @@ public class ProjectImporter {
 
             waitingHandler.setPrimaryProgressCounterIndeterminate(true);
 
-            // Load the possible cluster classes
-            clusterMetrics = getDefaultClusterMetrics(cpsParent.getIdentificationParameters(), identification);
-
             waitingHandler.setRunFinished();
 
         } catch (OutOfMemoryError error) {
@@ -221,11 +223,16 @@ public class ProjectImporter {
         }
 
         // Load Reporter settings files
-        ObjectsDB objectsDB = cpsParent.getIdentification().getIdentificationDB().getObjectsDB();
+        Identification identification = cpsParent.getIdentification();
+        IdentificationParameters identificationParameters = cpsParent.getIdentificationParameters();
+        ObjectsDB objectsDB = identification.getIdentificationDB().getObjectsDB();
         try {
             if (objectsDB.hasTable(ProjectSaver.REPORTER_SETTINGS_TABLE_NAME)) {
                 try {
                     reporterSettings = (ReporterSettings) objectsDB.retrieveObject(ProjectSaver.REPORTER_SETTINGS_TABLE_NAME, ReporterSettings.class.getName(), true, false);
+                    if (reporterSettings == null) {
+                        reporterSettings = getDefaultReporterSettings(identificationParameters);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                     String errorText = "An error occurred while importing the reporter settings.";
@@ -241,22 +248,8 @@ public class ProjectImporter {
                 }
                 try {
                     reporterIonQuantification = (ReporterIonQuantification) objectsDB.retrieveObject(ProjectSaver.REPORTER_SETTINGS_TABLE_NAME, ReporterIonQuantification.class.getName(), true, false);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    String errorText = "An error occurred while importing the reporter settings.";
-                    if (owner != null) {
-                        JOptionPane.showMessageDialog(owner,
-                                errorText,
-                                "Import Error", JOptionPane.ERROR_MESSAGE);
-                    } else {
-                        throw new IllegalArgumentException(errorText);
-                    }
-                    waitingHandler.setRunFinished();
-                }
-                try {
-                    clusterMetrics = (ClusterMetrics) objectsDB.retrieveObject(ProjectSaver.REPORTER_SETTINGS_TABLE_NAME, ClusterMetrics.class.getName(), true, false);
-                    if (clusterMetrics == null) {
-                        clusterMetrics = getDefaultClusterMetrics(cpsParent.getIdentificationParameters(), cpsParent.getIdentification());
+                    if (reporterIonQuantification == null) {
+                        reporterIonQuantification = getDefaultReporterIonQuantification(identificationParameters);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -274,8 +267,7 @@ public class ProjectImporter {
                     displayPreferences = (DisplayPreferences) objectsDB.retrieveObject(ProjectSaver.REPORTER_SETTINGS_TABLE_NAME, DisplayPreferences.class.getName(), true, false);
                     if (displayPreferences == null) {
                         displayPreferences = new DisplayPreferences();
-                        ClusteringSettings clusteringSettings = new ClusteringSettings();
-                        clusteringSettings.addProteinClass("All");
+                        ClusteringSettings clusteringSettings = getDefaultClusterMetrics(identificationParameters, identification);
                         displayPreferences.setClusteringSettings(clusteringSettings);
                     }
                 } catch (Exception e) {
@@ -306,6 +298,99 @@ public class ProjectImporter {
     }
 
     /**
+     * Returns the default reporter settings as inferred from the identification
+     * parameters.
+     *
+     * @param identificationParameters the identification parameters
+     *
+     * @return the default reporter settings
+     */
+    public static ReporterSettings getDefaultReporterSettings(IdentificationParameters identificationParameters) {
+
+        ReporterSettings reporterSettings = new ReporterSettings();
+
+        SearchParameters searchParameters = identificationParameters.getSearchParameters();
+
+        // try to detect the method used
+        for (String ptmName : searchParameters.getPtmSettings().getAllModifications()) {
+            if (ptmName.contains("iTRAQ 4-plex")) {
+                reporterSettings.getReporterIonSelectionSettings().setReporterIonsMzTolerance(searchParameters.getFragmentIonAccuracyInDaltons(ReporterIon.iTRAQ4Plex_117.getTheoreticMz(1)));
+                break;
+            } else if (ptmName.contains("iTRAQ 8-plex")) {
+                reporterSettings.getReporterIonSelectionSettings().setReporterIonsMzTolerance(searchParameters.getFragmentIonAccuracyInDaltons(ReporterIon.iTRAQ8Plex_121.getTheoreticMz(1)));
+                break;
+            } else if (ptmName.contains("TMT 2-plex")) {
+                if (reporterSettings.getReporterIonSelectionSettings().getReporterIonsMzTolerance() > DEFAULT_REPORTER_ION_TOLERANCE_TMT) {
+                    reporterSettings.getReporterIonSelectionSettings().setReporterIonsMzTolerance(DEFAULT_REPORTER_ION_TOLERANCE_TMT);
+                }
+                break;
+            } else if (ptmName.contains("TMT") && ptmName.contains("6-plex")) {
+                if (reporterSettings.getReporterIonSelectionSettings().getReporterIonsMzTolerance() > DEFAULT_REPORTER_ION_TOLERANCE_TMT) {
+                    reporterSettings.getReporterIonSelectionSettings().setReporterIonsMzTolerance(DEFAULT_REPORTER_ION_TOLERANCE_TMT);
+                }
+                break;
+            } else if (ptmName.contains("TMT") && ptmName.contains("10-plex")) {
+                if (reporterSettings.getReporterIonSelectionSettings().getReporterIonsMzTolerance() > DEFAULT_REPORTER_ION_TOLERANCE_TMT) {
+                    reporterSettings.getReporterIonSelectionSettings().setReporterIonsMzTolerance(DEFAULT_REPORTER_ION_TOLERANCE_TMT);
+                }
+                break;
+            }
+        }
+
+        return reporterSettings;
+    }
+
+    /**
+     * Returns the default reporter ion quantification based on the
+     * identification parameters.
+     *
+     * @param identificationParameters the identification parameters
+     *
+     * @return the default reporter ion quantification
+     */
+    public static ReporterIonQuantification getDefaultReporterIonQuantification(IdentificationParameters identificationParameters) {
+
+        ReporterMethod selectedMethod = null;
+
+        SearchParameters searchParameters = identificationParameters.getSearchParameters();
+        ReporterMethodFactory reporterMethodFactory = ReporterMethodFactory.getInstance();
+
+        // try to detect the method used
+        for (String ptmName : searchParameters.getPtmSettings().getAllModifications()) {
+            if (ptmName.contains("iTRAQ 4-plex")) {
+                selectedMethod = reporterMethodFactory.getReporterMethod("iTRAQ 4-plex");
+                break;
+            } else if (ptmName.contains("iTRAQ 8-plex")) {
+                selectedMethod = reporterMethodFactory.getReporterMethod("iTRAQ 8-plex");
+                break;
+            } else if (ptmName.contains("TMT 2-plex")) {
+                selectedMethod = reporterMethodFactory.getReporterMethod("TMT 2-plex");
+                break;
+            } else if (ptmName.contains("TMT") && ptmName.contains("6-plex")) {
+                if (searchParameters.getIonSearched1() == PeptideFragmentIon.Y_ION
+                        || searchParameters.getIonSearched2() == PeptideFragmentIon.Y_ION) {
+                    selectedMethod = reporterMethodFactory.getReporterMethod("TMT 6-plex (HCD)");
+                } else {
+                    selectedMethod = reporterMethodFactory.getReporterMethod("TMT 6-plex (ETD)");
+                }
+                break;
+            } else if (ptmName.contains("TMT") && ptmName.contains("10-plex")) {
+                selectedMethod = reporterMethodFactory.getReporterMethod("TMT 10-plex");
+                break;
+            }
+        }
+
+        // no method detected, default to the first
+        if (selectedMethod == null) {
+            selectedMethod = reporterMethodFactory.getReporterMethod(reporterMethodFactory.getMethodsNames().get(0));
+        }
+
+        ReporterIonQuantification reporterIonQuantification = new ReporterIonQuantification(Quantification.QuantificationMethod.REPORTER_IONS);
+        reporterIonQuantification.setMethod(selectedMethod);
+        return reporterIonQuantification;
+    }
+
+    /**
      * Returns the cluster metrics for a given project.
      *
      * @param identificationParameters the identification parameters
@@ -313,11 +398,12 @@ public class ProjectImporter {
      *
      * @return the cluster metrics for a given project
      */
-    public static ClusterMetrics getDefaultClusterMetrics(IdentificationParameters identificationParameters, Identification identification) {
+    public static ClusteringSettings getDefaultClusterMetrics(IdentificationParameters identificationParameters, Identification identification) {
 
         ArrayList<ProteinClusterClassKey> proteinClasses = new ArrayList<ProteinClusterClassKey>(1);
         ProteinClusterClassKey proteinClusterClassKey = new ProteinClusterClassKey();
         proteinClasses.add(proteinClusterClassKey);
+        ProteinClusterClassKey defaultClusterClass = proteinClusterClassKey;
         proteinClusterClassKey = new ProteinClusterClassKey();
         proteinClusterClassKey.setStarred(Boolean.TRUE);
         proteinClasses.add(proteinClusterClassKey);
@@ -372,11 +458,12 @@ public class ProjectImporter {
             }
         }
 
-        ClusterMetrics clusterMetrics = new ClusterMetrics();
-        clusterMetrics.setProteinClassKeys(proteinClasses);
-        clusterMetrics.setPeptideClassKeys(peptideClasses);
-        clusterMetrics.setPsmClassKeys(psmClasses);
-        return clusterMetrics;
+        ClusteringSettings clusteringSettings = new ClusteringSettings();
+        clusteringSettings.setProteinClassKeys(proteinClasses);
+        clusteringSettings.setPeptideClassKeys(peptideClasses);
+        clusteringSettings.setPsmClassKeys(psmClasses);
+        clusteringSettings.addProteinClass(defaultClusterClass.toString());
+        return clusteringSettings;
     }
 
     /**
@@ -407,17 +494,8 @@ public class ProjectImporter {
     }
 
     /**
-     * Returns the cluster metrics for this project.
-     *
-     * @return the cluster metrics for this project
-     */
-    public ClusterMetrics getClusterMetrics() {
-        return clusterMetrics;
-    }
-
-    /**
      * Returns the display preferences.
-     * 
+     *
      * @return the display preferences
      */
     public DisplayPreferences getDisplayPreferences() {

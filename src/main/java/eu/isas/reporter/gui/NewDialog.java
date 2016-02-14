@@ -26,7 +26,6 @@ import eu.isas.peptideshaker.utils.CpsParent;
 import eu.isas.reporter.gui.settings.ReporterSettingsDialog;
 import eu.isas.reporter.io.ProjectImporter;
 import eu.isas.reporter.preferences.DisplayPreferences;
-import eu.isas.reporter.project.attributes.ClusterMetrics;
 import eu.isas.reporter.settings.ReporterPreferences;
 import eu.isas.reporter.settings.ReporterSettings;
 import java.awt.Toolkit;
@@ -82,10 +81,6 @@ public class NewDialog extends javax.swing.JDialog {
      * The reporter settings.
      */
     private ReporterSettings reporterSettings;
-    /**
-     * The metrics to use for clustering.
-     */
-    private ClusterMetrics clusterMetrics;
     /**
      * The display preferences for this project.
      */
@@ -161,13 +156,13 @@ public class NewDialog extends javax.swing.JDialog {
         // load the user preferences
         loadDefaultPreferences();
 
-        if (selectedMethod == null && methodsFactory.getMethodsNames() != null && methodsFactory.getMethodsNames().length > 0) {
-            reporterMethodComboBox.setSelectedItem(methodsFactory.getMethodsNames()[0]);
+        if (selectedMethod == null && methodsFactory.getMethodsNames() != null && methodsFactory.getMethodsNames().size() > 0) {
+            reporterMethodComboBox.setSelectedItem(methodsFactory.getReporterMethod(methodsFactory.getMethodsNames().get(0)));
         }
 
         reporterMethodComboBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                selectedMethod = getMethod((String) reporterMethodComboBox.getSelectedItem());
+                selectedMethod = methodsFactory.getReporterMethod((String) reporterMethodComboBox.getSelectedItem());
                 reagents = selectedMethod.getReagentsSortedByMass();
                 refresh();
             }
@@ -204,13 +199,13 @@ public class NewDialog extends javax.swing.JDialog {
         // load the user preferences
         loadDefaultPreferences();
 
-        if (selectedMethod == null && methodsFactory.getMethodsNames() != null && methodsFactory.getMethodsNames().length > 0) {
-            reporterMethodComboBox.setSelectedItem(methodsFactory.getMethodsNames()[0]);
+        if (selectedMethod == null && methodsFactory.getMethodsNames() != null && methodsFactory.getMethodsNames().size() > 0) {
+            reporterMethodComboBox.setSelectedItem(methodsFactory.getMethodsNames().get(0));
         }
 
         reporterMethodComboBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                selectedMethod = getMethod((String) reporterMethodComboBox.getSelectedItem());
+                selectedMethod = methodsFactory.getReporterMethod((String) reporterMethodComboBox.getSelectedItem());
                 reagents = selectedMethod.getReagentsSortedByMass();
                 refresh();
             }
@@ -400,7 +395,7 @@ public class NewDialog extends javax.swing.JDialog {
 
         reporterMethodLabel.setText("Reporter Method");
 
-        reporterMethodComboBox.setModel(new DefaultComboBoxModel(methodsFactory.getMethodsNames()));
+        reporterMethodComboBox.setModel(new DefaultComboBoxModel(methodsFactory.getMethodsNamesAsArray()));
         reporterMethodComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 reporterMethodComboBoxActionPerformed(evt);
@@ -752,7 +747,7 @@ public class NewDialog extends javax.swing.JDialog {
      */
     private void reporterMethodComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reporterMethodComboBoxActionPerformed
         sampleNames = new HashMap<String, String>();
-        selectedMethod = getMethod((String) reporterMethodComboBox.getSelectedItem());
+        selectedMethod = methodsFactory.getReporterMethod((String) reporterMethodComboBox.getSelectedItem());
         reagents = selectedMethod.getReagentsSortedByMass();
 
         // update the reporter ion mz tolerance
@@ -974,7 +969,7 @@ public class NewDialog extends javax.swing.JDialog {
                 welcomeDialog.setVisible(false);
             }
 
-            reporterGui.createNewProject(cpsParent, reporterSettings, reporterIonQuantification, processingPreferences, clusterMetrics);
+            reporterGui.createNewProject(cpsParent, reporterSettings, reporterIonQuantification, processingPreferences, displayPreferences);
             dispose();
         }
     }//GEN-LAST:event_loadButtonActionPerformed
@@ -1082,24 +1077,6 @@ public class NewDialog extends javax.swing.JDialog {
     }
 
     /**
-     * Returns the reporter method corresponding to the given name.
-     *
-     * @param methodName the given name
-     * @return the corresponding reporter method
-     */
-    public ReporterMethod getMethod(String methodName) {
-        if (methodsFactory.getMethods() == null) {
-            importMethods();
-        }
-        for (ReporterMethod method : methodsFactory.getMethods()) {
-            if (methodName == null || method.getName().equals(methodName)) {
-                return method;
-            }
-        }
-        return null;
-    }
-
-    /**
      * Updates the combo box and table values based on the currently selected
      * quantification method.
      */
@@ -1190,88 +1167,28 @@ public class NewDialog extends javax.swing.JDialog {
                 verifyFastaFile();
                 txtIdFileLocation.setText(cpsParent.getCpsFile().getName());
 
+                // load project specific PTMs
+                String error = PeptideShaker.loadModifications(getSearchParameters());
+                if (error != null) {
+                    JOptionPane.showMessageDialog(NewDialog.this,
+                            error,
+                            "PTM Definition Changed", JOptionPane.WARNING_MESSAGE);
+                }
+
+                // Set-up cache
                 cache = new ObjectsCache();
                 cache.setAutomatedMemoryManagement(true);
 
                 reporterSettings = projectImporter.getReporterSettings();
-                if (reporterSettings == null) {
-                    reporterSettings = new ReporterSettings();
-                }
-
                 reporterIonQuantification = projectImporter.getReporterIonQuantification();
-
-                if (reporterIonQuantification != null) {
-                    selectedMethod = reporterIonQuantification.getReporterMethod();
-                } else {
-                    SearchParameters searchParameters = getSearchParameters();
-
-                    // load project specific PTMs
-                    String error = PeptideShaker.loadModifications(searchParameters);
-                    if (error != null) {
-                        JOptionPane.showMessageDialog(NewDialog.this,
-                                error,
-                                "PTM Definition Changed", JOptionPane.WARNING_MESSAGE);
-                    }
-
-                    // try to detect the method used
-                    for (String ptmName : searchParameters.getPtmSettings().getAllModifications()) {
-                        if (ptmName.contains("iTRAQ 4-plex")) {
-                            selectedMethod = getMethod("iTRAQ 4-plex");
-                            reporterSettings.getReporterIonSelectionSettings().setReporterIonsMzTolerance(DEFAULT_REPORTER_ION_TOLERANCE_ITRAQ);
-                            break;
-                        } else if (ptmName.contains("iTRAQ 8-plex")) {
-                            selectedMethod = getMethod("iTRAQ 8-plex");
-                            reporterSettings.getReporterIonSelectionSettings().setReporterIonsMzTolerance(DEFAULT_REPORTER_ION_TOLERANCE_ITRAQ);
-                            break;
-                        } else if (ptmName.contains("TMT 2-plex")) {
-                            selectedMethod = getMethod("TMT 2-plex");
-                            if (reporterSettings.getReporterIonSelectionSettings().getReporterIonsMzTolerance() > DEFAULT_REPORTER_ION_TOLERANCE_TMT) {
-                                reporterSettings.getReporterIonSelectionSettings().setReporterIonsMzTolerance(DEFAULT_REPORTER_ION_TOLERANCE_TMT);
-                            }
-                            break;
-                        } else if (ptmName.contains("TMT") && ptmName.contains("6-plex")) {
-                            if (searchParameters.getIonSearched1() == PeptideFragmentIon.Y_ION
-                                    || searchParameters.getIonSearched2() == PeptideFragmentIon.Y_ION) {
-                                selectedMethod = getMethod("TMT 6-plex (HCD)");
-                            } else {
-                                selectedMethod = getMethod("TMT 6-plex (ETD)");
-                            }
-                            if (reporterSettings.getReporterIonSelectionSettings().getReporterIonsMzTolerance() > DEFAULT_REPORTER_ION_TOLERANCE_TMT) {
-                                reporterSettings.getReporterIonSelectionSettings().setReporterIonsMzTolerance(DEFAULT_REPORTER_ION_TOLERANCE_TMT);
-                            }
-                            break;
-                        } else if (ptmName.contains("TMT") && ptmName.contains("10-plex")) {
-                            selectedMethod = getMethod("TMT 10-plex");
-                            if (reporterSettings.getReporterIonSelectionSettings().getReporterIonsMzTolerance() > DEFAULT_REPORTER_ION_TOLERANCE_TMT) {
-                                reporterSettings.getReporterIonSelectionSettings().setReporterIonsMzTolerance(DEFAULT_REPORTER_ION_TOLERANCE_TMT);
-                            }
-                            break;
-                        }
-                    }
-
-                    // no method detected, default to the first
-                    if (selectedMethod == null) {
-                        reporterMethodComboBox.setSelectedItem(methodsFactory.getMethodsNames()[0]);
-
-                        if (methodsFactory.getMethodsNames()[0].lastIndexOf("TMT") != -1) {
-                            if (reporterSettings.getReporterIonSelectionSettings().getReporterIonsMzTolerance() > DEFAULT_REPORTER_ION_TOLERANCE_TMT) {
-                                reporterSettings.getReporterIonSelectionSettings().setReporterIonsMzTolerance(DEFAULT_REPORTER_ION_TOLERANCE_TMT);
-                            }
-                        } else {
-                            reporterSettings.getReporterIonSelectionSettings().setReporterIonsMzTolerance(DEFAULT_REPORTER_ION_TOLERANCE_ITRAQ);
-                        }
-                    }
-                }
-
+                selectedMethod = reporterIonQuantification.getReporterMethod();
                 reagents = selectedMethod.getReagentsSortedByMass();
-                sampleNames.clear();
-                
-                // Get the cluster metrics
-                clusterMetrics = projectImporter.getClusterMetrics();
-                
+
                 // Get the display preferences
                 displayPreferences = projectImporter.getDisplayPreferences();
-                
+
+                sampleNames.clear();
+
                 refresh();
 
                 progressDialog.setRunFinished();

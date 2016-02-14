@@ -5,7 +5,6 @@ import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuant
 import com.compomics.util.waiting.WaitingHandler;
 import eu.isas.peptideshaker.utils.CpsParent;
 import eu.isas.reporter.preferences.DisplayPreferences;
-import eu.isas.reporter.project.attributes.ClusterMetrics;
 import eu.isas.reporter.settings.ReporterSettings;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -28,7 +27,6 @@ public class ProjectSaver {
      *
      * @param reporterSettings the reporter settings
      * @param reporterIonQuantification the reporter ion quantification
-     * @param clusterMetrics the cluster metrics
      * @param displayPreferences the display preferences
      * @param cpsParent the cps parent
      * @param waitingHandler waiting handler displaying feedback to the user.
@@ -46,7 +44,7 @@ public class ProjectSaver {
      * @throws ArchiveException thrown of ArchiveException occurs exception
      * thrown whenever an error occurred while taring the project
      */
-    public static void saveProject(ReporterSettings reporterSettings, ReporterIonQuantification reporterIonQuantification, ClusterMetrics clusterMetrics, DisplayPreferences displayPreferences, CpsParent cpsParent,
+    public static void saveProject(ReporterSettings reporterSettings, ReporterIonQuantification reporterIonQuantification, DisplayPreferences displayPreferences, CpsParent cpsParent,
             WaitingHandler waitingHandler) throws IOException, SQLException, ClassNotFoundException, InterruptedException, ArchiveException {
 
         ObjectsDB objectsDB = cpsParent.getIdentification().getIdentificationDB().getObjectsDB();
@@ -62,11 +60,6 @@ public class ProjectSaver {
             objectsDB.updateObject(REPORTER_SETTINGS_TABLE_NAME, ReporterIonQuantification.class.getName(), reporterIonQuantification, false);
         } else {
             objectsDB.insertObject(REPORTER_SETTINGS_TABLE_NAME, ReporterIonQuantification.class.getName(), reporterIonQuantification, false);
-        }
-        if (objectsDB.inDB(REPORTER_SETTINGS_TABLE_NAME, ClusterMetrics.class.getName(), false)) {
-            objectsDB.updateObject(REPORTER_SETTINGS_TABLE_NAME, ClusterMetrics.class.getName(), clusterMetrics, false);
-        } else {
-            objectsDB.insertObject(REPORTER_SETTINGS_TABLE_NAME, ClusterMetrics.class.getName(), clusterMetrics, false);
         }
         if (objectsDB.inDB(REPORTER_SETTINGS_TABLE_NAME, DisplayPreferences.class.getName(), false)) {
             objectsDB.updateObject(REPORTER_SETTINGS_TABLE_NAME, DisplayPreferences.class.getName(), displayPreferences, false);
