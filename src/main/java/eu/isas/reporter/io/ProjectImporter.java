@@ -14,7 +14,9 @@ import eu.isas.reporter.Reporter;
 import eu.isas.reporter.calculation.clustering.keys.PeptideClusterClassKey;
 import eu.isas.reporter.calculation.clustering.keys.ProteinClusterClassKey;
 import eu.isas.reporter.calculation.clustering.keys.PsmClusterClassKey;
+import eu.isas.reporter.preferences.DisplayPreferences;
 import eu.isas.reporter.project.attributes.ClusterMetrics;
+import eu.isas.reporter.settings.ClusteringSettings;
 import eu.isas.reporter.settings.ReporterSettings;
 import java.awt.Dialog;
 import java.io.EOFException;
@@ -61,6 +63,11 @@ public class ProjectImporter {
      * The metrics to use for clustering.
      */
     private ClusterMetrics clusterMetrics;
+    
+    /**
+     * The display preferences.
+     */
+    private DisplayPreferences displayPreferences;
 
     /**
      * Constructor.
@@ -163,7 +170,7 @@ public class ProjectImporter {
             waitingHandler.setPrimaryProgressCounterIndeterminate(true);
 
             // Load the possible cluster classes
-            clusterMetrics = getClusterMetrics(cpsParent.getIdentificationParameters(), identification);
+            clusterMetrics = getDefaultClusterMetrics(cpsParent.getIdentificationParameters(), identification);
 
             waitingHandler.setRunFinished();
 
@@ -246,6 +253,43 @@ public class ProjectImporter {
                     }
                     waitingHandler.setRunFinished();
                 }
+                try {
+                    clusterMetrics = (ClusterMetrics) objectsDB.retrieveObject(ProjectSaver.REPORTER_SETTINGS_TABLE_NAME, ClusterMetrics.class.getName(), true, false);
+                    if (clusterMetrics == null) {
+                        clusterMetrics = getDefaultClusterMetrics(cpsParent.getIdentificationParameters(), cpsParent.getIdentification());
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    String errorText = "An error occurred while importing the reporter settings.";
+                    if (owner != null) {
+                        JOptionPane.showMessageDialog(owner,
+                                errorText,
+                                "Import Error", JOptionPane.ERROR_MESSAGE);
+                    } else {
+                        throw new IllegalArgumentException(errorText);
+                    }
+                    waitingHandler.setRunFinished();
+                }
+                try {
+                    displayPreferences = (DisplayPreferences) objectsDB.retrieveObject(ProjectSaver.REPORTER_SETTINGS_TABLE_NAME, DisplayPreferences.class.getName(), true, false);
+                    if (displayPreferences == null) {
+                        displayPreferences = new DisplayPreferences();
+                        ClusteringSettings clusteringSettings = new ClusteringSettings();
+                        clusteringSettings.addProteinClass("All");
+                        displayPreferences.setClusteringSettings(clusteringSettings);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    String errorText = "An error occurred while importing the reporter settings.";
+                    if (owner != null) {
+                        JOptionPane.showMessageDialog(owner,
+                                errorText,
+                                "Import Error", JOptionPane.ERROR_MESSAGE);
+                    } else {
+                        throw new IllegalArgumentException(errorText);
+                    }
+                    waitingHandler.setRunFinished();
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -269,7 +313,7 @@ public class ProjectImporter {
      *
      * @return the cluster metrics for a given project
      */
-    public ClusterMetrics getClusterMetrics(IdentificationParameters identificationParameters, Identification identification) {
+    public static ClusterMetrics getDefaultClusterMetrics(IdentificationParameters identificationParameters, Identification identification) {
 
         ArrayList<ProteinClusterClassKey> proteinClasses = new ArrayList<ProteinClusterClassKey>(1);
         ProteinClusterClassKey proteinClusterClassKey = new ProteinClusterClassKey();
@@ -369,5 +413,14 @@ public class ProjectImporter {
      */
     public ClusterMetrics getClusterMetrics() {
         return clusterMetrics;
+    }
+
+    /**
+     * Returns the display preferences.
+     * 
+     * @return the display preferences
+     */
+    public DisplayPreferences getDisplayPreferences() {
+        return displayPreferences;
     }
 }

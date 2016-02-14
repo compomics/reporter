@@ -1,18 +1,19 @@
 package eu.isas.reporter.preferences;
 
 import eu.isas.reporter.settings.ClusteringSettings;
+import java.io.Serializable;
 
 /**
  * Reporter display preferences.
  *
  * @author Marc Vaudel
  */
-public class DisplayPreferences {
+public class DisplayPreferences implements Serializable {
 
     /**
      * The clustering settings.
      */
-    private ClusteringSettings clusteringSettings;
+    private ClusteringSettings clusteringSettings = new ClusteringSettings();
     
     /**
      * Constructor.

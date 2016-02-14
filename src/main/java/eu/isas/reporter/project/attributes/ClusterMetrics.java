@@ -3,15 +3,16 @@ package eu.isas.reporter.project.attributes;
 import eu.isas.reporter.calculation.clustering.keys.PeptideClusterClassKey;
 import eu.isas.reporter.calculation.clustering.keys.ProteinClusterClassKey;
 import eu.isas.reporter.calculation.clustering.keys.PsmClusterClassKey;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * Metrics used to design the clusters
+ * Metrics used to design the cluster classes.
  *
  * @author Marc Vaudel
  */
-public class ClusterMetrics {
+public class ClusterMetrics implements Serializable {
 
     /**
      * The possible protein classes.

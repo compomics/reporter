@@ -1,13 +1,14 @@
 package eu.isas.reporter.calculation.clustering.keys;
 
 import eu.isas.reporter.calculation.clustering.ClusterClassKey;
+import java.io.Serializable;
 
 /**
  * Key for the class of a PSM cluster.
  *
  * @author Marc Vaudel
  */
-public class PsmClusterClassKey implements ClusterClassKey {
+public class PsmClusterClassKey implements ClusterClassKey, Serializable {
 
     /**
      * Indicates whether the psms must be starred.

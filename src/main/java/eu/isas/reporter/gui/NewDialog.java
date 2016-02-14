@@ -25,6 +25,7 @@ import eu.isas.peptideshaker.preferences.ProjectDetails;
 import eu.isas.peptideshaker.utils.CpsParent;
 import eu.isas.reporter.gui.settings.ReporterSettingsDialog;
 import eu.isas.reporter.io.ProjectImporter;
+import eu.isas.reporter.preferences.DisplayPreferences;
 import eu.isas.reporter.project.attributes.ClusterMetrics;
 import eu.isas.reporter.settings.ReporterPreferences;
 import eu.isas.reporter.settings.ReporterSettings;
@@ -85,6 +86,10 @@ public class NewDialog extends javax.swing.JDialog {
      * The metrics to use for clustering.
      */
     private ClusterMetrics clusterMetrics;
+    /**
+     * The display preferences for this project.
+     */
+    private DisplayPreferences displayPreferences;
     /**
      * The processing preferences.
      */
@@ -1260,6 +1265,13 @@ public class NewDialog extends javax.swing.JDialog {
 
                 reagents = selectedMethod.getReagentsSortedByMass();
                 sampleNames.clear();
+                
+                // Get the cluster metrics
+                clusterMetrics = projectImporter.getClusterMetrics();
+                
+                // Get the display preferences
+                displayPreferences = projectImporter.getDisplayPreferences();
+                
                 refresh();
 
                 progressDialog.setRunFinished();

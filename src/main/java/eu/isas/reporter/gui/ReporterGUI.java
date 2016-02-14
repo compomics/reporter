@@ -149,7 +149,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
     /**
      * The display preferences.
      */
-    private DisplayPreferences displayPreferences = new DisplayPreferences();
+    private DisplayPreferences displayPreferences;
     /**
      * The processing preferences.
      */
@@ -172,10 +172,6 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * The k-means clustering results.
      */
     private KMeansClustering kMeansClutering;
-    /**
-     * The number of clusters.
-     */
-    private int numberOfClusters = 18; // @TODO: number of clusters should not be hardcoded!!!
     /**
      * List of the currently selected proteins.
      */
@@ -309,6 +305,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         this.reporterIonQuantification = reporterIonQuantification;
         this.processingPreferences = processingPreferences;
         this.clusterMetrics = clusterMetrics;
+        this.displayPreferences = displayPreferences;
 
         identificationFeaturesGenerator = new IdentificationFeaturesGenerator(cpsParent.getIdentification(), cpsParent.getShotgunProtocol(),
                 cpsParent.getIdentificationParameters(), cpsParent.getMetrics(), cpsParent.getSpectrumCountingPreferences());
@@ -416,7 +413,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
                 normalizer.setProteinNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(), reporterSettings.getNormalizationSettings(), cpsParent.getIdentification(), quantificationFeaturesGenerator, processingPreferences, exceptionHandler, progressDialog);
             }
         }
-        
+
         // cluster the protein profiles
         clusterProteinProfiles(true, waitingHandler);
 
@@ -457,7 +454,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
             // filter the proteins
             waitingHandler.setWaitingText("Filtering Proteins. Please Wait...");
             filteredProteinKeys = filterProteins(getMetrics().getProteinKeys(), waitingHandler);
-            
+
             if (waitingHandler.isRunCanceled()) {
                 return;
             }
@@ -475,7 +472,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         waitingHandler.setSecondaryProgressCounterIndeterminate(true);
         waitingHandler.setWaitingText("Clustering Proteins. Please Wait...");
         String[] proteinKeysArray = filteredProteinKeys.toArray(new String[0]);
-        kMeansClutering = new KMeansClustering(proteinRatios, proteinKeysArray, numberOfClusters);
+        kMeansClutering = new KMeansClustering(proteinRatios, proteinKeysArray, displayPreferences.getClusteringSettings().getKMeansClusteringSettings().getnClusters());
 
         // perform the clustering
         kMeansClutering.kMeanCluster(waitingHandler);
@@ -583,7 +580,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
 
             waitingHandler.increasePrimaryProgressCounter();
         }
-        
+
         // fail safe for when all proteins are removed
         if (tempFilteredProteinKeysArray.isEmpty()) {
             tempFilteredProteinKeysArray = proteinKeys;
@@ -612,10 +609,10 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         }
         return cpsParent.getIdentification();
     }
-    
+
     /**
      * Returns the gene maps of the loaded project. Null if none.
-     * 
+     *
      * @return the gene maps
      */
     public GeneMaps getGeneMaps() {
@@ -1173,7 +1170,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
             public void run() {
                 try {
                     progressDialog.setWaitingText("Saving Results. Please Wait...");
-                    ProjectSaver.saveProject(reporterSettings, reporterIonQuantification, cpsParent, progressDialog);
+                    ProjectSaver.saveProject(reporterSettings, reporterIonQuantification, clusterMetrics, displayPreferences, cpsParent, progressDialog);
                     if (!progressDialog.isRunCanceled()) {
                         if (closeWhenDone) {
                             closeReporter();
@@ -1466,7 +1463,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         try {
             // update the look and feel after adding the panels
             UtilitiesGUIDefaults.setLookAndFeel();
-            
+
             // fix for the scroll bar thumb disappearing...
             LookAndFeel lookAndFeel = UIManager.getLookAndFeel();
             UIDefaults defaults = lookAndFeel.getDefaults();
@@ -1641,7 +1638,8 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * @param numberOfClusters the new number of clusters
      */
     public void recluster(int numberOfClusters) {
-        this.numberOfClusters = numberOfClusters;
+
+        displayPreferences.getClusteringSettings().getKMeansClusteringSettings().setnClusters(numberOfClusters);
 
         new Thread(new Runnable() {
             public void run() {

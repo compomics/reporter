@@ -1,13 +1,14 @@
 package eu.isas.reporter.calculation.clustering.keys;
 
 import eu.isas.reporter.calculation.clustering.ClusterClassKey;
+import java.io.Serializable;
 
 /**
  * Key for the class of a protein cluster.
  *
  * @author Marc Vaudel
  */
-public class ProteinClusterClassKey implements ClusterClassKey {
+public class ProteinClusterClassKey implements ClusterClassKey, Serializable {
 
     /**
      * Indicates whether the proteins must be starred.

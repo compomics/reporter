@@ -1,6 +1,7 @@
 package eu.isas.reporter.calculation.clustering.keys;
 
 import eu.isas.reporter.calculation.clustering.ClusterClassKey;
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
@@ -8,7 +9,7 @@ import java.util.ArrayList;
  *
  * @author Marc Vaudel
  */
-public class PeptideClusterClassKey implements ClusterClassKey {
+public class PeptideClusterClassKey implements ClusterClassKey, Serializable {
 
     /**
      * Indicates whether the peptides must be starred.
