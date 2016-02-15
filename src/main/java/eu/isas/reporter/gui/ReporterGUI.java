@@ -15,11 +15,8 @@ import com.compomics.util.exceptions.ExceptionHandler;
 import com.compomics.util.exceptions.exception_handlers.FrameExceptionHandler;
 import com.compomics.util.experiment.ShotgunProtocol;
 import com.compomics.util.experiment.biology.genes.GeneMaps;
-import com.compomics.util.experiment.identification.matches.ProteinMatch;
-import com.compomics.util.experiment.identification.matches_iterators.ProteinMatchesIterator;
 import com.compomics.util.experiment.identification.protein_sequences.SequenceFactory;
 import com.compomics.util.experiment.normalization.NormalizationFactors;
-import com.compomics.util.experiment.personalization.UrParameter;
 import com.compomics.util.gui.PrivacySettingsDialog;
 import com.compomics.util.gui.UtilitiesGUIDefaults;
 import com.compomics.util.gui.error_handlers.BugReport;
@@ -27,12 +24,12 @@ import com.compomics.util.gui.error_handlers.HelpDialog;
 import com.compomics.util.gui.parameters.ProcessingPreferencesDialog;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
 import com.compomics.util.math.clustering.KMeansClustering;
+import com.compomics.util.math.clustering.settings.KMeansClusteringSettings;
 import com.compomics.util.preferences.IdentificationParameters;
 import com.compomics.util.preferences.LastSelectedFolder;
 import com.compomics.util.preferences.ProcessingPreferences;
 import com.compomics.util.preferences.UtilitiesUserPreferences;
 import com.compomics.util.waiting.WaitingHandler;
-import eu.isas.peptideshaker.parameters.PSParameter;
 import eu.isas.peptideshaker.preferences.FilterPreferences;
 import eu.isas.peptideshaker.preferences.ProjectDetails;
 import eu.isas.peptideshaker.preferences.SpectrumCountingPreferences;
@@ -48,10 +45,11 @@ import eu.isas.reporter.calculation.clustering.ClusterBuilder;
 import eu.isas.reporter.calculation.normalization.Normalizer;
 import eu.isas.reporter.gui.export.ReportDialog;
 import eu.isas.reporter.gui.resultpanels.OverviewPanel;
+import eu.isas.reporter.gui.settings.display.ClusteringSettingsDialog;
 import eu.isas.reporter.io.ProjectSaver;
 import eu.isas.reporter.settings.ReporterSettings;
 import eu.isas.reporter.preferences.DisplayPreferences;
-import eu.isas.reporter.quantificationdetails.ProteinQuantificationDetails;
+import eu.isas.reporter.settings.ClusteringSettings;
 import eu.isas.reporter.utils.Properties;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -64,8 +62,6 @@ import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import javax.swing.Box;
 import javax.swing.JOptionPane;
 import javax.swing.LookAndFeel;
@@ -657,6 +653,8 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         exportQuantificationFeaturesMenuItem = new javax.swing.JMenuItem();
         exportFollowUpJMenuItem = new javax.swing.JMenuItem();
         quantificationOptionsMenu = new javax.swing.JMenu();
+        categoriesMenuItem = new javax.swing.JMenuItem();
+        jSeparator4 = new javax.swing.JPopupMenu.Separator();
         processingSettingsMenuItem = new javax.swing.JMenuItem();
         javaOptionsMenuItem = new javax.swing.JMenuItem();
         privacyMenuItem = new javax.swing.JMenuItem();
@@ -772,6 +770,15 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
 
         quantificationOptionsMenu.setMnemonic('E');
         quantificationOptionsMenu.setText("Edit");
+
+        categoriesMenuItem.setText("Categories");
+        categoriesMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                categoriesMenuItemActionPerformed(evt);
+            }
+        });
+        quantificationOptionsMenu.add(categoriesMenuItem);
+        quantificationOptionsMenu.add(jSeparator4);
 
         processingSettingsMenuItem.setText("Processing Settings");
         processingSettingsMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -971,6 +978,17 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
             processingPreferences = processingPreferencesDialog.getProcessingPreferences();
         }
     }//GEN-LAST:event_processingSettingsMenuItemActionPerformed
+
+    private void categoriesMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_categoriesMenuItemActionPerformed
+        ClusteringSettingsDialog clusteringSettingsDialog = new ClusteringSettingsDialog(this, displayPreferences.getClusteringSettings(), true);
+        if (!clusteringSettingsDialog.isCanceled()) { //@TODO: check whether the settings changed
+            KMeansClusteringSettings kMeansClusteringSettings = displayPreferences.getClusteringSettings().getKMeansClusteringSettings();
+            ClusteringSettings newSettings = clusteringSettingsDialog.getClusteringSettings();
+            newSettings.setKMeansClusteringSettings(kMeansClusteringSettings);
+            displayPreferences.setClusteringSettings(newSettings);
+            recluster(kMeansClusteringSettings.getnClusters(), true);
+        }
+    }//GEN-LAST:event_categoriesMenuItemActionPerformed
 
     /**
      * Saves the quantification details in the cpsx file.
@@ -1211,6 +1229,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem aboutMenuItem;
     private javax.swing.JPanel backgroundPanel;
+    private javax.swing.JMenuItem categoriesMenuItem;
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JMenuItem exportFollowUpJMenuItem;
     private javax.swing.JMenu exportMenu;
@@ -1223,6 +1242,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
     private javax.swing.JPopupMenu.Separator jSeparator17;
     private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
+    private javax.swing.JPopupMenu.Separator jSeparator4;
     private javax.swing.JMenuItem javaOptionsMenuItem;
     private javax.swing.JMenuItem logReportMenu;
     private javax.swing.JMenuBar menuBar;
@@ -1471,8 +1491,9 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * Set the number of clusters and recluster.
      *
      * @param numberOfClusters the new number of clusters
+     * @param loadData if true, the data is (re-)loaded
      */
-    public void recluster(int numberOfClusters) {
+    public void recluster(int numberOfClusters, final boolean loadData) {
 
         displayPreferences.getClusteringSettings().getKMeansClusteringSettings().setnClusters(numberOfClusters);
 
@@ -1490,7 +1511,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
             @Override
             public void run() {
                 try {
-                    clusterBuilder.clusterProfiles(getIdentification(), getIdentificationParameters(), getMetrics(), reporterIonQuantification, quantificationFeaturesGenerator, displayPreferences, false, progressDialog);
+                    clusterBuilder.clusterProfiles(getIdentification(), getIdentificationParameters(), getMetrics(), reporterIonQuantification, quantificationFeaturesGenerator, displayPreferences, loadData, progressDialog);
                     if (!progressDialog.isRunCanceled()) {
                         overviewPanel.updateDisplay();
                     }

@@ -1419,7 +1419,7 @@ public class OverviewPanel extends javax.swing.JPanel {
         if (value != null) {
             try {
                 int numberOfClusters = Integer.valueOf(value);
-                reporterGUI.recluster(numberOfClusters);
+                reporterGUI.recluster(numberOfClusters, false);
             } catch (NumberFormatException e) {
                 JOptionPane.showMessageDialog(this, "The number of cluster has to be an integer value.", "Input Error", JOptionPane.WARNING_MESSAGE);
             }

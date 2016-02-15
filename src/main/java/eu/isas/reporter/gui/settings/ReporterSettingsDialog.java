@@ -1,5 +1,8 @@
 package eu.isas.reporter.gui.settings;
 
+import eu.isas.reporter.gui.settings.quantification.NormalizationSettingsDialog;
+import eu.isas.reporter.gui.settings.quantification.ReporterIonSelectionSettingsDialog;
+import eu.isas.reporter.gui.settings.quantification.RatioEstimationSettingsDialog;
 import com.compomics.util.experiment.identification.identification_parameters.PtmSettings;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
 import eu.isas.reporter.settings.NormalizationSettings;

@@ -269,6 +269,15 @@ public class ClusteringSettings implements Serializable {
             possibleProteinClassesKeys.put(name, clusterClassKey);
         }
     }
+    
+    /**
+     * Returns a map of the possible keys indexed by their toString() representation.
+     * 
+     * @return a map of the possible keys 
+     */
+    public HashMap<String, ProteinClusterClassKey> getProteinKeysMap() {
+        return possibleProteinClassesKeys;
+    }
 
     /**
      * Returns the possible peptide classes names.
@@ -308,6 +317,15 @@ public class ClusteringSettings implements Serializable {
             possiblePeptideClassesKeys.put(name, clusterClassKey);
         }
     }
+    
+    /**
+     * Returns a map of the possible keys indexed by their toString() representation.
+     * 
+     * @return a map of the possible keys 
+     */
+    public HashMap<String, PeptideClusterClassKey> getPeptideKeysMap() {
+        return possiblePeptideClassesKeys;
+    }
 
     /**
      * Returns the possible PSM classes names.
@@ -346,6 +364,33 @@ public class ClusteringSettings implements Serializable {
             possiblePsmClassesNames.add(name);
             possiblePsmClassesKeys.put(name, clusterClassKey);
         }
+    }
+    
+    /**
+     * Returns a map of the possible keys indexed by their toString() representation.
+     * 
+     * @return a map of the possible keys 
+     */
+    public HashMap<String, PsmClusterClassKey> getPsmKeysMap() {
+        return possiblePsmClassesKeys;
+    }
+
+    /**
+     * Returns the classes color coding.
+     * 
+     * @return the classes color coding
+     */
+    public HashMap<String, Color> getClassesColors() {
+        return classesColors;
+    }
+
+    /**
+     * Sets the classes color coding.
+     * 
+     * @param classesColors the classes color coding
+     */
+    public void setClassesColors(HashMap<String, Color> classesColors) {
+        this.classesColors = classesColors;
     }
 
 }
