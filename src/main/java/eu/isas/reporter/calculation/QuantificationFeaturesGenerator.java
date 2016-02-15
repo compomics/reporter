@@ -223,4 +223,24 @@ public class QuantificationFeaturesGenerator {
         }
         return deisotoper;
     }
+
+    /**
+     * Returns the quantification features cache.
+     * 
+     * @return the quantification features cache
+     */
+    public QuantificationFeaturesCache getQuantificationFeaturesCache() {
+        return quantificationFeaturesCache;
+    }
+
+    /**
+     * Sets the quantification features cache.
+     * 
+     * @param quantificationFeaturesCache the quantification features cache
+     */
+    public void setQuantificationFeaturesCache(QuantificationFeaturesCache quantificationFeaturesCache) {
+        this.quantificationFeaturesCache = quantificationFeaturesCache;
+    }
+    
+    
 }

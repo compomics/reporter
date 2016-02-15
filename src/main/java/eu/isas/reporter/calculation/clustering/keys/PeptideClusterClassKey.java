@@ -3,6 +3,7 @@ package eu.isas.reporter.calculation.clustering.keys;
 import eu.isas.reporter.calculation.clustering.ClusterClassKey;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 /**
  * Key for the class of a peptide cluster.
@@ -22,9 +23,19 @@ public class PeptideClusterClassKey implements ClusterClassKey, Serializable {
     private ArrayList<String> possiblePtms = null;
 
     /**
+     * The PTMs eventually carried by the peptides in this class as set.
+     */
+    private HashSet<String> possiblePtmsAsSet = null;
+
+    /**
      * The PTMs not carried by the peptides in this class.
      */
     private ArrayList<String> forbiddenPtms = null;
+
+    /**
+     * The PTMs not carried by the peptides in this class as set.
+     */
+    private HashSet<String> forbiddenPtmsAsSet = null;
 
     /**
      * Indicates whether the peptides are not modified.
@@ -74,6 +85,15 @@ public class PeptideClusterClassKey implements ClusterClassKey, Serializable {
     public ArrayList<String> getPossiblePtms() {
         return possiblePtms;
     }
+    
+    /**
+     * Returns the possible PTMs as a set.
+     * 
+     * @return the possible PTMs as a set
+     */
+    public HashSet<String> getPossiblePtmsAsSet() {
+        return possiblePtmsAsSet;
+    }
 
     /**
      * Sets the PTMs possibly carried by the peptides.
@@ -82,6 +102,7 @@ public class PeptideClusterClassKey implements ClusterClassKey, Serializable {
      */
     public void setPossiblePtms(ArrayList<String> possiblePtms) {
         this.possiblePtms = possiblePtms;
+        this.possiblePtmsAsSet = new HashSet<String>(possiblePtms);
     }
 
     /**
@@ -92,6 +113,15 @@ public class PeptideClusterClassKey implements ClusterClassKey, Serializable {
     public ArrayList<String> getForbiddenPtms() {
         return forbiddenPtms;
     }
+    
+    /**
+     * Returns the forbidden PTMs as a set.
+     * 
+     * @return the forbidden PTMs as a set
+     */
+    public HashSet<String> getForbiddenPtmsAsSet() {
+        return forbiddenPtmsAsSet;
+    }
 
     /**
      * Sets the PTMs not carried by the peptide.
@@ -100,6 +130,7 @@ public class PeptideClusterClassKey implements ClusterClassKey, Serializable {
      */
     public void setForbiddenPtms(ArrayList<String> forbiddenPtms) {
         this.forbiddenPtms = forbiddenPtms;
+        this.forbiddenPtmsAsSet = new HashSet<String>(possiblePtms);
     }
 
     /**
@@ -144,7 +175,7 @@ public class PeptideClusterClassKey implements ClusterClassKey, Serializable {
      *
      * @return a boolean indicating whether the peptide is C-term
      */
-    public Boolean getcTerm() {
+    public Boolean isCTerm() {
         return cTerm;
     }
 
@@ -162,11 +193,23 @@ public class PeptideClusterClassKey implements ClusterClassKey, Serializable {
         StringBuilder name = new StringBuilder();
         if (nTerm) {
             name.append("N-term");
-        } else if (cTerm) {
+        }
+        if (cTerm) {
+            if (name.length() > 0) {
+                name.append(" ");
+            }
             name.append("C-term");
-        } else if (notModified) {
+        }
+        if (notModified) {
+            if (name.length() > 0) {
+                name.append(" ");
+            }
             name.append("Not modified");
-        } else if (starred) {
+        }
+        if (starred) {
+            if (name.length() > 0) {
+                name.append(" ");
+            }
             name.append("Starred");
         }
         if (possiblePtms != null || forbiddenPtms != null) {

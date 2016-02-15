@@ -406,7 +406,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
 
         // cluster the protein profiles
         clusterBuilder = new ClusterBuilder();
-        clusterBuilder.clusterProfiles(getIdentification(), reporterIonQuantification, quantificationFeaturesGenerator, displayPreferences, true, waitingHandler);
+        clusterBuilder.clusterProfiles(getIdentification(), getIdentificationParameters(), getMetrics(), reporterIonQuantification, quantificationFeaturesGenerator, displayPreferences, true, progressDialog);
 
         if (waitingHandler.isRunCanceled()) {
             return;
@@ -1490,7 +1490,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
             @Override
             public void run() {
                 try {
-                    clusterBuilder.clusterProfiles(getIdentification(), reporterIonQuantification, quantificationFeaturesGenerator, displayPreferences, false, progressDialog);
+                    clusterBuilder.clusterProfiles(getIdentification(), getIdentificationParameters(), getMetrics(), reporterIonQuantification, quantificationFeaturesGenerator, displayPreferences, false, progressDialog);
                     if (!progressDialog.isRunCanceled()) {
                         overviewPanel.updateDisplay();
                     }
