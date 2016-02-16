@@ -1034,7 +1034,7 @@ public class NewDialog extends javax.swing.JDialog {
                 + "\nPlease locate it manually.";
         JOptionPane.showMessageDialog(this,
                 errorText,
-                "Spectrum File(s) Not Found", JOptionPane.ERROR_MESSAGE);
+                "Spectrum File(s) Not Found", JOptionPane.WARNING_MESSAGE);
         return false;
     }
 
@@ -1045,8 +1045,8 @@ public class NewDialog extends javax.swing.JDialog {
      * @return a boolean indicating that all spectrum files are loaded
      */
     private boolean verifySpectrumFiles() {
-        boolean allFound = true;
         String missing = "";
+        int nMissing = 0;
         for (String spectrumFileName : cpsParent.getIdentification().getSpectrumFiles()) {
             boolean found = false;
             for (File spectrumFile : mgfFiles) {
@@ -1055,16 +1055,18 @@ public class NewDialog extends javax.swing.JDialog {
                 }
             }
             if (!found) {
-                allFound = false;
+                        nMissing++;
                 missing += spectrumFileName + "\n";
             }
         }
-        if (!allFound) {
-            String errorText = "Spectrum file(s) not found:\n" + missing
-                    + "\nPlease locate them manually.";
-            JOptionPane.showMessageDialog(this,
-                    errorText,
-                    "Spectrum File(s) Not Found", JOptionPane.ERROR_MESSAGE);
+        if (nMissing > 0) {
+            if (nMissing < 11) {
+                JOptionPane.showMessageDialog(this, "Spectrum file(s) not found:\n" + missing
+                        + "\nPlease locate them manually.", "Spectrum File Not Found", JOptionPane.WARNING_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this, "Spectrum files not found.\n"
+                        + "Please locate them manually.", "Spectrum File Not Found", JOptionPane.WARNING_MESSAGE);
+            }
         }
         if (mgfFiles.size() > 1) {
             txtSpectraFileLocation.setText(mgfFiles.size() + " files loaded"); //@TODO: allow editing
@@ -1073,7 +1075,7 @@ public class NewDialog extends javax.swing.JDialog {
         } else {
             txtSpectraFileLocation.setText("");
         }
-        return allFound;
+        return nMissing == 0;
     }
 
     /**
@@ -1255,7 +1257,7 @@ public class NewDialog extends javax.swing.JDialog {
      * methods.
      */
     private void importMethodsError() {
-        JOptionPane.showMessageDialog(this, "\"" + METHODS_FILE + "\" could not be parsed, please select a method file.", "No Spectrum File Selected", JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(this, "\"" + METHODS_FILE + "\" could not be parsed, please select a method file.", "No Spectrum File Selected", JOptionPane.WARNING_MESSAGE);
         JFileChooser fileChooser = new JFileChooser(reporterGui.getLastSelectedFolder().getLastSelectedFolder());
         fileChooser.setDialogTitle("Select Methods file");
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -1329,7 +1331,7 @@ public class NewDialog extends javax.swing.JDialog {
                 }
                 JOptionPane.showMessageDialog(NewDialog.this,
                         report,
-                        "File Input Error", JOptionPane.ERROR_MESSAGE);
+                        "File Input Error", JOptionPane.WARNING_MESSAGE);
                 txtSpectraFileLocation.setText(mgfFiles.size() + " file(s) selected");
             }
         }.start();
