@@ -85,10 +85,10 @@ public class PeptideClusterClassKey implements ClusterClassKey, Serializable {
     public ArrayList<String> getPossiblePtms() {
         return possiblePtms;
     }
-    
+
     /**
      * Returns the possible PTMs as a set.
-     * 
+     *
      * @return the possible PTMs as a set
      */
     public HashSet<String> getPossiblePtmsAsSet() {
@@ -113,10 +113,10 @@ public class PeptideClusterClassKey implements ClusterClassKey, Serializable {
     public ArrayList<String> getForbiddenPtms() {
         return forbiddenPtms;
     }
-    
+
     /**
      * Returns the forbidden PTMs as a set.
-     * 
+     *
      * @return the forbidden PTMs as a set
      */
     public HashSet<String> getForbiddenPtmsAsSet() {
@@ -214,18 +214,22 @@ public class PeptideClusterClassKey implements ClusterClassKey, Serializable {
         }
         if (possiblePtms != null || forbiddenPtms != null) {
             StringBuilder possible = new StringBuilder();
-            for (String possiblePtm : possiblePtms) {
-                if (possible.length() > 0) {
-                    possible.append(", ");
+            if (possiblePtms != null) {
+                for (String possiblePtm : possiblePtms) {
+                    if (possible.length() > 0) {
+                        possible.append(", ");
+                    }
+                    possible.append(possiblePtm);
                 }
-                possible.append(possiblePtm);
             }
             StringBuilder forbidden = new StringBuilder();
-            for (String possiblePtm : forbiddenPtms) {
-                if (forbidden.length() > 0) {
-                    forbidden.append(", ");
+            if (forbiddenPtms != null) {
+                for (String possiblePtm : forbiddenPtms) {
+                    if (forbidden.length() > 0) {
+                        forbidden.append(", ");
+                    }
+                    forbidden.append(possiblePtm);
                 }
-                forbidden.append(possiblePtm);
             }
             if (possible.length() > 0 && forbidden.length() > 0) {
                 if (name.length() > 0) {

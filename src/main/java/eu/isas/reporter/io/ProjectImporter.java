@@ -174,8 +174,6 @@ public class ProjectImporter {
 
             waitingHandler.setPrimaryProgressCounterIndeterminate(true);
 
-            waitingHandler.setRunFinished();
-
         } catch (OutOfMemoryError error) {
             System.out.println("Ran out of memory! (runtime.maxMemory(): " + Runtime.getRuntime().maxMemory() + ")");
             Runtime.getRuntime().gc();
@@ -230,9 +228,6 @@ public class ProjectImporter {
             if (objectsDB.hasTable(ProjectSaver.REPORTER_SETTINGS_TABLE_NAME)) {
                 try {
                     reporterSettings = (ReporterSettings) objectsDB.retrieveObject(ProjectSaver.REPORTER_SETTINGS_TABLE_NAME, ReporterSettings.class.getName(), true, false);
-                    if (reporterSettings == null) {
-                        reporterSettings = getDefaultReporterSettings(identificationParameters);
-                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                     String errorText = "An error occurred while importing the reporter settings.";
@@ -248,9 +243,6 @@ public class ProjectImporter {
                 }
                 try {
                     reporterIonQuantification = (ReporterIonQuantification) objectsDB.retrieveObject(ProjectSaver.REPORTER_SETTINGS_TABLE_NAME, ReporterIonQuantification.class.getName(), true, false);
-                    if (reporterIonQuantification == null) {
-                        reporterIonQuantification = getDefaultReporterIonQuantification(identificationParameters);
-                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                     String errorText = "An error occurred while importing the reporter settings.";
@@ -265,11 +257,6 @@ public class ProjectImporter {
                 }
                 try {
                     displayPreferences = (DisplayPreferences) objectsDB.retrieveObject(ProjectSaver.REPORTER_SETTINGS_TABLE_NAME, DisplayPreferences.class.getName(), true, false);
-                    if (displayPreferences == null) {
-                        displayPreferences = new DisplayPreferences();
-                        ClusteringSettings clusteringSettings = getDefaultClusterMetrics(identificationParameters, identification);
-                        displayPreferences.setClusteringSettings(clusteringSettings);
-                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                     String errorText = "An error occurred while importing the reporter settings.";
@@ -283,6 +270,17 @@ public class ProjectImporter {
                     waitingHandler.setRunFinished();
                 }
             }
+            if (reporterSettings == null) {
+                reporterSettings = getDefaultReporterSettings(identificationParameters);
+            }
+            if (reporterIonQuantification == null) {
+                reporterIonQuantification = getDefaultReporterIonQuantification(identificationParameters);
+            }
+            if (displayPreferences == null) {
+                displayPreferences = new DisplayPreferences();
+                ClusteringSettings clusteringSettings = getDefaultClusterMetrics(identificationParameters, identification);
+                displayPreferences.setClusteringSettings(clusteringSettings);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             String errorText = "An error occurred while importing the quantification details from " + cpsFile + ".";
@@ -295,6 +293,8 @@ public class ProjectImporter {
             }
             waitingHandler.setRunFinished();
         }
+
+        waitingHandler.setRunFinished();
     }
 
     /**
