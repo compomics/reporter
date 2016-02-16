@@ -276,6 +276,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * @param reporterSettings the reporter settings
      * @param reporterIonQuantification the reporter quantification settings
      * @param processingPreferences the processing preferences
+     * @param displayPreferences the display preferences
      */
     public void createNewProject(CpsParent cpsParent, ReporterSettings reporterSettings, ReporterIonQuantification reporterIonQuantification, ProcessingPreferences processingPreferences, DisplayPreferences displayPreferences) {
 
@@ -297,7 +298,6 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
                 cpsParent.getIdentificationParameters(), cpsParent.getMetrics(), cpsParent.getSpectrumCountingPreferences());
         displayFeaturesGenerator = new DisplayFeaturesGenerator(cpsParent.getIdentificationParameters().getSearchParameters().getPtmSettings(), exceptionHandler);
         displayFeaturesGenerator.setDisplayedPTMs(cpsParent.getDisplayPreferences().getDisplayedPtms());
-        setDisplayPreferencesFromShakerProject();
         selectedProteins = new ArrayList<String>();
 
         projectSaved = false;
@@ -333,13 +333,6 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
                 }
             }
         }.start();
-    }
-
-    /**
-     * Sets the display preferences based on the currently loaded cps file
-     */
-    private void setDisplayPreferencesFromShakerProject() {
-        displayPreferences = new DisplayPreferences();
     }
 
     /**
@@ -402,7 +395,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
 
         // cluster the protein profiles
         clusterBuilder = new ClusterBuilder();
-        clusterBuilder.clusterProfiles(getIdentification(), getIdentificationParameters(), getMetrics(), reporterIonQuantification, quantificationFeaturesGenerator, displayPreferences, true, progressDialog);
+        kMeansClutering = clusterBuilder.clusterProfiles(getIdentification(), getIdentificationParameters(), getMetrics(), reporterIonQuantification, quantificationFeaturesGenerator, displayPreferences, true, progressDialog);
 
         if (waitingHandler.isRunCanceled()) {
             return;
@@ -1511,7 +1504,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
             @Override
             public void run() {
                 try {
-                    clusterBuilder.clusterProfiles(getIdentification(), getIdentificationParameters(), getMetrics(), reporterIonQuantification, quantificationFeaturesGenerator, displayPreferences, loadData, progressDialog);
+                    kMeansClutering = clusterBuilder.clusterProfiles(getIdentification(), getIdentificationParameters(), getMetrics(), reporterIonQuantification, quantificationFeaturesGenerator, displayPreferences, loadData, progressDialog);
                     if (!progressDialog.isRunCanceled()) {
                         overviewPanel.updateDisplay();
                     }

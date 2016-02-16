@@ -86,12 +86,21 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
      * @param editable boolean indicating whether the settings can be edited
      */
     private void setUpGui(boolean editable) {
-        addProteinClass.setEnabled(editable);
-        removeProteinClass.setEnabled(editable);
-        addPeptideClass.setEnabled(editable);
-        removePeptideClass.setEnabled(editable);
-        addPsmClass.setEnabled(editable);
-        removePsmClass.setEnabled(editable);
+        
+        // Not supported yet
+//        addProteinClass.setEnabled(editable);
+//        removeProteinClass.setEnabled(editable);
+//        addPeptideClass.setEnabled(editable);
+//        removePeptideClass.setEnabled(editable);
+//        addPsmClass.setEnabled(editable);
+//        removePsmClass.setEnabled(editable);
+        
+        addProteinClass.setEnabled(false);
+        removeProteinClass.setEnabled(false);
+        addPeptideClass.setEnabled(false);
+        removePeptideClass.setEnabled(false);
+        addPsmClass.setEnabled(false);
+        removePsmClass.setEnabled(false);
 
         TableColumn colorColumn = proteinClassesTable.getColumnModel().getColumn(0);
         colorColumn.setCellRenderer(new JSparklinesColorTableCellRenderer());
@@ -104,6 +113,11 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
         colorColumn.setMinWidth(35);
 
         colorColumn = psmClassesTable.getColumnModel().getColumn(0);
+        colorColumn.setCellRenderer(new JSparklinesColorTableCellRenderer());
+        colorColumn.setMaxWidth(35);
+        colorColumn.setMinWidth(35);
+
+        colorColumn = selectionTable.getColumnModel().getColumn(0);
         colorColumn.setCellRenderer(new JSparklinesColorTableCellRenderer());
         colorColumn.setMaxWidth(35);
         colorColumn.setMinWidth(35);
@@ -238,6 +252,11 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setBackground(new java.awt.Color(230, 230, 230));
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosed(java.awt.event.WindowEvent evt) {
+                formWindowClosed(evt);
+            }
+        });
 
         backgroundPanel.setBackground(new java.awt.Color(230, 230, 230));
 
@@ -425,6 +444,11 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
         dispose();
     }//GEN-LAST:event_cancelButtonActionPerformed
 
+    private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
+        canceled = true;
+        dispose();
+    }//GEN-LAST:event_formWindowClosed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addPeptideClass;
@@ -513,6 +537,9 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
             switch (column) {
                 case 0:
                     Color color = classesColors.get(key);
+                    if (color == null) {
+                        color = Color.BLACK;
+                    }
                     return color;
                 case 1:
                     ClusterClassKey clusterClassKey = keysMap.get(key);
@@ -572,7 +599,7 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
             classes.addAll(selectedProteins);
             nProteins = selectedProteins.size();
             classes.addAll(selectedPeptides);
-            nProteins = selectedPeptides.size();
+            nPeptides = selectedPeptides.size();
             classes.addAll(selectedPsms);
             this.keysMap = new HashMap<String, ClusterClassKey>(keysMap);
         }
@@ -610,6 +637,9 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
             switch (column) {
                 case 0:
                     Color color = classesColors.get(key);
+                    if (color == null) {
+                        color = Color.BLACK;
+                    }
                     return color;
                 case 1:
                     if (row < nProteins) {

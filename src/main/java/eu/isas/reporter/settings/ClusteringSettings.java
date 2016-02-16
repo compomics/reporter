@@ -264,9 +264,9 @@ public class ClusteringSettings implements Serializable {
         possibleProteinClassesNames = new ArrayList<String>(clusterClassKeys.size());
         possibleProteinClassesKeys = new HashMap<String, ProteinClusterClassKey>(clusterClassKeys.size());
         for (ProteinClusterClassKey clusterClassKey : clusterClassKeys) {
-            String name = clusterClassKey.getName();
-            possibleProteinClassesNames.add(name);
-            possibleProteinClassesKeys.put(name, clusterClassKey);
+            String key = clusterClassKey.toString();
+            possibleProteinClassesNames.add(key);
+            possibleProteinClassesKeys.put(key, clusterClassKey);
         }
     }
     
@@ -312,9 +312,9 @@ public class ClusteringSettings implements Serializable {
         possiblePeptideClassesNames = new ArrayList<String>(clusterClassKeys.size());
         possiblePeptideClassesKeys = new HashMap<String, PeptideClusterClassKey>(clusterClassKeys.size());
         for (PeptideClusterClassKey clusterClassKey : clusterClassKeys) {
-            String name = clusterClassKey.getName();
-            possiblePeptideClassesNames.add(name);
-            possiblePeptideClassesKeys.put(name, clusterClassKey);
+            String key = clusterClassKey.toString();
+            possiblePeptideClassesNames.add(key);
+            possiblePeptideClassesKeys.put(key, clusterClassKey);
         }
     }
     
@@ -360,9 +360,9 @@ public class ClusteringSettings implements Serializable {
         possiblePsmClassesNames = new ArrayList<String>(clusterClassKeys.size());
         possiblePsmClassesKeys = new HashMap<String, PsmClusterClassKey>(clusterClassKeys.size());
         for (PsmClusterClassKey clusterClassKey : clusterClassKeys) {
-            String name = clusterClassKey.getName();
-            possiblePsmClassesNames.add(name);
-            possiblePsmClassesKeys.put(name, clusterClassKey);
+            String key = clusterClassKey.toString();
+            possiblePsmClassesNames.add(key);
+            possiblePsmClassesKeys.put(key, clusterClassKey);
         }
     }
     

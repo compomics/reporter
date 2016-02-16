@@ -12,6 +12,7 @@ import com.compomics.util.experiment.quantification.Quantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethodFactory;
+import com.compomics.util.math.clustering.settings.KMeansClusteringSettings;
 import com.compomics.util.preferences.IdentificationParameters;
 import com.compomics.util.preferences.LastSelectedFolder;
 import com.compomics.util.waiting.WaitingHandler;
@@ -220,12 +221,13 @@ public class ProjectImporter {
             return;
         }
 
-        // Load Reporter settings files
+        // Load Reporter settings
         Identification identification = cpsParent.getIdentification();
         IdentificationParameters identificationParameters = cpsParent.getIdentificationParameters();
         ObjectsDB objectsDB = identification.getIdentificationDB().getObjectsDB();
         try {
             if (objectsDB.hasTable(ProjectSaver.REPORTER_SETTINGS_TABLE_NAME)) {
+                waitingHandler.setWaitingText("Loading quantification results. Please Wait...");
                 try {
                     reporterSettings = (ReporterSettings) objectsDB.retrieveObject(ProjectSaver.REPORTER_SETTINGS_TABLE_NAME, ReporterSettings.class.getName(), true, false);
                 } catch (Exception e) {
@@ -269,6 +271,8 @@ public class ProjectImporter {
                     }
                     waitingHandler.setRunFinished();
                 }
+            } else {
+                waitingHandler.setWaitingText("Inferring quantification parameters. Please Wait...");
             }
             if (reporterSettings == null) {
                 reporterSettings = getDefaultReporterSettings(identificationParameters);
@@ -279,6 +283,8 @@ public class ProjectImporter {
             if (displayPreferences == null) {
                 displayPreferences = new DisplayPreferences();
                 ClusteringSettings clusteringSettings = getDefaultClusterMetrics(identificationParameters, identification);
+                KMeansClusteringSettings kMeansClusteringSettings = new KMeansClusteringSettings();
+                clusteringSettings.setKMeansClusteringSettings(kMeansClusteringSettings);
                 displayPreferences.setClusteringSettings(clusteringSettings);
             }
         } catch (Exception e) {

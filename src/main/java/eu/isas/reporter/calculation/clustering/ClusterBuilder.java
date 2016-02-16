@@ -66,7 +66,7 @@ public class ClusterBuilder {
     /**
      * The filtered peptide keys indexed by the index used for clustering.
      */
-    private HashMap<Integer, String> clusterPepideKeys;
+    private HashMap<Integer, String> clusterPeptideKeys;
     /**
      * The filtered PSM keys indexed by cluster class key.
      */
@@ -196,7 +196,10 @@ public class ClusterBuilder {
 
         Integer clusteringIndex = 0;
         clusterKeys = new ArrayList<String>(metrics.getnValidatedProteins());
-
+        ArrayList<double[]> ratiosList = new ArrayList<double[]>(metrics.getnValidatedProteins());
+        
+        proteinClusters = new HashMap<String, ArrayList<String>>(nProteinClusters);
+        clusterProteinKeys = new HashMap<Integer, String>(metrics.getnValidatedProteins());
         filteredProteinKeys = new HashMap<String, ArrayList<String>>(metrics.getnValidatedProteins());
 
         if (nProteinClusters > 0) {
@@ -254,7 +257,7 @@ public class ClusterBuilder {
 
                         clusterKeys.add(proteinKey);
                         clusterProteinKeys.put(clusteringIndex, proteinKey);
-                        ratios[clusteringIndex] = proteinRatios;
+                        ratiosList.add(proteinRatios);
                         clusteringIndex++;
                     }
                 }
@@ -263,6 +266,8 @@ public class ClusterBuilder {
         }
 
         filteredPeptideKeys = new HashMap<String, ArrayList<String>>(metrics.getnValidatedProteins());
+        clusterPeptideKeys = new HashMap<Integer, String>(metrics.getnValidatedProteins());
+        peptideClusters = new HashMap<String, ArrayList<String>>(nPeptideClusters);
 
         if (nPeptideClusters > 0) {
 
@@ -361,8 +366,8 @@ public class ClusterBuilder {
                         }
 
                         clusterKeys.add(peptideKey);
-                        clusterPepideKeys.put(clusteringIndex, peptideKey);
-                        ratios[clusteringIndex] = peptideRatios;
+                        clusterPeptideKeys.put(clusteringIndex, peptideKey);
+                        ratiosList.add(peptideRatios);
                         clusteringIndex++;
                     }
                 }
@@ -371,6 +376,9 @@ public class ClusterBuilder {
         }
 
         filteredPsmKeys = new HashMap<String, ArrayList<String>>(metrics.getnValidatedProteins());
+        clusterPsmKeys = new HashMap<Integer, String>(metrics.getnValidatedProteins());
+        psmClusters = new HashMap<String, ArrayList<String>>(nPsmClusters);
+        
         if (nPsmClusters > 0) {
 
             HashSet<String> neededFiles = new HashSet<String>();
@@ -436,7 +444,7 @@ public class ClusterBuilder {
 
                             clusterKeys.add(spectrumKey);
                             clusterPsmKeys.put(clusteringIndex, spectrumKey);
-                            ratios[clusteringIndex] = psmRatios;
+                        ratiosList.add(psmRatios);
                             clusteringIndex++;
                         }
                     }
@@ -444,6 +452,7 @@ public class ClusterBuilder {
                 }
             }
         }
+        ratios = ratiosList.toArray(new double[sampleIndexes.size()][ratiosList.size()]);
     }
 
     /**

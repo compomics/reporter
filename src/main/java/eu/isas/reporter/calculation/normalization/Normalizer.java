@@ -359,7 +359,7 @@ public class Normalizer {
                 waitingHandler.setWaitingText("Protein Ratio Normalization. Please Wait...");
                 waitingHandler.resetPrimaryProgressCounter();
                 waitingHandler.setPrimaryProgressCounterIndeterminate(false);
-                waitingHandler.setMaxPrimaryProgressCounter(identification.getPeptideIdentification().size() + 1);
+                waitingHandler.setMaxPrimaryProgressCounter(identification.getProteinIdentification().size() + 1);
                 waitingHandler.increasePrimaryProgressCounter();
             }
 
