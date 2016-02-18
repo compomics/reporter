@@ -24,6 +24,7 @@ import eu.isas.reporter.calculation.clustering.keys.PsmClusterClassKey;
 import eu.isas.reporter.preferences.DisplayPreferences;
 import eu.isas.reporter.quantificationdetails.PeptideQuantificationDetails;
 import eu.isas.reporter.quantificationdetails.ProteinQuantificationDetails;
+import eu.isas.reporter.quantificationdetails.ProteinRatioType;
 import eu.isas.reporter.quantificationdetails.PsmQuantificationDetails;
 import eu.isas.reporter.settings.ClusteringSettings;
 import java.io.IOException;
@@ -125,7 +126,7 @@ public class ClusterBuilder {
         // Load data if needed
         if (loadData) {
             waitingHandler.setWaitingText("Loading data (1/2). Please Wait...");
-            loadData(identification, identificationParameters, metrics, clusteringSettings, reporterIonQuantification, quantificationFeaturesGenerator, waitingHandler);
+            loadData(identification, identificationParameters, metrics, displayPreferences, reporterIonQuantification, quantificationFeaturesGenerator, waitingHandler);
             waitingHandler.setSecondaryProgressCounterIndeterminate(true);
             waitingHandler.setWaitingText("Clustering Data (2/2). Please Wait...");
         } else {
@@ -147,7 +148,7 @@ public class ClusterBuilder {
      * @param identification the identification
      * @param identificationParameters the identification parameters
      * @param metrics the PeptideShaker metrics
-     * @param clusteringSettings the clustering settings
+     * @param displayPreferences the display preferences
      * @param reporterIonQuantification the reporter ion quantification
      * @param quantificationFeaturesGenerator the quantification features
      * generator
@@ -163,7 +164,9 @@ public class ClusterBuilder {
      * @throws MzMLUnmarshallerException if an exception occurs while reading an
      * mzML file
      */
-    public void loadData(Identification identification, IdentificationParameters identificationParameters, Metrics metrics, ClusteringSettings clusteringSettings, ReporterIonQuantification reporterIonQuantification, QuantificationFeaturesGenerator quantificationFeaturesGenerator, WaitingHandler waitingHandler) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
+    public void loadData(Identification identification, IdentificationParameters identificationParameters, Metrics metrics, DisplayPreferences displayPreferences, ReporterIonQuantification reporterIonQuantification, QuantificationFeaturesGenerator quantificationFeaturesGenerator, WaitingHandler waitingHandler) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
+
+        ClusteringSettings clusteringSettings = displayPreferences.getClusteringSettings();
 
         HashSet<String> proteinKeys = identification.getProteinIdentification();
         HashSet<String> peptideKeys = identification.getPeptideIdentification();
@@ -197,12 +200,18 @@ public class ClusterBuilder {
         Integer clusteringIndex = 0;
         clusterKeys = new ArrayList<String>(metrics.getnValidatedProteins());
         ArrayList<double[]> ratiosList = new ArrayList<double[]>(metrics.getnValidatedProteins());
-        
+
         proteinClusters = new HashMap<String, ArrayList<String>>(nProteinClusters);
         clusterProteinKeys = new HashMap<Integer, String>(metrics.getnValidatedProteins());
         filteredProteinKeys = new HashMap<String, ArrayList<String>>(metrics.getnValidatedProteins());
 
         if (nProteinClusters > 0) {
+
+            int selectedRatioType = displayPreferences.getProteinRatioType();
+            ProteinRatioType proteinRatioType = ProteinRatioType.getProteinRatioType(selectedRatioType);
+            if (proteinRatioType == null) {
+                throw new IllegalArgumentException("Ratio type of index " + selectedRatioType + " not recognized.");
+            }
 
             ProteinMatchesIterator proteinMatchesIterator;
             if (quantificationFeaturesGenerator.getQuantificationFeaturesCache().memoryCheck()) {
@@ -246,7 +255,21 @@ public class ClusterBuilder {
                         double[] proteinRatios = new double[sampleIndexes.size()];
 
                         for (int sampleIndex = 0; sampleIndex < sampleIndexes.size(); sampleIndex++) {
-                            Double ratio = quantificationDetails.getRatio(sampleIndexes.get(sampleIndex), reporterIonQuantification.getNormalizationFactors());
+                            Double ratio;
+                            switch (proteinRatioType) {
+                                case all:
+                                    ratio = quantificationDetails.getRatio(sampleIndexes.get(sampleIndex), reporterIonQuantification.getNormalizationFactors());
+                                    break;
+                                case shared:
+                                    ratio = quantificationDetails.getSharedRatio(sampleIndexes.get(sampleIndex), reporterIonQuantification.getNormalizationFactors());
+                                    break;
+                                case unique:
+                                    ratio = quantificationDetails.getUniqueRatio(sampleIndexes.get(sampleIndex), reporterIonQuantification.getNormalizationFactors());
+                                    break;
+                                default:
+                                    throw new IllegalArgumentException("Ratio type " + proteinRatioType + " not supported.");
+                            }
+
                             if (ratio != null) {
                                 if (ratio != 0) {
                                     double logRatio = BasicMathFunctions.log(ratio, 2);
@@ -378,7 +401,7 @@ public class ClusterBuilder {
         filteredPsmKeys = new HashMap<String, ArrayList<String>>(metrics.getnValidatedProteins());
         clusterPsmKeys = new HashMap<Integer, String>(metrics.getnValidatedProteins());
         psmClusters = new HashMap<String, ArrayList<String>>(nPsmClusters);
-        
+
         if (nPsmClusters > 0) {
 
             HashSet<String> neededFiles = new HashSet<String>();
@@ -444,7 +467,7 @@ public class ClusterBuilder {
 
                             clusterKeys.add(spectrumKey);
                             clusterPsmKeys.put(clusteringIndex, spectrumKey);
-                        ratiosList.add(psmRatios);
+                            ratiosList.add(psmRatios);
                             clusteringIndex++;
                         }
                     }

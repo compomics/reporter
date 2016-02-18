@@ -9,7 +9,7 @@ import java.util.HashMap;
  * @author Marc Vaudel
  */
 public class ProteinQuantificationDetails {
-
+    
     /**
      * The reporter raw (not normalized) ratios.
      */
