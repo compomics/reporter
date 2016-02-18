@@ -642,15 +642,15 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         saveAsMenuItem = new javax.swing.JMenuItem();
         jSeparator3 = new javax.swing.JPopupMenu.Separator();
         exitMenuItem = new javax.swing.JMenuItem();
-        exportMenu = new javax.swing.JMenu();
-        exportQuantificationFeaturesMenuItem = new javax.swing.JMenuItem();
-        exportFollowUpJMenuItem = new javax.swing.JMenuItem();
         quantificationOptionsMenu = new javax.swing.JMenu();
         categoriesMenuItem = new javax.swing.JMenuItem();
         jSeparator4 = new javax.swing.JPopupMenu.Separator();
         processingSettingsMenuItem = new javax.swing.JMenuItem();
         javaOptionsMenuItem = new javax.swing.JMenuItem();
         privacyMenuItem = new javax.swing.JMenuItem();
+        exportMenu = new javax.swing.JMenu();
+        exportQuantificationFeaturesMenuItem = new javax.swing.JMenuItem();
+        exportFollowUpJMenuItem = new javax.swing.JMenuItem();
         helpMenu = new javax.swing.JMenu();
         helpMenuItem = new javax.swing.JMenuItem();
         jSeparator17 = new javax.swing.JPopupMenu.Separator();
@@ -682,7 +682,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         );
         backgroundPanelLayout.setVerticalGroup(
             backgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(tabPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 862, Short.MAX_VALUE)
+            .addComponent(tabPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 864, Short.MAX_VALUE)
         );
 
         fileMenu.setMnemonic('F');
@@ -742,25 +742,6 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
 
         menuBar.add(fileMenu);
 
-        exportMenu.setMnemonic('E');
-        exportMenu.setText("Export");
-        exportMenu.setEnabled(false);
-
-        exportQuantificationFeaturesMenuItem.setMnemonic('P');
-        exportQuantificationFeaturesMenuItem.setText("Quantification Features");
-        exportQuantificationFeaturesMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                exportQuantificationFeaturesMenuItemActionPerformed(evt);
-            }
-        });
-        exportMenu.add(exportQuantificationFeaturesMenuItem);
-
-        exportFollowUpJMenuItem.setText("Follow Up Analysis");
-        exportFollowUpJMenuItem.setEnabled(false);
-        exportMenu.add(exportFollowUpJMenuItem);
-
-        menuBar.add(exportMenu);
-
         quantificationOptionsMenu.setMnemonic('E');
         quantificationOptionsMenu.setText("Edit");
 
@@ -798,6 +779,25 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         quantificationOptionsMenu.add(privacyMenuItem);
 
         menuBar.add(quantificationOptionsMenu);
+
+        exportMenu.setMnemonic('E');
+        exportMenu.setText("Export");
+        exportMenu.setEnabled(false);
+
+        exportQuantificationFeaturesMenuItem.setMnemonic('P');
+        exportQuantificationFeaturesMenuItem.setText("Quantification Features");
+        exportQuantificationFeaturesMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportQuantificationFeaturesMenuItemActionPerformed(evt);
+            }
+        });
+        exportMenu.add(exportQuantificationFeaturesMenuItem);
+
+        exportFollowUpJMenuItem.setText("Follow Up Analysis");
+        exportFollowUpJMenuItem.setEnabled(false);
+        exportMenu.add(exportFollowUpJMenuItem);
+
+        menuBar.add(exportMenu);
 
         helpMenu.setMnemonic('H');
         helpMenu.setText("Help");

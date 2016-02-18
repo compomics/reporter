@@ -63,6 +63,10 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
      * The classes color coding.
      */
     private HashMap<String, Color> classesColors;
+    /**
+     * Boolean indicating whether the settings can be edited.
+     */
+    private boolean editable;
 
     /**
      * Constructor.
@@ -74,8 +78,9 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
     public ClusteringSettingsDialog(JFrame parentFrame, ClusteringSettings clusteringSettings, boolean editable) {
         super(parentFrame, true);
         initComponents();
+        this.editable = editable;
         populateGUI(clusteringSettings);
-        setUpGui(editable);
+        setUpGui();
         setLocationRelativeTo(parentFrame);
         setVisible(true);
     }
@@ -85,22 +90,7 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
      *
      * @param editable boolean indicating whether the settings can be edited
      */
-    private void setUpGui(boolean editable) {
-        
-        // Not supported yet
-//        addProteinClass.setEnabled(editable);
-//        removeProteinClass.setEnabled(editable);
-//        addPeptideClass.setEnabled(editable);
-//        removePeptideClass.setEnabled(editable);
-//        addPsmClass.setEnabled(editable);
-//        removePsmClass.setEnabled(editable);
-        
-        addProteinClass.setEnabled(false);
-        removeProteinClass.setEnabled(false);
-        addPeptideClass.setEnabled(false);
-        removePeptideClass.setEnabled(false);
-        addPsmClass.setEnabled(false);
-        removePsmClass.setEnabled(false);
+    private void setUpGui() {
 
         TableColumn colorColumn = proteinClassesTable.getColumnModel().getColumn(0);
         colorColumn.setCellRenderer(new JSparklinesColorTableCellRenderer());
@@ -113,11 +103,6 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
         colorColumn.setMinWidth(35);
 
         colorColumn = psmClassesTable.getColumnModel().getColumn(0);
-        colorColumn.setCellRenderer(new JSparklinesColorTableCellRenderer());
-        colorColumn.setMaxWidth(35);
-        colorColumn.setMinWidth(35);
-
-        colorColumn = selectionTable.getColumnModel().getColumn(0);
         colorColumn.setCellRenderer(new JSparklinesColorTableCellRenderer());
         colorColumn.setMaxWidth(35);
         colorColumn.setMinWidth(35);
@@ -151,12 +136,6 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
         HashMap<String, ClusterClassKey> psmKeysMap = new HashMap<String, ClusterClassKey>(psmClassesMap);
         psmClassesTable.setModel(new ClassListTableModel(psmClasses, selectedPsmClasses, psmKeysMap));
 
-        HashMap<String, ClusterClassKey> keysMap = new HashMap<String, ClusterClassKey>(proteinKeysMap.size() + peptideKeysMap.size() + psmKeysMap.size());
-        keysMap.putAll(proteinKeysMap);
-        keysMap.putAll(peptideKeysMap);
-        keysMap.putAll(psmKeysMap);
-        selectionTable.setModel(new SelectionTableModel(selectedProteinClasses, selectedPeptideClasses, selectedPsmClasses, keysMap));
-
         updateGUI();
     }
 
@@ -168,7 +147,6 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
         ((DefaultTableModel) proteinClassesTable.getModel()).fireTableDataChanged();
         ((DefaultTableModel) peptideClassesTable.getModel()).fireTableDataChanged();
         ((DefaultTableModel) psmClassesTable.getModel()).fireTableDataChanged();
-        ((DefaultTableModel) selectionTable.getModel()).fireTableDataChanged();
     }
 
     /**
@@ -234,15 +212,6 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
         proteinsClassesLbl = new javax.swing.JLabel();
         peptidesClassesLbl = new javax.swing.JLabel();
         psmsClassesLbl = new javax.swing.JLabel();
-        jScrollPane5 = new javax.swing.JScrollPane();
-        selectionTable = new javax.swing.JTable();
-        proteinsLbl1 = new javax.swing.JLabel();
-        addProteinClass = new javax.swing.JButton();
-        removeProteinClass = new javax.swing.JButton();
-        removePeptideClass = new javax.swing.JButton();
-        addPeptideClass = new javax.swing.JButton();
-        removePsmClass = new javax.swing.JButton();
-        addPsmClass = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         proteinClassesTable = new javax.swing.JTable();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -282,22 +251,6 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
         peptidesClassesLbl.setText("Peptides:");
 
         psmsClassesLbl.setText("PSMs:");
-
-        jScrollPane5.setViewportView(selectionTable);
-
-        proteinsLbl1.setText("Selection:");
-
-        addProteinClass.setText(">>");
-
-        removeProteinClass.setText("<<");
-
-        removePeptideClass.setText("<<");
-
-        addPeptideClass.setText(">>");
-
-        removePsmClass.setText("<<");
-
-        addPsmClass.setText(">>");
 
         proteinClassesTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -339,58 +292,26 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
                     .addComponent(proteinsClassesLbl)
                     .addComponent(psmsClassesLbl)
                     .addComponent(peptidesClassesLbl)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                    .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
-                .addGap(45, 45, 45)
-                .addGroup(selectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(addProteinClass)
-                    .addComponent(removeProteinClass)
-                    .addComponent(addPeptideClass)
-                    .addComponent(removePeptideClass)
-                    .addComponent(addPsmClass)
-                    .addComponent(removePsmClass))
-                .addGap(46, 46, 46)
-                .addGroup(selectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(proteinsLbl1)
-                    .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE))
+                    .addComponent(jScrollPane6)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 496, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addContainerGap())
         );
         selectionPanelLayout.setVerticalGroup(
             selectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(selectionPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(selectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(proteinsClassesLbl)
-                    .addComponent(proteinsLbl1))
+                .addComponent(proteinsClassesLbl)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(selectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(selectionPanelLayout.createSequentialGroup()
-                        .addGroup(selectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(selectionPanelLayout.createSequentialGroup()
-                                .addComponent(addProteinClass)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(removeProteinClass))
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
-                        .addGap(18, 18, 18)
-                        .addComponent(peptidesClassesLbl)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(selectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                            .addGroup(selectionPanelLayout.createSequentialGroup()
-                                .addComponent(addPeptideClass)
-                                .addGap(8, 8, 8)
-                                .addComponent(removePeptideClass)))
-                        .addGap(18, 18, 18)
-                        .addComponent(psmsClassesLbl)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(selectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                            .addGroup(selectionPanelLayout.createSequentialGroup()
-                                .addComponent(addPsmClass)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(removePsmClass))))
-                    .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 426, Short.MAX_VALUE))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 116, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
+                .addComponent(peptidesClassesLbl)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 118, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
+                .addComponent(psmsClassesLbl)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 116, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -399,15 +320,15 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
         backgroundPanelLayout.setHorizontalGroup(
             backgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(backgroundPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(backgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, backgroundPanelLayout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(okButton, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(cancelButton))
-                    .addComponent(selectionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(okButton, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(cancelButton)
                 .addContainerGap())
+            .addGroup(backgroundPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(selectionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         backgroundPanelLayout.setVerticalGroup(
             backgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -425,7 +346,7 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(backgroundPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(backgroundPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -451,28 +372,19 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton addPeptideClass;
-    private javax.swing.JButton addProteinClass;
-    private javax.swing.JButton addPsmClass;
     private javax.swing.JPanel backgroundPanel;
     private javax.swing.JButton cancelButton;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JButton okButton;
     private javax.swing.JTable peptideClassesTable;
     private javax.swing.JLabel peptidesClassesLbl;
     private javax.swing.JTable proteinClassesTable;
     private javax.swing.JLabel proteinsClassesLbl;
-    private javax.swing.JLabel proteinsLbl1;
     private javax.swing.JTable psmClassesTable;
     private javax.swing.JLabel psmsClassesLbl;
-    private javax.swing.JButton removePeptideClass;
-    private javax.swing.JButton removeProteinClass;
-    private javax.swing.JButton removePsmClass;
     private javax.swing.JPanel selectionPanel;
-    private javax.swing.JTable selectionTable;
     // End of variables declaration//GEN-END:variables
 
     /**
@@ -484,6 +396,10 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
          * The classes to display.
          */
         private ArrayList<String> classes;
+        /**
+         * The classes selected.
+         */
+        private ArrayList<String> selectedClasses;
         /**
          * The keys map.
          */
@@ -497,111 +413,9 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
          * @param keysMap map of the key to class key object
          */
         public ClassListTableModel(ArrayList<String> possibleClasses, ArrayList<String> selectedClasses, HashMap<String, ClusterClassKey> keysMap) {
-            classes = new ArrayList<String>(possibleClasses.size());
-            for (String possibleClass : possibleClasses) {
-                if (!selectedClasses.contains(possibleClass)) {
-                    classes.add(possibleClass);
-                }
-            }
+            classes = possibleClasses;
+            this.selectedClasses = selectedClasses;
             this.keysMap = keysMap;
-        }
-
-        @Override
-        public int getRowCount() {
-            if (classes == null) {
-                return 0;
-            }
-            return classes.size();
-        }
-
-        @Override
-        public int getColumnCount() {
-            return 2;
-        }
-
-        @Override
-        public String getColumnName(int column) {
-            switch (column) {
-                case 0:
-                    return " ";
-                case 1:
-                    return "Name";
-                default:
-                    return "";
-            }
-        }
-
-        @Override
-        public Object getValueAt(int row, int column) {
-            String key = classes.get(row);
-            switch (column) {
-                case 0:
-                    Color color = classesColors.get(key);
-                    if (color == null) {
-                        color = Color.BLACK;
-                    }
-                    return color;
-                case 1:
-                    ClusterClassKey clusterClassKey = keysMap.get(key);
-                    return clusterClassKey.getName();
-                default:
-                    return "";
-            }
-        }
-
-        @Override
-        public Class getColumnClass(int columnIndex) {
-            for (int i = 0; i < getRowCount(); i++) {
-                if (getValueAt(i, columnIndex) != null) {
-                    return getValueAt(i, columnIndex).getClass();
-                }
-            }
-            return String.class;
-        }
-
-        @Override
-        public boolean isCellEditable(int rowIndex, int columnIndex) {
-            return columnIndex == 2;
-        }
-    }
-
-    /**
-     * Model for the selection table.
-     */
-    private class SelectionTableModel extends DefaultTableModel {
-
-        /**
-         * The classes to display.
-         */
-        private ArrayList<String> classes;
-        /**
-         * The number of protein classes.
-         */
-        private int nProteins;
-        /**
-         * The number of peptide classes.
-         */
-        private int nPeptides;
-        /**
-         * The keys map.
-         */
-        private HashMap<String, ClusterClassKey> keysMap;
-
-        /**
-         * Constructor.
-         *
-         * @param possibleClasses list of the keys of possible classes
-         * @param selectedClasses list of the keys of selected classes
-         * @param keysMap map of the key to class key object
-         */
-        public SelectionTableModel(ArrayList<String> selectedProteins, ArrayList<String> selectedPeptides, ArrayList<String> selectedPsms, HashMap<String, ClusterClassKey> keysMap) {
-            classes = new ArrayList<String>(selectedProteins.size() + selectedPeptides.size() + selectedPsms.size());
-            classes.addAll(selectedProteins);
-            nProteins = selectedProteins.size();
-            classes.addAll(selectedPeptides);
-            nPeptides = selectedPeptides.size();
-            classes.addAll(selectedPsms);
-            this.keysMap = new HashMap<String, ClusterClassKey>(keysMap);
         }
 
         @Override
@@ -620,11 +434,7 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
         @Override
         public String getColumnName(int column) {
             switch (column) {
-                case 0:
-                    return " ";
                 case 1:
-                    return "Category";
-                case 2:
                     return "Name";
                 default:
                     return "";
@@ -633,25 +443,21 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
 
         @Override
         public Object getValueAt(int row, int column) {
-            String key = classes.get(row);
             switch (column) {
                 case 0:
+                    String key = classes.get(row);
                     Color color = classesColors.get(key);
                     if (color == null) {
                         color = Color.BLACK;
                     }
                     return color;
                 case 1:
-                    if (row < nProteins) {
-                        return "Proteins";
-                    } else if (row - nProteins < nPeptides) {
-                        return "Peptides";
-                    } else {
-                        return "PSMs";
-                    }
-                case 2:
+                    key = classes.get(row);
                     ClusterClassKey clusterClassKey = keysMap.get(key);
                     return clusterClassKey.getName();
+                case 2:
+                    key = classes.get(row);
+                    return selectedClasses.contains(key);
                 default:
                     return "";
             }
