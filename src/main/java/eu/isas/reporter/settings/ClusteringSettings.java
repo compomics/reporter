@@ -20,53 +20,43 @@ public class ClusteringSettings implements Serializable {
      * The possible protein classes.
      */
     private ArrayList<String> possibleProteinClassesNames;
-
     /**
      * Map of the classes keys indexed by name.
      */
     private HashMap<String, ProteinClusterClassKey> possibleProteinClassesKeys;
-
     /**
      * The possible peptide classes.
      */
     private ArrayList<String> possiblePeptideClassesNames;
-
     /**
      * Map of the classes keys indexed by name.
      */
     private HashMap<String, PeptideClusterClassKey> possiblePeptideClassesKeys;
-
     /**
      * The possible PSM classes.
      */
     private ArrayList<String> possiblePsmClassesNames;
-
     /**
      * Map of the classes keys indexed by name.
      */
     private HashMap<String, PsmClusterClassKey> possiblePsmClassesKeys;
-
     /**
-     * The selected protein classes
+     * The selected protein classes.
      */
     private ArrayList<String> selectedProteinClasses = new ArrayList<String>();
-
     /**
-     * The selected peptide classes
+     * The selected peptide classes.
      */
     private ArrayList<String> selectedPeptideClasses = new ArrayList<String>();
-
     /**
-     * The selected PSM classes
+     * The selected PSM classes.
      */
     private ArrayList<String> selectedPsmClasses = new ArrayList<String>();
-
     /**
      * The classes color coding in a map where the key is the toString()
      * representation of the key.
      */
     private HashMap<String, Color> classesColors = new HashMap<String, Color>();
-
     /**
      * The k-means clustering settings.
      */
@@ -253,14 +243,14 @@ public class ClusteringSettings implements Serializable {
         }
         return possibleProteinClassesKeys.get(name);
     }
-    
+
     /**
      * Sets the cluster class keys.
-     * 
+     *
      * @param clusterClassKeys the cluster class keys
      */
     public void setProteinClassKeys(ArrayList<ProteinClusterClassKey> clusterClassKeys) {
-        
+
         possibleProteinClassesNames = new ArrayList<String>(clusterClassKeys.size());
         possibleProteinClassesKeys = new HashMap<String, ProteinClusterClassKey>(clusterClassKeys.size());
         for (ProteinClusterClassKey clusterClassKey : clusterClassKeys) {
@@ -269,11 +259,12 @@ public class ClusteringSettings implements Serializable {
             possibleProteinClassesKeys.put(key, clusterClassKey);
         }
     }
-    
+
     /**
-     * Returns a map of the possible keys indexed by their toString() representation.
-     * 
-     * @return a map of the possible keys 
+     * Returns a map of the possible keys indexed by their toString()
+     * representation.
+     *
+     * @return a map of the possible keys
      */
     public HashMap<String, ProteinClusterClassKey> getProteinKeysMap() {
         return possibleProteinClassesKeys;
@@ -301,14 +292,14 @@ public class ClusteringSettings implements Serializable {
         }
         return possiblePeptideClassesKeys.get(name);
     }
-    
+
     /**
      * Sets the cluster class keys.
-     * 
+     *
      * @param clusterClassKeys the cluster class keys
      */
     public void setPeptideClassKeys(ArrayList<PeptideClusterClassKey> clusterClassKeys) {
-        
+
         possiblePeptideClassesNames = new ArrayList<String>(clusterClassKeys.size());
         possiblePeptideClassesKeys = new HashMap<String, PeptideClusterClassKey>(clusterClassKeys.size());
         for (PeptideClusterClassKey clusterClassKey : clusterClassKeys) {
@@ -317,11 +308,12 @@ public class ClusteringSettings implements Serializable {
             possiblePeptideClassesKeys.put(key, clusterClassKey);
         }
     }
-    
+
     /**
-     * Returns a map of the possible keys indexed by their toString() representation.
-     * 
-     * @return a map of the possible keys 
+     * Returns a map of the possible keys indexed by their toString()
+     * representation.
+     *
+     * @return a map of the possible keys
      */
     public HashMap<String, PeptideClusterClassKey> getPeptideKeysMap() {
         return possiblePeptideClassesKeys;
@@ -349,14 +341,14 @@ public class ClusteringSettings implements Serializable {
         }
         return possiblePsmClassesKeys.get(name);
     }
-    
+
     /**
      * Sets the cluster class keys.
-     * 
+     *
      * @param clusterClassKeys the cluster class keys
      */
     public void setPsmClassKeys(ArrayList<PsmClusterClassKey> clusterClassKeys) {
-        
+
         possiblePsmClassesNames = new ArrayList<String>(clusterClassKeys.size());
         possiblePsmClassesKeys = new HashMap<String, PsmClusterClassKey>(clusterClassKeys.size());
         for (PsmClusterClassKey clusterClassKey : clusterClassKeys) {
@@ -365,11 +357,12 @@ public class ClusteringSettings implements Serializable {
             possiblePsmClassesKeys.put(key, clusterClassKey);
         }
     }
-    
+
     /**
-     * Returns a map of the possible keys indexed by their toString() representation.
-     * 
-     * @return a map of the possible keys 
+     * Returns a map of the possible keys indexed by their toString()
+     * representation.
+     *
+     * @return a map of the possible keys
      */
     public HashMap<String, PsmClusterClassKey> getPsmKeysMap() {
         return possiblePsmClassesKeys;
@@ -377,7 +370,7 @@ public class ClusteringSettings implements Serializable {
 
     /**
      * Returns the classes color coding.
-     * 
+     *
      * @return the classes color coding
      */
     public HashMap<String, Color> getClassesColors() {
@@ -386,11 +379,10 @@ public class ClusteringSettings implements Serializable {
 
     /**
      * Sets the classes color coding.
-     * 
+     *
      * @param classesColors the classes color coding
      */
     public void setClassesColors(HashMap<String, Color> classesColors) {
         this.classesColors = classesColors;
     }
-
 }

@@ -116,7 +116,10 @@ public class ClusterBuilder {
      * @throws InterruptedException if an InterruptedException occurs
      * @throws MzMLUnmarshallerException if an MzMLUnmarshallerException occurs
      */
-    public KMeansClustering clusterProfiles(Identification identification, IdentificationParameters identificationParameters, Metrics metrics, ReporterIonQuantification reporterIonQuantification, QuantificationFeaturesGenerator quantificationFeaturesGenerator, DisplayPreferences displayPreferences, boolean loadData, WaitingHandler waitingHandler) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
+    public KMeansClustering clusterProfiles(Identification identification, IdentificationParameters identificationParameters, Metrics metrics, 
+            ReporterIonQuantification reporterIonQuantification, QuantificationFeaturesGenerator quantificationFeaturesGenerator, 
+            DisplayPreferences displayPreferences, boolean loadData, WaitingHandler waitingHandler) 
+            throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
 
         waitingHandler.setSecondaryProgressCounterIndeterminate(true);
 
@@ -163,7 +166,10 @@ public class ClusterBuilder {
      * @throws MzMLUnmarshallerException if an exception occurs while reading an
      * mzML file
      */
-    public void loadData(Identification identification, IdentificationParameters identificationParameters, Metrics metrics, ClusteringSettings clusteringSettings, ReporterIonQuantification reporterIonQuantification, QuantificationFeaturesGenerator quantificationFeaturesGenerator, WaitingHandler waitingHandler) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
+    public void loadData(Identification identification, IdentificationParameters identificationParameters, Metrics metrics, 
+            ClusteringSettings clusteringSettings, ReporterIonQuantification reporterIonQuantification, 
+            QuantificationFeaturesGenerator quantificationFeaturesGenerator, WaitingHandler waitingHandler) 
+            throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
 
         HashSet<String> proteinKeys = identification.getProteinIdentification();
         HashSet<String> peptideKeys = identification.getPeptideIdentification();
@@ -481,5 +487,4 @@ public class ClusterBuilder {
     public Set<String> getFilteredPsms() {
         return psmClusters.keySet();
     }
-
 }

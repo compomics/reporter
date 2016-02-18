@@ -241,6 +241,4 @@ public class QuantificationFeaturesGenerator {
     public void setQuantificationFeaturesCache(QuantificationFeaturesCache quantificationFeaturesCache) {
         this.quantificationFeaturesCache = quantificationFeaturesCache;
     }
-    
-    
 }
