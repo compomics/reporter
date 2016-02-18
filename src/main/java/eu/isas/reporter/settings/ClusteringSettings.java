@@ -197,7 +197,7 @@ public class ClusteringSettings implements Serializable {
     public Color getColor(String clusterClass) {
         Color result = classesColors.get(clusterClass);
         if (result == null) {
-            result = Color.BLACK;
+            result = Color.GRAY;
             classesColors.put(clusterClass, result);
         }
         return result;

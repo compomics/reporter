@@ -448,7 +448,7 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
                     String key = classes.get(row);
                     Color color = classesColors.get(key);
                     if (color == null) {
-                        color = Color.BLACK;
+                        color = Color.GRAY;
                     }
                     return color;
                 case 1:

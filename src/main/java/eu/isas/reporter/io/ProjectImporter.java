@@ -24,6 +24,7 @@ import eu.isas.reporter.calculation.clustering.keys.PsmClusterClassKey;
 import eu.isas.reporter.preferences.DisplayPreferences;
 import eu.isas.reporter.settings.ClusteringSettings;
 import eu.isas.reporter.settings.ReporterSettings;
+import java.awt.Color;
 import java.awt.Dialog;
 import java.io.EOFException;
 import java.io.File;
@@ -406,65 +407,84 @@ public class ProjectImporter {
      */
     public static ClusteringSettings getDefaultClusterMetrics(IdentificationParameters identificationParameters, Identification identification) {
 
+        ClusteringSettings clusteringSettings = new ClusteringSettings();
+
         ArrayList<ProteinClusterClassKey> proteinClasses = new ArrayList<ProteinClusterClassKey>(1);
         ProteinClusterClassKey proteinClusterClassKey = new ProteinClusterClassKey();
         proteinClasses.add(proteinClusterClassKey);
+        clusteringSettings.setColor(proteinClusterClassKey.toString(), Color.BLACK);
         ProteinClusterClassKey defaultClusterClass = proteinClusterClassKey;
         proteinClusterClassKey = new ProteinClusterClassKey();
         proteinClusterClassKey.setStarred(Boolean.TRUE);
         proteinClasses.add(proteinClusterClassKey);
+        clusteringSettings.setColor(proteinClusterClassKey.toString(), Color.yellow);
 
         PtmSettings ptmSettings = identificationParameters.getSearchParameters().getPtmSettings();
         ArrayList<PeptideClusterClassKey> peptideClasses = new ArrayList<PeptideClusterClassKey>(4);
         PeptideClusterClassKey peptidelusterClassKey = new PeptideClusterClassKey();
         peptideClasses.add(peptidelusterClassKey);
+        clusteringSettings.setColor(peptidelusterClassKey.toString(), Color.DARK_GRAY);
         peptidelusterClassKey = new PeptideClusterClassKey();
         peptidelusterClassKey.setStarred(Boolean.TRUE);
         peptideClasses.add(peptidelusterClassKey);
+        clusteringSettings.setColor(peptidelusterClassKey.toString(), Color.yellow);
         peptidelusterClassKey = new PeptideClusterClassKey();
         peptidelusterClassKey.setnTerm(Boolean.TRUE);
         peptideClasses.add(peptidelusterClassKey);
+        clusteringSettings.setColor(peptidelusterClassKey.toString(), Color.MAGENTA);
         peptidelusterClassKey = new PeptideClusterClassKey();
         peptidelusterClassKey.setcTerm(Boolean.TRUE);
         peptideClasses.add(peptidelusterClassKey);
+        clusteringSettings.setColor(peptidelusterClassKey.toString(), Color.CYAN);
         peptidelusterClassKey = new PeptideClusterClassKey();
         peptidelusterClassKey.setNotModified(Boolean.TRUE);
+        clusteringSettings.setColor(peptidelusterClassKey.toString(), Color.LIGHT_GRAY);
         peptideClasses.add(peptidelusterClassKey);
         PTMFactory ptmFactory = PTMFactory.getInstance();
+        ArrayList<Double> ptmMasses = new ArrayList<Double>();
         HashMap<Double, ArrayList<String>> ptmMap = new HashMap<Double, ArrayList<String>>();
+        HashMap<Double, Color> ptmColorMap = new HashMap<Double, Color>();
         for (String ptmName : ptmSettings.getAllNotFixedModifications()) {
             PTM ptm = ptmFactory.getPTM(ptmName);
             Double ptmMass = ptm.getMass();
             ArrayList<String> ptms = ptmMap.get(ptmMass);
             if (ptms == null) {
+                ptmMasses.add(ptmMass);
                 ptms = new ArrayList<String>(2);
                 ptmMap.put(ptmMass, ptms);
+                Color ptmColor = ptmSettings.getColor(ptmName);
+                ptmColorMap.put(ptmMass, ptmColor);
             }
             ptms.add(ptmName);
         }
-        for (ArrayList<String> ptms : ptmMap.values()) {
+        for (Double ptmMass : ptmMasses) {
+            ArrayList<String> ptms = ptmMap.get(ptmMass);
             Collections.sort(ptms);
             peptidelusterClassKey = new PeptideClusterClassKey();
             peptidelusterClassKey.setPossiblePtms(ptms);
             peptideClasses.add(peptidelusterClassKey);
+            Color color = ptmColorMap.get(ptmMass);
+            clusteringSettings.setColor(peptidelusterClassKey.toString(), color);
         }
 
         ArrayList<PsmClusterClassKey> psmClasses = new ArrayList<PsmClusterClassKey>(1);
         PsmClusterClassKey psmClusterClassKey = new PsmClusterClassKey();
         psmClasses.add(psmClusterClassKey);
+        clusteringSettings.setColor(psmClusterClassKey.toString(), Color.GRAY);
         psmClusterClassKey = new PsmClusterClassKey();
         psmClusterClassKey.setStarred(Boolean.TRUE);
         psmClasses.add(psmClusterClassKey);
+        clusteringSettings.setColor(psmClusterClassKey.toString(), Color.yellow);
         ArrayList<String> spectrumFiles = identification.getOrderedSpectrumFileNames();
         if (spectrumFiles.size() > 1) {
             for (String spectrumFile : spectrumFiles) {
                 psmClusterClassKey = new PsmClusterClassKey();
                 psmClusterClassKey.setFile(spectrumFile);
                 psmClasses.add(psmClusterClassKey);
+                clusteringSettings.setColor(peptidelusterClassKey.toString(), Color.LIGHT_GRAY);
             }
         }
 
-        ClusteringSettings clusteringSettings = new ClusteringSettings();
         clusteringSettings.setProteinClassKeys(proteinClasses);
         clusteringSettings.setPeptideClassKeys(peptideClasses);
         clusteringSettings.setPsmClassKeys(psmClasses);
