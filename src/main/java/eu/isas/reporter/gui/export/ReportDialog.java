@@ -1,5 +1,7 @@
 package eu.isas.reporter.gui.export;
 
+import com.compomics.util.FileAndFileFilter;
+import com.compomics.util.Util;
 import com.compomics.util.gui.ExportFormatSelectionDialog;
 import com.compomics.util.gui.export.report.ReportEditor;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
@@ -278,7 +280,7 @@ public class ReportDialog extends javax.swing.JDialog {
             removeReportMenuItem.setVisible(exportScheme.isEditable());
             reportDocumentationPopupMenu.show(reportsTable, evt.getX(), evt.getY());
         }
-        
+
         if (evt != null && evt.getButton() == MouseEvent.BUTTON1 && evt.getClickCount() == 2) {
             writeSelectedReport();
         }
@@ -401,74 +403,74 @@ public class ReportDialog extends javax.swing.JDialog {
      */
     private void writeSelectedReport() {
 
-        ExportFormatSelectionDialog exportFormatSelectionDialog = new ExportFormatSelectionDialog(this, true);
+        final String schemeName = (String) reportsTable.getValueAt(reportsTable.getSelectedRow(), 1);
+        String textFileFilterDescription = "Tab separated text file (.txt)";
+        String excelFileFilterDescription = "Excel Workbook (.xls)";
+        String lastSelectedFolderPath = reporterGUI.getLastSelectedFolder().getLastSelectedFolder();
+        FileAndFileFilter selectedFileAndFilter = Util.getUserSelectedFile(this, new String[]{".xls", ".txt"},
+                new String[]{excelFileFilterDescription, textFileFilterDescription}, "Export Report", lastSelectedFolderPath, schemeName, false, true, false, 0);
 
-        if (!exportFormatSelectionDialog.isCanceled()) {
+        if (selectedFileAndFilter != null) {
 
-            final File selectedFile;
-            final ExportFormat exportFormat = exportFormatSelectionDialog.getFormat();
-            final String schemeName = (String) reportsTable.getValueAt(reportsTable.getSelectedRow(), 1);
-
-            // get the file to send the output to
-            if (exportFormat == ExportFormat.text) {
-                selectedFile = reporterGUI.getUserSelectedFile(schemeName + ".txt", ".txt", "Tab separated text file (.txt)", "Export...", false);
+            final File selectedFile = selectedFileAndFilter.getFile();
+            final ExportFormat exportFormat;
+            if (selectedFileAndFilter.getFileFilter().getDescription().equalsIgnoreCase(textFileFilterDescription)) {
+                exportFormat = ExportFormat.text;
             } else {
-                selectedFile = reporterGUI.getUserSelectedFile(schemeName + ".xls", ".xls", "Excel Workbook (.xls)", "Export...", false);
+                exportFormat = ExportFormat.excel;
             }
 
-            if (selectedFile != null) {
-                progressDialog = new ProgressDialogX(this, reporterGUI,
-                        Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
-                        Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")),
-                        true);
-                progressDialog.setTitle("Exporting Report. Please Wait...");
+            progressDialog = new ProgressDialogX(this, reporterGUI,
+                    Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
+                    Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")),
+                    true);
+            progressDialog.setTitle("Exporting Report. Please Wait...");
 
-                final String filePath = selectedFile.getPath();
+            final String filePath = selectedFile.getPath();
 
-                new Thread(new Runnable() {
-                    public void run() {
-                        try {
-                            progressDialog.setVisible(true);
-                        } catch (IndexOutOfBoundsException e) {
-                            // ignore
-                        }
+            new Thread(new Runnable() {
+                public void run() {
+                    try {
+                        progressDialog.setVisible(true);
+                    } catch (IndexOutOfBoundsException e) {
+                        // ignore
                     }
-                }, "ProgressDialog").start();
+                }
+            }, "ProgressDialog").start();
 
-                new Thread("ExportThread") {
-                    @Override
-                    public void run() {
+            new Thread("ExportThread") {
+                @Override
+                public void run() {
 
-                        try {
-                            ExportScheme exportScheme = exportFactory.getExportScheme(schemeName);
-                            progressDialog.setTitle("Exporting. Please Wait...");
-                            ReporterExportFactory.writeExport(exportScheme, selectedFile, exportFormat, reporterGUI.getExperiment().getReference(),
-                                    reporterGUI.getSample().getReference(), reporterGUI.getReplicateNumber(),
-                                    reporterGUI.getProjectDetails(), reporterGUI.getIdentification(), reporterGUI.getIdentificationFeaturesGenerator(), reporterGUI.getGeneMaps(),
-                                    reporterGUI.getQuantificationFeaturesGenerator(), reporterGUI.getReporterIonQuantification(), reporterGUI.getReporterSettings(), reporterGUI.getShotgunProtocol(),
-                                    reporterGUI.getIdentificationParameters(), null, null, null, null, reporterGUI.getIdentificationDisplayPreferences().getnAASurroundingPeptides(),
-                                    reporterGUI.getSpectrumCountingPreferences(), progressDialog);
+                    try {
+                        ExportScheme exportScheme = exportFactory.getExportScheme(schemeName);
+                        progressDialog.setTitle("Exporting. Please Wait...");
+                        ReporterExportFactory.writeExport(exportScheme, selectedFile, exportFormat, reporterGUI.getExperiment().getReference(),
+                                reporterGUI.getSample().getReference(), reporterGUI.getReplicateNumber(),
+                                reporterGUI.getProjectDetails(), reporterGUI.getIdentification(), reporterGUI.getIdentificationFeaturesGenerator(), reporterGUI.getGeneMaps(),
+                                reporterGUI.getQuantificationFeaturesGenerator(), reporterGUI.getReporterIonQuantification(), reporterGUI.getReporterSettings(), reporterGUI.getShotgunProtocol(),
+                                reporterGUI.getIdentificationParameters(), null, null, null, null, reporterGUI.getIdentificationDisplayPreferences().getnAASurroundingPeptides(),
+                                reporterGUI.getSpectrumCountingPreferences(), progressDialog);
 
-                            boolean processCancelled = progressDialog.isRunCanceled();
-                            progressDialog.setRunFinished();
+                        boolean processCancelled = progressDialog.isRunCanceled();
+                        progressDialog.setRunFinished();
 
-                            if (!processCancelled) {
-                                JOptionPane.showMessageDialog(reporterGUI, "Data copied to file:\n" + filePath, "Data Exported.", JOptionPane.INFORMATION_MESSAGE);
-                            }
-                        } catch (FileNotFoundException e) {
-                            progressDialog.setRunFinished();
-                            JOptionPane.showMessageDialog(reporterGUI,
-                                    "An error occurred while generating the output. Please make sure "
-                                    + "that the destination file is not opened by another application.", "Output Error.", JOptionPane.ERROR_MESSAGE);
-                            e.printStackTrace();
-                        } catch (Exception e) {
-                            progressDialog.setRunFinished();
-                            JOptionPane.showMessageDialog(reporterGUI, "An error occurred while generating the output.", "Output Error.", JOptionPane.ERROR_MESSAGE);
-                            e.printStackTrace();
+                        if (!processCancelled) {
+                            JOptionPane.showMessageDialog(reporterGUI, "Data copied to file:\n" + filePath, "Data Exported.", JOptionPane.INFORMATION_MESSAGE);
                         }
+                    } catch (FileNotFoundException e) {
+                        progressDialog.setRunFinished();
+                        JOptionPane.showMessageDialog(reporterGUI,
+                                "An error occurred while generating the output. Please make sure "
+                                + "that the destination file is not opened by another application.", "Output Error.", JOptionPane.ERROR_MESSAGE);
+                        e.printStackTrace();
+                    } catch (Exception e) {
+                        progressDialog.setRunFinished();
+                        JOptionPane.showMessageDialog(reporterGUI, "An error occurred while generating the output.", "Output Error.", JOptionPane.ERROR_MESSAGE);
+                        e.printStackTrace();
                     }
-                }.start();
-            }
+                }
+            }.start();
         }
     }
 
