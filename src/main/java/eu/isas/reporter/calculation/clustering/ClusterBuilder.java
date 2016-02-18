@@ -121,8 +121,6 @@ public class ClusterBuilder {
 
         waitingHandler.setSecondaryProgressCounterIndeterminate(true);
 
-        ClusteringSettings clusteringSettings = displayPreferences.getClusteringSettings();
-
         // Load data if needed
         if (loadData) {
             waitingHandler.setWaitingText("Loading data (1/2). Please Wait...");

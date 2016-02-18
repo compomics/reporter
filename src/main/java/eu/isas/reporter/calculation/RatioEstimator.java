@@ -24,7 +24,7 @@ public class RatioEstimator {
     public static Double estimateRatios(RatioEstimationSettings ratioEstimationSettings, ArrayList<Double> ratios) {
 
         if (ratios == null || ratios.isEmpty()) {
-            return Double.NaN;
+            return 0.0;
         }
         if (ratios.size() < 6) {
             return BasicMathFunctions.median(ratios);
