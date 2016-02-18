@@ -4,6 +4,7 @@ import com.compomics.util.io.export.ExportFeature;
 import eu.isas.peptideshaker.export.exportfeatures.PsPsmFeature;
 import eu.isas.reporter.export.report.ReporterExportFeature;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * This enum lists all the PSM export features available from reporter
@@ -16,7 +17,8 @@ public enum ReporterPsmFeatures implements ReporterExportFeature {
     reporter_mz("Reporter m/z", "The reporter ions m/z as extracted from the spectrum.", true, true),
     reporter_intensity("Reporter Intensity", "The reporter ions instensities as extracted from the spectrum.", true, true),
     deisotoped_intensity("Deisotoped Intensity", "The instensities after deisotoping.", true, true),
-    ratio("Ratios", "The ratios of this protein group.", true, false);
+    raw_ratio("Raw Ratios", "The ratios of this PSM prior to normalization.", true, false),
+    ratio("Ratios", "The normalized ratios of this PSM.", true, false);
 
     /**
      * The title of the feature which will be used for column heading.
@@ -72,7 +74,7 @@ public enum ReporterPsmFeatures implements ReporterExportFeature {
     @Override
     public ArrayList<ExportFeature> getExportFeatures(boolean includeSubFeatures) {
         ArrayList<ExportFeature> result = PsPsmFeature.values()[0].getExportFeatures(includeSubFeatures);
-        result.add(ratio);
+        result.addAll(Arrays.asList(values()));
         return result;
     }
 

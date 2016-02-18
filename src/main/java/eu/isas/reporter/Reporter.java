@@ -26,6 +26,7 @@ import com.compomics.util.math.BasicMathFunctions;
 import com.compomics.util.preferences.SequenceMatchingPreferences;
 import com.compomics.util.waiting.WaitingHandler;
 import eu.isas.peptideshaker.parameters.PSParameter;
+import eu.isas.peptideshaker.utils.IdentificationFeaturesGenerator;
 import eu.isas.reporter.calculation.Deisotoper;
 import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
 import eu.isas.reporter.calculation.QuantificationFilter;
@@ -93,13 +94,15 @@ public class Reporter {
      * @throws java.lang.InterruptedException exception thrown whenever a
      * threading error occurred
      */
-    public static ProteinQuantificationDetails estimateProteinMatchQuantificationDetails(Identification identification,
+    public static ProteinQuantificationDetails estimateProteinMatchQuantificationDetails(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator,
             QuantificationFeaturesGenerator quantificationFeaturesGenerator, RatioEstimationSettings ratioEstimationSettings,
             ReporterIonQuantification reporterIonQuantification, SearchParameters searchParameters, ProteinMatch proteinMatch, WaitingHandler waitingHandler)
             throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
 
         ProteinQuantificationDetails result = new ProteinQuantificationDetails();
         HashMap<String, ArrayList<Double>> ratios = new HashMap<String, ArrayList<Double>>();
+        HashMap<String, ArrayList<Double>> uniqueRatios = new HashMap<String, ArrayList<Double>>();
+        HashMap<String, ArrayList<Double>> sharedRatios = new HashMap<String, ArrayList<Double>>();
         Set<String> indexes = reporterIonQuantification.getSampleIndexes();
 
         PSParameter psParameter = new PSParameter();
@@ -117,12 +120,23 @@ public class Reporter {
                     PeptideQuantificationDetails peptideQuantification = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideMatch, waitingHandler);
                     double ratio = peptideQuantification.getRatio(index, reporterIonQuantification.getNormalizationFactors());
                     ArrayList<Double> channelRatios = ratios.get(index);
+                    ArrayList<Double> channelUniqueRatios = uniqueRatios.get(index);
+                    ArrayList<Double> channelSharedRatios = sharedRatios.get(index);
                     if (channelRatios == null) {
                         channelRatios = new ArrayList<Double>(proteinMatch.getPeptideCount());
                         ratios.put(index, channelRatios);
+                        channelUniqueRatios = new ArrayList<Double>(proteinMatch.getPeptideCount());
+                        uniqueRatios.put(index, channelUniqueRatios);
+                        channelSharedRatios = new ArrayList<Double>(proteinMatch.getPeptideCount());
+                        sharedRatios.put(index, channelSharedRatios);
                     }
                     if (QuantificationFilter.isRatioValid(ratioEstimationSettings, ratio)) {
                         channelRatios.add(ratio);
+                        if (identificationFeaturesGenerator.getNValidatedProteinGroups(peptideMatch.getTheoreticPeptide()) == 1) {
+                            channelUniqueRatios.add(ratio);
+                        } else {
+                            channelSharedRatios.add(ratio);
+                        }
                     }
                 }
             }
@@ -131,6 +145,10 @@ public class Reporter {
         for (String index : indexes) {
             ArrayList<Double> channelRatios = ratios.get(index);
             result.setRawRatio(index, RatioEstimator.estimateRatios(ratioEstimationSettings, channelRatios));
+            ArrayList<Double> channelUniqueRatios = uniqueRatios.get(index);
+            result.setUniqueRawRatio(index, RatioEstimator.estimateRatios(ratioEstimationSettings, channelUniqueRatios));
+            ArrayList<Double> channelSharedRatios = sharedRatios.get(index);
+            result.setSharedRawRatio(index, RatioEstimator.estimateRatios(ratioEstimationSettings, channelSharedRatios));
         }
 
         return result;

@@ -4,6 +4,7 @@ import com.compomics.util.io.export.ExportFeature;
 import eu.isas.peptideshaker.export.exportfeatures.PsPeptideFeature;
 import eu.isas.reporter.export.report.ReporterExportFeature;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * This enum lists all the peptide export features available from reporter
@@ -13,7 +14,7 @@ import java.util.ArrayList;
  */
 public enum ReporterPeptideFeature implements ReporterExportFeature {
 
-    raw_ratio("Raw Ratios", "The ratios of this peptide.", true, true),
+    raw_ratio("Raw Ratios", "The ratios of this peptide prior to normalization.", true, true),
     spread("Spread", "The spread of the PSM ratios of this peptide.", true, false),
     normalized_ratio("Normalized Ratios", "The normalized ratios of this peptide.", true, false);
 
@@ -71,9 +72,7 @@ public enum ReporterPeptideFeature implements ReporterExportFeature {
     @Override
     public ArrayList<ExportFeature> getExportFeatures(boolean includeSubFeatures) {
         ArrayList<ExportFeature> result = PsPeptideFeature.values()[0].getExportFeatures(includeSubFeatures);
-        result.add(raw_ratio);
-        result.add(spread);
-        result.add(normalized_ratio);
+        result.addAll(Arrays.asList(values()));
         if (includeSubFeatures) {
             result.addAll(ReporterPsmFeatures.values()[0].getExportFeatures(includeSubFeatures));
         }

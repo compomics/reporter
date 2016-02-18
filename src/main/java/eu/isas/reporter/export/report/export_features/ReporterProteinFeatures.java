@@ -4,6 +4,7 @@ import com.compomics.util.io.export.ExportFeature;
 import eu.isas.peptideshaker.export.exportfeatures.PsProteinFeature;
 import eu.isas.reporter.export.report.ReporterExportFeature;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * This enum lists all the protein export features available from reporter
@@ -13,7 +14,12 @@ import java.util.ArrayList;
  */
 public enum ReporterProteinFeatures implements ReporterExportFeature {
 
-    ratio("Ratios", "The ratios of this protein group.", true, false),
+    raw_unique_ratio("Raw Unique Ratios", "The ratios of this protein group prior to normalization accounting only for peptides unique to this protein group.", true, false),
+    unique_ratio("Unique Ratios", "The normalized ratios of this protein group accounting only for peptides unique to this group.", true, false),
+    raw_shared_ratio("Raw Shared Ratios", "The ratios of this protein group prior to normalization accounting only for peptides shared with other protein groups.", true, false),
+    shared_ratio("Shared Ratios", "The normalized ratios of this protein group accounting only for peptides shared with other protein groups.", true, false),
+    raw_ratio("Raw Ratios", "The ratios of this protein group prior to normalization.", true, false),
+    ratio("Ratios", "The normalized ratios of this protein group.", true, false),
     spread("Spread", "The spread of the peptide ratios of this protein group.", true, false);
 
     /**
@@ -70,8 +76,7 @@ public enum ReporterProteinFeatures implements ReporterExportFeature {
     @Override
     public ArrayList<ExportFeature> getExportFeatures(boolean includeSubFeatures) {
         ArrayList<ExportFeature> result = PsProteinFeature.values()[0].getExportFeatures(includeSubFeatures);
-        result.add(ratio);
-        result.add(spread);
+        result.addAll(Arrays.asList(values()));
         if (includeSubFeatures) {
             result.addAll(ReporterPeptideFeature.values()[0].getExportFeatures(includeSubFeatures));
         }

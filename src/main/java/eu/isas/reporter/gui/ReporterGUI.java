@@ -294,14 +294,14 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         this.processingPreferences = processingPreferences;
         this.displayPreferences = displayPreferences;
 
-        identificationFeaturesGenerator = new IdentificationFeaturesGenerator(cpsParent.getIdentification(), cpsParent.getShotgunProtocol(),
+        identificationFeaturesGenerator = new IdentificationFeaturesGenerator(getIdentification(), cpsParent.getShotgunProtocol(),
                 cpsParent.getIdentificationParameters(), cpsParent.getMetrics(), cpsParent.getSpectrumCountingPreferences());
         displayFeaturesGenerator = new DisplayFeaturesGenerator(cpsParent.getIdentificationParameters().getSearchParameters().getPtmSettings(), exceptionHandler);
         displayFeaturesGenerator.setDisplayedPTMs(cpsParent.getDisplayPreferences().getDisplayedPtms());
         selectedProteins = new ArrayList<String>();
 
         projectSaved = false;
-        quantificationFeaturesGenerator = new QuantificationFeaturesGenerator(new QuantificationFeaturesCache(), cpsParent.getIdentification(), reporterSettings, reporterIonQuantification,
+        quantificationFeaturesGenerator = new QuantificationFeaturesGenerator(new QuantificationFeaturesCache(), getIdentification(), getIdentificationFeaturesGenerator(), reporterSettings, reporterIonQuantification,
                 cpsParent.getIdentificationParameters().getSearchParameters(), cpsParent.getIdentificationParameters().getSequenceMatchingPreferences());
 
         progressDialog = new ProgressDialogX(this,
@@ -389,7 +389,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
                 normalizer.setPeptideNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(), reporterSettings.getNormalizationSettings(), getIdentificationParameters().getSequenceMatchingPreferences(), getIdentification(), quantificationFeaturesGenerator, processingPreferences, exceptionHandler, progressDialog);
             }
             if (!normalizationFactors.hasProteinNormalisationFactors()) {
-                normalizer.setProteinNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(), reporterSettings.getNormalizationSettings(), getIdentification(), quantificationFeaturesGenerator, processingPreferences, exceptionHandler, progressDialog);
+                normalizer.setProteinNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(), reporterSettings.getNormalizationSettings(), getIdentification(), getMetrics(), quantificationFeaturesGenerator, processingPreferences, exceptionHandler, progressDialog);
             }
         }
 

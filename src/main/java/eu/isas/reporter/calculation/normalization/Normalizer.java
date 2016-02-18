@@ -18,6 +18,7 @@ import com.compomics.util.preferences.ProcessingPreferences;
 import com.compomics.util.preferences.SequenceMatchingPreferences;
 import com.compomics.util.waiting.WaitingHandler;
 import eu.isas.peptideshaker.parameters.PSParameter;
+import eu.isas.peptideshaker.utils.Metrics;
 import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
 import eu.isas.reporter.calculation.QuantificationFilter;
 import eu.isas.reporter.settings.NormalizationSettings;
@@ -30,6 +31,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -321,6 +323,7 @@ public class Normalizer {
      * @param ratioEstimationSettings the ratio estimation settings
      * @param normalizationSettings the normalization settings
      * @param identification the identification
+     * @param metrics the identification metrics
      * @param quantificationFeaturesGenerator the quantification features
      * generator
      * @param processingPreferences the processing preferences
@@ -339,21 +342,30 @@ public class Normalizer {
      * threading error occurred
      */
     public void setProteinNormalizationFactors(ReporterIonQuantification reporterIonQuantification, RatioEstimationSettings ratioEstimationSettings, NormalizationSettings normalizationSettings,
-            Identification identification, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ProcessingPreferences processingPreferences, ExceptionHandler exceptionHandler, WaitingHandler waitingHandler)
+            Identification identification, Metrics metrics, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ProcessingPreferences processingPreferences, ExceptionHandler exceptionHandler, WaitingHandler waitingHandler)
             throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
 
-        HashMap<String, ArrayList<Double>> allRawRatios = new HashMap<String, ArrayList<Double>>();
-        HashMap<String, ArrayList<Double>> seedRawRatios = new HashMap<String, ArrayList<Double>>();
-        for (String sampleIndex : reporterIonQuantification.getSampleIndexes()) {
-            allRawRatios.put(sampleIndex, new ArrayList<Double>());
-            seedRawRatios.put(sampleIndex, new ArrayList<Double>());
+        Set<String> sampleIndexes = reporterIonQuantification.getSampleIndexes();
+        HashMap<String, ArrayList<Double>> allRawRatios = new HashMap<String, ArrayList<Double>>(sampleIndexes.size());
+        HashMap<String, ArrayList<Double>> seedRawRatios = new HashMap<String, ArrayList<Double>>(sampleIndexes.size());
+        HashMap<String, ArrayList<Double>> allUniqueRawRatios = new HashMap<String, ArrayList<Double>>(sampleIndexes.size());
+        HashMap<String, ArrayList<Double>> seedUniqueRawRatios = new HashMap<String, ArrayList<Double>>(sampleIndexes.size());
+        HashMap<String, ArrayList<Double>> allSharedRawRatios = new HashMap<String, ArrayList<Double>>(sampleIndexes.size());
+        HashMap<String, ArrayList<Double>> seedSharedRawRatios = new HashMap<String, ArrayList<Double>>(sampleIndexes.size());
+        for (String sampleIndex : sampleIndexes) {
+            allRawRatios.put(sampleIndex, new ArrayList<Double>(metrics.getnValidatedProteins()));
+            seedRawRatios.put(sampleIndex, new ArrayList<Double>(metrics.getnValidatedProteins()));
+            allUniqueRawRatios.put(sampleIndex, new ArrayList<Double>(metrics.getnValidatedProteins()));
+            seedUniqueRawRatios.put(sampleIndex, new ArrayList<Double>(metrics.getnValidatedProteins()));
+            allSharedRawRatios.put(sampleIndex, new ArrayList<Double>(metrics.getnValidatedProteins()));
+            seedSharedRawRatios.put(sampleIndex, new ArrayList<Double>(metrics.getnValidatedProteins()));
         }
 
         PSParameter psParameter = new PSParameter();
         ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
         parameters.add(psParameter);
 
-        if (normalizationSettings.getPeptideNormalization() != NormalizationType.none) {
+        if (normalizationSettings.getProteinNormalization() != NormalizationType.none) {
 
             if (waitingHandler != null) {
                 waitingHandler.setWaitingText("Protein Ratio Normalization. Please Wait...");
@@ -407,6 +419,38 @@ public class Normalizer {
                     }
                     ratios.addAll(runnable.getSeedRawRatios().get(reagent));
                 }
+                for (String reagent : runnable.getAllUniqueRawRatios().keySet()) {
+                    ArrayList<Double> ratios = allUniqueRawRatios.get(reagent);
+                    if (ratios == null) {
+                        ratios = new ArrayList<Double>();
+                        allUniqueRawRatios.put(reagent, ratios);
+                    }
+                    ratios.addAll(runnable.getAllUniqueRawRatios().get(reagent));
+                }
+                for (String reagent : runnable.getSeedSharedRawRatios().keySet()) {
+                    ArrayList<Double> ratios = seedSharedRawRatios.get(reagent);
+                    if (ratios == null) {
+                        ratios = new ArrayList<Double>();
+                        seedSharedRawRatios.put(reagent, ratios);
+                    }
+                    ratios.addAll(runnable.getSeedSharedRawRatios().get(reagent));
+                }
+                for (String reagent : runnable.getAllSharedRawRatios().keySet()) {
+                    ArrayList<Double> ratios = allSharedRawRatios.get(reagent);
+                    if (ratios == null) {
+                        ratios = new ArrayList<Double>();
+                        allSharedRawRatios.put(reagent, ratios);
+                    }
+                    ratios.addAll(runnable.getAllSharedRawRatios().get(reagent));
+                }
+                for (String reagent : runnable.getSeedSharedRawRatios().keySet()) {
+                    ArrayList<Double> ratios = seedSharedRawRatios.get(reagent);
+                    if (ratios == null) {
+                        ratios = new ArrayList<Double>();
+                        seedSharedRawRatios.put(reagent, ratios);
+                    }
+                    ratios.addAll(runnable.getSeedSharedRawRatios().get(reagent));
+                }
             }
         }
 
@@ -415,7 +459,7 @@ public class Normalizer {
             double normalisationFactor;
             ArrayList<Double> rawRatios = allRawRatios.get(sampleIndex);
             ArrayList<Double> seedRatios = seedRawRatios.get(sampleIndex);
-            if (allRawRatios.get(sampleIndex) != null && !rawRatios.isEmpty()) {
+            if (rawRatios != null && !rawRatios.isEmpty()) {
                 NormalizationType normalizationType = normalizationSettings.getProteinNormalization();
                 if (normalizationType == NormalizationType.none) {
                     normalisationFactor = 1;
@@ -442,6 +486,66 @@ public class Normalizer {
                 normalisationFactor = 1;
             }
             normalizationFactors.addProteinNormalisationFactor(sampleIndex, normalisationFactor);
+            
+            rawRatios = allUniqueRawRatios.get(sampleIndex);
+            seedRatios = seedUniqueRawRatios.get(sampleIndex);
+            if (rawRatios != null && !rawRatios.isEmpty()) {
+                NormalizationType normalizationType = normalizationSettings.getProteinNormalization();
+                if (normalizationType == NormalizationType.none) {
+                    normalisationFactor = 1;
+                } else if (normalizationType == NormalizationType.mean) {
+                    if (seedRatios != null && !seedRatios.isEmpty()) {
+                        normalisationFactor = BasicMathFunctions.mean(seedRatios);
+                    } else {
+                        normalisationFactor = BasicMathFunctions.mean(rawRatios);
+                    }
+                } else if (normalizationType == NormalizationType.median) {
+                    if (seedRatios != null && !seedRatios.isEmpty()) {
+                        normalisationFactor = BasicMathFunctions.median(seedRatios);
+                    } else {
+                        normalisationFactor = BasicMathFunctions.median(rawRatios);
+                    }
+                } else if (normalizationType == NormalizationType.mode) {
+                    throw new UnsupportedOperationException("Normalization method not implemented.");
+                } else if (normalizationType == NormalizationType.sum) {
+                    throw new UnsupportedOperationException("Normalization method not implemented.");
+                } else {
+                    throw new UnsupportedOperationException("Normalization method not implemented.");
+                }
+            } else {
+                normalisationFactor = 1;
+            }
+            normalizationFactors.addUniqueProteinNormalisationFactor(sampleIndex, normalisationFactor);
+            
+            rawRatios = allSharedRawRatios.get(sampleIndex);
+            seedRatios = seedSharedRawRatios.get(sampleIndex);
+            if (rawRatios != null && !rawRatios.isEmpty()) {
+                NormalizationType normalizationType = normalizationSettings.getProteinNormalization();
+                if (normalizationType == NormalizationType.none) {
+                    normalisationFactor = 1;
+                } else if (normalizationType == NormalizationType.mean) {
+                    if (seedRatios != null && !seedRatios.isEmpty()) {
+                        normalisationFactor = BasicMathFunctions.mean(seedRatios);
+                    } else {
+                        normalisationFactor = BasicMathFunctions.mean(rawRatios);
+                    }
+                } else if (normalizationType == NormalizationType.median) {
+                    if (seedRatios != null && !seedRatios.isEmpty()) {
+                        normalisationFactor = BasicMathFunctions.median(seedRatios);
+                    } else {
+                        normalisationFactor = BasicMathFunctions.median(rawRatios);
+                    }
+                } else if (normalizationType == NormalizationType.mode) {
+                    throw new UnsupportedOperationException("Normalization method not implemented.");
+                } else if (normalizationType == NormalizationType.sum) {
+                    throw new UnsupportedOperationException("Normalization method not implemented.");
+                } else {
+                    throw new UnsupportedOperationException("Normalization method not implemented.");
+                }
+            } else {
+                normalisationFactor = 1;
+            }
+            normalizationFactors.addSharedProteinNormalisationFactor(sampleIndex, normalisationFactor);
         }
     }
 
@@ -517,13 +621,29 @@ public class Normalizer {
          */
         private RatioEstimationSettings ratioEstimationSettings;
         /**
-         * The raw peptide ratios gathered in a map.
+         * The raw ratios gathered in a map.
          */
         private HashMap<String, ArrayList<Double>> allRawRatios = new HashMap<String, ArrayList<Double>>();
         /**
-         * The raw seed peptide ratios gathered in a map.
+         * The raw seed ratios gathered in a map.
          */
         private HashMap<String, ArrayList<Double>> seedRawRatios = new HashMap<String, ArrayList<Double>>();
+        /**
+         * The raw unique ratios gathered in a map.
+         */
+        private HashMap<String, ArrayList<Double>> allUniqueRawRatios = new HashMap<String, ArrayList<Double>>();
+        /**
+         * The raw seed unique ratios gathered in a map.
+         */
+        private HashMap<String, ArrayList<Double>> seedUniqueRawRatios = new HashMap<String, ArrayList<Double>>();
+        /**
+         * The raw shared ratios gathered in a map.
+         */
+        private HashMap<String, ArrayList<Double>> allSharedRawRatios = new HashMap<String, ArrayList<Double>>();
+        /**
+         * The raw seed shared ratios gathered in a map.
+         */
+        private HashMap<String, ArrayList<Double>> seedSharedRawRatios = new HashMap<String, ArrayList<Double>>();
         /**
          * The waiting handler.
          */
@@ -599,6 +719,40 @@ public class Normalizer {
                                             ratios.add(ratio);
                                         }
                                     }
+                                    ratio = matchQuantificationDetails.getUniqueRawRatio(sampleIndex);
+                                    if (QuantificationFilter.isRatioValid(ratioEstimationSettings, ratio) && ratio > 0) {
+                                        ArrayList<Double> ratios = allUniqueRawRatios.get(sampleIndex);
+                                        if (ratios == null) {
+                                            ratios = new ArrayList<Double>();
+                                            allUniqueRawRatios.put(sampleIndex, ratios);
+                                        }
+                                        ratios.add(ratio);
+                                        if (seeds != null && isSeed(seeds, proteinMatch.getTheoreticProteinsAccessions())) {
+                                            ratios = seedUniqueRawRatios.get(sampleIndex);
+                                            if (ratios == null) {
+                                                ratios = new ArrayList<Double>();
+                                                seedUniqueRawRatios.put(sampleIndex, ratios);
+                                            }
+                                            ratios.add(ratio);
+                                        }
+                                    }
+                                    ratio = matchQuantificationDetails.getSharedRawRatio(sampleIndex);
+                                    if (QuantificationFilter.isRatioValid(ratioEstimationSettings, ratio) && ratio > 0) {
+                                        ArrayList<Double> ratios = allSharedRawRatios.get(sampleIndex);
+                                        if (ratios == null) {
+                                            ratios = new ArrayList<Double>();
+                                            allSharedRawRatios.put(sampleIndex, ratios);
+                                        }
+                                        ratios.add(ratio);
+                                        if (seeds != null && isSeed(seeds, proteinMatch.getTheoreticProteinsAccessions())) {
+                                            ratios = seedSharedRawRatios.get(sampleIndex);
+                                            if (ratios == null) {
+                                                ratios = new ArrayList<Double>();
+                                                seedSharedRawRatios.put(sampleIndex, ratios);
+                                            }
+                                            ratios.add(ratio);
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -634,6 +788,42 @@ public class Normalizer {
          */
         public HashMap<String, ArrayList<Double>> getSeedRawRatios() {
             return seedRawRatios;
+        }
+
+        /**
+         * Returns the raw unique ratios found while iterating.
+         *
+         * @return the raw unique ratios found while iterating
+         */
+        public HashMap<String, ArrayList<Double>> getAllUniqueRawRatios() {
+            return allUniqueRawRatios;
+        }
+
+        /**
+         * Returns the seed raw unique ratios found while iterating.
+         *
+         * @return the seed raw unique ratios found while iterating
+         */
+        public HashMap<String, ArrayList<Double>> getSeedUniqueRawRatios() {
+            return seedUniqueRawRatios;
+        }
+
+        /**
+         * Returns the raw shared ratios found while iterating.
+         *
+         * @return the raw shared ratios found while iterating
+         */
+        public HashMap<String, ArrayList<Double>> getAllSharedRawRatios() {
+            return allSharedRawRatios;
+        }
+
+        /**
+         * Returns the seed raw shared ratios found while iterating.
+         *
+         * @return the seed raw shared ratios found while iterating
+         */
+        public HashMap<String, ArrayList<Double>> getSeedSharedRawRatios() {
+            return seedSharedRawRatios;
         }
     }
 

@@ -131,12 +131,17 @@ public class ReporterPsmSection {
      * @param validatedOnly whether only validated matches should be exported
      * @param decoys whether decoy matches should be exported as well
      * @param waitingHandler the waiting handler
-     * 
-     * @throws java.sql.SQLException exception thrown whenever an error occurred while interacting with the database
-     * @throws java.io.IOException exception thrown whenever an error occurred while interacting with a file
-     * @throws java.lang.ClassNotFoundException exception thrown whenever an error occurred while deserializing an object
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown whenever an error occurred while reading an mzML file
-     * @throws java.lang.InterruptedException exception thrown whenever a threading error occurred
+     *
+     * @throws java.sql.SQLException exception thrown whenever an error occurred
+     * while interacting with the database
+     * @throws java.io.IOException exception thrown whenever an error occurred
+     * while interacting with a file
+     * @throws java.lang.ClassNotFoundException exception thrown whenever an
+     * error occurred while deserializing an object
+     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown
+     * whenever an error occurred while reading an mzML file
+     * @throws java.lang.InterruptedException exception thrown whenever a
+     * threading error occurred
      */
     public void writeSection(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, ReporterSettings reporterSettings,
             ShotgunProtocol shotgunProtocol, IdentificationParameters identificationParameters, ArrayList<String> keys, String linePrefix, int nSurroundingAA, boolean validatedOnly, boolean decoys, WaitingHandler waitingHandler) throws IOException, IllegalArgumentException, SQLException,
@@ -188,15 +193,15 @@ public class ReporterPsmSection {
             waitingHandler.resetSecondaryProgressCounter();
             waitingHandler.setMaxSecondaryProgressCounter(totalSize);
         }
-        
+
         PSParameter psParameter = new PSParameter();
         ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
         parameters.add(psParameter);
 
         for (String spectrumFile : psmMap.keySet()) {
-            
+
             ArrayList<String> fileKeys = new ArrayList<String>(psmMap.get(spectrumFile));
-            
+
             PsmIterator psmIterator = identification.getPsmIterator(spectrumFile, fileKeys, parameters, false, waitingHandler);
 
             while (psmIterator.hasNext()) {
@@ -210,7 +215,7 @@ public class ReporterPsmSection {
 
                 SpectrumMatch spectrumMatch = psmIterator.next();
                 String spectrumKey = spectrumMatch.getKey();
-                        
+
                 psParameter = (PSParameter) identification.getSpectrumMatchParameter(spectrumKey, psParameter);
 
                 if (!validatedOnly || psParameter.getMatchValidationLevel().isValidated()) {
@@ -237,11 +242,11 @@ public class ReporterPsmSection {
                             String feature;
                             if (peptideAssumption != null) {
                                 peptideAssumption = spectrumMatch.getBestPeptideAssumption();
-                                feature = PsIdentificationAlgorithmMatchesSection.getPeptideAssumptionFeature(identification, identificationFeaturesGenerator, shotgunProtocol, 
+                                feature = PsIdentificationAlgorithmMatchesSection.getPeptideAssumptionFeature(identification, identificationFeaturesGenerator, shotgunProtocol,
                                         identificationParameters, keys, linePrefix, nSurroundingAA, peptideAssumption, spectrumMatch.getKey(), psParameter, identificationAlgorithmMatchesFeature, waitingHandler);
                             } else if (spectrumMatch.getBestTagAssumption() != null) {
                                 TagAssumption tagAssumption = spectrumMatch.getBestTagAssumption();
-                                feature = PsIdentificationAlgorithmMatchesSection.getTagAssumptionFeature(identification, identificationFeaturesGenerator, shotgunProtocol, 
+                                feature = PsIdentificationAlgorithmMatchesSection.getTagAssumptionFeature(identification, identificationFeaturesGenerator, shotgunProtocol,
                                         identificationParameters, keys, linePrefix, tagAssumption, spectrumMatch.getKey(), psParameter, identificationAlgorithmMatchesFeature, waitingHandler);
                             } else {
                                 throw new IllegalArgumentException("No best match found for spectrum " + spectrumMatch.getKey() + ".");
@@ -254,7 +259,7 @@ public class ReporterPsmSection {
                             } else {
                                 first = false;
                             }
-                            writer.write(PsPsmSection.getFeature(identification, identificationFeaturesGenerator, shotgunProtocol, 
+                            writer.write(PsPsmSection.getFeature(identification, identificationFeaturesGenerator, shotgunProtocol,
                                     identificationParameters, keys, linePrefix, spectrumMatch, psParameter, psmFeature, validatedOnly, decoys, waitingHandler));
                         }
                         ArrayList<String> sampleIndexes = new ArrayList<String>(reporterIonQuantification.getSampleIndexes());
@@ -311,17 +316,25 @@ public class ReporterPsmSection {
      *
      * @return the report component corresponding to a feature at a given
      * channel
-     * 
-     * @throws java.sql.SQLException exception thrown whenever an error occurred while interacting with the database
-     * @throws java.io.IOException exception thrown whenever an error occurred while interacting with a file
-     * @throws java.lang.ClassNotFoundException exception thrown whenever an error occurred while deserializing an object
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown whenever an error occurred while reading an mzML file
-     * @throws java.lang.InterruptedException exception thrown whenever a threading error occurred
+     *
+     * @throws java.sql.SQLException exception thrown whenever an error occurred
+     * while interacting with the database
+     * @throws java.io.IOException exception thrown whenever an error occurred
+     * while interacting with a file
+     * @throws java.lang.ClassNotFoundException exception thrown whenever an
+     * error occurred while deserializing an object
+     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown
+     * whenever an error occurred while reading an mzML file
+     * @throws java.lang.InterruptedException exception thrown whenever a
+     * threading error occurred
      */
     public static String getFeature(QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, ReporterSettings reporterSettings, String spectrumKey, ReporterPsmFeatures psmFeatures, String sampleIndex) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
         switch (psmFeatures) {
-            case ratio:
+            case raw_ratio:
                 PsmQuantificationDetails psmDetails = quantificationFeaturesGenerator.getPSMQuantificationDetails(spectrumKey);
+                return psmDetails.getRawRatio(sampleIndex).toString();
+            case ratio:
+                psmDetails = quantificationFeaturesGenerator.getPSMQuantificationDetails(spectrumKey);
                 return psmDetails.getRatio(sampleIndex, reporterIonQuantification.getNormalizationFactors()).toString();
             case reporter_intensity:
                 SpectrumQuantificationDetails spectrumDetails = quantificationFeaturesGenerator.getSpectrumQuantificationDetails(reporterIonQuantification, reporterSettings.getReporterIonSelectionSettings(), spectrumKey);
@@ -351,7 +364,8 @@ public class ReporterPsmSection {
      * @param reporterIonQuantification the reporter ion quantification object
      * containing the quantification configuration
      *
-     * @throws java.io.IOException exception thrown whenever an error occurred while interacting with a file
+     * @throws java.io.IOException exception thrown whenever an error occurred
+     * while interacting with a file
      */
     public void writeHeader(ReporterIonQuantification reporterIonQuantification) throws IOException {
 
@@ -389,8 +403,12 @@ public class ReporterPsmSection {
             writer.writeHeaderText(exportFeature.getTitle(), reporterStyle);
             if (exportFeature.hasChannels()) {
                 for (int i = 1; i < sampleIndexes.size(); i++) {
-                    writer.writeHeaderText("", reporterStyle);
-                    writer.addSeparator();
+                    if (firstColumn) {
+                        firstColumn = false;
+                    } else {
+                        writer.addSeparator();
+                    }
+                    writer.writeHeaderText(" ", reporterStyle); // Space used for the excel style
                 }
                 needSecondLine = true;
             }

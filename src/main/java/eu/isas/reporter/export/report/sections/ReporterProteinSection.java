@@ -132,13 +132,19 @@ public class ReporterProteinSection {
      * @param validatedOnly whether only validated matches should be exported
      * @param decoys whether decoy matches should be exported as well
      * @param waitingHandler the waiting handler
-     * 
-     * @throws java.sql.SQLException exception thrown whenever an error occurred while interacting with the database
-     * @throws java.io.IOException exception thrown whenever an error occurred while interacting with a file
-     * @throws java.lang.ClassNotFoundException exception thrown whenever an error occurred while deserializing an object
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown whenever an error occurred while reading an mzML file
-     * @throws java.lang.InterruptedException exception thrown whenever a threading error occurred
-     * @throws org.apache.commons.math.MathException exception thrown whenever an error occurred while transforming the ratios
+     *
+     * @throws java.sql.SQLException exception thrown whenever an error occurred
+     * while interacting with the database
+     * @throws java.io.IOException exception thrown whenever an error occurred
+     * while interacting with a file
+     * @throws java.lang.ClassNotFoundException exception thrown whenever an
+     * error occurred while deserializing an object
+     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown
+     * whenever an error occurred while reading an mzML file
+     * @throws java.lang.InterruptedException exception thrown whenever a
+     * threading error occurred
+     * @throws org.apache.commons.math.MathException exception thrown whenever
+     * an error occurred while transforming the ratios
      */
     public void writeSection(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, GeneMaps geneMaps, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, ReporterSettings reporterSettings,
             ShotgunProtocol shotgunProtocol, IdentificationParameters identificationParameters, ArrayList<String> keys, int nSurroundingAas, boolean validatedOnly, boolean decoys, WaitingHandler waitingHandler)
@@ -167,7 +173,7 @@ public class ReporterProteinSection {
         }
 
         ProteinMatchesIterator proteinMatchesIterator = identification.getProteinMatchesIterator(keys, parameters, peptideSection != null, parameters, peptideSection != null, parameters, waitingHandler);
-        
+
         while (proteinMatchesIterator.hasNext()) {
 
             if (waitingHandler != null) {
@@ -176,7 +182,7 @@ public class ReporterProteinSection {
                 }
                 waitingHandler.increaseSecondaryProgressCounter();
             }
-            
+
             ProteinMatch proteinMatch = proteinMatchesIterator.next();
             String proteinKey = proteinMatch.getKey();
 
@@ -231,8 +237,8 @@ public class ReporterProteinSection {
                     writer.newLine();
                     if (peptideSection != null) {
                         writer.increaseDepth();
-                        peptideSection.writeSection(identification, identificationFeaturesGenerator, quantificationFeaturesGenerator, reporterIonQuantification, reporterSettings, 
-                                shotgunProtocol, identificationParameters, proteinMatch.getPeptideMatchesKeys(), nSurroundingAas, 
+                        peptideSection.writeSection(identification, identificationFeaturesGenerator, quantificationFeaturesGenerator, reporterIonQuantification, reporterSettings,
+                                shotgunProtocol, identificationParameters, proteinMatch.getPeptideMatchesKeys(), nSurroundingAas,
                                 line + ".", validatedOnly, decoys, null);
                         writer.decreseDepth();
                     }
@@ -258,19 +264,39 @@ public class ReporterProteinSection {
      *
      * @return the report component corresponding to a feature at a given
      * channel
-     * 
-     * @throws java.sql.SQLException exception thrown whenever an error occurred while interacting with the database
-     * @throws java.io.IOException exception thrown whenever an error occurred while interacting with a file
-     * @throws java.lang.ClassNotFoundException exception thrown whenever an error occurred while deserializing an object
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown whenever an error occurred while reading an mzML file
-     * @throws java.lang.InterruptedException exception thrown whenever a threading error occurred
+     *
+     * @throws java.sql.SQLException exception thrown whenever an error occurred
+     * while interacting with the database
+     * @throws java.io.IOException exception thrown whenever an error occurred
+     * while interacting with a file
+     * @throws java.lang.ClassNotFoundException exception thrown whenever an
+     * error occurred while deserializing an object
+     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown
+     * whenever an error occurred while reading an mzML file
+     * @throws java.lang.InterruptedException exception thrown whenever a
+     * threading error occurred
      */
     public static String getFeature(QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, String proteinKey,
             ReporterProteinFeatures proteinFeatures, String sampleIndex, WaitingHandler waitingHandler) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
         switch (proteinFeatures) {
-            case ratio:
+            case raw_ratio:
                 ProteinQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(proteinKey, waitingHandler);
+                return quantificationDetails.getRawRatio(sampleIndex).toString();
+            case ratio:
+                quantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(proteinKey, waitingHandler);
                 return quantificationDetails.getRatio(sampleIndex, reporterIonQuantification.getNormalizationFactors()).toString();
+            case raw_unique_ratio:
+                quantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(proteinKey, waitingHandler);
+                return quantificationDetails.getUniqueRawRatio(sampleIndex).toString();
+            case unique_ratio:
+                quantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(proteinKey, waitingHandler);
+                return quantificationDetails.getUniqueRatio(sampleIndex, reporterIonQuantification.getNormalizationFactors()).toString();
+            case raw_shared_ratio:
+                quantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(proteinKey, waitingHandler);
+                return quantificationDetails.getSharedRawRatio(sampleIndex).toString();
+            case shared_ratio:
+                quantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(proteinKey, waitingHandler);
+                return quantificationDetails.getSharedRatio(sampleIndex, reporterIonQuantification.getNormalizationFactors()).toString();
             default:
                 return "Not implemented";
         }
@@ -282,7 +308,8 @@ public class ReporterProteinSection {
      * @param reporterIonQuantification the reporter ion quantification object
      * containing the quantification configuration
      *
-     * @throws java.io.IOException exception thrown whenever an error occurred while interacting with a file
+     * @throws java.io.IOException exception thrown whenever an error occurred
+     * while interacting with a file
      */
     public void writeHeader(ReporterIonQuantification reporterIonQuantification) throws IOException {
 
@@ -312,8 +339,12 @@ public class ReporterProteinSection {
             writer.writeHeaderText(exportFeature.getTitle(), reporterStyle);
             if (exportFeature.hasChannels()) {
                 for (int i = 1; i < sampleIndexes.size(); i++) {
-                    writer.writeHeaderText("", reporterStyle);
-                    writer.addSeparator();
+                    if (firstColumn) {
+                        firstColumn = false;
+                    } else {
+                        writer.addSeparator();
+                    }
+                    writer.writeHeaderText(" ", reporterStyle); // Space used for the excel style
                 }
                 needSecondLine = true;
             }

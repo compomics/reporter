@@ -8,6 +8,7 @@ import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuant
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
 import com.compomics.util.preferences.SequenceMatchingPreferences;
 import com.compomics.util.waiting.WaitingHandler;
+import eu.isas.peptideshaker.utils.IdentificationFeaturesGenerator;
 import eu.isas.reporter.Reporter;
 import eu.isas.reporter.settings.ReporterIonSelectionSettings;
 import eu.isas.reporter.settings.ReporterSettings;
@@ -37,6 +38,10 @@ public class QuantificationFeaturesGenerator {
      */
     private Identification identification;
     /**
+     * The identification features generator.
+     */
+    private IdentificationFeaturesGenerator identificationFeaturesGenerator;
+    /**
      * A deisotoper to deisotope reporter ion intensities.
      */
     private Deisotoper deisotoper;
@@ -64,16 +69,18 @@ public class QuantificationFeaturesGenerator {
      * quantification results
      * @param identification the identification object containing all
      * identification results
+     * @param identificationFeaturesGenerator the identification features generator
      * @param reporterSettings the reporter settings
      * @param reporterIonQuantification the reporter ion quantification settings
      * @param searchParameters the identification parameters used for the
      * identification of spectra
      * @param sequenceMatchingPreferences the sequence matching preferences
      */
-    public QuantificationFeaturesGenerator(QuantificationFeaturesCache quantificationFeaturesCache, Identification identification, ReporterSettings reporterSettings,
+    public QuantificationFeaturesGenerator(QuantificationFeaturesCache quantificationFeaturesCache, Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, ReporterSettings reporterSettings,
             ReporterIonQuantification reporterIonQuantification, SearchParameters searchParameters, SequenceMatchingPreferences sequenceMatchingPreferences) {
         this.quantificationFeaturesCache = quantificationFeaturesCache;
         this.identification = identification;
+        this.identificationFeaturesGenerator = identificationFeaturesGenerator;
         this.reporterSettings = reporterSettings;
         this.reporterIonQuantification = reporterIonQuantification;
         this.searchParameters = searchParameters;
@@ -100,7 +107,7 @@ public class QuantificationFeaturesGenerator {
         int nPeptides = proteinMatch.getPeptideCount();
         ProteinQuantificationDetails result = quantificationFeaturesCache.getProteinMatchQuantificationDetails(nPeptides, matchKey);
         if (result == null) {
-            result = Reporter.estimateProteinMatchQuantificationDetails(identification, this, reporterSettings.getRatioEstimationSettings(), reporterIonQuantification, searchParameters, proteinMatch, waitingHandler);
+            result = Reporter.estimateProteinMatchQuantificationDetails(identification, identificationFeaturesGenerator, this, reporterSettings.getRatioEstimationSettings(), reporterIonQuantification, searchParameters, proteinMatch, waitingHandler);
             quantificationFeaturesCache.addProteinMatchQuantificationDetails(nPeptides, matchKey, result);
         }
         return result;
