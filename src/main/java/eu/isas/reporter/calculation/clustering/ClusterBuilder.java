@@ -117,7 +117,10 @@ public class ClusterBuilder {
      * @throws InterruptedException if an InterruptedException occurs
      * @throws MzMLUnmarshallerException if an MzMLUnmarshallerException occurs
      */
-    public KMeansClustering clusterProfiles(Identification identification, IdentificationParameters identificationParameters, Metrics metrics, ReporterIonQuantification reporterIonQuantification, QuantificationFeaturesGenerator quantificationFeaturesGenerator, DisplayPreferences displayPreferences, boolean loadData, WaitingHandler waitingHandler) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
+    public KMeansClustering clusterProfiles(Identification identification, IdentificationParameters identificationParameters, Metrics metrics, 
+            ReporterIonQuantification reporterIonQuantification, QuantificationFeaturesGenerator quantificationFeaturesGenerator, 
+            DisplayPreferences displayPreferences, boolean loadData, WaitingHandler waitingHandler) 
+            throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
 
         waitingHandler.setSecondaryProgressCounterIndeterminate(true);
 
@@ -502,5 +505,4 @@ public class ClusterBuilder {
     public Set<String> getFilteredPsms() {
         return psmClusters.keySet();
     }
-
 }

@@ -14,7 +14,8 @@ import javax.swing.table.TableColumn;
 import no.uib.jsparklines.renderers.JSparklinesColorTableCellRenderer;
 
 /**
- *
+ * Clustering settings dialog.
+ * 
  * @author Marc Vaudel
  */
 public class ClusteringSettingsDialog extends javax.swing.JDialog {
@@ -73,7 +74,7 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
      *
      * @param parentFrame the parent frame
      * @param clusteringSettings the clustering settings
-     * @param editable
+     * @param editable if the content is editable or not
      */
     public ClusteringSettingsDialog(JFrame parentFrame, ClusteringSettings clusteringSettings, boolean editable) {
         super(parentFrame, true);

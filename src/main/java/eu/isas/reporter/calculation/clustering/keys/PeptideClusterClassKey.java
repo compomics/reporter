@@ -16,39 +16,32 @@ public class PeptideClusterClassKey implements ClusterClassKey, Serializable {
      * Indicates whether the peptides must be starred.
      */
     private Boolean starred = false;
-
     /**
      * The PTMs eventually carried by the peptides in this class.
      */
     private ArrayList<String> possiblePtms = null;
-
     /**
      * The PTMs eventually carried by the peptides in this class as set.
      */
     private HashSet<String> possiblePtmsAsSet = null;
-
     /**
      * The PTMs not carried by the peptides in this class.
      */
     private ArrayList<String> forbiddenPtms = null;
-
     /**
      * The PTMs not carried by the peptides in this class as set.
      */
     private HashSet<String> forbiddenPtmsAsSet = null;
-
     /**
      * Indicates whether the peptides are not modified.
      */
     private boolean notModified = false;
-
     /**
-     * Boolean indicating whether the peptides are N-term
+     * Boolean indicating whether the peptides are N-term.
      */
     private Boolean nTerm = false;
-
     /**
-     * Boolean indicating whether the peptides are C-term
+     * Boolean indicating whether the peptides are C-term.
      */
     private Boolean cTerm = false;
 
@@ -298,5 +291,4 @@ public class PeptideClusterClassKey implements ClusterClassKey, Serializable {
     public String toString() {
         return "Peptide_" + getName();
     }
-
 }

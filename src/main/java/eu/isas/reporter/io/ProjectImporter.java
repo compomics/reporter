@@ -45,32 +45,26 @@ public class ProjectImporter {
      * The dialog owner if operated from the GUI.
      */
     private Dialog owner;
-
     /**
      * The last selected folder.
      */
     private LastSelectedFolder lastSelectedFolder;
-
     /**
      * The cps parent used to load the file.
      */
     private CpsParent cpsParent = null;
-
     /**
      * The reporter settings loaded from the file.
      */
     private ReporterSettings reporterSettings;
-
     /**
      * The reporter ion quantification object loaded from the file.
      */
     private ReporterIonQuantification reporterIonQuantification;
-
     /**
      * The display preferences.
      */
     private DisplayPreferences displayPreferences;
-
     /**
      * The default reporter ion tolerance for TMT data.
      */
@@ -222,10 +216,11 @@ public class ProjectImporter {
             return;
         }
 
-        // Load Reporter settings
+        // load reporter settings
         Identification identification = cpsParent.getIdentification();
         IdentificationParameters identificationParameters = cpsParent.getIdentificationParameters();
         ObjectsDB objectsDB = identification.getIdentificationDB().getObjectsDB();
+
         try {
             if (objectsDB.hasTable(ProjectSaver.REPORTER_SETTINGS_TABLE_NAME)) {
                 waitingHandler.setWaitingText("Loading quantification results. Please Wait...");

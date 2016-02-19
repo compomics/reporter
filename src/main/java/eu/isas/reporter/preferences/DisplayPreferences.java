@@ -40,7 +40,7 @@ public class DisplayPreferences implements Serializable {
     /**
      * Sets the clustering settings.
      * 
-     * @param clusteringSettings 
+     * @param clusteringSettings the cluster settings
      */
     public void setClusteringSettings(ClusteringSettings clusteringSettings) {
         this.clusteringSettings = clusteringSettings;

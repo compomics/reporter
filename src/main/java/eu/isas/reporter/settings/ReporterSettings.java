@@ -12,7 +12,7 @@ import java.io.Serializable;
 public class ReporterSettings implements Serializable {
 
     /**
-     * The annotation settings. 
+     * The annotation settings.
      */
     private AnnotationSettings annotationSettings;
     /**
@@ -20,15 +20,15 @@ public class ReporterSettings implements Serializable {
      */
     private ProjectDetails projectDetails;
     /**
-     * The settings for the selection of the reporter ions in spectra
+     * The settings for the selection of the reporter ions in spectra.
      */
     private ReporterIonSelectionSettings reporterIonSelectionSettings = new ReporterIonSelectionSettings();
     /**
-     * The ratio estimation settings
+     * The ratio estimation settings.
      */
     private RatioEstimationSettings ratioEstimationSettings = new RatioEstimationSettings();
     /**
-     *  The normalization settings.
+     * The normalization settings.
      */
     private NormalizationSettings normalizationSettings = new NormalizationSettings();
 
@@ -40,7 +40,7 @@ public class ReporterSettings implements Serializable {
 
     @Override
     public ReporterSettings clone() throws CloneNotSupportedException {
-        ReporterSettings clone =  new ReporterSettings();
+        ReporterSettings clone = new ReporterSettings();
         clone.setReporterIonSelectionSettings(reporterIonSelectionSettings.clone());
         clone.setRatioEstimationSettings(ratioEstimationSettings.clone());
         clone.setNormalizationSettings(normalizationSettings.clone());
@@ -48,13 +48,14 @@ public class ReporterSettings implements Serializable {
         clone.setProjectDetails(projectDetails); //@TODO add cloning of the project details after implementation of the project details
         return clone;
     }
-    
+
     /**
      * Indicates whether another setting is the same as this one.
-     * 
+     *
      * @param anotherSetting another setting
-     * 
-     * @return a boolean indicating whether another setting is the same as this one
+     *
+     * @return a boolean indicating whether another setting is the same as this
+     * one
      */
     public boolean isSameAs(ReporterSettings anotherSetting) {
         return reporterIonSelectionSettings.isSameAs(anotherSetting.getReporterIonSelectionSettings())
@@ -64,7 +65,7 @@ public class ReporterSettings implements Serializable {
 
     /**
      * Returns the spectrum annotation preferences.
-     * 
+     *
      * @return the spectrum annotation preferences
      */
     public AnnotationSettings getAnnotationSettings() {
@@ -73,7 +74,7 @@ public class ReporterSettings implements Serializable {
 
     /**
      * Sets the spectrum annotation preferences.
-     * 
+     *
      * @param annotationSettings the spectrum annotation preferences
      */
     public void setAnnotationPreferences(AnnotationSettings annotationSettings) {
@@ -82,7 +83,7 @@ public class ReporterSettings implements Serializable {
 
     /**
      * Returns the project details.
-     * 
+     *
      * @return the project details
      */
     public ProjectDetails getProjectDetails() {
@@ -91,7 +92,7 @@ public class ReporterSettings implements Serializable {
 
     /**
      * Sets the project details.
-     * 
+     *
      * @param projectDetails the project details
      */
     public void setProjectDetails(ProjectDetails projectDetails) {
@@ -100,7 +101,7 @@ public class ReporterSettings implements Serializable {
 
     /**
      * Returns the reporter ion selection settings.
-     * 
+     *
      * @return the reporter ion selection settings
      */
     public ReporterIonSelectionSettings getReporterIonSelectionSettings() {
@@ -109,7 +110,7 @@ public class ReporterSettings implements Serializable {
 
     /**
      * Sets the reporter ion selection settings.
-     * 
+     *
      * @param reporterIonSelectionSettings the reporter ion selection settings
      */
     public void setReporterIonSelectionSettings(ReporterIonSelectionSettings reporterIonSelectionSettings) {
@@ -118,7 +119,7 @@ public class ReporterSettings implements Serializable {
 
     /**
      * Returns the ratio estimation settings.
-     * 
+     *
      * @return the ratio estimation settings
      */
     public RatioEstimationSettings getRatioEstimationSettings() {
@@ -127,7 +128,7 @@ public class ReporterSettings implements Serializable {
 
     /**
      * Sets the ratio estimation settings.
-     * 
+     *
      * @param ratioEstimationSettings the ratio estimation settings
      */
     public void setRatioEstimationSettings(RatioEstimationSettings ratioEstimationSettings) {
@@ -136,7 +137,7 @@ public class ReporterSettings implements Serializable {
 
     /**
      * Returns the normalization settings.
-     * 
+     *
      * @return the normalization settings
      */
     public NormalizationSettings getNormalizationSettings() {
@@ -145,7 +146,7 @@ public class ReporterSettings implements Serializable {
 
     /**
      * Sets the normalization settings.
-     * 
+     *
      * @param normalizationSettings the normalization settings
      */
     public void setNormalizationSettings(NormalizationSettings normalizationSettings) {

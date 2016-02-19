@@ -11,7 +11,7 @@ import java.io.Serializable;
 public class PsmClusterClassKey implements ClusterClassKey, Serializable {
 
     /**
-     * Indicates whether the psms must be starred.
+     * Indicates whether the PSMs must be starred.
      */
     private Boolean starred = false;
     /**
@@ -27,18 +27,18 @@ public class PsmClusterClassKey implements ClusterClassKey, Serializable {
     }
 
     /**
-     * Indicates whether the psms must be starred.
+     * Indicates whether the PSMs must be starred.
      *
-     * @return a boolean indicating whether the psms must be starred
+     * @return a boolean indicating whether the PSMs must be starred
      */
     public Boolean isStarred() {
         return starred;
     }
 
     /**
-     * Sets whether the psms must be starre.
+     * Sets whether the PSMs must be starred.
      *
-     * @param starred a boolean indicating whether the psms must be starred
+     * @param starred a boolean indicating whether the PSMs must be starred
      */
     public void setStarred(Boolean starred) {
         this.starred = starred;

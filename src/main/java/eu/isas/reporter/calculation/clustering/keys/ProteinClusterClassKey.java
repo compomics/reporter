@@ -19,7 +19,7 @@ public class ProteinClusterClassKey implements ClusterClassKey, Serializable {
      * Constructor.
      */
     public ProteinClusterClassKey() {
-        
+
     }
 
     /**
@@ -32,14 +32,14 @@ public class ProteinClusterClassKey implements ClusterClassKey, Serializable {
     }
 
     /**
-     * Sets whether the proteins must be starre.
+     * Sets whether the proteins must be starred.
      *
      * @param starred a boolean indicating whether the proteins must be starred
      */
     public void setStarred(Boolean starred) {
         this.starred = starred;
     }
-    
+
     @Override
     public String getName() {
         if (starred) {
@@ -52,17 +52,16 @@ public class ProteinClusterClassKey implements ClusterClassKey, Serializable {
     public String getDescription() {
         StringBuilder description = new StringBuilder();
         if (starred) {
-        description.append("Starred ");
-                } else {
+            description.append("Starred ");
+        } else {
             description.append("All ");
         }
         description.append("proteins");
         return description.toString();
     }
-    
+
     @Override
     public String toString() {
         return "Protein_" + getName();
     }
-
 }
