@@ -36,7 +36,7 @@ import eu.isas.reporter.settings.ReporterIonSelectionSettings;
 import eu.isas.reporter.quantificationdetails.PeptideQuantificationDetails;
 import eu.isas.reporter.quantificationdetails.ProteinQuantificationDetails;
 import eu.isas.reporter.quantificationdetails.PsmQuantificationDetails;
-import eu.isas.reporter.quantificationdetails.PtmSiteQuantificationDetails;
+import eu.isas.reporter.quantificationdetails.ProteinPtmQuantificationDetails;
 import eu.isas.reporter.quantificationdetails.SpectrumQuantificationDetails;
 import java.io.File;
 import java.io.IOException;
@@ -185,13 +185,13 @@ public class Reporter {
      * @throws java.lang.InterruptedException exception thrown whenever a
      * threading error occurred
      */
-    public static PtmSiteQuantificationDetails estimatePTMQuantificationDetails(Identification identification,
+    public static ProteinPtmQuantificationDetails estimatePTMQuantificationDetails(Identification identification,
             QuantificationFeaturesGenerator quantificationFeaturesGenerator, RatioEstimationSettings ratioEstimationSettings,
             ReporterIonQuantification reporterIonQuantification, SearchParameters searchParameters,
             SequenceMatchingPreferences sequenceMatchingPreferences, String ptmName, String matchKey, int site, WaitingHandler waitingHandler)
             throws IllegalArgumentException, SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
 
-        PtmSiteQuantificationDetails result = new PtmSiteQuantificationDetails();
+        ProteinPtmQuantificationDetails result = new ProteinPtmQuantificationDetails();
         HashMap<String, ArrayList<Double>> ratios = new HashMap<String, ArrayList<Double>>();
         ProteinMatch proteinMatch = identification.getProteinMatch(matchKey);
         Set<String> indexes = reporterIonQuantification.getSampleIndexes();

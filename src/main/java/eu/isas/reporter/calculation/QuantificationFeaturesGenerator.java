@@ -15,7 +15,7 @@ import eu.isas.reporter.settings.ReporterSettings;
 import eu.isas.reporter.quantificationdetails.PeptideQuantificationDetails;
 import eu.isas.reporter.quantificationdetails.ProteinQuantificationDetails;
 import eu.isas.reporter.quantificationdetails.PsmQuantificationDetails;
-import eu.isas.reporter.quantificationdetails.PtmSiteQuantificationDetails;
+import eu.isas.reporter.quantificationdetails.ProteinPtmQuantificationDetails;
 import eu.isas.reporter.quantificationdetails.SpectrumQuantificationDetails;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -130,9 +130,9 @@ public class QuantificationFeaturesGenerator {
      * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException thrown if an
      * MzMLUnmarshallerException occurs
      */
-    public PtmSiteQuantificationDetails getPTMQuantificationDetails(String ptmName, String matchKey, int site, WaitingHandler waitingHandler)
+    public ProteinPtmQuantificationDetails getPTMQuantificationDetails(String ptmName, String matchKey, int site, WaitingHandler waitingHandler)
             throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
-        PtmSiteQuantificationDetails result = quantificationFeaturesCache.getPtmQuantificationDetails(ptmName, matchKey, site);
+        ProteinPtmQuantificationDetails result = quantificationFeaturesCache.getPtmQuantificationDetails(ptmName, matchKey, site);
         if (result == null) {
             result = Reporter.estimatePTMQuantificationDetails(identification, this, reporterSettings.getRatioEstimationSettings(), reporterIonQuantification, searchParameters, sequenceMatchingPreferences, ptmName, matchKey, site, waitingHandler);
             quantificationFeaturesCache.addPtmQuantificationDetails(ptmName, matchKey, site, result);

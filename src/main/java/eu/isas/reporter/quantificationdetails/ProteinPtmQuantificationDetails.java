@@ -3,11 +3,11 @@ package eu.isas.reporter.quantificationdetails;
 import java.util.HashMap;
 
 /**
- * This class contains the quantitative information at the protein level.
+ * This class contains the quantitative information at the GO level.
  *
  * @author Marc Vaudel
  */
-public class PtmSiteQuantificationDetails {
+public class ProteinPtmQuantificationDetails {
 
     /**
      * The reporter ratios.

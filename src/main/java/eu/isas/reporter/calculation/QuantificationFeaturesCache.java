@@ -4,7 +4,7 @@ import com.compomics.util.experiment.massspectrometry.Spectrum;
 import eu.isas.reporter.quantificationdetails.PeptideQuantificationDetails;
 import eu.isas.reporter.quantificationdetails.ProteinQuantificationDetails;
 import eu.isas.reporter.quantificationdetails.PsmQuantificationDetails;
-import eu.isas.reporter.quantificationdetails.PtmSiteQuantificationDetails;
+import eu.isas.reporter.quantificationdetails.ProteinPtmQuantificationDetails;
 import eu.isas.reporter.quantificationdetails.SpectrumQuantificationDetails;
 import java.util.Collections;
 import java.util.HashMap;
@@ -29,7 +29,7 @@ public class QuantificationFeaturesCache {
      * The protein level PTM quantification details in a map: PTM name > protein
      * match key > site > match quantification details.
      */
-    private HashMap<String, HashMap<String, HashMap<String, PtmSiteQuantificationDetails>>> proteinPtmRatios = new HashMap<String, HashMap<String, HashMap<String, PtmSiteQuantificationDetails>>>();
+    private HashMap<String, HashMap<String, HashMap<String, ProteinPtmQuantificationDetails>>> proteinPtmRatios = new HashMap<String, HashMap<String, HashMap<String, ProteinPtmQuantificationDetails>>>();
     /**
      * The peptide quantification details in a map: number of PSMs > peptide
      * match key > match quantification details.
@@ -195,16 +195,16 @@ public class QuantificationFeaturesCache {
      * @param site the site of the PTM on the protein sequence
      * @param matchQuantificationDetails The protein quantification details
      */
-    public synchronized void addPtmQuantificationDetails(String ptmName, String matchKey, int site, PtmSiteQuantificationDetails matchQuantificationDetails) {
+    public synchronized void addPtmQuantificationDetails(String ptmName, String matchKey, int site, ProteinPtmQuantificationDetails matchQuantificationDetails) {
         editing = true;
-        HashMap<String, HashMap<String, PtmSiteQuantificationDetails>> submap = proteinPtmRatios.get(ptmName);
+        HashMap<String, HashMap<String, ProteinPtmQuantificationDetails>> submap = proteinPtmRatios.get(ptmName);
         if (submap == null) {
-            submap = new HashMap<String, HashMap<String, PtmSiteQuantificationDetails>>();
+            submap = new HashMap<String, HashMap<String, ProteinPtmQuantificationDetails>>();
             proteinPtmRatios.put(ptmName, submap);
         }
-        HashMap<String, PtmSiteQuantificationDetails> subsubmap = submap.get(matchKey);
+        HashMap<String, ProteinPtmQuantificationDetails> subsubmap = submap.get(matchKey);
         if (subsubmap == null) {
-            subsubmap = new HashMap<String, PtmSiteQuantificationDetails>();
+            subsubmap = new HashMap<String, ProteinPtmQuantificationDetails>();
             submap.put(matchKey, subsubmap);
         }
         subsubmap.put(site + "", matchQuantificationDetails); //@TODO: implement site key
@@ -221,11 +221,11 @@ public class QuantificationFeaturesCache {
      *
      * @return The protein quantification details
      */
-    public PtmSiteQuantificationDetails getPtmQuantificationDetails(String ptmName, String matchKey, int site) {
-        PtmSiteQuantificationDetails result = null;
-        HashMap<String, HashMap<String, PtmSiteQuantificationDetails>> submap = proteinPtmRatios.get(ptmName);
+    public ProteinPtmQuantificationDetails getPtmQuantificationDetails(String ptmName, String matchKey, int site) {
+        ProteinPtmQuantificationDetails result = null;
+        HashMap<String, HashMap<String, ProteinPtmQuantificationDetails>> submap = proteinPtmRatios.get(ptmName);
         if (submap != null) {
-            HashMap<String, PtmSiteQuantificationDetails> subsubmap = submap.get(matchKey);
+            HashMap<String, ProteinPtmQuantificationDetails> subsubmap = submap.get(matchKey);
             if (subsubmap != null) {
                 result = subsubmap.get(site + ""); //@TODO: implement site key
             }
