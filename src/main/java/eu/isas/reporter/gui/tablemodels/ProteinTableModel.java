@@ -11,6 +11,7 @@ import com.compomics.util.experiment.personalization.UrParameter;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.gui.TableProperties;
 import com.compomics.util.gui.tablemodels.SelfUpdatingTableModel;
+import com.compomics.util.math.BasicMathFunctions;
 import com.compomics.util.waiting.WaitingHandler;
 import eu.isas.peptideshaker.parameters.PSParameter;
 import eu.isas.peptideshaker.preferences.DisplayPreferences;
@@ -89,9 +90,9 @@ public class ProteinTableModel extends SelfUpdatingTableModel {
      */
     private ExceptionHandler exceptionHandler;
     /**
-     * The list of the keys of the protein matches being displayed.
+     * The list of the keys of the matches being displayed.
      */
-    private ArrayList<String> proteinKeys = null;
+    private ArrayList<String> keys = null;
     /**
      * If true the scores will be shown.
      */
@@ -102,7 +103,7 @@ public class ProteinTableModel extends SelfUpdatingTableModel {
     private int batchSize = 20;
 
     /**
-     * Constructor which sets a new empty table.
+     * Constructor for an empty table.
      */
     public ProteinTableModel() {
     }
@@ -133,7 +134,7 @@ public class ProteinTableModel extends SelfUpdatingTableModel {
         this.quantificationFeaturesGenerator = quantificationFeaturesGenerator;
         this.displayFeaturesGenerator = displayFeaturesGenerator;
         this.exceptionHandler = exceptionHandler;
-        this.proteinKeys = proteinKeys;
+        this.keys = proteinKeys;
 
         sampleIndexes = new ArrayList<String>(reporterIonQuantification.getSampleIndexes());
         Collections.sort(sampleIndexes);
@@ -164,7 +165,7 @@ public class ProteinTableModel extends SelfUpdatingTableModel {
         this.quantificationFeaturesGenerator = quantificationFeaturesGenerator;
         this.displayFeaturesGenerator = displayFeaturesGenerator;
         this.exceptionHandler = exceptionHandler;
-        this.proteinKeys = proteinKeys;
+        this.keys = proteinKeys;
 
         sampleIndexes = new ArrayList<String>(reporterIonQuantification.getSampleIndexes());
         Collections.sort(sampleIndexes);
@@ -184,13 +185,13 @@ public class ProteinTableModel extends SelfUpdatingTableModel {
      * Reset the protein keys.
      */
     public void reset() {
-        proteinKeys = null;
+        keys = null;
     }
 
     @Override
     public int getRowCount() {
-        if (proteinKeys != null) {
-            return proteinKeys.size();
+        if (keys != null) {
+            return keys.size();
         } else {
             return 0;
         }
@@ -240,13 +241,13 @@ public class ProteinTableModel extends SelfUpdatingTableModel {
     @Override
     public Object getValueAt(int row, int column) {
 
-        if (proteinKeys != null) {
+        if (keys != null) {
 
             int viewIndex = getViewIndex(row);
 
             try {
                 boolean useDB = !isSelfUpdating();
-                String proteinKey = proteinKeys.get(viewIndex);
+                String proteinKey = keys.get(viewIndex);
 
                 switch (column) {
                     case 0:
@@ -259,7 +260,7 @@ public class ProteinTableModel extends SelfUpdatingTableModel {
                             Double ratio = quantificationDetails.getRatio(sampleIndex, reporterIonQuantification.getNormalizationFactors());
                             if (ratio != null) {
                                 if (ratio != 0) {
-                                    ratio = Math.log(ratio) / Math.log(2);
+                                    ratio = BasicMathFunctions.log(ratio, 2);
                                 }
 
                                 data.add(ratio);
@@ -499,7 +500,7 @@ public class ProteinTableModel extends SelfUpdatingTableModel {
 
         ArrayList<String> tempKeys = new ArrayList<String>();
         for (int i : rows) {
-            String proteinKey = proteinKeys.get(i);
+            String proteinKey = keys.get(i);
             tempKeys.add(proteinKey);
         }
 
@@ -556,7 +557,7 @@ public class ProteinTableModel extends SelfUpdatingTableModel {
             if (column == 2
                     || column == 10
                     || column == 11) {
-                identification.loadProteinMatchParameters(proteinKeys, new PSParameter(), waitingHandler, false);
+                identification.loadProteinMatchParameters(keys, new PSParameter(), waitingHandler, false);
             } else if (column == 3
                     || column == 4
                     || column == 5
@@ -564,7 +565,7 @@ public class ProteinTableModel extends SelfUpdatingTableModel {
                     || column == 7
                     || column == 8
                     || column == 9) {
-                identification.loadProteinMatches(proteinKeys, waitingHandler, false);
+                identification.loadProteinMatches(keys, waitingHandler, false);
             }
         } catch (Exception e) {
             catchException(e);

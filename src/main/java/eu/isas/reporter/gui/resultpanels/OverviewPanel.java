@@ -13,7 +13,9 @@ import com.compomics.util.waiting.WaitingHandler;
 import eu.isas.peptideshaker.parameters.PSParameter;
 import eu.isas.peptideshaker.utils.IdentificationFeaturesGenerator;
 import eu.isas.reporter.gui.ReporterGUI;
+import eu.isas.reporter.gui.tablemodels.PeptideTableModel;
 import eu.isas.reporter.gui.tablemodels.ProteinTableModel;
+import eu.isas.reporter.gui.tablemodels.PsmTableModel;
 import eu.isas.reporter.quantificationdetails.ProteinQuantificationDetails;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -643,6 +645,7 @@ public class OverviewPanel extends javax.swing.JPanel {
         exportProteinsJButton = new javax.swing.JButton();
         contextMenuProteinsBackgroundPanel = new javax.swing.JPanel();
         proteinsLayeredPanel = new javax.swing.JPanel();
+        matchesJTabbedPane = new javax.swing.JTabbedPane();
         proteinScrollPane = new javax.swing.JScrollPane();
         proteinTable = new JTable() {
             protected JTableHeader createDefaultTableHeader() {
@@ -657,6 +660,12 @@ public class OverviewPanel extends javax.swing.JPanel {
                 };
             }
         };
+        peptidesPanel = new javax.swing.JPanel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        peptidesJTable = new javax.swing.JTable();
+        psmsPanel = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        psmsJTable = new javax.swing.JTable();
 
         numberOfClustersMenuItem.setText("Number of Clusters");
         numberOfClustersMenuItem.setToolTipText("Set the number of clusters");
@@ -885,8 +894,10 @@ public class OverviewPanel extends javax.swing.JPanel {
         contextMenuProteinsBackgroundPanel.setBounds(910, 0, 40, 19);
         proteinsLayeredPane.setLayer(contextMenuProteinsBackgroundPanel, javax.swing.JLayeredPane.POPUP_LAYER);
 
-        proteinsLayeredPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Proteins"));
+        proteinsLayeredPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Matches"));
         proteinsLayeredPanel.setOpaque(false);
+
+        matchesJTabbedPane.setTabPlacement(javax.swing.JTabbedPane.BOTTOM);
 
         proteinScrollPane.setOpaque(false);
 
@@ -913,25 +924,57 @@ public class OverviewPanel extends javax.swing.JPanel {
         });
         proteinScrollPane.setViewportView(proteinTable);
 
+        matchesJTabbedPane.addTab("Proteins", proteinScrollPane);
+
+        peptidesJTable.setModel(new PeptideTableModel());
+        jScrollPane2.setViewportView(peptidesJTable);
+
+        javax.swing.GroupLayout peptidesPanelLayout = new javax.swing.GroupLayout(peptidesPanel);
+        peptidesPanel.setLayout(peptidesPanelLayout);
+        peptidesPanelLayout.setHorizontalGroup(
+            peptidesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 913, Short.MAX_VALUE)
+        );
+        peptidesPanelLayout.setVerticalGroup(
+            peptidesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)
+        );
+
+        matchesJTabbedPane.addTab("Peptides", peptidesPanel);
+
+        psmsPanel.setOpaque(false);
+
+        psmsJTable.setModel(new PsmTableModel());
+        jScrollPane1.setViewportView(psmsJTable);
+
+        javax.swing.GroupLayout psmsPanelLayout = new javax.swing.GroupLayout(psmsPanel);
+        psmsPanel.setLayout(psmsPanelLayout);
+        psmsPanelLayout.setHorizontalGroup(
+            psmsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 913, Short.MAX_VALUE)
+        );
+        psmsPanelLayout.setVerticalGroup(
+            psmsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)
+        );
+
+        matchesJTabbedPane.addTab("PSMs", psmsPanel);
+
         javax.swing.GroupLayout proteinsLayeredPanelLayout = new javax.swing.GroupLayout(proteinsLayeredPanel);
         proteinsLayeredPanel.setLayout(proteinsLayeredPanelLayout);
         proteinsLayeredPanelLayout.setHorizontalGroup(
             proteinsLayeredPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 938, Short.MAX_VALUE)
-            .addGroup(proteinsLayeredPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(proteinsLayeredPanelLayout.createSequentialGroup()
-                    .addContainerGap()
-                    .addComponent(proteinScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 918, Short.MAX_VALUE)
-                    .addContainerGap()))
+            .addGroup(proteinsLayeredPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(matchesJTabbedPane)
+                .addContainerGap())
         );
         proteinsLayeredPanelLayout.setVerticalGroup(
             proteinsLayeredPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 327, Short.MAX_VALUE)
-            .addGroup(proteinsLayeredPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(proteinsLayeredPanelLayout.createSequentialGroup()
-                    .addContainerGap()
-                    .addComponent(proteinScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 305, Short.MAX_VALUE)
-                    .addContainerGap()))
+            .addGroup(proteinsLayeredPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(matchesJTabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 305, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         proteinsLayeredPane.add(proteinsLayeredPanel);
@@ -1444,9 +1487,14 @@ public class OverviewPanel extends javax.swing.JPanel {
     private javax.swing.JPanel contextMenuRatioPlotBackgroundPanel;
     private javax.swing.JButton exportProteinsJButton;
     private javax.swing.JButton exportRatioPlotContextJButton;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JTabbedPane matchesJTabbedPane;
     private javax.swing.JMenuItem numberOfClustersMenuItem;
     private javax.swing.JPanel overviewJPanel;
     private javax.swing.JSplitPane overviewJSplitPane;
+    private javax.swing.JTable peptidesJTable;
+    private javax.swing.JPanel peptidesPanel;
     private javax.swing.JPanel plotPanel;
     private javax.swing.JScrollPane proteinScrollPane;
     private javax.swing.JTable proteinTable;
@@ -1454,6 +1502,8 @@ public class OverviewPanel extends javax.swing.JPanel {
     private javax.swing.JPanel proteinsJPanel;
     private javax.swing.JLayeredPane proteinsLayeredPane;
     private javax.swing.JPanel proteinsLayeredPanel;
+    private javax.swing.JTable psmsJTable;
+    private javax.swing.JPanel psmsPanel;
     private javax.swing.JButton ratioPlotHelpJButton;
     private javax.swing.JButton ratioPlotOptionsJButton;
     private javax.swing.JPanel ratioPlotsJPanel;
