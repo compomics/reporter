@@ -225,10 +225,8 @@ public class OverviewPanel extends javax.swing.JPanel {
                     proteinKeys = new ArrayList<String>();
 
                     // update the table model
-                    if (proteinTable.getRowCount() > 0) {
-                        ((ProteinTableModel) proteinTable.getModel()).updateDataModel(identification, identificationFeaturesGenerator,
-                                reporterGUI.getReporterIonQuantification(), reporterGUI.getQuantificationFeaturesGenerator(),
-                                reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getExceptionHandler(), proteinKeys);
+                    if (proteinTable.getModel() instanceof ProteinTableModel && ((ProteinTableModel) proteinTable.getModel()).isInstantiated()) {
+                        ((ProteinTableModel) proteinTable.getModel()).updateDataModel(reporterGUI.getQuantificationFeaturesGenerator(), proteinKeys);
                     } else {
                         ProteinTableModel proteinTableModel = new ProteinTableModel(identification, identificationFeaturesGenerator, geneMaps,
                                 reporterGUI.getReporterIonQuantification(), reporterGUI.getQuantificationFeaturesGenerator(),
@@ -474,10 +472,8 @@ public class OverviewPanel extends javax.swing.JPanel {
         }
 
         // update the table model
-        if (proteinTable.getRowCount() > 0) {
-            ((ProteinTableModel) proteinTable.getModel()).updateDataModel(identification, identificationFeaturesGenerator,
-                    reporterGUI.getReporterIonQuantification(), reporterGUI.getQuantificationFeaturesGenerator(),
-                    reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getExceptionHandler(), proteinKeys);
+        if (proteinTable.getModel() instanceof ProteinTableModel && ((ProteinTableModel) proteinTable.getModel()).isInstantiated()) {
+            ((ProteinTableModel) proteinTable.getModel()).updateDataModel(reporterGUI.getQuantificationFeaturesGenerator(), proteinKeys);
         } else {
             ProteinTableModel proteinTableModel = new ProteinTableModel(identification, identificationFeaturesGenerator, geneMaps,
                     reporterGUI.getReporterIonQuantification(), reporterGUI.getQuantificationFeaturesGenerator(),

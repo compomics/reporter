@@ -144,27 +144,12 @@ public class ProteinTableModel extends SelfUpdatingTableModel {
      * Update the data in the table model without having to reset the whole
      * table model. This keeps the sorting order of the table.
      *
-     * @param identification the identification containing the protein
-     * information
-     * @param identificationFeaturesGenerator the identification features
-     * generator generating the features of the identification
-     * @param reporterIonQuantification the reporter quantification information
      * @param quantificationFeaturesGenerator the quantification feature
      * generator
-     * @param displayFeaturesGenerator the display features generator generating
-     * the display elements
-     * @param exceptionHandler an exception handler catching exceptions
      * @param proteinKeys the keys of the protein matches to display
      */
-    public void updateDataModel(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator,
-            ReporterIonQuantification reporterIonQuantification, QuantificationFeaturesGenerator quantificationFeaturesGenerator,
-            DisplayFeaturesGenerator displayFeaturesGenerator, ExceptionHandler exceptionHandler, ArrayList<String> proteinKeys) {
-        this.identification = identification;
-        this.identificationFeaturesGenerator = identificationFeaturesGenerator;
-        this.reporterIonQuantification = reporterIonQuantification;
+    public void updateDataModel(QuantificationFeaturesGenerator quantificationFeaturesGenerator, ArrayList<String> proteinKeys) {
         this.quantificationFeaturesGenerator = quantificationFeaturesGenerator;
-        this.displayFeaturesGenerator = displayFeaturesGenerator;
-        this.exceptionHandler = exceptionHandler;
         this.keys = proteinKeys;
 
         sampleIndexes = new ArrayList<String>(reporterIonQuantification.getSampleIndexes());
@@ -466,12 +451,25 @@ public class ProteinTableModel extends SelfUpdatingTableModel {
                 // this one can be ignored i think?
                 return null;
             } catch (Exception e) {
-                exceptionHandler.catchException(e);
+                if (exceptionHandler != null) {
+                    exceptionHandler.catchException(e);
+                } else {
+                    throw new IllegalArgumentException("Table not instantiated.");
+                }
                 return null;
             }
         } else {
             return null;
         }
+    }
+
+    /**
+     * Indicates whether the table content was instantiated.
+     *
+     * @return a boolean indicating whether the table content was instantiated.
+     */
+    public boolean isInstantiated() {
+        return identification != null;
     }
 
     @Override
