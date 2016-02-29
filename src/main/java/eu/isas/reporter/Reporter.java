@@ -72,6 +72,8 @@ public class Reporter {
      *
      * @param identification the identification containing identification
      * details
+     * @param identificationFeaturesGenerator the identification features
+     * generator used to store and retrieve identification details
      * @param quantificationFeaturesGenerator the quantification features
      * generator used to store and retrieve quantification details
      * @param ratioEstimationSettings the ratio estimation settings
