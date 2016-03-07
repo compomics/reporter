@@ -751,17 +751,19 @@ public class NewDialog extends javax.swing.JDialog {
         selectedMethod = methodsFactory.getReporterMethod((String) reporterMethodComboBox.getSelectedItem());
         reagents = selectedMethod.getReagentsSortedByMass();
 
-        // update the reporter settings
-        IdentificationParameters identificationParameters = cpsParent.getIdentificationParameters();
-        ProjectImporter.getDefaultReporterSettings(selectedMethod, identificationParameters, reporterSettings);
+        if (cpsParent != null) {
+            // update the reporter settings
+            IdentificationParameters identificationParameters = cpsParent.getIdentificationParameters();
+            ProjectImporter.getDefaultReporterSettings(selectedMethod, identificationParameters, reporterSettings);
 
-        // Warning for TMT data with low mass accuracy
-        if (selectedMethod.getName().contains("TMT")) {
-            double ms2AbsoluteTolerance = identificationParameters.getSearchParameters().getFragmentIonAccuracyInDaltons(ReporterIon.TMT_131.getTheoreticMz(1));
-            if (ms2AbsoluteTolerance > ProjectImporter.DEFAULT_REPORTER_ION_TOLERANCE_TMT) {
-                JOptionPane.showMessageDialog(NewDialog.this,
-                        "TMT quantification requires high resolution spectra, please check the MS2 tolerance and the reporter ion tolerance in the quantification settings.",
-                        "TMT Resolution", JOptionPane.WARNING_MESSAGE);
+            // Warning for TMT data with low mass accuracy
+            if (selectedMethod.getName().contains("TMT")) {
+                double ms2AbsoluteTolerance = identificationParameters.getSearchParameters().getFragmentIonAccuracyInDaltons(ReporterIon.TMT_131.getTheoreticMz(1));
+                if (ms2AbsoluteTolerance > ProjectImporter.DEFAULT_REPORTER_ION_TOLERANCE_TMT) {
+                    JOptionPane.showMessageDialog(NewDialog.this,
+                            "TMT quantification requires high resolution spectra, please check the MS2 tolerance and the reporter ion tolerance in the quantification settings.",
+                            "TMT Resolution", JOptionPane.WARNING_MESSAGE);
+                }
             }
         }
 
