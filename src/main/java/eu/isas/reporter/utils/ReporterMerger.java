@@ -804,8 +804,7 @@ public class ReporterMerger {
                             Double logValue = logNormalizedValidatedRatiosMap.get(key).get(experiment).get(ratio);
                             if (logValue != null && !logValue.isNaN()) {
                                 Distribution distribution = distributionsMap.get(experiment).get(ratio);
-                                MathContext mathContext = new MathContext(10, RoundingMode.HALF_DOWN);
-                                BigDecimal p = distribution.getProbabilityAt(logValue, mathContext);
+                                Double p = distribution.getProbabilityAt(logValue);
                                 writer.write(p.toString());
                             }
                             writer.write(SEPARATOR);
