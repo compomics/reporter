@@ -23,6 +23,7 @@ import eu.isas.reporter.calculation.clustering.keys.ProteinClusterClassKey;
 import eu.isas.reporter.calculation.clustering.keys.PsmClusterClassKey;
 import eu.isas.reporter.preferences.DisplayPreferences;
 import eu.isas.reporter.settings.ClusteringSettings;
+import eu.isas.reporter.settings.ReporterIonSelectionSettings;
 import eu.isas.reporter.settings.ReporterSettings;
 import java.awt.Color;
 import java.awt.Dialog;
@@ -270,11 +271,11 @@ public class ProjectImporter {
             } else {
                 waitingHandler.setWaitingText("Inferring quantification parameters. Please Wait...");
             }
-            if (reporterSettings == null) {
-                reporterSettings = getDefaultReporterSettings(identificationParameters);
-            }
             if (reporterIonQuantification == null) {
                 reporterIonQuantification = getDefaultReporterIonQuantification(identificationParameters);
+            }
+            if (reporterSettings == null) {
+                reporterSettings = getDefaultReporterSettings(reporterIonQuantification.getReporterMethod(), identificationParameters);
             }
             if (displayPreferences == null) {
                 displayPreferences = new DisplayPreferences();
@@ -303,39 +304,48 @@ public class ProjectImporter {
      * Returns the default reporter settings as inferred from the identification
      * parameters.
      *
+     * @param reporterMethod the quantification method selected
      * @param identificationParameters the identification parameters
      *
      * @return the default reporter settings
      */
-    public static ReporterSettings getDefaultReporterSettings(IdentificationParameters identificationParameters) {
+    public static ReporterSettings getDefaultReporterSettings(ReporterMethod reporterMethod, IdentificationParameters identificationParameters) {
 
         ReporterSettings reporterSettings = new ReporterSettings();
+        return getDefaultReporterSettings(reporterMethod, identificationParameters, reporterSettings);
+    }
+
+    /**
+     * Returns the default reporter settings as inferred from the identification
+     * parameters.
+     *
+     * @param reporterMethod the quantification method selected
+     * @param identificationParameters the identification parameters
+     * @param reporterSettings the reporter settings
+     *
+     * @return the default reporter settings
+     */
+    public static ReporterSettings getDefaultReporterSettings(ReporterMethod reporterMethod, IdentificationParameters identificationParameters, ReporterSettings reporterSettings) {
+
+        ReporterIonSelectionSettings reporterIonSelectionSettings = reporterSettings.getReporterIonSelectionSettings();
 
         SearchParameters searchParameters = identificationParameters.getSearchParameters();
 
-        // try to detect the method used
-        for (String ptmName : searchParameters.getPtmSettings().getAllModifications()) {
-            if (ptmName.contains("iTRAQ 4-plex")) {
-                reporterSettings.getReporterIonSelectionSettings().setReporterIonsMzTolerance(searchParameters.getFragmentIonAccuracyInDaltons(ReporterIon.iTRAQ4Plex_117.getTheoreticMz(1)));
-                break;
-            } else if (ptmName.contains("iTRAQ 8-plex")) {
-                reporterSettings.getReporterIonSelectionSettings().setReporterIonsMzTolerance(searchParameters.getFragmentIonAccuracyInDaltons(ReporterIon.iTRAQ8Plex_121.getTheoreticMz(1)));
-                break;
-            } else if (ptmName.contains("TMT 2-plex")) {
-                if (reporterSettings.getReporterIonSelectionSettings().getReporterIonsMzTolerance() > DEFAULT_REPORTER_ION_TOLERANCE_TMT) {
-                    reporterSettings.getReporterIonSelectionSettings().setReporterIonsMzTolerance(DEFAULT_REPORTER_ION_TOLERANCE_TMT);
-                }
-                break;
-            } else if (ptmName.contains("TMT") && ptmName.contains("6-plex")) {
-                if (reporterSettings.getReporterIonSelectionSettings().getReporterIonsMzTolerance() > DEFAULT_REPORTER_ION_TOLERANCE_TMT) {
-                    reporterSettings.getReporterIonSelectionSettings().setReporterIonsMzTolerance(DEFAULT_REPORTER_ION_TOLERANCE_TMT);
-                }
-                break;
-            } else if (ptmName.contains("TMT") && ptmName.contains("10-plex")) {
-                if (reporterSettings.getReporterIonSelectionSettings().getReporterIonsMzTolerance() > DEFAULT_REPORTER_ION_TOLERANCE_TMT) {
-                    reporterSettings.getReporterIonSelectionSettings().setReporterIonsMzTolerance(DEFAULT_REPORTER_ION_TOLERANCE_TMT);
-                }
-                break;
+        // Adapt the ion tolerance and selection settings
+        if (reporterMethod.getName().contains("iTRAQ")) {
+            if (reporterMethod.getName().contains("4")) {
+                double massTolerance = searchParameters.getFragmentIonAccuracyInDaltons(ReporterIon.iTRAQ4Plex_117.getTheoreticMz(1));
+                reporterIonSelectionSettings.setReporterIonsMzTolerance(massTolerance);
+                reporterIonSelectionSettings.setMostAccurate(massTolerance < 0.05);
+            } else {
+                double massTolerance = searchParameters.getFragmentIonAccuracyInDaltons(ReporterIon.iTRAQ8Plex_121.getTheoreticMz(1));
+                reporterIonSelectionSettings.setReporterIonsMzTolerance(massTolerance);
+                reporterIonSelectionSettings.setMostAccurate(massTolerance < 0.05);
+            }
+        } else if (reporterMethod.getName().contains("TMT")) {
+            if (reporterIonSelectionSettings.getReporterIonsMzTolerance() > DEFAULT_REPORTER_ION_TOLERANCE_TMT) {
+                reporterIonSelectionSettings.setReporterIonsMzTolerance(DEFAULT_REPORTER_ION_TOLERANCE_TMT);
+                reporterIonSelectionSettings.setMostAccurate(true);
             }
         }
 

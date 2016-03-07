@@ -114,10 +114,12 @@ public class Deisotoper {
      * @param ionMatches the ion matches to deisotope
      * @param spectrum the spectrum to search the isotopic intensities in
      * @param mzTolerance the MS2 m/z tolerance
+     * @param mostAccurate boolean indicating whether the most accurate ion
+     * should be selected
      *
      * @return a map of the deisotoped intensities (ion index &gt; intensity)
      */
-    public HashMap<String, Double> deisotope(HashMap<String, IonMatch> ionMatches, Spectrum spectrum, double mzTolerance) {
+    public HashMap<String, Double> deisotope(HashMap<String, IonMatch> ionMatches, Spectrum spectrum, double mzTolerance, boolean mostAccurate) {
 
         HashMap<String, Double> result = new HashMap<String, Double>();
         for (String label : method.getReagentNames()) {
@@ -137,7 +139,7 @@ public class Deisotoper {
                     }
                     double reagentMass = correctionMatrix.getReagentMass(i);
                     ReporterIon tempIon = new ReporterIon("tempIon", reagentMass, false);
-                    IonMatch ionMatch = Reporter.getBestReporterIonMatch(tempIon, 1, spectrum, mzTolerance);
+                    IonMatch ionMatch = Reporter.getBestReporterIonMatch(tempIon, 1, spectrum, mzTolerance, mostAccurate);
                     if (ionMatch != null) {
                         intensities[i] = ionMatch.peak.intensity;
                     }

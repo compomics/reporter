@@ -465,7 +465,7 @@ public class Reporter {
         HashMap<String, IonMatch> matchesMap = new HashMap<String, IonMatch>(labels.size());
         for (String ionName : labels) {
             ReporterIon reporterIon = reporterMethod.getReporterIon(ionName);
-            IonMatch bestMatch = getBestReporterIonMatch(reporterIon, 1, spectrum, reporterIonSelectionSettings.getReporterIonsMzTolerance());
+            IonMatch bestMatch = getBestReporterIonMatch(reporterIon, 1, spectrum, reporterIonSelectionSettings.getReporterIonsMzTolerance(), reporterIonSelectionSettings.isMostAccurate());
             if (bestMatch != null) {
                 result.setReporterMatch(ionName, bestMatch);
                 matchesMap.put(ionName, bestMatch);
@@ -474,7 +474,7 @@ public class Reporter {
 
         // get deisotoped intensities
         Deisotoper deisotoper = quantificationFeaturesGenerator.getDeisotoper(reporterMethod, reporterIonSelectionSettings.getReporterIonsMzTolerance());
-        HashMap<String, Double> deisotoped = deisotoper.deisotope(matchesMap, spectrum, reporterIonSelectionSettings.getReporterIonsMzTolerance());
+        HashMap<String, Double> deisotoped = deisotoper.deisotope(matchesMap, spectrum, reporterIonSelectionSettings.getReporterIonsMzTolerance(), reporterIonSelectionSettings.isMostAccurate());
         for (String index : reporterIonQuantification.getSampleIndexes()) {
             Double intensity = deisotoped.get(index);
             if (intensity == null || intensity < 0) {
@@ -487,25 +487,48 @@ public class Reporter {
     }
 
     /**
-     * Returns the best reporter ion match based on mass accuracy. Null if none
-     * found
+     * Returns the best reporter ion match based on mass accuracy. It is
+     * possible to select the most accurate or the most intense ion, as set by
+     * the mostAccurate boolean. Null if none found
      *
      * @param reporterIon the reporter ion to match
      * @param charge the expected charge
      * @param spectrum the spectrum inspected
      * @param mzTolerance the m/z tolerance
+     * @param mostAccurate boolean indicating whether the most accurate ion
+     * should be selected
      *
      * @return the best ion match
      */
-    public static IonMatch getBestReporterIonMatch(ReporterIon reporterIon, int charge, Spectrum spectrum, double mzTolerance) {
+    public static IonMatch getBestReporterIonMatch(ReporterIon reporterIon, int charge, Spectrum spectrum, double mzTolerance, boolean mostAccurate) {
         ArrayList<IonMatch> ionMatches = SpectrumAnnotator.matchReporterIon(reporterIon, 1, spectrum, mzTolerance);
         IonMatch bestMatch = null;
-        double error = mzTolerance;
+        double bestError = mzTolerance;
         double bestIntensity = 0;
         for (IonMatch ionMatch : ionMatches) {
-            if (bestMatch == null
-                    || Math.abs(ionMatch.getAbsoluteError()) < error
-                    || ionMatch.getAbsoluteError() == 0 && ionMatch.peak.intensity > bestIntensity) {
+            boolean bestIon = false;
+            if (bestMatch == null) {
+                bestIon = true;
+            } else if (mostAccurate) {
+                double ionError = Math.abs(ionMatch.getAbsoluteError());
+                if (ionError < bestError) {
+                    bestIon = true;
+                    bestError = ionError;
+                } else if (ionError == bestError) {
+                    double intensity = ionMatch.peak.intensity;
+                    if (intensity > bestIntensity) {
+                        bestIon = true;
+                        bestIntensity = intensity;
+                    }
+                }
+            } else {
+                double intensity = ionMatch.peak.intensity;
+                if (intensity > bestIntensity) {
+                    bestIon = true;
+                    bestIntensity = intensity;
+                }
+            }
+            if (bestIon) {
                 bestMatch = ionMatch;
             }
         }

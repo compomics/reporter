@@ -19,6 +19,7 @@ import com.compomics.util.experiment.quantification.reporterion.ReporterMethodFa
 import com.compomics.util.gui.parameters.ProcessingPreferencesDialog;
 import com.compomics.util.gui.renderers.AlignedListCellRenderer;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
+import com.compomics.util.preferences.IdentificationParameters;
 import com.compomics.util.preferences.ProcessingPreferences;
 import eu.isas.peptideshaker.PeptideShaker;
 import eu.isas.peptideshaker.preferences.ProjectDetails;
@@ -750,13 +751,18 @@ public class NewDialog extends javax.swing.JDialog {
         selectedMethod = methodsFactory.getReporterMethod((String) reporterMethodComboBox.getSelectedItem());
         reagents = selectedMethod.getReagentsSortedByMass();
 
-        // update the reporter ion mz tolerance
-        if (selectedMethod.getName().lastIndexOf("TMT") != -1) {
-            if (reporterSettings.getReporterIonSelectionSettings().getReporterIonsMzTolerance() > DEFAULT_REPORTER_ION_TOLERANCE_TMT) {
-                reporterSettings.getReporterIonSelectionSettings().setReporterIonsMzTolerance(DEFAULT_REPORTER_ION_TOLERANCE_TMT);
+        // update the reporter settings
+        IdentificationParameters identificationParameters = cpsParent.getIdentificationParameters();
+        ProjectImporter.getDefaultReporterSettings(selectedMethod, identificationParameters, reporterSettings);
+
+        // Warning for TMT data with low mass accuracy
+        if (selectedMethod.getName().contains("TMT")) {
+            double ms2AbsoluteTolerance = identificationParameters.getSearchParameters().getFragmentIonAccuracyInDaltons(ReporterIon.TMT_131.getTheoreticMz(1));
+            if (ms2AbsoluteTolerance > ProjectImporter.DEFAULT_REPORTER_ION_TOLERANCE_TMT) {
+                JOptionPane.showMessageDialog(NewDialog.this,
+                        "TMT quantification requires high resolution spectra, please check the MS2 tolerance and the reporter ion tolerance in the quantification settings.",
+                        "TMT Resolution", JOptionPane.WARNING_MESSAGE);
             }
-        } else {
-            reporterSettings.getReporterIonSelectionSettings().setReporterIonsMzTolerance(DEFAULT_REPORTER_ION_TOLERANCE_ITRAQ);
         }
 
         refresh();
@@ -1055,7 +1061,7 @@ public class NewDialog extends javax.swing.JDialog {
                 }
             }
             if (!found) {
-                        nMissing++;
+                nMissing++;
                 missing += spectrumFileName + "\n";
             }
         }
@@ -1181,10 +1187,22 @@ public class NewDialog extends javax.swing.JDialog {
                 cache = new ObjectsCache();
                 cache.setAutomatedMemoryManagement(true);
 
+                // Set-up quantification settings
                 reporterSettings = projectImporter.getReporterSettings();
                 reporterIonQuantification = projectImporter.getReporterIonQuantification();
                 selectedMethod = reporterIonQuantification.getReporterMethod();
                 reagents = selectedMethod.getReagentsSortedByMass();
+
+                // Warning for TMT data with low mass accuracy
+                if (selectedMethod.getName().contains("TMT")) {
+                    IdentificationParameters identificationParameters = projectImporter.getCpsParent().getIdentificationParameters();
+                    double ms2AbsoluteTolerance = identificationParameters.getSearchParameters().getFragmentIonAccuracyInDaltons(ReporterIon.TMT_131.getTheoreticMz(1));
+                    if (ms2AbsoluteTolerance > ProjectImporter.DEFAULT_REPORTER_ION_TOLERANCE_TMT) {
+                        JOptionPane.showMessageDialog(NewDialog.this,
+                                "TMT quantification requires high resolution spectra, please check the MS2 tolerance and the reporter ion tolerance in the quantification settings.",
+                                "TMT Resolution", JOptionPane.WARNING_MESSAGE);
+                    }
+                }
 
                 // Get the display preferences
                 displayPreferences = projectImporter.getDisplayPreferences();

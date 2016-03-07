@@ -71,6 +71,11 @@ public class ReporterIonSelectionSettingsDialog extends javax.swing.JDialog {
     private void populateGUI(ReporterIonSelectionSettings reporterIonSelectionSettings) {
 
         ionToleranceTxt.setText(reporterIonSelectionSettings.getReporterIonsMzTolerance() + "");
+        if (reporterIonSelectionSettings.isMostAccurate()) {
+            ionSelectionComboBox.setSelectedIndex(0);
+        } else {
+            ionSelectionComboBox.setSelectedIndex(1);
+        }
         if (reporterIonSelectionSettings.isSameSpectra()) {
             sameSpectra.setSelected(true);
             precursorMatching.setSelected(false);
@@ -98,6 +103,8 @@ public class ReporterIonSelectionSettingsDialog extends javax.swing.JDialog {
         spectrumAnalysisPanel = new javax.swing.JPanel();
         reporterIonMzToleranceLabel = new javax.swing.JLabel();
         ionToleranceTxt = new javax.swing.JTextField();
+        ionSelectionLabel = new javax.swing.JLabel();
+        ionSelectionComboBox = new javax.swing.JComboBox();
         reporterLocationPanel = new javax.swing.JPanel();
         sameSpectra = new javax.swing.JRadioButton();
         precursorMatching = new javax.swing.JRadioButton();
@@ -128,15 +135,25 @@ public class ReporterIonSelectionSettingsDialog extends javax.swing.JDialog {
 
         ionToleranceTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
 
+        ionSelectionLabel.setText("Ion Selection");
+
+        ionSelectionComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Most Accurate", "Most Intense" }));
+
         javax.swing.GroupLayout spectrumAnalysisPanelLayout = new javax.swing.GroupLayout(spectrumAnalysisPanel);
         spectrumAnalysisPanel.setLayout(spectrumAnalysisPanelLayout);
         spectrumAnalysisPanelLayout.setHorizontalGroup(
             spectrumAnalysisPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(spectrumAnalysisPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(reporterIonMzToleranceLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(ionToleranceTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(spectrumAnalysisPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(spectrumAnalysisPanelLayout.createSequentialGroup()
+                        .addComponent(reporterIonMzToleranceLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(ionToleranceTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(spectrumAnalysisPanelLayout.createSequentialGroup()
+                        .addComponent(ionSelectionLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(ionSelectionComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap(64, Short.MAX_VALUE))
         );
         spectrumAnalysisPanelLayout.setVerticalGroup(
@@ -146,6 +163,10 @@ public class ReporterIonSelectionSettingsDialog extends javax.swing.JDialog {
                 .addGroup(spectrumAnalysisPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(reporterIonMzToleranceLabel)
                     .addComponent(ionToleranceTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(spectrumAnalysisPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(ionSelectionLabel)
+                    .addComponent(ionSelectionComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -261,11 +282,11 @@ public class ReporterIonSelectionSettingsDialog extends javax.swing.JDialog {
                 .addComponent(spectrumAnalysisPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(reporterLocationPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(backgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(okButton)
                     .addComponent(cancelButton))
-                .addContainerGap())
+                .addGap(9, 9, 9))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -276,7 +297,7 @@ public class ReporterIonSelectionSettingsDialog extends javax.swing.JDialog {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(backgroundPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(backgroundPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         pack();
@@ -313,6 +334,8 @@ public class ReporterIonSelectionSettingsDialog extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel backgroundPanel;
     private javax.swing.JButton cancelButton;
+    private javax.swing.JComboBox ionSelectionComboBox;
+    private javax.swing.JLabel ionSelectionLabel;
     private javax.swing.JTextField ionToleranceTxt;
     private javax.swing.JTextField mzTolTxt;
     private javax.swing.JLabel mzToleranceLabel;
@@ -414,9 +437,11 @@ public class ReporterIonSelectionSettingsDialog extends javax.swing.JDialog {
      * @return the settings as set by the user
      */
     public ReporterIonSelectionSettings getReporterIonSelectionSettings() {
+        
         ReporterIonSelectionSettings reporterIonSelectionSettings = new ReporterIonSelectionSettings();
         Double ionTolerance = new Double(ionToleranceTxt.getText().trim());
         reporterIonSelectionSettings.setReporterIonsMzTolerance(ionTolerance);
+        reporterIonSelectionSettings.setMostAccurate(ionSelectionComboBox.getSelectedIndex() == 0);
 
         if (precursorMatching.isSelected()) {
             reporterIonSelectionSettings.setSameSpectra(false);
