@@ -95,7 +95,9 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
      * occurs
      * @throws SQLException thrown if an SQLException occurs
      */
-    public PeptideTableModel(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, DisplayFeaturesGenerator displayFeaturesGenerator, IdentificationParameters identificationParameters, String proteinAccession, ArrayList<String> peptideKeys, boolean displayScores, ExceptionHandler exceptionHandler)
+    public PeptideTableModel(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, 
+            DisplayFeaturesGenerator displayFeaturesGenerator, IdentificationParameters identificationParameters, String proteinAccession, 
+            ArrayList<String> peptideKeys, boolean displayScores, ExceptionHandler exceptionHandler)
             throws IOException, InterruptedException, ClassNotFoundException, IllegalArgumentException, SQLException {
         this.identification = identification;
         this.identificationFeaturesGenerator = identificationFeaturesGenerator;
@@ -111,12 +113,23 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
      * Update the data in the table model without having to reset the whole
      * table model. This keeps the sorting order of the table.
      *
+     * @param identification the identification object containing the matches
+     * @param identificationFeaturesGenerator the identification features
+     * generator
+     * @param displayFeaturesGenerator the display features generator
+     * @param identificationParameters the identification parameters
      * @param proteinAccession the protein accession
      * @param peptideKeys the peptide keys
      * @param showScores boolean indicating whether the scores should be
      * displayed instead of the confidence
      */
-    public void updateDataModel(String proteinAccession, ArrayList<String> peptideKeys, boolean showScores) {
+    public void updateDataModel(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, 
+            DisplayFeaturesGenerator displayFeaturesGenerator, IdentificationParameters identificationParameters, 
+            String proteinAccession, ArrayList<String> peptideKeys, boolean showScores) {
+        this.identification = identification;
+        this.identificationFeaturesGenerator = identificationFeaturesGenerator;
+        this.displayFeaturesGenerator = displayFeaturesGenerator;
+        this.identificationParameters = identificationParameters;
         this.proteinAccession = proteinAccession;
         this.peptideKeys = peptideKeys;
         this.showScores = showScores;

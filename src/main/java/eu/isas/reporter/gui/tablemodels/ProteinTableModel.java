@@ -144,12 +144,27 @@ public class ProteinTableModel extends SelfUpdatingTableModel {
      * Update the data in the table model without having to reset the whole
      * table model. This keeps the sorting order of the table.
      *
+     * @param identification the identification containing the protein
+     * information
+     * @param identificationFeaturesGenerator the identification features
+     * generator generating the features of the identification
+     * @param geneMaps the gene maps
+     * @param reporterIonQuantification the reporter quantification information
      * @param quantificationFeaturesGenerator the quantification feature
      * generator
+     * @param displayFeaturesGenerator the display features generator generating
+     * the display elements
      * @param proteinKeys the keys of the protein matches to display
      */
-    public void updateDataModel(QuantificationFeaturesGenerator quantificationFeaturesGenerator, ArrayList<String> proteinKeys) {
+    public void updateDataModel(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, GeneMaps geneMaps,
+            ReporterIonQuantification reporterIonQuantification, QuantificationFeaturesGenerator quantificationFeaturesGenerator,
+            DisplayFeaturesGenerator displayFeaturesGenerator, ArrayList<String> proteinKeys) {
+        this.identification = identification;
+        this.identificationFeaturesGenerator = identificationFeaturesGenerator;
+        this.geneMaps = geneMaps;
+        this.reporterIonQuantification = reporterIonQuantification;
         this.quantificationFeaturesGenerator = quantificationFeaturesGenerator;
+        this.displayFeaturesGenerator = displayFeaturesGenerator;
         this.keys = proteinKeys;
 
         sampleIndexes = new ArrayList<String>(reporterIonQuantification.getSampleIndexes());

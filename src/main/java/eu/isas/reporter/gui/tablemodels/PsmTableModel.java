@@ -74,7 +74,8 @@ public class PsmTableModel extends SelfUpdatingTableModel {
      * displayed instead of the confidence
      * @param exceptionHandler handler for the exceptions
      */
-    public PsmTableModel(Identification identification, DisplayFeaturesGenerator displayFeaturesGenerator, IdentificationParameters identificationParameters, ArrayList<String> psmKeys, boolean displayScores, ExceptionHandler exceptionHandler) {
+    public PsmTableModel(Identification identification, DisplayFeaturesGenerator displayFeaturesGenerator, IdentificationParameters identificationParameters, 
+            ArrayList<String> psmKeys, boolean displayScores, ExceptionHandler exceptionHandler) {
         this.identification = identification;
         this.displayFeaturesGenerator = displayFeaturesGenerator;
         this.identificationParameters = identificationParameters;
@@ -91,13 +92,24 @@ public class PsmTableModel extends SelfUpdatingTableModel {
      * Update the data in the table model without having to reset the whole
      * table model. This keeps the sorting order of the table.
      *
+     * @param identification the identification object containing the matches
+     * @param displayFeaturesGenerator the display features generator
+     * @param identificationParameters the identification parameters
      * @param psmKeys the PSM keys
      * @param displayScores boolean indicating whether the scores should be
      * displayed instead of the confidence
      */
-    public void updateDataModel(ArrayList<String> psmKeys, boolean displayScores) {
+    public void updateDataModel(Identification identification, DisplayFeaturesGenerator displayFeaturesGenerator, 
+            IdentificationParameters identificationParameters,ArrayList<String> psmKeys, boolean displayScores) {
+        this.identification = identification;
+        this.displayFeaturesGenerator = displayFeaturesGenerator;
+        this.identificationParameters = identificationParameters;
         this.psmKeys = psmKeys;
         this.showScores = displayScores;
+        
+        PSMaps pSMaps = new PSMaps();
+        pSMaps = (PSMaps) identification.getUrParam(pSMaps);
+        inputMap = pSMaps.getInputMap();
     }
 
     /**

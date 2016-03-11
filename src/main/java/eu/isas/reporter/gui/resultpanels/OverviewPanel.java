@@ -226,7 +226,9 @@ public class OverviewPanel extends javax.swing.JPanel {
 
                     // update the table model
                     if (proteinTable.getModel() instanceof ProteinTableModel && ((ProteinTableModel) proteinTable.getModel()).isInstantiated()) {
-                        ((ProteinTableModel) proteinTable.getModel()).updateDataModel(reporterGUI.getQuantificationFeaturesGenerator(), proteinKeys);
+                        ((ProteinTableModel) proteinTable.getModel()).updateDataModel(identification, identificationFeaturesGenerator, geneMaps,
+                                reporterGUI.getReporterIonQuantification(), reporterGUI.getQuantificationFeaturesGenerator(),
+                                reporterGUI.getDisplayFeaturesGenerator(), proteinKeys);
                     } else {
                         ProteinTableModel proteinTableModel = new ProteinTableModel(identification, identificationFeaturesGenerator, geneMaps,
                                 reporterGUI.getReporterIonQuantification(), reporterGUI.getQuantificationFeaturesGenerator(),
@@ -473,7 +475,9 @@ public class OverviewPanel extends javax.swing.JPanel {
 
         // update the table model
         if (proteinTable.getModel() instanceof ProteinTableModel && ((ProteinTableModel) proteinTable.getModel()).isInstantiated()) {
-            ((ProteinTableModel) proteinTable.getModel()).updateDataModel(reporterGUI.getQuantificationFeaturesGenerator(), proteinKeys);
+            ((ProteinTableModel) proteinTable.getModel()).updateDataModel(identification, identificationFeaturesGenerator, geneMaps,
+                                reporterGUI.getReporterIonQuantification(), reporterGUI.getQuantificationFeaturesGenerator(),
+                                reporterGUI.getDisplayFeaturesGenerator(), proteinKeys);
         } else {
             ProteinTableModel proteinTableModel = new ProteinTableModel(identification, identificationFeaturesGenerator, geneMaps,
                     reporterGUI.getReporterIonQuantification(), reporterGUI.getQuantificationFeaturesGenerator(),
@@ -711,9 +715,9 @@ public class OverviewPanel extends javax.swing.JPanel {
                 ratioPlotHelpJButtonActionPerformed(evt);
             }
         });
+        ratioPlotsMainLayeredPane.setLayer(ratioPlotHelpJButton, javax.swing.JLayeredPane.POPUP_LAYER);
         ratioPlotsMainLayeredPane.add(ratioPlotHelpJButton);
         ratioPlotHelpJButton.setBounds(930, 0, 10, 19);
-        ratioPlotsMainLayeredPane.setLayer(ratioPlotHelpJButton, javax.swing.JLayeredPane.POPUP_LAYER);
 
         exportRatioPlotContextJButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/export_no_frame_grey.png"))); // NOI18N
         exportRatioPlotContextJButton.setToolTipText("Copy to Clipboard");
@@ -736,9 +740,9 @@ public class OverviewPanel extends javax.swing.JPanel {
                 exportRatioPlotContextJButtonActionPerformed(evt);
             }
         });
+        ratioPlotsMainLayeredPane.setLayer(exportRatioPlotContextJButton, javax.swing.JLayeredPane.POPUP_LAYER);
         ratioPlotsMainLayeredPane.add(exportRatioPlotContextJButton);
         exportRatioPlotContextJButton.setBounds(920, 0, 10, 19);
-        ratioPlotsMainLayeredPane.setLayer(exportRatioPlotContextJButton, javax.swing.JLayeredPane.POPUP_LAYER);
 
         ratioPlotOptionsJButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/contextual_menu_gray.png"))); // NOI18N
         ratioPlotOptionsJButton.setToolTipText("Plot Options");
@@ -758,9 +762,9 @@ public class OverviewPanel extends javax.swing.JPanel {
                 ratioPlotOptionsJButtonMouseReleased(evt);
             }
         });
+        ratioPlotsMainLayeredPane.setLayer(ratioPlotOptionsJButton, javax.swing.JLayeredPane.POPUP_LAYER);
         ratioPlotsMainLayeredPane.add(ratioPlotOptionsJButton);
         ratioPlotOptionsJButton.setBounds(905, 5, 10, 19);
-        ratioPlotsMainLayeredPane.setLayer(ratioPlotOptionsJButton, javax.swing.JLayeredPane.POPUP_LAYER);
 
         contextMenuRatioPlotBackgroundPanel.setBackground(new java.awt.Color(255, 255, 255));
 
@@ -775,9 +779,9 @@ public class OverviewPanel extends javax.swing.JPanel {
             .addGap(0, 19, Short.MAX_VALUE)
         );
 
+        ratioPlotsMainLayeredPane.setLayer(contextMenuRatioPlotBackgroundPanel, javax.swing.JLayeredPane.POPUP_LAYER);
         ratioPlotsMainLayeredPane.add(contextMenuRatioPlotBackgroundPanel);
         contextMenuRatioPlotBackgroundPanel.setBounds(890, 0, 50, 19);
-        ratioPlotsMainLayeredPane.setLayer(contextMenuRatioPlotBackgroundPanel, javax.swing.JLayeredPane.POPUP_LAYER);
 
         ratioPlotsTitledPanel.setBackground(new java.awt.Color(255, 255, 255));
         ratioPlotsTitledPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Protein Profile Clusters"));
@@ -844,9 +848,9 @@ public class OverviewPanel extends javax.swing.JPanel {
                 proteinsHelpJButtonActionPerformed(evt);
             }
         });
+        proteinsLayeredPane.setLayer(proteinsHelpJButton, javax.swing.JLayeredPane.POPUP_LAYER);
         proteinsLayeredPane.add(proteinsHelpJButton);
         proteinsHelpJButton.setBounds(930, 0, 10, 19);
-        proteinsLayeredPane.setLayer(proteinsHelpJButton, javax.swing.JLayeredPane.POPUP_LAYER);
 
         exportProteinsJButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/export_no_frame_grey.png"))); // NOI18N
         exportProteinsJButton.setToolTipText("Copy to File");
@@ -869,9 +873,9 @@ public class OverviewPanel extends javax.swing.JPanel {
                 exportProteinsJButtonActionPerformed(evt);
             }
         });
+        proteinsLayeredPane.setLayer(exportProteinsJButton, javax.swing.JLayeredPane.POPUP_LAYER);
         proteinsLayeredPane.add(exportProteinsJButton);
         exportProteinsJButton.setBounds(920, 0, 10, 19);
-        proteinsLayeredPane.setLayer(exportProteinsJButton, javax.swing.JLayeredPane.POPUP_LAYER);
 
         contextMenuProteinsBackgroundPanel.setBackground(new java.awt.Color(255, 255, 255));
 
@@ -886,11 +890,11 @@ public class OverviewPanel extends javax.swing.JPanel {
             .addGap(0, 19, Short.MAX_VALUE)
         );
 
+        proteinsLayeredPane.setLayer(contextMenuProteinsBackgroundPanel, javax.swing.JLayeredPane.POPUP_LAYER);
         proteinsLayeredPane.add(contextMenuProteinsBackgroundPanel);
         contextMenuProteinsBackgroundPanel.setBounds(910, 0, 40, 19);
-        proteinsLayeredPane.setLayer(contextMenuProteinsBackgroundPanel, javax.swing.JLayeredPane.POPUP_LAYER);
 
-        proteinsLayeredPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Matches"));
+        proteinsLayeredPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Proteins, Peptides & PSMs"));
         proteinsLayeredPanel.setOpaque(false);
 
         matchesJTabbedPane.setTabPlacement(javax.swing.JTabbedPane.BOTTOM);
