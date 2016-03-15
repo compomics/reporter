@@ -34,14 +34,14 @@ import javax.swing.table.TableColumn;
 import no.uib.jsparklines.data.ArrrayListDataPoints;
 import no.uib.jsparklines.data.Chromosome;
 import no.uib.jsparklines.data.JSparklinesDataSeries;
-import no.uib.jsparklines.data.JSparklinesDataset;
 import no.uib.jsparklines.extra.ChromosomeTableCellRenderer;
 import no.uib.jsparklines.extra.HtmlLinksRenderer;
 import no.uib.jsparklines.renderers.JSparklinesArrayListBarChartTableCellRenderer;
 import no.uib.jsparklines.renderers.JSparklinesBarChartTableCellRenderer;
+import no.uib.jsparklines.renderers.JSparklinesHeatMapTableCellRenderer;
 import no.uib.jsparklines.renderers.JSparklinesIntegerColorTableCellRenderer;
 import no.uib.jsparklines.renderers.JSparklinesIntegerIconTableCellRenderer;
-import no.uib.jsparklines.renderers.JSparklinesTableCellRenderer;
+import no.uib.jsparklines.renderers.util.GradientColorCoding;
 import org.jfree.chart.plot.PlotOrientation;
 
 /**
@@ -267,11 +267,7 @@ public class ProteinTableModel extends SelfUpdatingTableModel {
                             }
                         }
 
-                        JSparklinesDataSeries sparklineDataseries = new JSparklinesDataSeries(data, Color.BLACK, null);
-                        ArrayList<JSparklinesDataSeries> sparkLineDataSeriesAll = new ArrayList<JSparklinesDataSeries>();
-                        sparkLineDataSeriesAll.add(sparklineDataseries);
-                        JSparklinesDataset dataset = new JSparklinesDataset(sparkLineDataSeriesAll);
-                        return dataset;
+                        return new JSparklinesDataSeries(data, Color.BLACK, null);
                     case 2:
                         PSParameter psParameter = (PSParameter) identification.getProteinMatchParameter(proteinKey, new PSParameter(), useDB && !isScrolling);
                         if (psParameter == null) {
@@ -593,7 +589,7 @@ public class ProteinTableModel extends SelfUpdatingTableModel {
      * @param sparklineColorNotValidated the sparkline color for not validated
      * stuffs
      * @param parentClass the parent class used to get icons
-     * @param sparklineColorNotFound the sparkline color for not found stuffs
+     * @param sparklineColorNotFound the sparkline color for not found stuff
      * @param sparklineColorDoubtful the sparkline color for doubtful
      * @param scoreAndConfidenceDecimalFormat the decimal format for score and
      * confidence
@@ -630,7 +626,7 @@ public class ProteinTableModel extends SelfUpdatingTableModel {
         proteinTable.getColumn("PI").setMinWidth(37);
 
         // the quant plot column
-        proteinTable.getColumn("Quant").setCellRenderer(new JSparklinesTableCellRenderer(JSparklinesTableCellRenderer.PlotType.barChart, PlotOrientation.VERTICAL, -maxAbsProteinValue, maxAbsProteinValue));
+        proteinTable.getColumn("Quant").setCellRenderer(new JSparklinesHeatMapTableCellRenderer(GradientColorCoding.ColorGradient.GreenWhiteRed, maxAbsProteinValue));
 
         // set up the protein inference color map
         HashMap<Integer, Color> proteinInferenceColorMap = new HashMap<Integer, Color>();

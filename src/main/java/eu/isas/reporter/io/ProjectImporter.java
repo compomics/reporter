@@ -70,6 +70,10 @@ public class ProjectImporter {
      * The default reporter ion tolerance for TMT data.
      */
     public static final double DEFAULT_REPORTER_ION_TOLERANCE_TMT = 0.0016;
+    /**
+     * The default reporter ion tolerance for TMT data.
+     */
+    public static final double DEFAULT_REPORTER_ION_TOLERANCE_ITRAQ = 0.05;
 
     /**
      * Constructor.
@@ -328,19 +332,18 @@ public class ProjectImporter {
     public static ReporterSettings getDefaultReporterSettings(ReporterMethod reporterMethod, IdentificationParameters identificationParameters, ReporterSettings reporterSettings) {
 
         ReporterIonSelectionSettings reporterIonSelectionSettings = reporterSettings.getReporterIonSelectionSettings();
-
         SearchParameters searchParameters = identificationParameters.getSearchParameters();
 
-        // Adapt the ion tolerance and selection settings
+        // adapt the ion tolerance and selection settings
         if (reporterMethod.getName().contains("iTRAQ")) {
             if (reporterMethod.getName().contains("4")) {
                 double massTolerance = searchParameters.getFragmentIonAccuracyInDaltons(ReporterIon.iTRAQ4Plex_117.getTheoreticMz(1));
                 reporterIonSelectionSettings.setReporterIonsMzTolerance(massTolerance);
-                reporterIonSelectionSettings.setMostAccurate(massTolerance < 0.05);
+                reporterIonSelectionSettings.setMostAccurate(massTolerance < DEFAULT_REPORTER_ION_TOLERANCE_ITRAQ);
             } else {
                 double massTolerance = searchParameters.getFragmentIonAccuracyInDaltons(ReporterIon.iTRAQ8Plex_121.getTheoreticMz(1));
                 reporterIonSelectionSettings.setReporterIonsMzTolerance(massTolerance);
-                reporterIonSelectionSettings.setMostAccurate(massTolerance < 0.05);
+                reporterIonSelectionSettings.setMostAccurate(massTolerance < DEFAULT_REPORTER_ION_TOLERANCE_ITRAQ);
             }
         } else if (reporterMethod.getName().contains("TMT")) {
             if (reporterIonSelectionSettings.getReporterIonsMzTolerance() > DEFAULT_REPORTER_ION_TOLERANCE_TMT) {

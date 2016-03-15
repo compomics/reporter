@@ -1,9 +1,11 @@
 package eu.isas.reporter.gui.settings.quantification;
 
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
+import com.compomics.util.gui.renderers.AlignedListCellRenderer;
 import eu.isas.reporter.settings.ReporterIonSelectionSettings;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
+import javax.swing.SwingConstants;
 
 /**
  * The preferences dialog.
@@ -61,10 +63,12 @@ public class ReporterIonSelectionSettingsDialog extends javax.swing.JDialog {
     private void setUpGui(boolean editable) {
 
         //@TODO: Set editable or not
+        
+        ionSelectionComboBox.setRenderer(new AlignedListCellRenderer(SwingConstants.CENTER));
     }
 
     /**
-     * Fills the gui with the given settings.
+     * Fills the GUI with the given settings.
      *
      * @param reporterIonSelectionSettings the settings to display
      */
@@ -163,7 +167,7 @@ public class ReporterIonSelectionSettingsDialog extends javax.swing.JDialog {
                 .addGroup(spectrumAnalysisPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(reporterIonMzToleranceLabel)
                     .addComponent(ionToleranceTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(spectrumAnalysisPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(ionSelectionLabel)
                     .addComponent(ionSelectionComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -397,7 +401,9 @@ public class ReporterIonSelectionSettingsDialog extends javax.swing.JDialog {
                 for (String reagent2 : reporterMethod.getReagentNames()) {
                     if (!reagent1.equals(reagent2) && Math.abs(reporterMethod.getReagent(reagent1).getReporterIon().getTheoreticMass()
                             - reporterMethod.getReagent(reagent2).getReporterIon().getTheoreticMass()) <= input) {
-                        JOptionPane.showMessageDialog(this, "The ion tolerance does not allow distinguishing " + reagent1 + " and  " + reagent2 + ".", "Ion Tolerance Error", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(this, 
+                                "The selected ion tolerance does not make it possible to distinguish " + reagent1 + " and " + reagent2 + ".", 
+                                "Ion Tolerance Error", JOptionPane.WARNING_MESSAGE);
                         return false;
                     }
                 }

@@ -5,7 +5,7 @@
     <groupId>eu.isas.reporter</groupId>
     <artifactId>Reporter</artifactId>
     <packaging>jar</packaging>
-    <version>0.3.1</version>
+    <version>0.3.0</version>
     <name>Reporter</name>
     <url>http://reporter.googlecode.com</url>
     <description>Protein quantification based on reporter ions</description>
@@ -29,7 +29,7 @@
             <name>Marc Vaudel</name>
             <id>Marc</id>
             <email>marc.vaudel AT uib.no</email>
-            <organization>University of Bergen</organization>
+            <organization>University of Bergen, Norway</organization>
             <roles>
                 <role>Java Developer</role>
             </roles>
@@ -38,7 +38,7 @@
             <name>Harald Barsnes</name>
             <id>harald</id>
             <email>harald.barsnes AT uib.no</email>
-            <organization>University of Bergen</organization>
+            <organization>University of Bergen, Norway</organization>
             <roles>
                 <role>Java Developer</role>
             </roles>
@@ -307,7 +307,7 @@
         <dependency>
             <groupId>com.compomics</groupId>
             <artifactId>utilities</artifactId>
-            <version>4.5.5</version>
+            <version>4.5.6</version>
             <exclusions>
                 <exclusion>
                     <artifactId>commons-math</artifactId>
@@ -423,7 +423,7 @@
         <dependency>
             <groupId>no.uib</groupId>
             <artifactId>jsparklines</artifactId>
-            <version>1.0.7</version>
+            <version>1.0.8</version>
         </dependency>
 
         <dependency>

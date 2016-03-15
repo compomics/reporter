@@ -6,7 +6,6 @@ import com.compomics.util.db.ObjectsCache;
 import com.compomics.util.examples.BareBonesBrowserLaunch;
 import com.compomics.util.experiment.MsExperiment;
 import com.compomics.util.experiment.biology.Sample;
-import com.compomics.util.experiment.biology.ions.PeptideFragmentIon;
 import com.compomics.util.experiment.biology.ions.ReporterIon;
 import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.identification_parameters.SearchParameters;
@@ -755,16 +754,6 @@ public class NewDialog extends javax.swing.JDialog {
             // update the reporter settings
             IdentificationParameters identificationParameters = cpsParent.getIdentificationParameters();
             ProjectImporter.getDefaultReporterSettings(selectedMethod, identificationParameters, reporterSettings);
-
-            // Warning for TMT data with low mass accuracy
-            if (selectedMethod.getName().contains("TMT")) {
-                double ms2AbsoluteTolerance = identificationParameters.getSearchParameters().getFragmentIonAccuracyInDaltons(ReporterIon.TMT_131.getTheoreticMz(1));
-                if (ms2AbsoluteTolerance > ProjectImporter.DEFAULT_REPORTER_ION_TOLERANCE_TMT) {
-                    JOptionPane.showMessageDialog(NewDialog.this,
-                            "TMT quantification requires high resolution spectra, please check the MS2 tolerance and the reporter ion tolerance in the quantification settings.",
-                            "TMT Resolution", JOptionPane.WARNING_MESSAGE);
-                }
-            }
         }
 
         refresh();
@@ -1055,7 +1044,7 @@ public class NewDialog extends javax.swing.JDialog {
     private boolean verifySpectrumFiles() {
         String missing = "";
         int nMissing = 0;
-        for (String spectrumFileName : cpsParent.getIdentification().getSpectrumFiles()) {
+        for (String spectrumFileName : cpsParent.getIdentification().getSpectrumFiles()) { // @TODO: check alternative locations as for ps
             boolean found = false;
             for (File spectrumFile : mgfFiles) {
                 if (spectrumFile.getName().equals(spectrumFileName)) {
@@ -1177,7 +1166,7 @@ public class NewDialog extends javax.swing.JDialog {
                 verifyFastaFile();
                 txtIdFileLocation.setText(cpsParent.getCpsFile().getName());
 
-                // load project specific PTMs
+                // load project specific ptms
                 String error = PeptideShaker.loadModifications(getSearchParameters());
                 if (error != null) {
                     JOptionPane.showMessageDialog(NewDialog.this,
@@ -1185,32 +1174,20 @@ public class NewDialog extends javax.swing.JDialog {
                             "PTM Definition Changed", JOptionPane.WARNING_MESSAGE);
                 }
 
-                // Set-up cache
+                // set up cache
                 cache = new ObjectsCache();
                 cache.setAutomatedMemoryManagement(true);
 
-                // Set-up quantification settings
+                // set up quantification settings
                 reporterSettings = projectImporter.getReporterSettings();
                 reporterIonQuantification = projectImporter.getReporterIonQuantification();
                 selectedMethod = reporterIonQuantification.getReporterMethod();
                 reagents = selectedMethod.getReagentsSortedByMass();
 
-                // Warning for TMT data with low mass accuracy
-                if (selectedMethod.getName().contains("TMT")) {
-                    IdentificationParameters identificationParameters = projectImporter.getCpsParent().getIdentificationParameters();
-                    double ms2AbsoluteTolerance = identificationParameters.getSearchParameters().getFragmentIonAccuracyInDaltons(ReporterIon.TMT_131.getTheoreticMz(1));
-                    if (ms2AbsoluteTolerance > ProjectImporter.DEFAULT_REPORTER_ION_TOLERANCE_TMT) {
-                        JOptionPane.showMessageDialog(NewDialog.this,
-                                "TMT quantification requires high resolution spectra, please check the MS2 tolerance and the reporter ion tolerance in the quantification settings.",
-                                "TMT Resolution", JOptionPane.WARNING_MESSAGE);
-                    }
-                }
-
-                // Get the display preferences
+                // get the display preferences
                 displayPreferences = projectImporter.getDisplayPreferences();
 
                 sampleNames.clear();
-
                 refresh();
 
                 progressDialog.setRunFinished();
@@ -1311,6 +1288,18 @@ public class NewDialog extends javax.swing.JDialog {
      */
     private boolean validateInput() {
         // @TODO: validate that the project has been loaded
+
+        // warning for tmt data with low mass accuracy
+        if (selectedMethod.getName().contains("TMT")) {
+            if (reporterSettings.getReporterIonSelectionSettings().getReporterIonsMzTolerance() > ProjectImporter.DEFAULT_REPORTER_ION_TOLERANCE_TMT) {
+                JOptionPane.showMessageDialog(this,
+                        "TMT quantification requires high resolution spectra. Please check\n"
+                        + "the Reporter Ions Tolerance in the Quantification Settings.",
+                        "TMT Resolution Warning", JOptionPane.WARNING_MESSAGE);
+                return false;
+            }
+        }
+
         return true;
     }
 

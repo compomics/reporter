@@ -130,7 +130,7 @@
                           <Component id="reporterIonMzToleranceLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="ionToleranceTxt" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="ionSelectionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="ionSelectionComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
