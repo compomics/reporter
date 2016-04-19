@@ -231,6 +231,9 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
             }
 
             initComponents();
+            
+            categoriesMenuItem.setVisible(false);
+            jSeparator4.setVisible(false);
 
             overviewPanel = new OverviewPanel(this);
             overviewJPanel.add(overviewPanel);
