@@ -12,6 +12,7 @@ import com.compomics.util.math.clustering.KMeansClustering;
 import com.compomics.util.waiting.WaitingHandler;
 import eu.isas.peptideshaker.parameters.PSParameter;
 import eu.isas.peptideshaker.utils.IdentificationFeaturesGenerator;
+import eu.isas.reporter.calculation.clustering.ClusterBuilder;
 import eu.isas.reporter.gui.ReporterGUI;
 import eu.isas.reporter.gui.tablemodels.PeptideTableModel;
 import eu.isas.reporter.gui.tablemodels.ProteinTableModel;
@@ -28,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTable;
@@ -97,6 +99,14 @@ public class OverviewPanel extends javax.swing.JPanel {
      */
     private ArrayList<String> proteinKeys = new ArrayList<String>();
     /**
+     * A list of peptides in the peptide table.
+     */
+    private ArrayList<String> peptideKeys = new ArrayList<String>();
+    /**
+     * A list of PSMs in the PSM table.
+     */
+    private ArrayList<String> psmKeys = new ArrayList<String>();
+    /**
      * The default line width for the line plots.
      */
     public static final float LINE_WIDTH = 4;
@@ -108,18 +118,6 @@ public class OverviewPanel extends javax.swing.JPanel {
      * The current line chart chart panel.
      */
     private ChartPanel lineChartChartPanel;
-    /**
-     * The protein ratio distributions.
-     */
-    private HashMap<String, Double[]> proteinRatioDistributions;
-    /**
-     * The max protein ratio (in log2).
-     */
-    private double maxProteinRatio;
-    /**
-     * The min protein ratio (in log2).
-     */
-    private double minProteinRatio;
     /**
      * The currently selected chart panel.
      */
@@ -209,11 +207,6 @@ public class OverviewPanel extends javax.swing.JPanel {
                     reporterGUI.getIdentificationFeaturesGenerator().setProteinKeys(reporterGUI.getMetrics().getProteinKeys());
                     proteinKeys = reporterGUI.getIdentificationFeaturesGenerator().getProcessedProteinKeys(progressDialog, reporterGUI.getFilterPreferences());
                     allOrderedProteinKeys = reporterGUI.getIdentificationFeaturesGenerator().getProcessedProteinKeys(progressDialog, reporterGUI.getFilterPreferences());
-                    identification.loadProteinMatches(allOrderedProteinKeys, progressDialog, false);
-                    identification.loadProteinMatchParameters(allOrderedProteinKeys, new PSParameter(), progressDialog, false);
-
-                    // get the protein ratio distributions
-                    getProteinRatioDistributions(progressDialog);
 
                     // display the clusters
                     displayClusters(progressDialog);
@@ -264,62 +257,6 @@ public class OverviewPanel extends javax.swing.JPanel {
                 }
             }
         }.start();
-    }
-
-    /**
-     * Get the protein ratio distributions.
-     *
-     * @param waitingHandler waiting handler displaying progress to the user and
-     * allowing canceling the process
-     */
-    private void getProteinRatioDistributions(WaitingHandler waitingHandler) {
-
-        ArrayList<String> sampleIndexes = new ArrayList<String>(reporterGUI.getReporterIonQuantification().getSampleIndexes());
-        Collections.sort(sampleIndexes);
-
-        proteinRatioDistributions = new HashMap<String, Double[]>();
-        maxProteinRatio = Double.MIN_VALUE;
-        minProteinRatio = Double.MAX_VALUE;
-
-        try {
-            for (String sampleIndex : sampleIndexes) {
-
-                ArrayList<Double> data = new ArrayList<Double>();
-
-                for (String proteinKey : proteinKeys) {
-
-                    PSParameter psParameter = (PSParameter) reporterGUI.getIdentification().getProteinMatchParameter(proteinKey, new PSParameter());
-
-                    if (psParameter.getMatchValidationLevel().isValidated()) {
-                        ProteinQuantificationDetails quantificationDetails = reporterGUI.getQuantificationFeaturesGenerator().getProteinMatchQuantificationDetails(proteinKey, waitingHandler);
-                        Double ratio = quantificationDetails.getRatio(sampleIndex, reporterGUI.getReporterIonQuantification().getNormalizationFactors());
-
-                        if (ratio != null) {
-                            if (ratio != 0) {
-                                ratio = Math.log(ratio) / Math.log(2);
-                            }
-                            data.add(ratio);
-
-                            if (ratio > maxProteinRatio) {
-                                maxProteinRatio = ratio;
-                            }
-                            if (ratio < minProteinRatio) {
-                                minProteinRatio = ratio;
-                            }
-                        }
-                    }
-                }
-
-                Double[] values = new Double[data.size()];
-                for (int i = 0; i < data.size(); i++) {
-                    values[i] = data.get(i);
-                }
-
-                proteinRatioDistributions.put(sampleIndex, values);
-            }
-        } catch (Exception e) {
-            reporterGUI.catchException(e);
-        }
     }
 
     /**
@@ -396,9 +333,10 @@ public class OverviewPanel extends javax.swing.JPanel {
         rangeAxis.setUpperMargin(0.15);
 
         // make sure that the chart has a symmetrical y-axis
-        double maxAbsRatioValue = Math.max(Math.abs(maxProteinRatio), Math.abs(minProteinRatio));
-        rangeAxis.setUpperBound(maxAbsRatioValue);
-        rangeAxis.setLowerBound(-maxAbsRatioValue);
+        ClusterBuilder clusterBuilder = reporterGUI.getClusterBuilder();
+        Double amplitude = clusterBuilder.getRatioAmplitude();
+        rangeAxis.setUpperBound(amplitude);
+        rangeAxis.setLowerBound(-amplitude);
 
         // create the chart panel
         lineChartChartPanel = new ChartPanel(chart);
@@ -461,23 +399,70 @@ public class OverviewPanel extends javax.swing.JPanel {
 
         selectedChartPanel = chartPanel;
 
-        // get the current protein keys
+        // get the keys of the matches in the selected cluster
         DefaultCategoryDataset dataset = (DefaultCategoryDataset) chartPanel.getChart().getCategoryPlot().getDataset();
-        HashSet<String> rowKeys = new HashSet<String>(dataset.getRowKeys());
-
-        // make sure that the order is always the same
-        proteinKeys = new ArrayList<String>();
-        for (String tempProteinAccession : allOrderedProteinKeys) {
-            if (rowKeys.contains(tempProteinAccession)) { // @TODO: there has to be a simpler and faster way of doing this...
-                proteinKeys.add(tempProteinAccession);
+        List<String> rowKeys = dataset.getRowKeys();
+        int size = Math.max(32, rowKeys.size() / 3);
+        HashMap<Integer, String> psmKeysMap = new HashMap<Integer, String>(size);
+        HashMap<Integer, String> peptideKeysMap = new HashMap<Integer, String>(size);
+        HashMap<Integer, String> proteinKeysMap = new HashMap<Integer, String>(size);
+        ClusterBuilder clusterBuilder = reporterGUI.getClusterBuilder();
+        for (String rowKey : rowKeys) {
+            Integer proteinIndex = clusterBuilder.getProteinIndex(rowKey);
+            if (proteinIndex != null) {
+                proteinKeysMap.put(proteinIndex, rowKey);
+            }
+            Integer peptideIndex = clusterBuilder.getPeptideIndex(rowKey);
+            if (peptideIndex != null) {
+                peptideKeysMap.put(peptideIndex, rowKey);
+            }
+            Integer psmIndex = clusterBuilder.getPsmIndex(rowKey);
+            if (psmIndex != null) {
+                psmKeysMap.put(psmIndex, rowKey);
+            }
+            if (proteinIndex == null && peptideIndex == null && psmIndex == null) {
+                throw new IllegalArgumentException("Key " + rowKey + " not found.");
             }
         }
 
-        // update the table model
+        // Get tables contents
+        ArrayList<Integer> indexes = new ArrayList<Integer>(proteinKeysMap.keySet());
+        Collections.sort(indexes);
+        proteinKeys = new ArrayList<String>(proteinKeysMap.size());
+        for (Integer index : indexes) {
+            String accession = proteinKeysMap.get(index);
+            proteinKeys.add(accession);
+        }
+        indexes = new ArrayList<Integer>(peptideKeysMap.keySet());
+        Collections.sort(indexes);
+        peptideKeys = new ArrayList<String>(peptideKeysMap.size());
+        for (Integer index : indexes) {
+            String accession = peptideKeysMap.get(index);
+            peptideKeys.add(accession);
+        }
+        indexes = new ArrayList<Integer>(psmKeysMap.keySet());
+        Collections.sort(indexes);
+        psmKeys = new ArrayList<String>(psmKeysMap.size());
+        for (Integer index : indexes) {
+            String accession = psmKeysMap.get(index);
+            psmKeys.add(accession);
+        }
+
+        // update the tables and panels
+        updateProteinPanel();
+        updatePeptidePanel();
+        updatePsmPanel();
+    }
+
+    /**
+     * Updates the protein panel including the table.
+     */
+    private void updateProteinPanel() {
+
         if (proteinTable.getModel() instanceof ProteinTableModel && ((ProteinTableModel) proteinTable.getModel()).isInstantiated()) {
             ((ProteinTableModel) proteinTable.getModel()).updateDataModel(identification, identificationFeaturesGenerator, geneMaps,
-                                reporterGUI.getReporterIonQuantification(), reporterGUI.getQuantificationFeaturesGenerator(),
-                                reporterGUI.getDisplayFeaturesGenerator(), proteinKeys);
+                    reporterGUI.getReporterIonQuantification(), reporterGUI.getQuantificationFeaturesGenerator(),
+                    reporterGUI.getDisplayFeaturesGenerator(), proteinKeys);
         } else {
             ProteinTableModel proteinTableModel = new ProteinTableModel(identification, identificationFeaturesGenerator, geneMaps,
                     reporterGUI.getReporterIonQuantification(), reporterGUI.getQuantificationFeaturesGenerator(),
@@ -491,8 +476,23 @@ public class OverviewPanel extends javax.swing.JPanel {
         updateProteinTableCellRenderers();
 
         String title = ReporterGUI.TITLED_BORDER_HORIZONTAL_PADDING + "Proteins (" + proteinTable.getRowCount() + ")";
+
         ((TitledBorder) proteinsLayeredPanel.getBorder()).setTitle(title);
         proteinsLayeredPanel.repaint();
+    }
+
+    /**
+     * Updates the peptide panel including the table.
+     */
+    private void updatePeptidePanel() {
+        //@TODO!
+    }
+
+    /**
+     * Updates the PSM panel including the table.
+     */
+    private void updatePsmPanel() {
+        //@TODO!
     }
 
     /**
@@ -524,9 +524,11 @@ public class OverviewPanel extends javax.swing.JPanel {
      * Set up the properties of the protein table.
      */
     private void setProteinTableProperties() {
+        ClusterBuilder clusterBuilder = reporterGUI.getClusterBuilder();
+        Double amplitude = clusterBuilder.getRatioAmplitude();
         ProteinTableModel.setProteinTableProperties(proteinTable, reporterGUI.getSparklineColor(), reporterGUI.getSparklineColorNonValidated(),
                 reporterGUI.getSparklineColorNotFound(), reporterGUI.getSparklineColorDoubtful(), reporterGUI.getScoreAndConfidenceDecimalFormat(),
-                this.getClass(), reporterGUI.getMetrics().getMaxProteinKeyLength(), Math.max(Math.abs(minProteinRatio), Math.abs(maxProteinRatio)));
+                this.getClass(), reporterGUI.getMetrics().getMaxProteinKeyLength(), amplitude);
 
         proteinTable.getModel().addTableModelListener(new TableModelListener() {
             public void tableChanged(TableModelEvent e) {

@@ -53,9 +53,9 @@ public class ClusterBuilder {
      */
     private HashMap<String, ArrayList<String>> proteinClusters;
     /**
-     * The filtered protein keys indexed by the index used for clustering.
+     * The index of the protein keys in clusterKeys.
      */
-    private HashMap<Integer, String> clusterProteinKeys;
+    private HashMap<String, Integer> proteinKeysIndexes;
     /**
      * The filtered peptide keys indexed by cluster class key.
      */
@@ -65,9 +65,9 @@ public class ClusterBuilder {
      */
     private HashMap<String, ArrayList<String>> peptideClusters;
     /**
-     * The filtered peptide keys indexed by the index used for clustering.
+     * The index of the peptide keys in clusterKeys.
      */
-    private HashMap<Integer, String> clusterPeptideKeys;
+    private HashMap<String, Integer> peptideKeysIndexes;
     /**
      * The filtered PSM keys indexed by cluster class key.
      */
@@ -77,9 +77,9 @@ public class ClusterBuilder {
      */
     private HashMap<String, ArrayList<String>> psmClusters;
     /**
-     * The filtered PSM keys indexed by the index used for clustering.
+     * The index of the PSM keys in clusterKeys.
      */
-    private HashMap<Integer, String> clusterPsmKeys;
+    private HashMap<String, Integer> psmKeysIndexes;
     /**
      * The matches keys of the ratios used for clustering.
      */
@@ -88,6 +88,14 @@ public class ClusterBuilder {
      * The ratios used for clustering.
      */
     private double[][] ratios;
+    /**
+     * The minimal ratio.
+     */
+    private Double minRatio = null;
+    /**
+     * The maximal ratio.
+     */
+    private Double maxRatio = null;
 
     /**
      * Constructor.
@@ -117,9 +125,9 @@ public class ClusterBuilder {
      * @throws InterruptedException if an InterruptedException occurs
      * @throws MzMLUnmarshallerException if an MzMLUnmarshallerException occurs
      */
-    public KMeansClustering clusterProfiles(Identification identification, IdentificationParameters identificationParameters, Metrics metrics, 
-            ReporterIonQuantification reporterIonQuantification, QuantificationFeaturesGenerator quantificationFeaturesGenerator, 
-            DisplayPreferences displayPreferences, boolean loadData, WaitingHandler waitingHandler) 
+    public KMeansClustering clusterProfiles(Identification identification, IdentificationParameters identificationParameters, Metrics metrics,
+            ReporterIonQuantification reporterIonQuantification, QuantificationFeaturesGenerator quantificationFeaturesGenerator,
+            DisplayPreferences displayPreferences, boolean loadData, WaitingHandler waitingHandler)
             throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
 
         waitingHandler.setSecondaryProgressCounterIndeterminate(true);
@@ -203,7 +211,7 @@ public class ClusterBuilder {
         ArrayList<double[]> ratiosList = new ArrayList<double[]>(metrics.getnValidatedProteins());
 
         proteinClusters = new HashMap<String, ArrayList<String>>(nProteinClusters);
-        clusterProteinKeys = new HashMap<Integer, String>(metrics.getnValidatedProteins());
+        proteinKeysIndexes = new HashMap<String, Integer>(metrics.getnValidatedProteins());
         filteredProteinKeys = new HashMap<String, ArrayList<String>>(metrics.getnValidatedProteins());
 
         if (nProteinClusters > 0) {
@@ -275,12 +283,18 @@ public class ClusterBuilder {
                                 if (ratio != 0) {
                                     double logRatio = BasicMathFunctions.log(ratio, 2);
                                     proteinRatios[sampleIndex] = logRatio;
+                                    if (maxRatio == null || logRatio > maxRatio) {
+                                        maxRatio = logRatio;
+                                    }
+                                    if (minRatio == null || logRatio < minRatio) {
+                                        minRatio = logRatio;
+                                    }
                                 }
                             }
                         }
 
                         clusterKeys.add(proteinKey);
-                        clusterProteinKeys.put(clusteringIndex, proteinKey);
+                        proteinKeysIndexes.put(proteinKey, clusteringIndex);
                         ratiosList.add(proteinRatios);
                         clusteringIndex++;
                     }
@@ -290,7 +304,7 @@ public class ClusterBuilder {
         }
 
         filteredPeptideKeys = new HashMap<String, ArrayList<String>>(metrics.getnValidatedProteins());
-        clusterPeptideKeys = new HashMap<Integer, String>(metrics.getnValidatedProteins());
+        peptideKeysIndexes = new HashMap<String, Integer>(metrics.getnValidatedProteins());
         peptideClusters = new HashMap<String, ArrayList<String>>(nPeptideClusters);
 
         if (nPeptideClusters > 0) {
@@ -385,12 +399,18 @@ public class ClusterBuilder {
                                 if (ratio != 0) {
                                     double logRatio = BasicMathFunctions.log(ratio, 2);
                                     peptideRatios[sampleIndex] = logRatio;
+                                    if (maxRatio == null || logRatio > maxRatio) {
+                                        maxRatio = logRatio;
+                                    }
+                                    if (minRatio == null || logRatio < minRatio) {
+                                        minRatio = logRatio;
+                                    }
                                 }
                             }
                         }
 
                         clusterKeys.add(peptideKey);
-                        clusterPeptideKeys.put(clusteringIndex, peptideKey);
+                        proteinKeysIndexes.put(peptideKey, clusteringIndex);
                         ratiosList.add(peptideRatios);
                         clusteringIndex++;
                     }
@@ -400,13 +420,13 @@ public class ClusterBuilder {
         }
 
         filteredPsmKeys = new HashMap<String, ArrayList<String>>(metrics.getnValidatedProteins());
-        clusterPsmKeys = new HashMap<Integer, String>(metrics.getnValidatedProteins());
+        psmKeysIndexes = new HashMap<String, Integer>(metrics.getnValidatedProteins());
         psmClusters = new HashMap<String, ArrayList<String>>(nPsmClusters);
 
         if (nPsmClusters > 0) {
 
             HashSet<String> neededFiles = new HashSet<String>();
-            for (String keyName : clusteringSettings.getSelectedPeptideClasses()) {
+            for (String keyName : clusteringSettings.getSelectedPsmClasses()) {
                 PsmClusterClassKey psmClusterClassKey = clusteringSettings.getPsmClassKey(keyName);
                 if (psmClusterClassKey.getFile() == null) {
                     neededFiles.addAll(identification.getOrderedSpectrumFileNames());
@@ -462,12 +482,18 @@ public class ClusterBuilder {
                                     if (ratio != 0) {
                                         double logRatio = BasicMathFunctions.log(ratio, 2);
                                         psmRatios[sampleIndex] = logRatio;
+                                        if (maxRatio == null || logRatio > maxRatio) {
+                                            maxRatio = logRatio;
+                                        }
+                                        if (minRatio == null || logRatio < minRatio) {
+                                            minRatio = logRatio;
+                                        }
                                     }
                                 }
                             }
 
                             clusterKeys.add(spectrumKey);
-                            clusterPsmKeys.put(clusteringIndex, spectrumKey);
+                            psmKeysIndexes.put(spectrumKey, clusteringIndex);
                             ratiosList.add(psmRatios);
                             clusteringIndex++;
                         }
@@ -504,5 +530,65 @@ public class ClusterBuilder {
      */
     public Set<String> getFilteredPsms() {
         return psmClusters.keySet();
+    }
+
+    /**
+     * Returns the minimal ratio included in the clusters.
+     * 
+     * @return the minimal ratio included in the clusters
+     */
+    public Double getMinRatio() {
+        return minRatio;
+    }
+
+    /**
+     * Returns the maximal ratio included in the clusters.
+     * 
+     * @return the maximal ratio included in the clusters
+     */
+    public Double getMaxRatio() {
+        return maxRatio;
+    }
+    
+    /**
+     * Returns the maximal value between the absolute value of the min and max ratios.
+     * 
+     * @return the maximal value between the absolute value of the min and max ratios
+     */
+    public Double getRatioAmplitude() {
+        return Math.max(Math.abs(minRatio), Math.abs(maxRatio));
+    }
+    
+    /**
+     * Returns the index of the cluster of the given PSM accession. Null if not found or not a PSM.
+     * 
+     * @param accession the PSM accession
+     * 
+     * @return the index in the cluster
+     */
+    public Integer getPsmIndex(String accession) {
+        return peptideKeysIndexes.get(accession);
+    }
+    
+    /**
+     * Returns the index of the cluster of the given peptide accession. Null if not found or not a peptide.
+     * 
+     * @param accession the peptide accession
+     * 
+     * @return the index in the cluster
+     */
+    public Integer getPeptideIndex(String accession) {
+        return peptideKeysIndexes.get(accession);
+    }
+    
+    /**
+     * Returns the index of the cluster of the given protein accession. Null if not found or not a protein.
+     * 
+     * @param accession the protein accession
+     * 
+     * @return the index in the cluster
+     */
+    public Integer getProteinIndex(String accession) {
+        return proteinKeysIndexes.get(accession);
     }
 }

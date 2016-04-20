@@ -393,7 +393,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
             }
         }
 
-        // cluster the protein profiles
+        // cluster the profiles of the selected entities
         clusterBuilder = new ClusterBuilder();
         kMeansClutering = clusterBuilder.clusterProfiles(getIdentification(), getIdentificationParameters(), getMetrics(), reporterIonQuantification, quantificationFeaturesGenerator, displayPreferences, true, progressDialog);
 
@@ -411,6 +411,15 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         jumpToPanel.setType(JumpToPanel.JumpType.proteinAndPeptides);
         ArrayList<String> filteredProteinKeysArray = new ArrayList<String>(clusterBuilder.getFilteredProteins());
         jumpToPanel.setProteinKeys(filteredProteinKeysArray);
+    }
+
+    /**
+     * Returns the cluster builder.
+     * 
+     * @return the cluster builder
+     */
+    public ClusterBuilder getClusterBuilder() {
+        return clusterBuilder;
     }
 
     /**
@@ -1505,6 +1514,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
             public void run() {
                 try {
                     kMeansClutering = clusterBuilder.clusterProfiles(getIdentification(), getIdentificationParameters(), getMetrics(), reporterIonQuantification, quantificationFeaturesGenerator, displayPreferences, loadData, progressDialog);
+
                     if (!progressDialog.isRunCanceled()) {
                         overviewPanel.updateDisplay();
                     }
