@@ -332,20 +332,24 @@ public class ClusterBuilder {
                             inCluster = false;
                         }
                         if (inCluster && peptideClusterClassKey.isNotModified()) {
-                            for (ModificationMatch modificationMatch : peptide.getModificationMatches()) {
-                                if (modificationMatch.isVariable()) {
-                                    inCluster = false;
-                                    break;
+                            if (peptide.getModificationMatches() != null) {
+                                for (ModificationMatch modificationMatch : peptide.getModificationMatches()) {
+                                    if (modificationMatch.isVariable()) {
+                                        inCluster = false;
+                                        break;
+                                    }
                                 }
                             }
                         }
                         if (inCluster && peptideClusterClassKey.getPossiblePtms() != null) {
                             boolean possiblePtms = false;
-                            for (ModificationMatch modificationMatch : peptide.getModificationMatches()) {
-                                if (modificationMatch.isVariable()) {
-                                    if (peptideClusterClassKey.getPossiblePtmsAsSet().contains(modificationMatch.getTheoreticPtm())) {
-                                        possiblePtms = true;
-                                        break;
+                            if (peptide.getModificationMatches() != null) {
+                                for (ModificationMatch modificationMatch : peptide.getModificationMatches()) {
+                                    if (modificationMatch.isVariable()) {
+                                        if (peptideClusterClassKey.getPossiblePtmsAsSet().contains(modificationMatch.getTheoreticPtm())) {
+                                            possiblePtms = true;
+                                            break;
+                                        }
                                     }
                                 }
                             }
@@ -355,11 +359,13 @@ public class ClusterBuilder {
                         }
                         if (inCluster && peptideClusterClassKey.getForbiddenPtms() != null) {
                             boolean forbiddenPtms = false;
-                            for (ModificationMatch modificationMatch : peptide.getModificationMatches()) {
-                                if (modificationMatch.isVariable()) {
-                                    if (peptideClusterClassKey.getForbiddenPtmsAsSet().contains(modificationMatch.getTheoreticPtm())) {
-                                        forbiddenPtms = true;
-                                        break;
+                            if (peptide.getModificationMatches() != null) {
+                                for (ModificationMatch modificationMatch : peptide.getModificationMatches()) {
+                                    if (modificationMatch.isVariable()) {
+                                        if (peptideClusterClassKey.getForbiddenPtmsAsSet().contains(modificationMatch.getTheoreticPtm())) {
+                                            forbiddenPtms = true;
+                                            break;
+                                        }
                                     }
                                 }
                             }
@@ -410,7 +416,7 @@ public class ClusterBuilder {
                         }
 
                         clusterKeys.add(peptideKey);
-                        proteinKeysIndexes.put(peptideKey, clusteringIndex);
+                        peptideKeysIndexes.put(peptideKey, clusteringIndex);
                         ratiosList.add(peptideRatios);
                         clusteringIndex++;
                     }
@@ -534,7 +540,7 @@ public class ClusterBuilder {
 
     /**
      * Returns the minimal ratio included in the clusters.
-     * 
+     *
      * @return the minimal ratio included in the clusters
      */
     public Double getMinRatio() {
@@ -543,52 +549,90 @@ public class ClusterBuilder {
 
     /**
      * Returns the maximal ratio included in the clusters.
-     * 
+     *
      * @return the maximal ratio included in the clusters
      */
     public Double getMaxRatio() {
         return maxRatio;
     }
-    
+
     /**
-     * Returns the maximal value between the absolute value of the min and max ratios.
-     * 
-     * @return the maximal value between the absolute value of the min and max ratios
+     * Returns the maximal value between the absolute value of the min and max
+     * ratios.
+     *
+     * @return the maximal value between the absolute value of the min and max
+     * ratios
      */
     public Double getRatioAmplitude() {
         return Math.max(Math.abs(minRatio), Math.abs(maxRatio));
     }
-    
+
     /**
-     * Returns the index of the cluster of the given PSM accession. Null if not found or not a PSM.
-     * 
+     * Returns the index of the cluster of the given PSM accession. Null if not
+     * found or not a PSM.
+     *
      * @param accession the PSM accession
-     * 
+     *
      * @return the index in the cluster
      */
     public Integer getPsmIndex(String accession) {
-        return peptideKeysIndexes.get(accession);
+        return psmKeysIndexes.get(accession);
     }
-    
+
     /**
-     * Returns the index of the cluster of the given peptide accession. Null if not found or not a peptide.
-     * 
+     * Returns the index of the cluster of the given peptide accession. Null if
+     * not found or not a peptide.
+     *
      * @param accession the peptide accession
-     * 
+     *
      * @return the index in the cluster
      */
     public Integer getPeptideIndex(String accession) {
         return peptideKeysIndexes.get(accession);
     }
-    
+
     /**
-     * Returns the index of the cluster of the given protein accession. Null if not found or not a protein.
-     * 
+     * Returns the index of the cluster of the given protein accession. Null if
+     * not found or not a protein.
+     *
      * @param accession the protein accession
-     * 
+     *
      * @return the index in the cluster
      */
     public Integer getProteinIndex(String accession) {
         return proteinKeysIndexes.get(accession);
+    }
+    
+    /**
+     * Returns the cluster classes corresponding to a protein match.
+     * 
+     * @param key the match key
+     * 
+     * @return the cluster classes corresponding to this protein
+     */
+    public ArrayList<String> getProteinClasses(String key) {
+        return proteinClusters.get(key);
+    }
+    
+    /**
+     * Returns the cluster classes corresponding to a peptide match.
+     * 
+     * @param key the match key
+     * 
+     * @return the cluster classes corresponding to this peptide
+     */
+    public ArrayList<String> getPeptideClasses(String key) {
+        return peptideClusters.get(key);
+    }
+    
+    /**
+     * Returns the cluster classes corresponding to a PSM.
+     * 
+     * @param key the match key
+     * 
+     * @return the cluster classes corresponding to this PSM
+     */
+    public ArrayList<String> getPsmClasses(String key) {
+        return psmClusters.get(key);
     }
 }

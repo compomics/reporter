@@ -18,6 +18,7 @@ import eu.isas.reporter.gui.tablemodels.PeptideTableModel;
 import eu.isas.reporter.gui.tablemodels.ProteinTableModel;
 import eu.isas.reporter.gui.tablemodels.PsmTableModel;
 import eu.isas.reporter.quantificationdetails.ProteinQuantificationDetails;
+import eu.isas.reporter.settings.ClusteringSettings;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
@@ -319,10 +320,33 @@ public class OverviewPanel extends javax.swing.JPanel {
         plot.setRangeGridlinePaint(Color.LIGHT_GRAY);
 
         // set the renderer
+        ClusterBuilder clusterBuilder = reporterGUI.getClusterBuilder();
+        ClusteringSettings clusteringSettings = reporterGUI.getDisplayPreferences().getClusteringSettings();
         CategoryItemRenderer renderer = new LineAndShapeRenderer(true, false);
         for (int i = 0; i < dataset.getRowCount(); i++) {
+            String key = (String) dataset.getRowKey(i);
+            boolean isProtein = clusterBuilder.getProteinIndex(key) != null;
+            boolean isPeptide = clusterBuilder.getPeptideIndex(key) != null;
+            boolean isPsm = clusterBuilder.getPsmIndex(key) != null;
+            if (isProtein) {
+                ArrayList<String> classes = clusterBuilder.getProteinClasses(key);
+                String clusterClass = classes.get(0);  // @TODO: what if present in different classes?
+                Color nonSelectedColor = clusteringSettings.getNonSelectedColor(clusterClass);
+                renderer.setSeriesPaint(i, nonSelectedColor);
+            } else if (isPeptide) {
+                ArrayList<String> classes = clusterBuilder.getPeptideClasses(key);
+                String clusterClass = classes.get(0);  // @TODO: what if present in different classes?
+                Color nonSelectedColor = clusteringSettings.getNonSelectedColor(clusterClass);
+                renderer.setSeriesPaint(i, nonSelectedColor);
+            } else if (isPsm) {
+                ArrayList<String> classes = clusterBuilder.getPsmClasses(key);
+                String clusterClass = classes.get(0);  // @TODO: what if present in different classes?
+                Color nonSelectedColor = clusteringSettings.getNonSelectedColor(clusterClass);
+                renderer.setSeriesPaint(i, nonSelectedColor);
+            } else {
+                throw new IllegalArgumentException("No match found for key " + key + ".");
+            }
             renderer.setSeriesStroke(i, new BasicStroke(LINE_WIDTH, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-            renderer.setSeriesPaint(i, notSelectedProteinProfileColor);
         }
 
         plot.setRenderer(renderer);
@@ -333,7 +357,6 @@ public class OverviewPanel extends javax.swing.JPanel {
         rangeAxis.setUpperMargin(0.15);
 
         // make sure that the chart has a symmetrical y-axis
-        ClusterBuilder clusterBuilder = reporterGUI.getClusterBuilder();
         Double amplitude = clusterBuilder.getRatioAmplitude();
         rangeAxis.setUpperBound(amplitude);
         rangeAxis.setLowerBound(-amplitude);
@@ -386,9 +409,32 @@ public class OverviewPanel extends javax.swing.JPanel {
             // reset the selection
             CategoryItemRenderer renderer = selectedChartPanel.getChart().getCategoryPlot().getRenderer();
             DefaultCategoryDataset dataset = (DefaultCategoryDataset) selectedChartPanel.getChart().getCategoryPlot().getDataset();
+        ClusterBuilder clusterBuilder = reporterGUI.getClusterBuilder();
+        ClusteringSettings clusteringSettings = reporterGUI.getDisplayPreferences().getClusteringSettings();
 
             for (int i = 0; i < dataset.getRowCount(); i++) {
-                renderer.setSeriesPaint(i, notSelectedProteinProfileColor);
+            String key = (String) dataset.getRowKey(i);
+            boolean isProtein = clusterBuilder.getProteinIndex(key) != null;
+            boolean isPeptide = clusterBuilder.getPeptideIndex(key) != null;
+            boolean isPsm = clusterBuilder.getPsmIndex(key) != null;
+            if (isProtein) {
+                ArrayList<String> classes = clusterBuilder.getProteinClasses(key);
+                String clusterClass = classes.get(0);  // @TODO: what if present in different classes?
+                Color nonSelectedColor = clusteringSettings.getNonSelectedColor(clusterClass);
+                renderer.setSeriesPaint(i, nonSelectedColor);
+            } else if (isPeptide) {
+                ArrayList<String> classes = clusterBuilder.getPeptideClasses(key);
+                String clusterClass = classes.get(0);  // @TODO: what if present in different classes?
+                Color nonSelectedColor = clusteringSettings.getNonSelectedColor(clusterClass);
+                renderer.setSeriesPaint(i, nonSelectedColor);
+            } else if (isPsm) {
+                ArrayList<String> classes = clusterBuilder.getPsmClasses(key);
+                String clusterClass = classes.get(0);  // @TODO: what if present in different classes?
+                Color nonSelectedColor = clusteringSettings.getNonSelectedColor(clusterClass);
+                renderer.setSeriesPaint(i, nonSelectedColor);
+            } else {
+                throw new IllegalArgumentException("No match found for key " + key + ".");
+            }
             }
 
             selectedChartPanel.getChart().fireChartChanged();
@@ -1088,12 +1134,46 @@ public class OverviewPanel extends javax.swing.JPanel {
             // update the renderer
             CategoryItemRenderer renderer = selectedChartPanel.getChart().getCategoryPlot().getRenderer();
 
+            ClusterBuilder clusterBuilder = reporterGUI.getClusterBuilder();
+            ClusteringSettings clusteringSettings = reporterGUI.getDisplayPreferences().getClusteringSettings();
+
             for (int i = 0; i < newDataset.getRowCount(); i++) {
-                String proteinKey = (String) newDataset.getRowKey(i);
-                if (selectedProteins.contains(proteinKey)) {
-                    renderer.setSeriesPaint(i, new Color(255, 0, 0, 255)); // @TODO: have separate colors for the selected proteins?
+                String key = (String) newDataset.getRowKey(i);
+                boolean isProtein = clusterBuilder.getProteinIndex(key) != null;
+                boolean isPeptide = clusterBuilder.getPeptideIndex(key) != null;
+                boolean isPsm = clusterBuilder.getPsmIndex(key) != null;
+                if (isProtein) {
+                    ArrayList<String> classes = clusterBuilder.getProteinClasses(key);
+                    String clusterClass = classes.get(0);  // @TODO: what if present in different classes?
+                    if (selectedProteins.contains(key)) {
+                        Color classColor = clusteringSettings.getColor(clusterClass);
+                        renderer.setSeriesPaint(i, classColor);
+                    } else {
+                        Color nonSelectedColor = clusteringSettings.getNonSelectedColor(clusterClass);
+                        renderer.setSeriesPaint(i, nonSelectedColor);
+                    }
+                } else if (isPeptide) {
+                    ArrayList<String> classes = clusterBuilder.getPeptideClasses(key);
+                    String clusterClass = classes.get(0);  // @TODO: what if present in different classes?
+                    if (selectedProteins.contains(key)) {
+                        Color classColor = clusteringSettings.getColor(clusterClass);
+                        renderer.setSeriesPaint(i, classColor);
+                    } else {
+                        Color nonSelectedColor = clusteringSettings.getNonSelectedColor(clusterClass);
+                        renderer.setSeriesPaint(i, nonSelectedColor);
+                    }
+                } else if (isPsm) {
+                    ArrayList<String> classes = clusterBuilder.getPsmClasses(key);
+                    String clusterClass = classes.get(0);  // @TODO: what if present in different classes?
+                    if (selectedProteins.contains(key)) {
+                        Color classColor = clusteringSettings.getColor(clusterClass);
+                        renderer.setSeriesPaint(i, classColor);
+                    } else {
+                        Color nonSelectedColor = clusteringSettings.getNonSelectedColor(clusterClass);
+                        renderer.setSeriesPaint(i, nonSelectedColor);
+                    }
                 } else {
-                    renderer.setSeriesPaint(i, notSelectedProteinProfileColor);
+                    throw new IllegalArgumentException("No match found for key " + key + ".");
                 }
             }
 
@@ -1105,11 +1185,14 @@ public class OverviewPanel extends javax.swing.JPanel {
 
         int proteinIndex = -1;
 
-        if (row != -1) {
+        if (row
+                != -1) {
             proteinIndex = proteinTable.convertRowIndexToModel(row);
         }
 
-        if (evt == null || (evt.getButton() == MouseEvent.BUTTON1 && (proteinIndex != -1 && column != -1))) {
+        if (evt
+                == null || (evt.getButton()
+                == MouseEvent.BUTTON1 && (proteinIndex != -1 && column != -1))) {
 
             if (proteinIndex != -1) {
 
@@ -1159,7 +1242,8 @@ public class OverviewPanel extends javax.swing.JPanel {
 //                    }
 //                }
             }
-        } else if (evt.getButton() == MouseEvent.BUTTON3) {
+        } else if (evt.getButton()
+                == MouseEvent.BUTTON3) {
             if (proteinTable.columnAtPoint(evt.getPoint()) == proteinTable.getColumn("  ").getModelIndex()) {
                 //selectJPopupMenu.show(proteinTable, evt.getX(), evt.getY()); // @TODO: implement?
             }

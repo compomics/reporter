@@ -421,7 +421,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
     public ClusterBuilder getClusterBuilder() {
         return clusterBuilder;
     }
-
+    
     /**
      * Returns the reporter settings.
      *

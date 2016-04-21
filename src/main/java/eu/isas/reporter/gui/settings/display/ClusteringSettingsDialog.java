@@ -15,7 +15,7 @@ import no.uib.jsparklines.renderers.JSparklinesColorTableCellRenderer;
 
 /**
  * Clustering settings dialog.
- * 
+ *
  * @author Marc Vaudel
  */
 public class ClusteringSettingsDialog extends javax.swing.JDialog {
@@ -184,14 +184,26 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
         clusteringSettings.setProteinClassKeys(proteinClassesKeys);
         clusteringSettings.setPeptideClassKeys(peptideClassesKeys);
         clusteringSettings.setPsmClassKeys(psmClassesKeys);
-        for (String selection : selectedProteinClasses) {
-            clusteringSettings.addProteinClass(selection);
+        for (int i = 0; i < proteinClasses.size(); i++) {
+            Boolean selected = (Boolean) proteinClassesTable.getValueAt(i, 2);
+            if (selected) {
+                String selection = proteinClasses.get(i);
+                clusteringSettings.addProteinClass(selection);
+            }
         }
-        for (String selection : selectedPeptideClasses) {
-            clusteringSettings.addPeptideClass(selection);
+        for (int i = 0; i < peptideClasses.size(); i++) {
+            Boolean selected = (Boolean) peptideClassesTable.getValueAt(i, 2);
+            if (selected) {
+                String selection = peptideClasses.get(i);
+                clusteringSettings.addPeptideClass(selection);
+            }
         }
-        for (String selection : selectedPsmClasses) {
-            clusteringSettings.addPsmClass(selection);
+        for (int i = 0; i < psmClasses.size(); i++) {
+            Boolean selected = (Boolean) psmClassesTable.getValueAt(i, 2);
+            if (selected) {
+                String selection = psmClasses.get(i);
+                clusteringSettings.addPsmClass(selection);
+            }
         }
         clusteringSettings.setClassesColors(classesColors);
         return clusteringSettings;
@@ -400,7 +412,7 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
         /**
          * The classes selected.
          */
-        private ArrayList<String> selectedClasses;
+        private HashMap<String, Boolean> selectedClasses;
         /**
          * The keys map.
          */
@@ -415,7 +427,14 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
          */
         public ClassListTableModel(ArrayList<String> possibleClasses, ArrayList<String> selectedClasses, HashMap<String, ClusterClassKey> keysMap) {
             classes = possibleClasses;
-            this.selectedClasses = selectedClasses;
+            this.selectedClasses = new HashMap<String, Boolean>(classes.size());
+            for (String category : classes) {
+                if (selectedClasses.contains(category)) {
+                    this.selectedClasses.put(category, true);
+                } else {
+                    this.selectedClasses.put(category, false);
+                }
+            }
             this.keysMap = keysMap;
         }
 
@@ -425,6 +444,14 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
                 return 0;
             }
             return classes.size();
+        }
+
+        @Override
+        public void setValueAt(Object aValue, int row, int column) {
+            if (column == 2) {
+                String key = classes.get(row);
+                selectedClasses.put(key, !selectedClasses.get(key));
+            }
         }
 
         @Override
@@ -458,7 +485,7 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
                     return clusterClassKey.getName();
                 case 2:
                     key = classes.get(row);
-                    return selectedClasses.contains(key);
+                    return selectedClasses.get(key);
                 default:
                     return "";
             }

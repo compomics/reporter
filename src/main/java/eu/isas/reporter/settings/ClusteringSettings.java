@@ -192,6 +192,20 @@ public class ClusteringSettings implements Serializable {
         }
         return result;
     }
+    
+    /**
+     * Returns the color for a non-selected line of this class.
+     * 
+     * @param clusterClass the cluster class
+     * 
+     * @return the color for a non-selected line of this class
+     */
+    public Color getNonSelectedColor(String clusterClass) {
+        Color refColor = getColor(clusterClass);
+        refColor = refColor.brighter().brighter();
+        Color unselectedColor = new Color(refColor.getRed(), refColor.getGreen(), refColor.getBlue(), refColor.getAlpha()/10);
+        return unselectedColor;
+    }
 
     /**
      * Sets the cluster class color.
