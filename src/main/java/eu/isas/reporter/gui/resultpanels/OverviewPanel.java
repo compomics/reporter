@@ -148,6 +148,10 @@ public class OverviewPanel extends javax.swing.JPanel {
      * Sets up the GUI components.
      */
     private void setUpGui() {
+        
+        matchesJTabbedPane.setEnabledAt(1, false);
+        matchesJTabbedPane.setEnabledAt(2, false);
+        
         // set main table properties
         proteinTable.getTableHeader().setReorderingAllowed(false);
 
