@@ -10,16 +10,15 @@ import com.compomics.util.gui.tablemodels.SelfUpdatingTableModel;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
 import com.compomics.util.math.clustering.KMeansClustering;
 import com.compomics.util.waiting.WaitingHandler;
-import eu.isas.peptideshaker.parameters.PSParameter;
 import eu.isas.peptideshaker.utils.IdentificationFeaturesGenerator;
 import eu.isas.reporter.calculation.clustering.ClusterBuilder;
 import eu.isas.reporter.gui.ReporterGUI;
 import eu.isas.reporter.gui.tablemodels.PeptideTableModel;
 import eu.isas.reporter.gui.tablemodels.ProteinTableModel;
 import eu.isas.reporter.gui.tablemodels.PsmTableModel;
-import eu.isas.reporter.quantificationdetails.ProteinQuantificationDetails;
 import eu.isas.reporter.settings.ClusteringSettings;
 import java.awt.BasicStroke;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Toolkit;
@@ -29,7 +28,6 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -45,9 +43,12 @@ import javax.swing.table.JTableHeader;
 import no.uib.jsparklines.renderers.JSparklinesArrayListBarChartTableCellRenderer;
 import no.uib.jsparklines.renderers.JSparklinesBarChartTableCellRenderer;
 import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartMouseEvent;
+import org.jfree.chart.ChartMouseListener;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.labels.StandardCategoryToolTipGenerator;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.CategoryItemRenderer;
@@ -120,6 +121,10 @@ public class OverviewPanel extends javax.swing.JPanel {
      */
     private ChartPanel lineChartChartPanel;
     /**
+     * The current chart panel where the maximize icon is showing.
+     */
+    private ChartPanel maximizeIconChartPanel;
+    /**
      * The currently selected chart panel.
      */
     private ChartPanel selectedChartPanel = null;
@@ -131,6 +136,14 @@ public class OverviewPanel extends javax.swing.JPanel {
      * The complete list of ordered protein keys.
      */
     private ArrayList<String> allOrderedProteinKeys;
+    /**
+     * True of a single chart is maximized.
+     */
+    private boolean chartMaximized = false;
+    /**
+     * List with all the chart panels.
+     */
+    private ArrayList<ChartPanel> allChartPanels = new ArrayList<ChartPanel>();
 
     /**
      * Creates a new OverviewPanel.
@@ -148,10 +161,12 @@ public class OverviewPanel extends javax.swing.JPanel {
      * Sets up the GUI components.
      */
     private void setUpGui() {
-        
+
         matchesJTabbedPane.setEnabledAt(1, false);
         matchesJTabbedPane.setEnabledAt(2, false);
-        
+
+        maximizeChartJButton.setVisible(false);
+
         // set main table properties
         proteinTable.getTableHeader().setReorderingAllowed(false);
 
@@ -183,6 +198,7 @@ public class OverviewPanel extends javax.swing.JPanel {
         identification = reporterGUI.getIdentification();
         geneMaps = reporterGUI.getGeneMaps();
         identificationFeaturesGenerator = reporterGUI.getIdentificationFeaturesGenerator();
+        allChartPanels.clear();
 
         progressDialog = new ProgressDialogX(reporterGUI,
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
@@ -353,6 +369,7 @@ public class OverviewPanel extends javax.swing.JPanel {
             renderer.setSeriesStroke(i, new BasicStroke(LINE_WIDTH, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
         }
 
+        renderer.setBaseToolTipGenerator(new StandardCategoryToolTipGenerator());
         plot.setRenderer(renderer);
 
         // change the margin at the top and bottom of the range axis
@@ -368,8 +385,8 @@ public class OverviewPanel extends javax.swing.JPanel {
         // create the chart panel
         lineChartChartPanel = new ChartPanel(chart);
 
-        // add tooltip
-        lineChartChartPanel.setToolTipText("#Proteins: " + dataset.getRowCount());
+        // set component name
+        lineChartChartPanel.setName("" + plotPanel.getComponentCount());
 
         // remove the zoom support and pop up menu
         lineChartChartPanel.setRangeZoomable(false);
@@ -385,16 +402,47 @@ public class OverviewPanel extends javax.swing.JPanel {
         plot.setBackgroundPaint(Color.WHITE);
         lineChartChartPanel.setBackground(Color.WHITE);
 
+        lineChartChartPanel.addChartMouseListener(new ChartMouseListener() {
+            @Override
+            public void chartMouseClicked(ChartMouseEvent cme) {
+                // @TODO: implement?
+            }
+
+            @Override
+            public void chartMouseMoved(ChartMouseEvent cme) {
+
+                ChartPanel chartPanelParent = (ChartPanel) cme.getTrigger().getComponent();
+                int x = chartPanelParent.getX() + chartPanelParent.getWidth() - 5;
+                int y = chartPanelParent.getY() + 38;
+
+                maximizeChartJButton.setLocation(x, y);
+                maximizeChartJButton.setVisible(true);
+
+                maximizeIconChartPanel = chartPanelParent;
+            }
+        });
+
         lineChartChartPanel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
                 Component c = e.getComponent();
                 if (c instanceof ChartPanel) {
-                    reporterGUI.setSelectedProteins(new ArrayList<String>(), true, true);
-                    selectCluster((ChartPanel) c);
+                    
+                    boolean chartAlreadySelected = false;
+                    
+                    if (selectedChartPanel != null) {
+                        chartAlreadySelected = selectedChartPanel.getName().equalsIgnoreCase(c.getName());
+                    }
+
+                    if (!chartAlreadySelected) {
+                        reporterGUI.setSelectedProteins(new ArrayList<String>(), true, true);
+                        selectCluster((ChartPanel) c, true);
+                    } 
                 }
             }
         });
+
+        allChartPanels.add(lineChartChartPanel);
 
         plotPanel.add(lineChartChartPanel);
         plotPanel.validate();
@@ -404,41 +452,44 @@ public class OverviewPanel extends javax.swing.JPanel {
      * Selected the given cluster.
      *
      * @param chartPanel the chart panel containing the cluster
+     * @param resetSelection reset the selection
      */
-    private void selectCluster(ChartPanel chartPanel) {
+    private void selectCluster(ChartPanel chartPanel, boolean resetSelection) {
 
         if (selectedChartPanel != null) {
             selectedChartPanel.setBorder(null);
 
             // reset the selection
-            CategoryItemRenderer renderer = selectedChartPanel.getChart().getCategoryPlot().getRenderer();
-            DefaultCategoryDataset dataset = (DefaultCategoryDataset) selectedChartPanel.getChart().getCategoryPlot().getDataset();
-        ClusterBuilder clusterBuilder = reporterGUI.getClusterBuilder();
-        ClusteringSettings clusteringSettings = reporterGUI.getDisplayPreferences().getClusteringSettings();
+            if (resetSelection) {
+                CategoryItemRenderer renderer = selectedChartPanel.getChart().getCategoryPlot().getRenderer();
+                DefaultCategoryDataset dataset = (DefaultCategoryDataset) selectedChartPanel.getChart().getCategoryPlot().getDataset();
+                ClusterBuilder clusterBuilder = reporterGUI.getClusterBuilder();
+                ClusteringSettings clusteringSettings = reporterGUI.getDisplayPreferences().getClusteringSettings();
 
-            for (int i = 0; i < dataset.getRowCount(); i++) {
-            String key = (String) dataset.getRowKey(i);
-            boolean isProtein = clusterBuilder.getProteinIndex(key) != null;
-            boolean isPeptide = clusterBuilder.getPeptideIndex(key) != null;
-            boolean isPsm = clusterBuilder.getPsmIndex(key) != null;
-            if (isProtein) {
-                ArrayList<String> classes = clusterBuilder.getProteinClasses(key);
-                String clusterClass = classes.get(0);  // @TODO: what if present in different classes?
-                Color nonSelectedColor = clusteringSettings.getNonSelectedColor(clusterClass);
-                renderer.setSeriesPaint(i, nonSelectedColor);
-            } else if (isPeptide) {
-                ArrayList<String> classes = clusterBuilder.getPeptideClasses(key);
-                String clusterClass = classes.get(0);  // @TODO: what if present in different classes?
-                Color nonSelectedColor = clusteringSettings.getNonSelectedColor(clusterClass);
-                renderer.setSeriesPaint(i, nonSelectedColor);
-            } else if (isPsm) {
-                ArrayList<String> classes = clusterBuilder.getPsmClasses(key);
-                String clusterClass = classes.get(0);  // @TODO: what if present in different classes?
-                Color nonSelectedColor = clusteringSettings.getNonSelectedColor(clusterClass);
-                renderer.setSeriesPaint(i, nonSelectedColor);
-            } else {
-                throw new IllegalArgumentException("No match found for key " + key + ".");
-            }
+                for (int i = 0; i < dataset.getRowCount(); i++) {
+                    String key = (String) dataset.getRowKey(i);
+                    boolean isProtein = clusterBuilder.getProteinIndex(key) != null;
+                    boolean isPeptide = clusterBuilder.getPeptideIndex(key) != null;
+                    boolean isPsm = clusterBuilder.getPsmIndex(key) != null;
+                    if (isProtein) {
+                        ArrayList<String> classes = clusterBuilder.getProteinClasses(key);
+                        String clusterClass = classes.get(0);  // @TODO: what if present in different classes?
+                        Color nonSelectedColor = clusteringSettings.getNonSelectedColor(clusterClass);
+                        renderer.setSeriesPaint(i, nonSelectedColor);
+                    } else if (isPeptide) {
+                        ArrayList<String> classes = clusterBuilder.getPeptideClasses(key);
+                        String clusterClass = classes.get(0);  // @TODO: what if present in different classes?
+                        Color nonSelectedColor = clusteringSettings.getNonSelectedColor(clusterClass);
+                        renderer.setSeriesPaint(i, nonSelectedColor);
+                    } else if (isPsm) {
+                        ArrayList<String> classes = clusterBuilder.getPsmClasses(key);
+                        String clusterClass = classes.get(0);  // @TODO: what if present in different classes?
+                        Color nonSelectedColor = clusteringSettings.getNonSelectedColor(clusterClass);
+                        renderer.setSeriesPaint(i, nonSelectedColor);
+                    } else {
+                        throw new IllegalArgumentException("No match found for key " + key + ".");
+                    }
+                }
             }
 
             selectedChartPanel.getChart().fireChartChanged();
@@ -449,59 +500,61 @@ public class OverviewPanel extends javax.swing.JPanel {
 
         selectedChartPanel = chartPanel;
 
-        // get the keys of the matches in the selected cluster
-        DefaultCategoryDataset dataset = (DefaultCategoryDataset) chartPanel.getChart().getCategoryPlot().getDataset();
-        List<String> rowKeys = dataset.getRowKeys();
-        int size = Math.max(32, rowKeys.size() / 3);
-        HashMap<Integer, String> psmKeysMap = new HashMap<Integer, String>(size);
-        HashMap<Integer, String> peptideKeysMap = new HashMap<Integer, String>(size);
-        HashMap<Integer, String> proteinKeysMap = new HashMap<Integer, String>(size);
-        ClusterBuilder clusterBuilder = reporterGUI.getClusterBuilder();
-        for (String rowKey : rowKeys) {
-            Integer proteinIndex = clusterBuilder.getProteinIndex(rowKey);
-            if (proteinIndex != null) {
-                proteinKeysMap.put(proteinIndex, rowKey);
+        if (resetSelection) {
+            // get the keys of the matches in the selected cluster
+            DefaultCategoryDataset dataset = (DefaultCategoryDataset) chartPanel.getChart().getCategoryPlot().getDataset();
+            List<String> rowKeys = dataset.getRowKeys();
+            int size = Math.max(32, rowKeys.size() / 3);
+            HashMap<Integer, String> psmKeysMap = new HashMap<Integer, String>(size);
+            HashMap<Integer, String> peptideKeysMap = new HashMap<Integer, String>(size);
+            HashMap<Integer, String> proteinKeysMap = new HashMap<Integer, String>(size);
+            ClusterBuilder clusterBuilder = reporterGUI.getClusterBuilder();
+            for (String rowKey : rowKeys) {
+                Integer proteinIndex = clusterBuilder.getProteinIndex(rowKey);
+                if (proteinIndex != null) {
+                    proteinKeysMap.put(proteinIndex, rowKey);
+                }
+                Integer peptideIndex = clusterBuilder.getPeptideIndex(rowKey);
+                if (peptideIndex != null) {
+                    peptideKeysMap.put(peptideIndex, rowKey);
+                }
+                Integer psmIndex = clusterBuilder.getPsmIndex(rowKey);
+                if (psmIndex != null) {
+                    psmKeysMap.put(psmIndex, rowKey);
+                }
+                if (proteinIndex == null && peptideIndex == null && psmIndex == null) {
+                    throw new IllegalArgumentException("Key " + rowKey + " not found.");
+                }
             }
-            Integer peptideIndex = clusterBuilder.getPeptideIndex(rowKey);
-            if (peptideIndex != null) {
-                peptideKeysMap.put(peptideIndex, rowKey);
-            }
-            Integer psmIndex = clusterBuilder.getPsmIndex(rowKey);
-            if (psmIndex != null) {
-                psmKeysMap.put(psmIndex, rowKey);
-            }
-            if (proteinIndex == null && peptideIndex == null && psmIndex == null) {
-                throw new IllegalArgumentException("Key " + rowKey + " not found.");
-            }
-        }
 
-        // Get tables contents
-        ArrayList<Integer> indexes = new ArrayList<Integer>(proteinKeysMap.keySet());
-        Collections.sort(indexes);
-        proteinKeys = new ArrayList<String>(proteinKeysMap.size());
-        for (Integer index : indexes) {
-            String accession = proteinKeysMap.get(index);
-            proteinKeys.add(accession);
-        }
-        indexes = new ArrayList<Integer>(peptideKeysMap.keySet());
-        Collections.sort(indexes);
-        peptideKeys = new ArrayList<String>(peptideKeysMap.size());
-        for (Integer index : indexes) {
-            String accession = peptideKeysMap.get(index);
-            peptideKeys.add(accession);
-        }
-        indexes = new ArrayList<Integer>(psmKeysMap.keySet());
-        Collections.sort(indexes);
-        psmKeys = new ArrayList<String>(psmKeysMap.size());
-        for (Integer index : indexes) {
-            String accession = psmKeysMap.get(index);
-            psmKeys.add(accession);
-        }
+            // get tables contents
+            ArrayList<Integer> indexes = new ArrayList<Integer>(proteinKeysMap.keySet());
+            Collections.sort(indexes);
+            proteinKeys = new ArrayList<String>(proteinKeysMap.size());
+            for (Integer index : indexes) {
+                String accession = proteinKeysMap.get(index);
+                proteinKeys.add(accession);
+            }
+            indexes = new ArrayList<Integer>(peptideKeysMap.keySet());
+            Collections.sort(indexes);
+            peptideKeys = new ArrayList<String>(peptideKeysMap.size());
+            for (Integer index : indexes) {
+                String accession = peptideKeysMap.get(index);
+                peptideKeys.add(accession);
+            }
+            indexes = new ArrayList<Integer>(psmKeysMap.keySet());
+            Collections.sort(indexes);
+            psmKeys = new ArrayList<String>(psmKeysMap.size());
+            for (Integer index : indexes) {
+                String accession = psmKeysMap.get(index);
+                psmKeys.add(accession);
+            }
 
-        // update the tables and panels
-        updateProteinPanel();
-        updatePeptidePanel();
-        updatePsmPanel();
+            // update the tables and panels
+            updateProteinPanel();
+            updatePeptidePanel();
+            updatePsmPanel();
+        }
     }
 
     /**
@@ -632,7 +685,7 @@ public class OverviewPanel extends javax.swing.JPanel {
 
             if (currentCluster != -1) {
                 ChartPanel currentChartPanel = (ChartPanel) plotPanel.getComponent(currentCluster);
-                selectCluster(currentChartPanel);
+                selectCluster(currentChartPanel, clearSelection); // @TODO: check!
             }
         }
 
@@ -689,6 +742,7 @@ public class OverviewPanel extends javax.swing.JPanel {
         exportRatioPlotContextJButton = new javax.swing.JButton();
         ratioPlotOptionsJButton = new javax.swing.JButton();
         contextMenuRatioPlotBackgroundPanel = new javax.swing.JPanel();
+        maximizeChartJButton = new javax.swing.JButton();
         ratioPlotsTitledPanel = new javax.swing.JPanel();
         plotPanel = new javax.swing.JPanel();
         proteinsJPanel = new javax.swing.JPanel();
@@ -713,10 +767,10 @@ public class OverviewPanel extends javax.swing.JPanel {
             }
         };
         peptidesPanel = new javax.swing.JPanel();
-        jScrollPane2 = new javax.swing.JScrollPane();
+        peptidesJScrollPane = new javax.swing.JScrollPane();
         peptidesJTable = new javax.swing.JTable();
         psmsPanel = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
+        psmsJScrollPane = new javax.swing.JScrollPane();
         psmsJTable = new javax.swing.JTable();
 
         numberOfClustersMenuItem.setText("Number of Clusters");
@@ -747,6 +801,12 @@ public class OverviewPanel extends javax.swing.JPanel {
         overviewJSplitPane.setOpaque(false);
 
         ratioPlotsJPanel.setOpaque(false);
+
+        ratioPlotsMainLayeredPane.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                ratioPlotsMainLayeredPaneMouseExited(evt);
+            }
+        });
 
         ratioPlotHelpJButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/help_no_frame_grey.png"))); // NOI18N
         ratioPlotHelpJButton.setToolTipText("Help");
@@ -835,12 +895,45 @@ public class OverviewPanel extends javax.swing.JPanel {
         ratioPlotsMainLayeredPane.add(contextMenuRatioPlotBackgroundPanel);
         contextMenuRatioPlotBackgroundPanel.setBounds(890, 0, 50, 19);
 
+        maximizeChartJButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/maximize-grey.png"))); // NOI18N
+        maximizeChartJButton.setToolTipText("Maximize");
+        maximizeChartJButton.setBorder(null);
+        maximizeChartJButton.setBorderPainted(false);
+        maximizeChartJButton.setContentAreaFilled(false);
+        maximizeChartJButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/maximize.png"))); // NOI18N
+        maximizeChartJButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                maximizeChartJButtonMouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                maximizeChartJButtonMouseExited(evt);
+            }
+        });
+        maximizeChartJButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                maximizeChartJButtonActionPerformed(evt);
+            }
+        });
+        ratioPlotsMainLayeredPane.setLayer(maximizeChartJButton, javax.swing.JLayeredPane.POPUP_LAYER);
+        ratioPlotsMainLayeredPane.add(maximizeChartJButton);
+        maximizeChartJButton.setBounds(50, 50, 20, 19);
+
         ratioPlotsTitledPanel.setBackground(new java.awt.Color(255, 255, 255));
         ratioPlotsTitledPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Protein Profile Clusters"));
         ratioPlotsTitledPanel.setOpaque(false);
 
         plotPanel.setOpaque(false);
-        plotPanel.setLayout(new java.awt.GridLayout(3, 4, 25, 25));
+        plotPanel.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+            public void mouseMoved(java.awt.event.MouseEvent evt) {
+                plotPanelMouseMoved(evt);
+            }
+        });
+        plotPanel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                plotPanelMouseExited(evt);
+            }
+        });
+        plotPanel.setLayout(new java.awt.GridLayout(3, 4, 15, 15));
 
         javax.swing.GroupLayout ratioPlotsTitledPanelLayout = new javax.swing.GroupLayout(ratioPlotsTitledPanel);
         ratioPlotsTitledPanel.setLayout(ratioPlotsTitledPanelLayout);
@@ -979,17 +1072,17 @@ public class OverviewPanel extends javax.swing.JPanel {
         matchesJTabbedPane.addTab("Proteins", proteinScrollPane);
 
         peptidesJTable.setModel(new PeptideTableModel());
-        jScrollPane2.setViewportView(peptidesJTable);
+        peptidesJScrollPane.setViewportView(peptidesJTable);
 
         javax.swing.GroupLayout peptidesPanelLayout = new javax.swing.GroupLayout(peptidesPanel);
         peptidesPanel.setLayout(peptidesPanelLayout);
         peptidesPanelLayout.setHorizontalGroup(
             peptidesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 913, Short.MAX_VALUE)
+            .addComponent(peptidesJScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 913, Short.MAX_VALUE)
         );
         peptidesPanelLayout.setVerticalGroup(
             peptidesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)
+            .addComponent(peptidesJScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)
         );
 
         matchesJTabbedPane.addTab("Peptides", peptidesPanel);
@@ -997,17 +1090,17 @@ public class OverviewPanel extends javax.swing.JPanel {
         psmsPanel.setOpaque(false);
 
         psmsJTable.setModel(new PsmTableModel());
-        jScrollPane1.setViewportView(psmsJTable);
+        psmsJScrollPane.setViewportView(psmsJTable);
 
         javax.swing.GroupLayout psmsPanelLayout = new javax.swing.GroupLayout(psmsPanel);
         psmsPanel.setLayout(psmsPanelLayout);
         psmsPanelLayout.setHorizontalGroup(
             psmsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 913, Short.MAX_VALUE)
+            .addComponent(psmsJScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 913, Short.MAX_VALUE)
         );
         psmsPanelLayout.setVerticalGroup(
             psmsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)
+            .addComponent(psmsJScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)
         );
 
         matchesJTabbedPane.addTab("PSMs", psmsPanel);
@@ -1189,14 +1282,11 @@ public class OverviewPanel extends javax.swing.JPanel {
 
         int proteinIndex = -1;
 
-        if (row
-                != -1) {
+        if (row != -1) {
             proteinIndex = proteinTable.convertRowIndexToModel(row);
         }
 
-        if (evt
-                == null || (evt.getButton()
-                == MouseEvent.BUTTON1 && (proteinIndex != -1 && column != -1))) {
+        if (evt == null || (evt.getButton() == MouseEvent.BUTTON1 && (proteinIndex != -1 && column != -1))) {
 
             if (proteinIndex != -1) {
 
@@ -1533,8 +1623,14 @@ public class OverviewPanel extends javax.swing.JPanel {
                         ratioPlotsMainLayeredPane.getComponent(3).getWidth(),
                         ratioPlotsMainLayeredPane.getComponent(3).getHeight());
 
+                ratioPlotsMainLayeredPane.getComponent(4).setBounds(
+                        50,
+                        50,
+                        ratioPlotsMainLayeredPane.getComponent(4).getWidth(),
+                        ratioPlotsMainLayeredPane.getComponent(4).getHeight());
+
                 // resize the plot area
-                ratioPlotsMainLayeredPane.getComponent(4).setBounds(0, 0, ratioPlotsMainLayeredPane.getWidth(), ratioPlotsMainLayeredPane.getHeight());
+                ratioPlotsMainLayeredPane.getComponent(5).setBounds(0, 0, ratioPlotsMainLayeredPane.getWidth(), ratioPlotsMainLayeredPane.getHeight());
                 ratioPlotsMainLayeredPane.revalidate();
                 ratioPlotsMainLayeredPane.repaint();
             }
@@ -1570,6 +1666,115 @@ public class OverviewPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_ratioPlotOptionsJButtonMouseReleased
 
+    /**
+     * Change the cursor to a hand cursor.
+     *
+     * @param evt
+     */
+    private void maximizeChartJButtonMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_maximizeChartJButtonMouseEntered
+        if (ratioPlotOptionsJButton.isEnabled()) {
+            setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        }
+    }//GEN-LAST:event_maximizeChartJButtonMouseEntered
+
+    /**
+     * Change the cursor back to the default cursor.
+     *
+     * @param evt
+     */
+    private void maximizeChartJButtonMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_maximizeChartJButtonMouseExited
+        setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+    }//GEN-LAST:event_maximizeChartJButtonMouseExited
+
+    /**
+     * Maximize or minimize the given chart.
+     * 
+     * @param evt 
+     */
+    private void maximizeChartJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_maximizeChartJButtonActionPerformed
+
+        maximizeChartJButton.setVisible(false);
+
+        if (chartMaximized) {
+            maximizeChartJButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/maximize-grey.png")));
+            maximizeChartJButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/maximize.png")));
+            maximizeChartJButton.setToolTipText("Maximize");
+        } else {
+            maximizeChartJButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/minimize-grey.png")));
+            maximizeChartJButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/minimize.png")));
+            maximizeChartJButton.setToolTipText("Minimize");
+        }
+
+        chartMaximized = !chartMaximized;
+
+        if (chartMaximized) {
+            
+            boolean chartAlreadySelected = selectedChartPanel.getName().equalsIgnoreCase(maximizeIconChartPanel.getName());
+
+            if (!chartAlreadySelected) {
+                reporterGUI.setSelectedProteins(new ArrayList<String>(), true, true);
+                selectCluster(selectedChartPanel, true);
+                selectCluster(maximizeIconChartPanel, true);
+                
+                selectedChartPanel.setBorder(null);
+                selectedChartPanel.getChart().fireChartChanged();
+            }
+            
+            selectedChartPanel = maximizeIconChartPanel;
+            ((CategoryPlot) selectedChartPanel.getChart().getPlot()).getRenderer().setBaseToolTipGenerator(new StandardCategoryToolTipGenerator());
+            plotPanel.removeAll();
+            plotPanel.setLayout(new BorderLayout());
+            plotPanel.add(selectedChartPanel);
+
+            selectedChartPanel.setBorder(null);
+            selectedChartPanel.getChart().fireChartChanged();
+        } else {
+            plotPanel.removeAll();
+            plotPanel.setLayout(new java.awt.GridLayout(3, 4, 15, 15));
+            for (ChartPanel tempChartPanel : allChartPanels) {
+                tempChartPanel.setBorder(null);
+                tempChartPanel.getChart().fireChartChanged();
+                ((CategoryPlot) tempChartPanel.getChart().getPlot()).getRenderer().setBaseToolTipGenerator(null);
+                plotPanel.add(tempChartPanel);
+            }
+            selectedChartPanel.setBorder(new LineBorder(Color.DARK_GRAY));
+            selectedChartPanel.getChart().fireChartChanged();
+        }
+
+        ratioPlotsMainLayeredPane.revalidate();
+        ratioPlotsMainLayeredPane.repaint();
+    }//GEN-LAST:event_maximizeChartJButtonActionPerformed
+
+    /**
+     * Hide the maximize button.
+     *
+     * @param evt
+     */
+    private void plotPanelMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_plotPanelMouseMoved
+        Component c = evt.getComponent();
+        if (c == null || c instanceof JPanel) {
+            maximizeChartJButton.setVisible(false);
+        }
+    }//GEN-LAST:event_plotPanelMouseMoved
+
+    /**
+     * Hide the maximize button.
+     *
+     * @param evt
+     */
+    private void plotPanelMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_plotPanelMouseExited
+        maximizeChartJButton.setVisible(false);
+    }//GEN-LAST:event_plotPanelMouseExited
+
+    /**
+     * Hide the maximize button.
+     *
+     * @param evt
+     */
+    private void ratioPlotsMainLayeredPaneMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ratioPlotsMainLayeredPaneMouseExited
+        maximizeChartJButton.setVisible(false);
+    }//GEN-LAST:event_ratioPlotsMainLayeredPaneMouseExited
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLayeredPane backgroundLayeredPane;
     private javax.swing.JPopupMenu clusterPopupMenu;
@@ -1577,12 +1782,12 @@ public class OverviewPanel extends javax.swing.JPanel {
     private javax.swing.JPanel contextMenuRatioPlotBackgroundPanel;
     private javax.swing.JButton exportProteinsJButton;
     private javax.swing.JButton exportRatioPlotContextJButton;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTabbedPane matchesJTabbedPane;
+    private javax.swing.JButton maximizeChartJButton;
     private javax.swing.JMenuItem numberOfClustersMenuItem;
     private javax.swing.JPanel overviewJPanel;
     private javax.swing.JSplitPane overviewJSplitPane;
+    private javax.swing.JScrollPane peptidesJScrollPane;
     private javax.swing.JTable peptidesJTable;
     private javax.swing.JPanel peptidesPanel;
     private javax.swing.JPanel plotPanel;
@@ -1592,6 +1797,7 @@ public class OverviewPanel extends javax.swing.JPanel {
     private javax.swing.JPanel proteinsJPanel;
     private javax.swing.JLayeredPane proteinsLayeredPane;
     private javax.swing.JPanel proteinsLayeredPanel;
+    private javax.swing.JScrollPane psmsJScrollPane;
     private javax.swing.JTable psmsJTable;
     private javax.swing.JPanel psmsPanel;
     private javax.swing.JButton ratioPlotHelpJButton;
