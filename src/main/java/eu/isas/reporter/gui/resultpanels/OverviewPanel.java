@@ -427,9 +427,9 @@ public class OverviewPanel extends javax.swing.JPanel {
             public void mouseReleased(MouseEvent e) {
                 Component c = e.getComponent();
                 if (c instanceof ChartPanel) {
-                    
+
                     boolean chartAlreadySelected = false;
-                    
+
                     if (selectedChartPanel != null) {
                         chartAlreadySelected = selectedChartPanel.getName().equalsIgnoreCase(c.getName());
                     }
@@ -437,7 +437,7 @@ public class OverviewPanel extends javax.swing.JPanel {
                     if (!chartAlreadySelected) {
                         reporterGUI.setSelectedProteins(new ArrayList<String>(), true, true);
                         selectCluster((ChartPanel) c, true);
-                    } 
+                    }
                 }
             }
         });
@@ -657,6 +657,16 @@ public class OverviewPanel extends javax.swing.JPanel {
             if (proteinRow != -1) {
                 proteinTable.addRowSelectionInterval(proteinRow, proteinRow);
             }
+        }
+    }
+
+    /**
+     * If a chart is maximized, then minimize it. If not, do nothing.
+     */
+    public void minimizeChart() {
+        // minimize chart if maximized
+        if (chartMaximized) {
+            maximizeChartJButtonActionPerformed(null);
         }
     }
 
@@ -1688,8 +1698,8 @@ public class OverviewPanel extends javax.swing.JPanel {
 
     /**
      * Maximize or minimize the given chart.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void maximizeChartJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_maximizeChartJButtonActionPerformed
 
@@ -1708,18 +1718,23 @@ public class OverviewPanel extends javax.swing.JPanel {
         chartMaximized = !chartMaximized;
 
         if (chartMaximized) {
-            
-            boolean chartAlreadySelected = selectedChartPanel.getName().equalsIgnoreCase(maximizeIconChartPanel.getName());
+
+            boolean chartAlreadySelected = false;
+
+            if (selectedChartPanel != null) {
+                chartAlreadySelected = selectedChartPanel.getName().equalsIgnoreCase(maximizeIconChartPanel.getName());
+            }
 
             if (!chartAlreadySelected) {
                 reporterGUI.setSelectedProteins(new ArrayList<String>(), true, true);
-                selectCluster(selectedChartPanel, true);
+                if (selectedChartPanel != null) {
+                    selectCluster(selectedChartPanel, true);
+                    selectedChartPanel.setBorder(null);
+                    selectedChartPanel.getChart().fireChartChanged();
+                }
                 selectCluster(maximizeIconChartPanel, true);
-                
-                selectedChartPanel.setBorder(null);
-                selectedChartPanel.getChart().fireChartChanged();
             }
-            
+
             selectedChartPanel = maximizeIconChartPanel;
             ((CategoryPlot) selectedChartPanel.getChart().getPlot()).getRenderer().setBaseToolTipGenerator(new StandardCategoryToolTipGenerator());
             plotPanel.removeAll();
@@ -1737,8 +1752,11 @@ public class OverviewPanel extends javax.swing.JPanel {
                 ((CategoryPlot) tempChartPanel.getChart().getPlot()).getRenderer().setBaseToolTipGenerator(null);
                 plotPanel.add(tempChartPanel);
             }
-            selectedChartPanel.setBorder(new LineBorder(Color.DARK_GRAY));
-            selectedChartPanel.getChart().fireChartChanged();
+
+            if (selectedChartPanel != null) {
+                selectedChartPanel.setBorder(new LineBorder(Color.DARK_GRAY));
+                selectedChartPanel.getChart().fireChartChanged();
+            }
         }
 
         ratioPlotsMainLayeredPane.revalidate();

@@ -1541,6 +1541,13 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
     }
 
     /**
+     * If a chart is maximized, then minimize it. If not, do nothing.
+     */
+    public void minimizeChart() {
+        overviewPanel.minimizeChart();
+    }
+    
+    /**
      * Set the list of selected proteins.
      *
      * @param selectedProteins the list of selected proteins
@@ -1549,7 +1556,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      */
     public void setSelectedProteins(ArrayList<String> selectedProteins, boolean updateSelection, boolean clearSelection) {
         this.selectedProteins = selectedProteins;
-        if (updateSelection) {
+        if (updateSelection) {         
             overviewPanel.updateSelection(clearSelection);
         }
     }

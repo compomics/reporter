@@ -140,6 +140,7 @@ public class JumpToPanel extends javax.swing.JPanel { // @TODO: should be merged
             String selectedProtein = possibilities.get(jumpType).get(currentSelection.get(jumpType));
             ArrayList<String> selectedProteins = new ArrayList<String>();
             selectedProteins.add(selectedProtein);
+            reporterGUI.minimizeChart();
             reporterGUI.setSelectedProteins(selectedProteins, true, true);
         }
 
