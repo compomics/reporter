@@ -348,17 +348,9 @@ public class Normalizer {
         Set<String> sampleIndexes = reporterIonQuantification.getSampleIndexes();
         HashMap<String, ArrayList<Double>> allRawRatios = new HashMap<String, ArrayList<Double>>(sampleIndexes.size());
         HashMap<String, ArrayList<Double>> seedRawRatios = new HashMap<String, ArrayList<Double>>(sampleIndexes.size());
-        HashMap<String, ArrayList<Double>> allUniqueRawRatios = new HashMap<String, ArrayList<Double>>(sampleIndexes.size());
-        HashMap<String, ArrayList<Double>> seedUniqueRawRatios = new HashMap<String, ArrayList<Double>>(sampleIndexes.size());
-        HashMap<String, ArrayList<Double>> allSharedRawRatios = new HashMap<String, ArrayList<Double>>(sampleIndexes.size());
-        HashMap<String, ArrayList<Double>> seedSharedRawRatios = new HashMap<String, ArrayList<Double>>(sampleIndexes.size());
         for (String sampleIndex : sampleIndexes) {
             allRawRatios.put(sampleIndex, new ArrayList<Double>(metrics.getnValidatedProteins()));
             seedRawRatios.put(sampleIndex, new ArrayList<Double>(metrics.getnValidatedProteins()));
-            allUniqueRawRatios.put(sampleIndex, new ArrayList<Double>(metrics.getnValidatedProteins()));
-            seedUniqueRawRatios.put(sampleIndex, new ArrayList<Double>(metrics.getnValidatedProteins()));
-            allSharedRawRatios.put(sampleIndex, new ArrayList<Double>(metrics.getnValidatedProteins()));
-            seedSharedRawRatios.put(sampleIndex, new ArrayList<Double>(metrics.getnValidatedProteins()));
         }
 
         PSParameter psParameter = new PSParameter();
@@ -419,38 +411,6 @@ public class Normalizer {
                     }
                     ratios.addAll(runnable.getSeedRawRatios().get(reagent));
                 }
-                for (String reagent : runnable.getAllUniqueRawRatios().keySet()) {
-                    ArrayList<Double> ratios = allUniqueRawRatios.get(reagent);
-                    if (ratios == null) {
-                        ratios = new ArrayList<Double>();
-                        allUniqueRawRatios.put(reagent, ratios);
-                    }
-                    ratios.addAll(runnable.getAllUniqueRawRatios().get(reagent));
-                }
-                for (String reagent : runnable.getSeedSharedRawRatios().keySet()) {
-                    ArrayList<Double> ratios = seedSharedRawRatios.get(reagent);
-                    if (ratios == null) {
-                        ratios = new ArrayList<Double>();
-                        seedSharedRawRatios.put(reagent, ratios);
-                    }
-                    ratios.addAll(runnable.getSeedSharedRawRatios().get(reagent));
-                }
-                for (String reagent : runnable.getAllSharedRawRatios().keySet()) {
-                    ArrayList<Double> ratios = allSharedRawRatios.get(reagent);
-                    if (ratios == null) {
-                        ratios = new ArrayList<Double>();
-                        allSharedRawRatios.put(reagent, ratios);
-                    }
-                    ratios.addAll(runnable.getAllSharedRawRatios().get(reagent));
-                }
-                for (String reagent : runnable.getSeedSharedRawRatios().keySet()) {
-                    ArrayList<Double> ratios = seedSharedRawRatios.get(reagent);
-                    if (ratios == null) {
-                        ratios = new ArrayList<Double>();
-                        seedSharedRawRatios.put(reagent, ratios);
-                    }
-                    ratios.addAll(runnable.getSeedSharedRawRatios().get(reagent));
-                }
             }
         }
 
@@ -486,66 +446,6 @@ public class Normalizer {
                 normalisationFactor = 1;
             }
             normalizationFactors.addProteinNormalisationFactor(sampleIndex, normalisationFactor);
-            
-            rawRatios = allUniqueRawRatios.get(sampleIndex);
-            seedRatios = seedUniqueRawRatios.get(sampleIndex);
-            if (rawRatios != null && !rawRatios.isEmpty()) {
-                NormalizationType normalizationType = normalizationSettings.getProteinNormalization();
-                if (normalizationType == NormalizationType.none) {
-                    normalisationFactor = 1;
-                } else if (normalizationType == NormalizationType.mean) {
-                    if (seedRatios != null && !seedRatios.isEmpty()) {
-                        normalisationFactor = BasicMathFunctions.mean(seedRatios);
-                    } else {
-                        normalisationFactor = BasicMathFunctions.mean(rawRatios);
-                    }
-                } else if (normalizationType == NormalizationType.median) {
-                    if (seedRatios != null && !seedRatios.isEmpty()) {
-                        normalisationFactor = BasicMathFunctions.median(seedRatios);
-                    } else {
-                        normalisationFactor = BasicMathFunctions.median(rawRatios);
-                    }
-                } else if (normalizationType == NormalizationType.mode) {
-                    throw new UnsupportedOperationException("Normalization method not implemented.");
-                } else if (normalizationType == NormalizationType.sum) {
-                    throw new UnsupportedOperationException("Normalization method not implemented.");
-                } else {
-                    throw new UnsupportedOperationException("Normalization method not implemented.");
-                }
-            } else {
-                normalisationFactor = 1;
-            }
-            normalizationFactors.addUniqueProteinNormalisationFactor(sampleIndex, normalisationFactor);
-            
-            rawRatios = allSharedRawRatios.get(sampleIndex);
-            seedRatios = seedSharedRawRatios.get(sampleIndex);
-            if (rawRatios != null && !rawRatios.isEmpty()) {
-                NormalizationType normalizationType = normalizationSettings.getProteinNormalization();
-                if (normalizationType == NormalizationType.none) {
-                    normalisationFactor = 1;
-                } else if (normalizationType == NormalizationType.mean) {
-                    if (seedRatios != null && !seedRatios.isEmpty()) {
-                        normalisationFactor = BasicMathFunctions.mean(seedRatios);
-                    } else {
-                        normalisationFactor = BasicMathFunctions.mean(rawRatios);
-                    }
-                } else if (normalizationType == NormalizationType.median) {
-                    if (seedRatios != null && !seedRatios.isEmpty()) {
-                        normalisationFactor = BasicMathFunctions.median(seedRatios);
-                    } else {
-                        normalisationFactor = BasicMathFunctions.median(rawRatios);
-                    }
-                } else if (normalizationType == NormalizationType.mode) {
-                    throw new UnsupportedOperationException("Normalization method not implemented.");
-                } else if (normalizationType == NormalizationType.sum) {
-                    throw new UnsupportedOperationException("Normalization method not implemented.");
-                } else {
-                    throw new UnsupportedOperationException("Normalization method not implemented.");
-                }
-            } else {
-                normalisationFactor = 1;
-            }
-            normalizationFactors.addSharedProteinNormalisationFactor(sampleIndex, normalisationFactor);
         }
     }
 
