@@ -145,12 +145,17 @@ public class Reporter {
         }
 
         for (String index : indexes) {
-            ArrayList<Double> channelRatios = ratios.get(index);
-            result.setRawRatio(index, RatioEstimator.estimateRatios(ratioEstimationSettings, channelRatios));
             ArrayList<Double> channelUniqueRatios = uniqueRatios.get(index);
-            result.setUniqueRawRatio(index, RatioEstimator.estimateRatios(ratioEstimationSettings, channelUniqueRatios));
+            Double uniqueRatio = RatioEstimator.estimateRatios(ratioEstimationSettings, channelUniqueRatios);
+            result.setUniqueRawRatio(index, uniqueRatio);
             ArrayList<Double> channelSharedRatios = sharedRatios.get(index);
             result.setSharedRawRatio(index, RatioEstimator.estimateRatios(ratioEstimationSettings, channelSharedRatios));
+            if (ratioEstimationSettings.getMinUnique() >= 0 && channelUniqueRatios != null && channelUniqueRatios.size() >= ratioEstimationSettings.getMinUnique()) {
+                result.setRawRatio(index, uniqueRatio);
+            } else {
+                ArrayList<Double> channelRatios = ratios.get(index);
+                result.setRawRatio(index, RatioEstimator.estimateRatios(ratioEstimationSettings, channelRatios));
+            }
         }
 
         return result;
