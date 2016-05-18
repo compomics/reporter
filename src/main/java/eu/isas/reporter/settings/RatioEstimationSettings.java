@@ -31,6 +31,10 @@ public class RatioEstimationSettings implements Serializable {
      */
     private double ratioResolution = 0.01;
     /**
+     * Minimum number of unique peptides.
+     */
+    private int minUnique = 3;
+    /**
      * List of PTMs to exclude. Peptides presenting these PTMs will not be
      * accounted for during quantification.
      */
@@ -258,4 +262,23 @@ public class RatioEstimationSettings implements Serializable {
     public void setPsmValidationLevel(MatchValidationLevel matchValidationLevel) {
         this.psmValidation = matchValidationLevel;
     }
+
+    /**
+     * Returns the minimal number of unique peptides required for a protein.
+     * 
+     * @return the minimal number of unique peptides required for a protein
+     */
+    public int getMinUnique() {
+        return minUnique;
+    }
+
+    /**
+     * Sets the minimal number of unique peptides required for a protein.
+     * 
+     * @param minUnique the minimal number of unique peptides required for a protein
+     */
+    public void setMinUnique(int minUnique) {
+        this.minUnique = minUnique;
+    }
+    
 }
