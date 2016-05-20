@@ -464,9 +464,11 @@ public class ReporterExportFactory implements ExportFactory {
                     }
                 }
                 if (protein) {
-                    exportScheme.addExportFeature(section, ReporterProteinFeatures.raw_ratio);
                     exportScheme.addExportFeature(section, ReporterProteinFeatures.raw_unique_ratio);
                     exportScheme.addExportFeature(section, ReporterProteinFeatures.raw_shared_ratio);
+                    exportScheme.addExportFeature(section, ReporterProteinFeatures.raw_ratio);
+                    exportScheme.addExportFeature(section, ReporterProteinFeatures.unique_ratio);
+                    exportScheme.addExportFeature(section, ReporterProteinFeatures.shared_ratio);
                     exportScheme.addExportFeature(section, ReporterProteinFeatures.ratio);
                 }
                 if (peptide) {

@@ -64,7 +64,7 @@ public class ProteinQuantificationDetails {
         if (normalizationFactors.hasProteinNormalisationFactors()
                 && ratio != null
                 && ratio != Double.NaN) {
-            ratio /= normalizationFactors.getUniqueProteinNormalisationFactor(reporterIonName);
+            ratio /= normalizationFactors.getProteinNormalisationFactor(reporterIonName);
         }
         return ratio;
     }
@@ -86,7 +86,7 @@ public class ProteinQuantificationDetails {
         if (normalizationFactors.hasProteinNormalisationFactors()
                 && ratio != null
                 && ratio != Double.NaN) {
-            ratio /= normalizationFactors.getSharedProteinNormalisationFactor(reporterIonName);
+            ratio /= normalizationFactors.getProteinNormalisationFactor(reporterIonName);
         }
         return ratio;
     }

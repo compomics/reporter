@@ -31,6 +31,10 @@ public class RatioEstimationSettings implements Serializable {
      */
     private double ratioResolution = 0.01;
     /**
+     * Minimum number of unique peptides, ignored if negative.
+     */
+    private int minUnique = 3;
+    /**
      * List of PTMs to exclude. Peptides presenting these PTMs will not be
      * accounted for during quantification.
      */
@@ -70,23 +74,25 @@ public class RatioEstimationSettings implements Serializable {
         clone.setPsmValidationLevel(psmValidation);
         return clone;
     }
-    
+
     /**
      * Indicates whether another setting is the same as this one.
-     * 
+     *
      * @param anotherSetting another setting
-     * 
-     * @return a boolean indicating whether another setting is the same as this one
+     *
+     * @return a boolean indicating whether another setting is the same as this
+     * one
      */
     public boolean isSameAs(RatioEstimationSettings anotherSetting) {
         if (ignoreNullIntensities != anotherSetting.isIgnoreNullIntensities()
-                || ignoreMissedCleavages != anotherSetting.isIgnoreMissedCleavages()
                 || percentile != anotherSetting.getPercentile()
                 || ratioResolution != anotherSetting.getRatioResolution()
                 || proteinValidation != anotherSetting.getProteinValidationLevel()
                 || peptideValidation != anotherSetting.getPeptideValidationLevel()
                 || psmValidation != anotherSetting.getPsmValidationLevel()
-                || excludingPTM.size() != anotherSetting.getExcludingPtms().size()) {
+                || excludingPTM.size() != anotherSetting.getExcludingPtms().size()
+                || ignoreMissedCleavages != anotherSetting.isIgnoreMissedCleavages()
+                || minUnique != anotherSetting.getMinUnique()) {
             return false;
         }
         for (String ptm : anotherSetting.getExcludingPtms()) {
@@ -96,7 +102,7 @@ public class RatioEstimationSettings implements Serializable {
         }
         return true;
     }
-    
+
     /**
      * Returns a boolean indicating whether miscleaved peptides should be
      * ignored.
@@ -258,4 +264,26 @@ public class RatioEstimationSettings implements Serializable {
     public void setPsmValidationLevel(MatchValidationLevel matchValidationLevel) {
         this.psmValidation = matchValidationLevel;
     }
+
+    /**
+     * Returns the minimal number of unique peptides required for a protein,
+     * ignored if negative.
+     *
+     * @return the minimal number of unique peptides required for a protein
+     */
+    public int getMinUnique() {
+        return minUnique;
+    }
+
+    /**
+     * Sets the minimal number of unique peptides required for a protein,
+     * ignored if negative.
+     *
+     * @param minUnique the minimal number of unique peptides required for a
+     * protein
+     */
+    public void setMinUnique(int minUnique) {
+        this.minUnique = minUnique;
+    }
+
 }

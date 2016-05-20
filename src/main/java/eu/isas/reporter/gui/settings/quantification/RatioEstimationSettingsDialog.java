@@ -58,9 +58,8 @@ public class RatioEstimationSettingsDialog extends javax.swing.JDialog {
         proteinValidationCmb.setRenderer(new AlignedListCellRenderer(SwingConstants.CENTER));
         peptideValidationCmb.setRenderer(new AlignedListCellRenderer(SwingConstants.CENTER));
         psmValidationCmb.setRenderer(new AlignedListCellRenderer(SwingConstants.CENTER));
-        
+
         //@TODO: Set editable or not
-        
     }
 
     /**
@@ -69,8 +68,10 @@ public class RatioEstimationSettingsDialog extends javax.swing.JDialog {
      * @param ratioEstimationSettings the settings to display
      */
     private void populateGUI(RatioEstimationSettings ratioEstimationSettings) {
-        
-        miscleavageCheck.setSelected(ratioEstimationSettings.isIgnoreMissedCleavages());
+
+        proteinValidationCmb.setSelectedIndex(ratioEstimationSettings.getProteinValidationLevel().getIndex());
+        peptideValidationCmb.setSelectedIndex(ratioEstimationSettings.getPeptideValidationLevel().getIndex());
+        psmValidationCmb.setSelectedIndex(ratioEstimationSettings.getPsmValidationLevel().getIndex());
         nullIntensitiesCheck.setSelected(ratioEstimationSettings.isIgnoreNullIntensities());
         widthTxt.setText(ratioEstimationSettings.getPercentile() + "");
         resolutionTxt.setText(ratioEstimationSettings.getRatioResolution() + "");
@@ -84,9 +85,15 @@ public class RatioEstimationSettingsDialog extends javax.swing.JDialog {
         selectedPTMs.setListData(allModificationsAsArray);
         updateModificationList();
 
-        proteinValidationCmb.setSelectedIndex(ratioEstimationSettings.getProteinValidationLevel().getIndex());
-        peptideValidationCmb.setSelectedIndex(ratioEstimationSettings.getPeptideValidationLevel().getIndex());
-        psmValidationCmb.setSelectedIndex(ratioEstimationSettings.getPsmValidationLevel().getIndex());
+        int nUnique = ratioEstimationSettings.getMinUnique();
+        boolean excludeShared = nUnique >= 0;
+        excludeSharedCheckBox.setSelected(excludeShared);
+        uniquePeptidesSpinner.setEnabled(excludeShared);
+        if (nUnique >= 0) {
+            uniquePeptidesSpinner.setValue(ratioEstimationSettings.getMinUnique());
+        }
+
+        miscleavageCheck.setSelected(ratioEstimationSettings.isIgnoreMissedCleavages());
     }
 
     /**
@@ -109,7 +116,6 @@ public class RatioEstimationSettingsDialog extends javax.swing.JDialog {
         jLabel8 = new javax.swing.JLabel();
         addModifications = new javax.swing.JButton();
         removeModification = new javax.swing.JButton();
-        miscleavageCheck = new javax.swing.JCheckBox();
         ratioEstimationsPanel = new javax.swing.JPanel();
         nullIntensitiesCheck = new javax.swing.JCheckBox();
         jLabel4 = new javax.swing.JLabel();
@@ -126,6 +132,11 @@ public class RatioEstimationSettingsDialog extends javax.swing.JDialog {
         helpLinkLabel = new javax.swing.JLabel();
         okButton = new javax.swing.JButton();
         okButton1 = new javax.swing.JButton();
+        proteinGroupJPanel = new javax.swing.JPanel();
+        miscleavageCheck = new javax.swing.JCheckBox();
+        excludeSharedCheckBox = new javax.swing.JCheckBox();
+        uniquePeptidesSpinner = new javax.swing.JSpinner();
+        uniquePeptidesLbl = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Ratio Estimation Settings");
@@ -133,7 +144,7 @@ public class RatioEstimationSettingsDialog extends javax.swing.JDialog {
 
         backgroundPanel.setBackground(new java.awt.Color(230, 230, 230));
 
-        idSelectionPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Peptide Selection"));
+        idSelectionPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("PTM Selection"));
         idSelectionPanel.setOpaque(false);
 
         jLabel1.setFont(jLabel1.getFont().deriveFont((jLabel1.getFont().getStyle() | java.awt.Font.ITALIC)));
@@ -167,10 +178,6 @@ public class RatioEstimationSettingsDialog extends javax.swing.JDialog {
             }
         });
 
-        miscleavageCheck.setText("Exclude Miscleaved Peptides");
-        miscleavageCheck.setIconTextGap(10);
-        miscleavageCheck.setOpaque(false);
-
         javax.swing.GroupLayout idSelectionPanelLayout = new javax.swing.GroupLayout(idSelectionPanel);
         idSelectionPanel.setLayout(idSelectionPanelLayout);
         idSelectionPanelLayout.setHorizontalGroup(
@@ -179,25 +186,20 @@ public class RatioEstimationSettingsDialog extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(idSelectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(idSelectionPanelLayout.createSequentialGroup()
-                        .addGap(10, 10, 10)
-                        .addComponent(miscleavageCheck))
-                    .addGroup(idSelectionPanelLayout.createSequentialGroup()
-                        .addGroup(idSelectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(idSelectionPanelLayout.createSequentialGroup()
-                                .addComponent(selectedPtmsScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 315, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(idSelectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(addModifications, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(removeModification)))
-                            .addGroup(idSelectionPanelLayout.createSequentialGroup()
-                                .addGap(8, 8, 8)
-                                .addComponent(jLabel1)))
+                        .addComponent(selectedPtmsScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 315, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(idSelectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(allPtmsScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 293, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(idSelectionPanelLayout.createSequentialGroup()
-                                .addGap(8, 8, 8)
-                                .addComponent(jLabel8)))))
+                        .addGroup(idSelectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(addModifications, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(removeModification)))
+                    .addGroup(idSelectionPanelLayout.createSequentialGroup()
+                        .addGap(8, 8, 8)
+                        .addComponent(jLabel1)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(idSelectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(allPtmsScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 293, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(idSelectionPanelLayout.createSequentialGroup()
+                        .addGap(8, 8, 8)
+                        .addComponent(jLabel8)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -209,23 +211,23 @@ public class RatioEstimationSettingsDialog extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(idSelectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(idSelectionPanelLayout.createSequentialGroup()
+                        .addComponent(jLabel8)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(allPtmsScrollPane)
+                        .addContainerGap())
+                    .addGroup(idSelectionPanelLayout.createSequentialGroup()
                         .addComponent(jLabel1)
                         .addGroup(idSelectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(idSelectionPanelLayout.createSequentialGroup()
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(selectedPtmsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE))
                             .addGroup(idSelectionPanelLayout.createSequentialGroup()
                                 .addGap(15, 15, 15)
                                 .addComponent(addModifications)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(removeModification))))
-                    .addGroup(idSelectionPanelLayout.createSequentialGroup()
-                        .addComponent(jLabel8)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(allPtmsScrollPane)))
-                .addGap(7, 7, 7)
-                .addComponent(miscleavageCheck)
-                .addContainerGap())
+                                .addComponent(removeModification)
+                                .addGap(69, 117, Short.MAX_VALUE))
+                            .addGroup(idSelectionPanelLayout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(selectedPtmsScrollPane)
+                                .addContainerGap())))))
         );
 
         ratioEstimationsPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Ratio Estimation"));
@@ -243,11 +245,11 @@ public class RatioEstimationSettingsDialog extends javax.swing.JDialog {
 
         resolutionTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
 
-        jLabel2.setText("Protein Filter");
+        jLabel2.setText("Proteins");
 
-        jLabel3.setText("Peptide Filter");
+        jLabel3.setText("Peptides");
 
-        jLabel7.setText("PSM Filter");
+        jLabel7.setText("PSMs");
 
         peptideValidationCmb.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "All", "Validated", "Confident" }));
 
@@ -263,17 +265,17 @@ public class RatioEstimationSettingsDialog extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(ratioEstimationsPanelLayout.createSequentialGroup()
-                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(proteinValidationCmb, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(ratioEstimationsPanelLayout.createSequentialGroup()
                         .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(18, 18, 18)
                         .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(psmValidationCmb, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(peptideValidationCmb, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addComponent(peptideValidationCmb, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(ratioEstimationsPanelLayout.createSequentialGroup()
+                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(proteinValidationCmb, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addGap(44, 44, 44)
                 .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(nullIntensitiesCheck)
@@ -294,22 +296,29 @@ public class RatioEstimationSettingsDialog extends javax.swing.JDialog {
             ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(ratioEstimationsPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(resolutionTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel4)
-                    .addComponent(jLabel2)
-                    .addComponent(proteinValidationCmb, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(widthTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel5)
-                    .addComponent(jLabel3)
-                    .addComponent(peptideValidationCmb, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(nullIntensitiesCheck)
-                    .addComponent(jLabel7)
-                    .addComponent(psmValidationCmb, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(ratioEstimationsPanelLayout.createSequentialGroup()
+                        .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel2)
+                            .addComponent(proteinValidationCmb, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel3)
+                            .addComponent(peptideValidationCmb, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel7)
+                            .addComponent(psmValidationCmb, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(ratioEstimationsPanelLayout.createSequentialGroup()
+                        .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(resolutionTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel4))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(ratioEstimationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(widthTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel5))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(nullIntensitiesCheck)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -343,6 +352,56 @@ public class RatioEstimationSettingsDialog extends javax.swing.JDialog {
             }
         });
 
+        proteinGroupJPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Protein Group Ratio Estimation"));
+        proteinGroupJPanel.setOpaque(false);
+
+        miscleavageCheck.setText("Exclude miscleaved peptides");
+        miscleavageCheck.setIconTextGap(10);
+        miscleavageCheck.setOpaque(false);
+
+        excludeSharedCheckBox.setText("Exclude shared Peptides if enough unique");
+        excludeSharedCheckBox.setIconTextGap(10);
+        excludeSharedCheckBox.setOpaque(false);
+        excludeSharedCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                excludeSharedCheckBoxActionPerformed(evt);
+            }
+        });
+
+        uniquePeptidesSpinner.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(3), Integer.valueOf(1), null, Integer.valueOf(1)));
+
+        uniquePeptidesLbl.setText("Minimum unique");
+
+        javax.swing.GroupLayout proteinGroupJPanelLayout = new javax.swing.GroupLayout(proteinGroupJPanel);
+        proteinGroupJPanel.setLayout(proteinGroupJPanelLayout);
+        proteinGroupJPanelLayout.setHorizontalGroup(
+            proteinGroupJPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(proteinGroupJPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(proteinGroupJPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(proteinGroupJPanelLayout.createSequentialGroup()
+                        .addComponent(excludeSharedCheckBox)
+                        .addGap(154, 154, 154)
+                        .addComponent(uniquePeptidesLbl, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(uniquePeptidesSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(miscleavageCheck))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        proteinGroupJPanelLayout.setVerticalGroup(
+            proteinGroupJPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, proteinGroupJPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(proteinGroupJPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(excludeSharedCheckBox)
+                    .addGroup(proteinGroupJPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(uniquePeptidesLbl)
+                        .addComponent(uniquePeptidesSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(miscleavageCheck)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
         javax.swing.GroupLayout backgroundPanelLayout = new javax.swing.GroupLayout(backgroundPanel);
         backgroundPanel.setLayout(backgroundPanelLayout);
         backgroundPanelLayout.setHorizontalGroup(
@@ -359,27 +418,31 @@ public class RatioEstimationSettingsDialog extends javax.swing.JDialog {
                         .addComponent(okButton, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(okButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, backgroundPanelLayout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(idSelectionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(backgroundPanelLayout.createSequentialGroup()
-                        .addGroup(backgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(ratioEstimationsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(idSelectionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(ratioEstimationsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(proteinGroupJPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         backgroundPanelLayout.setVerticalGroup(
             backgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(backgroundPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(ratioEstimationsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(idSelectionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(idSelectionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(proteinGroupJPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addGroup(backgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
                     .addComponent(helpLabel)
                     .addComponent(helpLinkLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(okButton)
                     .addComponent(okButton1))
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -390,11 +453,16 @@ public class RatioEstimationSettingsDialog extends javax.swing.JDialog {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(backgroundPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(backgroundPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void okButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButton1ActionPerformed
+        canceled = true;
+        dispose();
+    }//GEN-LAST:event_okButton1ActionPerformed
 
     /**
      * Save the data and close the dialog.
@@ -500,16 +568,16 @@ public class RatioEstimationSettingsDialog extends javax.swing.JDialog {
         updateModificationList();
     }//GEN-LAST:event_addModificationsActionPerformed
 
-    private void okButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButton1ActionPerformed
-        canceled = true;
-        dispose();
-    }//GEN-LAST:event_okButton1ActionPerformed
+    private void excludeSharedCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_excludeSharedCheckBoxActionPerformed
+        uniquePeptidesSpinner.setEnabled(excludeSharedCheckBox.isSelected());
+    }//GEN-LAST:event_excludeSharedCheckBoxActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addModifications;
     private javax.swing.JList allPTMs;
     private javax.swing.JScrollPane allPtmsScrollPane;
     private javax.swing.JPanel backgroundPanel;
+    private javax.swing.JCheckBox excludeSharedCheckBox;
     private javax.swing.JLabel helpLabel;
     private javax.swing.JLabel helpLinkLabel;
     private javax.swing.JPanel idSelectionPanel;
@@ -525,6 +593,7 @@ public class RatioEstimationSettingsDialog extends javax.swing.JDialog {
     private javax.swing.JButton okButton;
     private javax.swing.JButton okButton1;
     private javax.swing.JComboBox peptideValidationCmb;
+    private javax.swing.JPanel proteinGroupJPanel;
     private javax.swing.JComboBox proteinValidationCmb;
     private javax.swing.JComboBox psmValidationCmb;
     private javax.swing.JPanel ratioEstimationsPanel;
@@ -533,18 +602,20 @@ public class RatioEstimationSettingsDialog extends javax.swing.JDialog {
     private javax.swing.JTextField resolutionTxt;
     private javax.swing.JList selectedPTMs;
     private javax.swing.JScrollPane selectedPtmsScrollPane;
+    private javax.swing.JLabel uniquePeptidesLbl;
+    private javax.swing.JSpinner uniquePeptidesSpinner;
     private javax.swing.JTextField widthTxt;
     // End of variables declaration//GEN-END:variables
 
-/**
+    /**
      * Indicates whether the user canceled the editing.
-     * 
+     *
      * @return a boolean indicating whether the user canceled the editing
      */
     public boolean isCanceled() {
         return canceled;
     }
-    
+
     /**
      * Methods which validates the user input (returns false in case of wrong
      * input).
@@ -626,10 +697,15 @@ public class RatioEstimationSettingsDialog extends javax.swing.JDialog {
         Double windowWidth = new Double(widthTxt.getText());
         ratioEstimationSettings.setPercentile(windowWidth);
         ratioEstimationSettings.setIgnoreNullIntensities(nullIntensitiesCheck.isSelected());
-        ratioEstimationSettings.setIgnoreMissedCleavages(miscleavageCheck.isSelected());
-        for (int i = 0 ; i < selectedPTMs.getModel().getSize() ; i++) {
+        for (int i = 0; i < selectedPTMs.getModel().getSize(); i++) {
             ratioEstimationSettings.addExcludingPtm(selectedPTMs.getModel().getElementAt(i).toString());
         }
+        if (excludeSharedCheckBox.isSelected()) {
+            ratioEstimationSettings.setMinUnique((Integer) uniquePeptidesSpinner.getValue());
+        } else {
+            ratioEstimationSettings.setMinUnique(-1);
+        }
+        ratioEstimationSettings.setIgnoreMissedCleavages(miscleavageCheck.isSelected());
         return ratioEstimationSettings;
     }
 }
