@@ -405,7 +405,9 @@ public class OverviewPanel extends javax.swing.JPanel {
         lineChartChartPanel.addChartMouseListener(new ChartMouseListener() {
             @Override
             public void chartMouseClicked(ChartMouseEvent cme) {
-                // @TODO: implement?
+                if (cme.getTrigger().getButton() == MouseEvent.BUTTON1 && cme.getTrigger().getClickCount() == 2) {
+                    maximizeChartJButtonActionPerformed(null);
+                }
             }
 
             @Override
