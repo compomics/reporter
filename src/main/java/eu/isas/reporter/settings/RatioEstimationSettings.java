@@ -285,5 +285,4 @@ public class RatioEstimationSettings implements Serializable {
     public void setMinUnique(int minUnique) {
         this.minUnique = minUnique;
     }
-
 }
