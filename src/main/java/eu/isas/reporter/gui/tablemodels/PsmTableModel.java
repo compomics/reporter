@@ -9,7 +9,9 @@ import com.compomics.util.experiment.identification.matches_iterators.PsmIterato
 import com.compomics.util.experiment.massspectrometry.Precursor;
 import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
 import com.compomics.util.experiment.personalization.UrParameter;
+import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.gui.tablemodels.SelfUpdatingTableModel;
+import com.compomics.util.math.BasicMathFunctions;
 import com.compomics.util.preferences.IdentificationParameters;
 import com.compomics.util.waiting.WaitingHandler;
 import eu.isas.peptideshaker.gui.tabpanels.SpectrumIdentificationPanel;
@@ -18,14 +20,20 @@ import eu.isas.peptideshaker.preferences.DisplayPreferences;
 import eu.isas.peptideshaker.scoring.PSMaps;
 import eu.isas.peptideshaker.scoring.maps.InputMap;
 import eu.isas.peptideshaker.utils.DisplayFeaturesGenerator;
+import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
+import eu.isas.reporter.quantificationdetails.PsmQuantificationDetails;
+import java.awt.Color;
 import java.sql.SQLNonTransientConnectionException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import no.uib.jsparklines.data.JSparklinesDataSeries;
 
 /**
  * Model for the PSM table.
  *
  * @author Marc Vaudel
+ * @author Harald Barsnes
  */
 public class PsmTableModel extends SelfUpdatingTableModel {
 
@@ -45,6 +53,18 @@ public class PsmTableModel extends SelfUpdatingTableModel {
      * The identification parameters.
      */
     private IdentificationParameters identificationParameters;
+    /**
+     * The quantification feature generator.
+     */
+    private QuantificationFeaturesGenerator quantificationFeaturesGenerator;
+    /**
+     * The reporter ion quantification.
+     */
+    private ReporterIonQuantification reporterIonQuantification;
+    /**
+     * The sample indexes.
+     */
+    private ArrayList<String> sampleIndexes;
     /**
      * A list of ordered PSM keys.
      */
@@ -68,16 +88,21 @@ public class PsmTableModel extends SelfUpdatingTableModel {
      *
      * @param identification the identification object containing the matches
      * @param displayFeaturesGenerator the display features generator
+     * @param reporterIonQuantification the reporter quantification information
+     * @param quantificationFeaturesGenerator the quantification feature
      * @param identificationParameters the identification parameters
      * @param psmKeys the PSM keys
      * @param displayScores boolean indicating whether the scores should be
      * displayed instead of the confidence
      * @param exceptionHandler handler for the exceptions
      */
-    public PsmTableModel(Identification identification, DisplayFeaturesGenerator displayFeaturesGenerator, IdentificationParameters identificationParameters, 
+    public PsmTableModel(Identification identification, DisplayFeaturesGenerator displayFeaturesGenerator, IdentificationParameters identificationParameters,
+            ReporterIonQuantification reporterIonQuantification, QuantificationFeaturesGenerator quantificationFeaturesGenerator,
             ArrayList<String> psmKeys, boolean displayScores, ExceptionHandler exceptionHandler) {
         this.identification = identification;
         this.displayFeaturesGenerator = displayFeaturesGenerator;
+        this.reporterIonQuantification = reporterIonQuantification;
+        this.quantificationFeaturesGenerator = quantificationFeaturesGenerator;
         this.identificationParameters = identificationParameters;
         this.psmKeys = psmKeys;
         this.showScores = displayScores;
@@ -86,6 +111,9 @@ public class PsmTableModel extends SelfUpdatingTableModel {
         PSMaps pSMaps = new PSMaps();
         pSMaps = (PSMaps) identification.getUrParam(pSMaps);
         inputMap = pSMaps.getInputMap();
+        
+        sampleIndexes = new ArrayList<String>(reporterIonQuantification.getSampleIndexes());
+        Collections.sort(sampleIndexes);
     }
 
     /**
@@ -94,22 +122,30 @@ public class PsmTableModel extends SelfUpdatingTableModel {
      *
      * @param identification the identification object containing the matches
      * @param displayFeaturesGenerator the display features generator
+     * @param reporterIonQuantification the reporter quantification information
+     * @param quantificationFeaturesGenerator the quantification feature
      * @param identificationParameters the identification parameters
      * @param psmKeys the PSM keys
      * @param displayScores boolean indicating whether the scores should be
      * displayed instead of the confidence
      */
-    public void updateDataModel(Identification identification, DisplayFeaturesGenerator displayFeaturesGenerator, 
-            IdentificationParameters identificationParameters,ArrayList<String> psmKeys, boolean displayScores) {
+    public void updateDataModel(Identification identification, DisplayFeaturesGenerator displayFeaturesGenerator, IdentificationParameters identificationParameters, 
+            ReporterIonQuantification reporterIonQuantification, QuantificationFeaturesGenerator quantificationFeaturesGenerator,
+            ArrayList<String> psmKeys, boolean displayScores) {
         this.identification = identification;
         this.displayFeaturesGenerator = displayFeaturesGenerator;
+        this.reporterIonQuantification = reporterIonQuantification;
+        this.quantificationFeaturesGenerator = quantificationFeaturesGenerator;
         this.identificationParameters = identificationParameters;
         this.psmKeys = psmKeys;
         this.showScores = displayScores;
-        
+
         PSMaps pSMaps = new PSMaps();
         pSMaps = (PSMaps) identification.getUrParam(pSMaps);
         inputMap = pSMaps.getInputMap();
+        
+        sampleIndexes = new ArrayList<String>(reporterIonQuantification.getSampleIndexes());
+        Collections.sort(sampleIndexes);
     }
 
     /**
@@ -121,7 +157,6 @@ public class PsmTableModel extends SelfUpdatingTableModel {
 
     /**
      * Constructor which sets a new empty table.
-     *
      */
     public PsmTableModel() {
     }
@@ -146,7 +181,7 @@ public class PsmTableModel extends SelfUpdatingTableModel {
             case 0:
                 return " ";
             case 1:
-                return "  ";
+                return "Quant";
             case 2:
                 return "ID";
             case 3:
@@ -154,7 +189,7 @@ public class PsmTableModel extends SelfUpdatingTableModel {
             case 4:
                 return "Charge";
             case 5:
-                return "Mass Error";
+                return "m/z Error";
             case 6:
                 if (showScores) {
                     return "Score";
@@ -183,16 +218,21 @@ public class PsmTableModel extends SelfUpdatingTableModel {
                     case 0:
                         return viewIndex + 1;
                     case 1:
-                        PSParameter psParameter = (PSParameter) identification.getSpectrumMatchParameter(psmKey, new PSParameter(), useDB && !isScrolling);
-                        if (psParameter == null) {
-                            if (isScrolling()) {
-                                return null;
-                            } else if (!useDB) {
-                                dataMissingAtRow(row);
-                                return DisplayPreferences.LOADING_MESSAGE;
+                        ArrayList<Double> data = new ArrayList<Double>();
+                        PsmQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getPSMQuantificationDetails(psmKey);
+
+                        for (String sampleIndex : sampleIndexes) {
+                            Double ratio = quantificationDetails.getRatio(sampleIndex, reporterIonQuantification.getNormalizationFactors());
+                            if (ratio != null) {
+                                if (ratio != 0) {
+                                    ratio = BasicMathFunctions.log(ratio, 2);
+                                }
+
+                                data.add(ratio);
                             }
                         }
-                        return psParameter.isStarred();
+
+                        return new JSparklinesDataSeries(data, Color.BLACK, null);
                     case 2:
                         SpectrumMatch spectrumMatch = identification.getSpectrumMatch(psmKey, useDB && !isScrolling);
                         if (spectrumMatch == null) {
@@ -254,7 +294,7 @@ public class PsmTableModel extends SelfUpdatingTableModel {
                             throw new IllegalArgumentException("No best assumption found for spectrum " + psmKey + ".");
                         }
                     case 6:
-                        psParameter = (PSParameter) identification.getSpectrumMatchParameter(psmKey, new PSParameter(), useDB && !isScrolling);
+                        PSParameter psParameter = (PSParameter) identification.getSpectrumMatchParameter(psmKey, new PSParameter(), useDB && !isScrolling);
                         if (psParameter == null) {
                             if (isScrolling) {
                                 return null;

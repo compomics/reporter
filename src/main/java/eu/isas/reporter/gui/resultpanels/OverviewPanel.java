@@ -3,13 +3,18 @@ package eu.isas.reporter.gui.resultpanels;
 import com.compomics.util.examples.BareBonesBrowserLaunch;
 import com.compomics.util.experiment.biology.genes.GeneMaps;
 import com.compomics.util.experiment.identification.Identification;
+import com.compomics.util.experiment.identification.protein_sequences.SequenceFactory;
 import com.compomics.util.gui.genes.GeneDetailsDialog;
 import com.compomics.util.gui.GuiUtilities;
+import com.compomics.util.gui.TableProperties;
 import com.compomics.util.gui.error_handlers.HelpDialog;
 import com.compomics.util.gui.tablemodels.SelfUpdatingTableModel;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
 import com.compomics.util.math.clustering.KMeansClustering;
 import com.compomics.util.waiting.WaitingHandler;
+import eu.isas.peptideshaker.parameters.PSParameter;
+import eu.isas.peptideshaker.scoring.MatchValidationLevel;
+import eu.isas.peptideshaker.scoring.PSMaps;
 import eu.isas.peptideshaker.utils.IdentificationFeaturesGenerator;
 import eu.isas.reporter.calculation.clustering.ClusterBuilder;
 import eu.isas.reporter.gui.ReporterGUI;
@@ -25,6 +30,7 @@ import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -42,6 +48,11 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import no.uib.jsparklines.renderers.JSparklinesArrayListBarChartTableCellRenderer;
 import no.uib.jsparklines.renderers.JSparklinesBarChartTableCellRenderer;
+import no.uib.jsparklines.renderers.JSparklinesHeatMapTableCellRenderer;
+import no.uib.jsparklines.renderers.JSparklinesIntegerColorTableCellRenderer;
+import no.uib.jsparklines.renderers.JSparklinesIntegerIconTableCellRenderer;
+import no.uib.jsparklines.renderers.JSparklinesMultiIntervalChartTableCellRenderer;
+import no.uib.jsparklines.renderers.util.GradientColorCoding;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartMouseEvent;
 import org.jfree.chart.ChartMouseListener;
@@ -144,6 +155,35 @@ public class OverviewPanel extends javax.swing.JPanel {
      * List with all the chart panels.
      */
     private ArrayList<ChartPanel> allChartPanels = new ArrayList<ChartPanel>();
+    /**
+     * The sequence factory.
+     */
+    private SequenceFactory sequenceFactory = SequenceFactory.getInstance();
+    /**
+     * Static index for the ID software agreement: no psm found.
+     */
+    public static final int NO_ID = 0; // @TODO: these should be moved to utilities..?
+    /**
+     * Static index for the ID software agreement: the ID software have
+     * different top ranking peptides.
+     */
+    public static final int CONFLICT = 1;
+    /**
+     * Static index for the ID software agreement: one or more of the softwares
+     * did not identify the spectrum, while one or more of the others did.
+     */
+    public static final int PARTIALLY_MISSING = 2;
+    /**
+     * Static index for the ID software agreement: the ID softwares all have the
+     * same top ranking peptide without accounting for modification
+     * localization.
+     */
+    public static final int AGREEMENT = 3;
+    /**
+     * Static index for the ID software agreement: the ID softwares all have the
+     * same top ranking peptide.
+     */
+    public static final int AGREEMENT_WITH_MODS = 4;
 
     /**
      * Creates a new OverviewPanel.
@@ -162,30 +202,47 @@ public class OverviewPanel extends javax.swing.JPanel {
      */
     private void setUpGui() {
 
-        matchesJTabbedPane.setEnabledAt(1, false);
-        matchesJTabbedPane.setEnabledAt(2, false);
-
         maximizeChartJButton.setVisible(false);
 
         // set main table properties
         proteinTable.getTableHeader().setReorderingAllowed(false);
+        peptideTable.getTableHeader().setReorderingAllowed(false);
+        psmTable.getTableHeader().setReorderingAllowed(false);
 
         // correct the color for the upper right corner
         JPanel proteinCorner = new JPanel();
         proteinCorner.setBackground(proteinTable.getTableHeader().getBackground());
         proteinScrollPane.setCorner(ScrollPaneConstants.UPPER_RIGHT_CORNER, proteinCorner);
+        JPanel peptideCorner = new JPanel();
+        peptideCorner.setBackground(proteinTable.getTableHeader().getBackground());
+        peptideScrollPane.setCorner(ScrollPaneConstants.UPPER_RIGHT_CORNER, peptideCorner);
+        JPanel psmCorner = new JPanel();
+        psmCorner.setBackground(proteinTable.getTableHeader().getBackground());
+        psmScrollPane.setCorner(ScrollPaneConstants.UPPER_RIGHT_CORNER, psmCorner);
 
         // add table sorting listeners
         SelfUpdatingTableModel.addSortListener(proteinTable, new ProgressDialogX(reporterGUI,
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")),
                 true));
+        SelfUpdatingTableModel.addSortListener(peptideTable, new ProgressDialogX(reporterGUI,
+                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
+                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")),
+                true));
+        SelfUpdatingTableModel.addSortListener(psmTable, new ProgressDialogX(reporterGUI,
+                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
+                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")),
+                true));
 
         // add table scrolling listeners
         SelfUpdatingTableModel.addScrollListeners(proteinTable, proteinScrollPane, proteinScrollPane.getVerticalScrollBar());
+        SelfUpdatingTableModel.addScrollListeners(peptideTable, peptideScrollPane, peptideScrollPane.getVerticalScrollBar());
+        SelfUpdatingTableModel.addScrollListeners(psmTable, psmScrollPane, psmScrollPane.getVerticalScrollBar());
 
         // make sure that the scroll panes are see-through
         proteinScrollPane.getViewport().setOpaque(false);
+        peptideScrollPane.getViewport().setOpaque(false);
+        psmScrollPane.getViewport().setOpaque(false);
 
         setUpTableHeaderToolTips();
     }
@@ -199,6 +256,7 @@ public class OverviewPanel extends javax.swing.JPanel {
         geneMaps = reporterGUI.getGeneMaps();
         identificationFeaturesGenerator = reporterGUI.getIdentificationFeaturesGenerator();
         allChartPanels.clear();
+        selectedChartPanel = null;
 
         progressDialog = new ProgressDialogX(reporterGUI,
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
@@ -232,32 +290,38 @@ public class OverviewPanel extends javax.swing.JPanel {
                     // display the clusters
                     displayClusters(progressDialog);
 
-                    // clear the protein table
+                    // clear the tables
                     ArrayList<String> proteinSelection = new ArrayList<String>();
-                    reporterGUI.setSelectedProteins(proteinSelection, false, false);
+                    reporterGUI.setSelectedProteins(proteinSelection, false, false); // @TODO: what about peptides and psms..?
                     proteinTable.clearSelection();
+                    peptideTable.clearSelection();
+                    psmTable.clearSelection();
                     proteinKeys = new ArrayList<String>();
+                    peptideKeys = new ArrayList<String>();
+                    psmKeys = new ArrayList<String>();
 
-                    // update the table model
-                    if (proteinTable.getModel() instanceof ProteinTableModel && ((ProteinTableModel) proteinTable.getModel()).isInstantiated()) {
-                        ((ProteinTableModel) proteinTable.getModel()).updateDataModel(identification, identificationFeaturesGenerator, geneMaps,
-                                reporterGUI.getReporterIonQuantification(), reporterGUI.getQuantificationFeaturesGenerator(),
-                                reporterGUI.getDisplayFeaturesGenerator(), proteinKeys);
-                    } else {
-                        ProteinTableModel proteinTableModel = new ProteinTableModel(identification, identificationFeaturesGenerator, geneMaps,
-                                reporterGUI.getReporterIonQuantification(), reporterGUI.getQuantificationFeaturesGenerator(),
-                                reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getExceptionHandler(), proteinKeys);
-                        proteinTable.setModel(proteinTableModel);
-                    }
+                    ((ProteinTableModel) proteinTable.getModel()).reset();
+                    ((PeptideTableModel) peptideTable.getModel()).reset();
+                    ((PsmTableModel) psmTable.getModel()).reset();
 
                     setProteinTableProperties();
+                    setPeptideTableProperties();
+                    setPsmTableProperties();
 
                     ((DefaultTableModel) proteinTable.getModel()).fireTableDataChanged();
                     updateProteinTableCellRenderers();
+                    ((DefaultTableModel) peptideTable.getModel()).fireTableDataChanged();
+                    updatePeptideTableCellRenderers();
+                    ((DefaultTableModel) psmTable.getModel()).fireTableDataChanged();
+                    updatePsmTableCellRenderers();
 
-                    String title = ReporterGUI.TITLED_BORDER_HORIZONTAL_PADDING + "Proteins";
-                    ((TitledBorder) proteinsLayeredPanel.getBorder()).setTitle(title);
-                    proteinsLayeredPanel.repaint();
+                    // update the border title
+                    String title = ReporterGUI.TITLED_BORDER_HORIZONTAL_PADDING
+                            + "Proteins (" + proteinTable.getRowCount() + "), "
+                            + "Peptides (" + peptideTable.getRowCount() + "), "
+                            + "PSMs (" + psmTable.getRowCount() + ")";
+                    ((TitledBorder) proteinPeptidePsmLayeredPanel.getBorder()).setTitle(title);
+                    proteinPeptidePsmLayeredPanel.repaint();
 
                     if (reporterGUI.getIdentificationDisplayPreferences().showScores()) {
                         proteinTableToolTips.set(proteinTable.getColumnCount() - 2, "Protein Score");
@@ -553,16 +617,24 @@ public class OverviewPanel extends javax.swing.JPanel {
             }
 
             // update the tables and panels
-            updateProteinPanel();
-            updatePeptidePanel();
-            updatePsmPanel();
+            updateProteinTable();
+            updatePeptideTable();
+            updatePsmTable();
+
+            // update the border title
+            String title = ReporterGUI.TITLED_BORDER_HORIZONTAL_PADDING
+                    + "Proteins (" + proteinTable.getRowCount() + "), "
+                    + "Peptides (" + peptideTable.getRowCount() + "), "
+                    + "PSMs (" + psmTable.getRowCount() + ")";
+            ((TitledBorder) proteinPeptidePsmLayeredPanel.getBorder()).setTitle(title);
+            proteinPeptidePsmLayeredPanel.repaint();
         }
     }
 
     /**
-     * Updates the protein panel including the table.
+     * Updates the protein table.
      */
-    private void updateProteinPanel() {
+    private void updateProteinTable() {
 
         if (proteinTable.getModel() instanceof ProteinTableModel && ((ProteinTableModel) proteinTable.getModel()).isInstantiated()) {
             ((ProteinTableModel) proteinTable.getModel()).updateDataModel(identification, identificationFeaturesGenerator, geneMaps,
@@ -579,25 +651,50 @@ public class OverviewPanel extends javax.swing.JPanel {
 
         ((DefaultTableModel) proteinTable.getModel()).fireTableDataChanged();
         updateProteinTableCellRenderers();
-
-        String title = ReporterGUI.TITLED_BORDER_HORIZONTAL_PADDING + "Proteins (" + proteinTable.getRowCount() + ")";
-
-        ((TitledBorder) proteinsLayeredPanel.getBorder()).setTitle(title);
-        proteinsLayeredPanel.repaint();
     }
 
     /**
-     * Updates the peptide panel including the table.
+     * Updates the peptide table.
      */
-    private void updatePeptidePanel() {
-        //@TODO!
+    private void updatePeptideTable() {
+        if (peptideTable.getModel() instanceof PeptideTableModel && ((PeptideTableModel) peptideTable.getModel()).isInstantiated()) {
+            ((PeptideTableModel) peptideTable.getModel()).updateDataModel(identification, identificationFeaturesGenerator,
+                    reporterGUI.getReporterIonQuantification(), reporterGUI.getQuantificationFeaturesGenerator(),
+                    reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getIdentificationParameters(), null, peptideKeys, false);;
+        } else {
+            PeptideTableModel peptideTableModel = new PeptideTableModel(identification, identificationFeaturesGenerator,
+                    reporterGUI.getReporterIonQuantification(), reporterGUI.getQuantificationFeaturesGenerator(),
+                    reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getIdentificationParameters(), null,
+                    peptideKeys, false, reporterGUI.getExceptionHandler());
+            peptideTable.setModel(peptideTableModel);
+        }
+
+        setPeptideTableProperties();
+
+        ((DefaultTableModel) peptideTable.getModel()).fireTableDataChanged();
+        updatePeptideTableCellRenderers();
     }
 
     /**
-     * Updates the PSM panel including the table.
+     * Updates the PSM table.
      */
-    private void updatePsmPanel() {
-        //@TODO!
+    private void updatePsmTable() {
+        if (psmTable.getModel() instanceof PsmTableModel && ((PsmTableModel) psmTable.getModel()).isInstantiated()) {
+            ((PsmTableModel) psmTable.getModel()).updateDataModel(identification, reporterGUI.getDisplayFeaturesGenerator(),
+                    reporterGUI.getIdentificationParameters(), reporterGUI.getReporterIonQuantification(),
+                    reporterGUI.getQuantificationFeaturesGenerator(), psmKeys, false);
+        } else {
+            PsmTableModel psmTableModel = new PsmTableModel(identification, reporterGUI.getDisplayFeaturesGenerator(),
+                    reporterGUI.getIdentificationParameters(),
+                    reporterGUI.getReporterIonQuantification(), reporterGUI.getQuantificationFeaturesGenerator(),
+                    psmKeys, false, reporterGUI.getExceptionHandler());
+            psmTable.setModel(psmTableModel);
+        }
+
+        setPsmTableProperties();
+
+        ((DefaultTableModel) psmTable.getModel()).fireTableDataChanged();
+        updatePsmTableCellRenderers();
     }
 
     /**
@@ -647,11 +744,87 @@ public class OverviewPanel extends javax.swing.JPanel {
     }
 
     /**
-     * Reselect the proteins.
+     * Set up the properties of the peptide table.
+     */
+    private void setPeptideTableProperties() {
+
+        // the index column
+        peptideTable.getColumn(" ").setMaxWidth(50);
+        peptideTable.getColumn(" ").setMinWidth(50);
+        peptideTable.getColumn("Start").setMinWidth(50);
+
+        try {
+            peptideTable.getColumn("Confidence").setMaxWidth(90);
+            peptideTable.getColumn("Confidence").setMinWidth(90);
+        } catch (IllegalArgumentException w) {
+            peptideTable.getColumn("Score").setMaxWidth(90);
+            peptideTable.getColumn("Score").setMinWidth(90);
+        }
+
+        // the validated column
+        peptideTable.getColumn("").setMaxWidth(30);
+
+        // the protein inference column
+        peptideTable.getColumn("PI").setMaxWidth(37);
+        peptideTable.getColumn("PI").setMinWidth(37);
+
+        peptideTable.getModel().addTableModelListener(new TableModelListener() {
+            public void tableChanged(TableModelEvent e) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        resetSelection();
+                    }
+                });
+            }
+        });
+    }
+
+    /**
+     * Set up the properties of the PSM table.
+     */
+    private void setPsmTableProperties() {
+        // the index column
+        psmTable.getColumn(" ").setMaxWidth(50);
+        psmTable.getColumn(" ").setMinWidth(50);
+
+        try {
+            psmTable.getColumn("Confidence").setMaxWidth(90);
+            psmTable.getColumn("Confidence").setMinWidth(90);
+        } catch (IllegalArgumentException w) {
+            psmTable.getColumn("Score").setMaxWidth(90);
+            psmTable.getColumn("Score").setMinWidth(90);
+        }
+
+        // the validated column
+        psmTable.getColumn("").setMaxWidth(30);
+        psmTable.getColumn("").setMinWidth(30);
+
+        // the protein inference column
+        psmTable.getColumn("ID").setMaxWidth(37);
+        psmTable.getColumn("ID").setMinWidth(37);
+
+//        if (reporterGUI.getIdentificationParameters().getSearchParameters().isPrecursorAccuracyTypePpm()) { // @TODO: implement tooltips!
+//            psmTableToolTips.set(psmTable.getColumn("m/z Error").getModelIndex(), "m/z Error (ppm)");
+//        } else {
+//            psmTableToolTips.set(psmTable.getColumn("m/z Error").getModelIndex(), "m/z Error (Da)");
+//        }
+        psmTable.getModel().addTableModelListener(new TableModelListener() {
+            public void tableChanged(TableModelEvent e) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        resetSelection();
+                    }
+                });
+            }
+        });
+    }
+
+    /**
+     * Reselect the proteins, peptides and PSMs.
      */
     public void resetSelection() {
 
-        ArrayList<String> selectedProteins = reporterGUI.getSelectedProteins();
+        ArrayList<String> selectedProteins = reporterGUI.getSelectedProteins(); // @TODO: also reset peptides and psms!
         proteinTable.clearSelection();
 
         for (String tempProteinKey : selectedProteins) {
@@ -762,7 +935,7 @@ public class OverviewPanel extends javax.swing.JPanel {
         proteinsHelpJButton = new javax.swing.JButton();
         exportProteinsJButton = new javax.swing.JButton();
         contextMenuProteinsBackgroundPanel = new javax.swing.JPanel();
-        proteinsLayeredPanel = new javax.swing.JPanel();
+        proteinPeptidePsmLayeredPanel = new javax.swing.JPanel();
         matchesJTabbedPane = new javax.swing.JTabbedPane();
         proteinScrollPane = new javax.swing.JScrollPane();
         proteinTable = new JTable() {
@@ -778,12 +951,10 @@ public class OverviewPanel extends javax.swing.JPanel {
                 };
             }
         };
-        peptidesPanel = new javax.swing.JPanel();
-        peptidesJScrollPane = new javax.swing.JScrollPane();
-        peptidesJTable = new javax.swing.JTable();
-        psmsPanel = new javax.swing.JPanel();
-        psmsJScrollPane = new javax.swing.JScrollPane();
-        psmsJTable = new javax.swing.JTable();
+        peptideScrollPane = new javax.swing.JScrollPane();
+        peptideTable = new javax.swing.JTable();
+        psmScrollPane = new javax.swing.JScrollPane();
+        psmTable = new javax.swing.JTable();
 
         numberOfClustersMenuItem.setText("Number of Clusters");
         numberOfClustersMenuItem.setToolTipText("Set the number of clusters");
@@ -1051,8 +1222,8 @@ public class OverviewPanel extends javax.swing.JPanel {
         proteinsLayeredPane.add(contextMenuProteinsBackgroundPanel);
         contextMenuProteinsBackgroundPanel.setBounds(910, 0, 40, 19);
 
-        proteinsLayeredPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Proteins, Peptides & PSMs"));
-        proteinsLayeredPanel.setOpaque(false);
+        proteinPeptidePsmLayeredPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Proteins, Peptides & PSMs"));
+        proteinPeptidePsmLayeredPanel.setOpaque(false);
 
         matchesJTabbedPane.setTabPlacement(javax.swing.JTabbedPane.BOTTOM);
 
@@ -1083,59 +1254,35 @@ public class OverviewPanel extends javax.swing.JPanel {
 
         matchesJTabbedPane.addTab("Proteins", proteinScrollPane);
 
-        peptidesJTable.setModel(new PeptideTableModel());
-        peptidesJScrollPane.setViewportView(peptidesJTable);
+        peptideTable.setModel(new PeptideTableModel());
+        peptideScrollPane.setViewportView(peptideTable);
 
-        javax.swing.GroupLayout peptidesPanelLayout = new javax.swing.GroupLayout(peptidesPanel);
-        peptidesPanel.setLayout(peptidesPanelLayout);
-        peptidesPanelLayout.setHorizontalGroup(
-            peptidesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(peptidesJScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 913, Short.MAX_VALUE)
-        );
-        peptidesPanelLayout.setVerticalGroup(
-            peptidesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(peptidesJScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)
-        );
+        matchesJTabbedPane.addTab("Peptides", peptideScrollPane);
 
-        matchesJTabbedPane.addTab("Peptides", peptidesPanel);
+        psmTable.setModel(new PsmTableModel());
+        psmScrollPane.setViewportView(psmTable);
 
-        psmsPanel.setOpaque(false);
+        matchesJTabbedPane.addTab("PSMs", psmScrollPane);
 
-        psmsJTable.setModel(new PsmTableModel());
-        psmsJScrollPane.setViewportView(psmsJTable);
-
-        javax.swing.GroupLayout psmsPanelLayout = new javax.swing.GroupLayout(psmsPanel);
-        psmsPanel.setLayout(psmsPanelLayout);
-        psmsPanelLayout.setHorizontalGroup(
-            psmsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(psmsJScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 913, Short.MAX_VALUE)
-        );
-        psmsPanelLayout.setVerticalGroup(
-            psmsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(psmsJScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)
-        );
-
-        matchesJTabbedPane.addTab("PSMs", psmsPanel);
-
-        javax.swing.GroupLayout proteinsLayeredPanelLayout = new javax.swing.GroupLayout(proteinsLayeredPanel);
-        proteinsLayeredPanel.setLayout(proteinsLayeredPanelLayout);
-        proteinsLayeredPanelLayout.setHorizontalGroup(
-            proteinsLayeredPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(proteinsLayeredPanelLayout.createSequentialGroup()
+        javax.swing.GroupLayout proteinPeptidePsmLayeredPanelLayout = new javax.swing.GroupLayout(proteinPeptidePsmLayeredPanel);
+        proteinPeptidePsmLayeredPanel.setLayout(proteinPeptidePsmLayeredPanelLayout);
+        proteinPeptidePsmLayeredPanelLayout.setHorizontalGroup(
+            proteinPeptidePsmLayeredPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(proteinPeptidePsmLayeredPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(matchesJTabbedPane)
                 .addContainerGap())
         );
-        proteinsLayeredPanelLayout.setVerticalGroup(
-            proteinsLayeredPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(proteinsLayeredPanelLayout.createSequentialGroup()
+        proteinPeptidePsmLayeredPanelLayout.setVerticalGroup(
+            proteinPeptidePsmLayeredPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(proteinPeptidePsmLayeredPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(matchesJTabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 305, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
-        proteinsLayeredPane.add(proteinsLayeredPanel);
-        proteinsLayeredPanel.setBounds(0, 0, 950, 350);
+        proteinsLayeredPane.add(proteinPeptidePsmLayeredPanel);
+        proteinPeptidePsmLayeredPanel.setBounds(0, 0, 950, 350);
 
         javax.swing.GroupLayout proteinsJPanelLayout = new javax.swing.GroupLayout(proteinsJPanel);
         proteinsJPanel.setLayout(proteinsJPanelLayout);
@@ -1807,19 +1954,17 @@ public class OverviewPanel extends javax.swing.JPanel {
     private javax.swing.JMenuItem numberOfClustersMenuItem;
     private javax.swing.JPanel overviewJPanel;
     private javax.swing.JSplitPane overviewJSplitPane;
-    private javax.swing.JScrollPane peptidesJScrollPane;
-    private javax.swing.JTable peptidesJTable;
-    private javax.swing.JPanel peptidesPanel;
+    private javax.swing.JScrollPane peptideScrollPane;
+    private javax.swing.JTable peptideTable;
     private javax.swing.JPanel plotPanel;
+    private javax.swing.JPanel proteinPeptidePsmLayeredPanel;
     private javax.swing.JScrollPane proteinScrollPane;
     private javax.swing.JTable proteinTable;
     private javax.swing.JButton proteinsHelpJButton;
     private javax.swing.JPanel proteinsJPanel;
     private javax.swing.JLayeredPane proteinsLayeredPane;
-    private javax.swing.JPanel proteinsLayeredPanel;
-    private javax.swing.JScrollPane psmsJScrollPane;
-    private javax.swing.JTable psmsJTable;
-    private javax.swing.JPanel psmsPanel;
+    private javax.swing.JScrollPane psmScrollPane;
+    private javax.swing.JTable psmTable;
     private javax.swing.JButton ratioPlotHelpJButton;
     private javax.swing.JButton ratioPlotOptionsJButton;
     private javax.swing.JPanel ratioPlotsJPanel;
@@ -1852,6 +1997,108 @@ public class OverviewPanel extends javax.swing.JPanel {
             } catch (IllegalArgumentException e) {
                 ((JSparklinesBarChartTableCellRenderer) proteinTable.getColumn("Score").getCellRenderer()).setMaxValue(100.0);
             }
+        }
+    }
+
+    /**
+     * Update the peptide table cell renderers.
+     */
+    private void updatePeptideTableCellRenderers() {
+
+        if (reporterGUI.getIdentification() != null) {
+
+            // set up the peptide inference color map
+            HashMap<Integer, Color> peptideInferenceColorMap = new HashMap<Integer, Color>();
+            peptideInferenceColorMap.put(PSParameter.NOT_GROUP, reporterGUI.getSparklineColor());
+            peptideInferenceColorMap.put(PSParameter.RELATED, Color.YELLOW);
+            peptideInferenceColorMap.put(PSParameter.RELATED_AND_UNRELATED, Color.ORANGE);
+            peptideInferenceColorMap.put(PSParameter.UNRELATED, Color.RED);
+
+            // set up the peptide inference tooltip map
+            HashMap<Integer, String> peptideInferenceTooltipMap = new HashMap<Integer, String>();
+            peptideInferenceTooltipMap.put(PSParameter.NOT_GROUP, "Unique to a single protein");
+            peptideInferenceTooltipMap.put(PSParameter.RELATED, "Belongs to a group of related proteins");
+            peptideInferenceTooltipMap.put(PSParameter.RELATED_AND_UNRELATED, "Belongs to a group of related and unrelated proteins");
+            peptideInferenceTooltipMap.put(PSParameter.UNRELATED, "Belongs to unrelated proteins");
+
+            peptideTable.getColumn("PI").setCellRenderer(new JSparklinesIntegerColorTableCellRenderer(reporterGUI.getSparklineColor(), peptideInferenceColorMap, peptideInferenceTooltipMap));
+            peptideTable.getColumn("Start").setCellRenderer(new JSparklinesMultiIntervalChartTableCellRenderer(PlotOrientation.HORIZONTAL, 100d, 100d, reporterGUI.getSparklineColor()));
+
+            // use a gray color for no decoy searches
+            Color nonValidatedColor = reporterGUI.getSparklineColorNonValidated();
+            if (!sequenceFactory.concatenatedTargetDecoy()) {
+                nonValidatedColor = reporterGUI.getUtilitiesUserPreferences().getSparklineColorNotFound();
+            }
+            ArrayList<Color> sparklineColors = new ArrayList<Color>();
+            sparklineColors.add(reporterGUI.getSparklineColor());
+            sparklineColors.add(reporterGUI.getUtilitiesUserPreferences().getSparklineColorDoubtful());
+            sparklineColors.add(nonValidatedColor);
+            peptideTable.getColumn("#Spectra").setCellRenderer(new JSparklinesArrayListBarChartTableCellRenderer(PlotOrientation.HORIZONTAL, 10.0, sparklineColors, JSparklinesArrayListBarChartTableCellRenderer.ValueDisplayType.sumOfNumbers));
+            ((JSparklinesArrayListBarChartTableCellRenderer) peptideTable.getColumn("#Spectra").getCellRenderer()).showNumberAndChart(true, TableProperties.getLabelWidth(), new DecimalFormat("0"));
+            peptideTable.getColumn("").setCellRenderer(new JSparklinesIntegerIconTableCellRenderer(MatchValidationLevel.getIconMap(this.getClass()), MatchValidationLevel.getTooltipMap()));
+
+            try {
+                peptideTable.getColumn("Confidence").setCellRenderer(new JSparklinesBarChartTableCellRenderer(PlotOrientation.HORIZONTAL, 100.0, reporterGUI.getSparklineColor()));
+                ((JSparklinesBarChartTableCellRenderer) peptideTable.getColumn("Confidence").getCellRenderer()).showNumberAndChart(
+                        true, TableProperties.getLabelWidth() - 20, reporterGUI.getScoreAndConfidenceDecimalFormat());
+            } catch (IllegalArgumentException e) {
+                peptideTable.getColumn("Score").setCellRenderer(new JSparklinesBarChartTableCellRenderer(PlotOrientation.HORIZONTAL, 100.0, reporterGUI.getSparklineColor()));
+                ((JSparklinesBarChartTableCellRenderer) peptideTable.getColumn("Score").getCellRenderer()).showNumberAndChart(
+                        true, TableProperties.getLabelWidth() - 20, reporterGUI.getScoreAndConfidenceDecimalFormat());
+            }
+
+            // the quant plot column
+            ClusterBuilder clusterBuilder = reporterGUI.getClusterBuilder();
+            Double amplitude = clusterBuilder.getRatioAmplitude();
+            peptideTable.getColumn("Quant").setCellRenderer(new JSparklinesHeatMapTableCellRenderer(GradientColorCoding.ColorGradient.GreenWhiteRed, amplitude));
+        }
+    }
+
+    /**
+     * Update the PSM table cell renderers.
+     */
+    private void updatePsmTableCellRenderers() {
+
+        if (reporterGUI.getIdentification() != null) {
+
+            // set up the psm color map
+            HashMap<Integer, java.awt.Color> psmColorMap = new HashMap<Integer, java.awt.Color>();
+            psmColorMap.put(AGREEMENT_WITH_MODS, reporterGUI.getSparklineColor()); // id software agree with PTM certainty
+            psmColorMap.put(AGREEMENT, java.awt.Color.CYAN); // id software agree on peptide but not ptm certainty
+            psmColorMap.put(CONFLICT, java.awt.Color.YELLOW); // id software don't agree
+            psmColorMap.put(PARTIALLY_MISSING, java.awt.Color.ORANGE); // some id software id'ed some didn't
+
+            // set up the psm tooltip map
+            HashMap<Integer, String> psmTooltipMap = new HashMap<Integer, String>();
+            psmTooltipMap.put(AGREEMENT_WITH_MODS, "ID Software Agree");
+            psmTooltipMap.put(AGREEMENT, "ID Software Agree - PTM Certainty Issues");
+            psmTooltipMap.put(CONFLICT, "ID Software Disagree");
+            psmTooltipMap.put(PARTIALLY_MISSING, "First Hit(s) Missing");
+
+            psmTable.getColumn("ID").setCellRenderer(new JSparklinesIntegerColorTableCellRenderer(Color.lightGray, psmColorMap, psmTooltipMap));
+            psmTable.getColumn("m/z Error").setCellRenderer(new JSparklinesBarChartTableCellRenderer(PlotOrientation.HORIZONTAL,
+                    -reporterGUI.getIdentificationParameters().getSearchParameters().getPrecursorAccuracy(), reporterGUI.getIdentificationParameters().getSearchParameters().getPrecursorAccuracy(), // @TODO: how to handle negative values..?
+                    reporterGUI.getSparklineColor(), reporterGUI.getSparklineColor()));
+            ((JSparklinesBarChartTableCellRenderer) psmTable.getColumn("m/z Error").getCellRenderer()).showNumberAndChart(true, TableProperties.getLabelWidth());
+            psmTable.getColumn("Charge").setCellRenderer(new JSparklinesBarChartTableCellRenderer(PlotOrientation.HORIZONTAL,
+                    (double) ((PSMaps) reporterGUI.getIdentification().getUrParam(new PSMaps())).getPsmSpecificMap().getMaxCharge(), reporterGUI.getSparklineColor()));
+            ((JSparklinesBarChartTableCellRenderer) psmTable.getColumn("Charge").getCellRenderer()).showNumberAndChart(true, TableProperties.getLabelWidth() - 30);
+            psmTable.getColumn("").setCellRenderer(new JSparklinesIntegerIconTableCellRenderer(MatchValidationLevel.getIconMap(this.getClass()), MatchValidationLevel.getTooltipMap()));
+
+            try {
+                psmTable.getColumn("Confidence").setCellRenderer(new JSparklinesBarChartTableCellRenderer(PlotOrientation.HORIZONTAL, 100.0, reporterGUI.getSparklineColor()));
+                ((JSparklinesBarChartTableCellRenderer) psmTable.getColumn("Confidence").getCellRenderer()).showNumberAndChart(
+                        true, TableProperties.getLabelWidth() - 20, reporterGUI.getScoreAndConfidenceDecimalFormat());
+            } catch (IllegalArgumentException e) {
+                psmTable.getColumn("Score").setCellRenderer(new JSparklinesBarChartTableCellRenderer(PlotOrientation.HORIZONTAL, 100.0, reporterGUI.getSparklineColor()));
+                ((JSparklinesBarChartTableCellRenderer) psmTable.getColumn("Score").getCellRenderer()).showNumberAndChart(
+                        true, TableProperties.getLabelWidth() - 20, reporterGUI.getScoreAndConfidenceDecimalFormat());
+            }
+
+            // the quant plot column
+            ClusterBuilder clusterBuilder = reporterGUI.getClusterBuilder();
+            Double amplitude = clusterBuilder.getRatioAmplitude();
+            psmTable.getColumn("Quant").setCellRenderer(new JSparklinesHeatMapTableCellRenderer(GradientColorCoding.ColorGradient.GreenWhiteRed, amplitude));
         }
     }
 }

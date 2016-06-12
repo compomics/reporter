@@ -11,12 +11,14 @@ import java.util.HashMap;
 import javax.swing.JFrame;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
+import no.uib.jsparklines.extra.NimbusCheckBoxRenderer;
 import no.uib.jsparklines.renderers.JSparklinesColorTableCellRenderer;
 
 /**
  * Clustering settings dialog.
  *
  * @author Marc Vaudel
+ * @author Harald Barsnes
  */
 public class ClusteringSettingsDialog extends javax.swing.JDialog {
 
@@ -93,6 +95,7 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
      */
     private void setUpGui() {
 
+        // set the column width and cell renderes
         TableColumn colorColumn = proteinClassesTable.getColumnModel().getColumn(0);
         colorColumn.setCellRenderer(new JSparklinesColorTableCellRenderer());
         colorColumn.setMaxWidth(35);
@@ -107,6 +110,31 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
         colorColumn.setCellRenderer(new JSparklinesColorTableCellRenderer());
         colorColumn.setMaxWidth(35);
         colorColumn.setMinWidth(35);
+        
+        colorColumn = proteinClassesTable.getColumnModel().getColumn(2);
+        colorColumn.setCellRenderer(new NimbusCheckBoxRenderer());
+        colorColumn.setMaxWidth(35);
+        colorColumn.setMinWidth(35);
+        
+        colorColumn = peptideClassesTable.getColumnModel().getColumn(2);
+        colorColumn.setCellRenderer(new NimbusCheckBoxRenderer());
+        colorColumn.setMaxWidth(35);
+        colorColumn.setMinWidth(35);
+        
+        colorColumn = psmClassesTable.getColumnModel().getColumn(2);
+        colorColumn.setCellRenderer(new NimbusCheckBoxRenderer());
+        colorColumn.setMaxWidth(35);
+        colorColumn.setMinWidth(35);
+        
+        // set main table properties
+        proteinClassesTable.getTableHeader().setReorderingAllowed(false);
+        peptideClassesTable.getTableHeader().setReorderingAllowed(false);
+        psmClassesTable.getTableHeader().setReorderingAllowed(false);
+        
+        // make sure that the scroll panes are see-through
+        proteinClassesScrollPane.getViewport().setOpaque(false);
+        peptideClassesScrollPane.getViewport().setOpaque(false);
+        psmClassesScrollPane.getViewport().setOpaque(false);
     }
 
     /**
@@ -225,18 +253,19 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
         proteinsClassesLbl = new javax.swing.JLabel();
         peptidesClassesLbl = new javax.swing.JLabel();
         psmsClassesLbl = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
+        proteinClassesScrollPane = new javax.swing.JScrollPane();
         proteinClassesTable = new javax.swing.JTable();
-        jScrollPane2 = new javax.swing.JScrollPane();
+        peptideClassesScrollPane = new javax.swing.JScrollPane();
         peptideClassesTable = new javax.swing.JTable();
-        jScrollPane6 = new javax.swing.JScrollPane();
+        psmClassesScrollPane = new javax.swing.JScrollPane();
         psmClassesTable = new javax.swing.JTable();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Cluster Settings");
         setBackground(new java.awt.Color(230, 230, 230));
         addWindowListener(new java.awt.event.WindowAdapter() {
-            public void windowClosed(java.awt.event.WindowEvent evt) {
-                formWindowClosed(evt);
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
             }
         });
 
@@ -256,14 +285,14 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
             }
         });
 
-        selectionPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Cluster Classes Selection"));
+        selectionPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Cluster Categories"));
         selectionPanel.setOpaque(false);
 
-        proteinsClassesLbl.setText("Proteins:");
+        proteinsClassesLbl.setText("Proteins");
 
-        peptidesClassesLbl.setText("Peptides:");
+        peptidesClassesLbl.setText("Peptides");
 
-        psmsClassesLbl.setText("PSMs:");
+        psmsClassesLbl.setText("PSMs");
 
         proteinClassesTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -273,7 +302,7 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
 
             }
         ));
-        jScrollPane1.setViewportView(proteinClassesTable);
+        proteinClassesScrollPane.setViewportView(proteinClassesTable);
 
         peptideClassesTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -283,7 +312,7 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
 
             }
         ));
-        jScrollPane2.setViewportView(peptideClassesTable);
+        peptideClassesScrollPane.setViewportView(peptideClassesTable);
 
         psmClassesTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -293,7 +322,7 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
 
             }
         ));
-        jScrollPane6.setViewportView(psmClassesTable);
+        psmClassesScrollPane.setViewportView(psmClassesTable);
 
         javax.swing.GroupLayout selectionPanelLayout = new javax.swing.GroupLayout(selectionPanel);
         selectionPanel.setLayout(selectionPanelLayout);
@@ -305,9 +334,9 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
                     .addComponent(proteinsClassesLbl)
                     .addComponent(psmsClassesLbl)
                     .addComponent(peptidesClassesLbl)
-                    .addComponent(jScrollPane6)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 496, Short.MAX_VALUE)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING))
+                    .addComponent(psmClassesScrollPane)
+                    .addComponent(peptideClassesScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 496, Short.MAX_VALUE)
+                    .addComponent(proteinClassesScrollPane, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addContainerGap())
         );
         selectionPanelLayout.setVerticalGroup(
@@ -316,15 +345,15 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
                 .addContainerGap()
                 .addComponent(proteinsClassesLbl)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 116, Short.MAX_VALUE)
+                .addComponent(proteinClassesScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 121, Short.MAX_VALUE)
                 .addGap(18, 18, 18)
                 .addComponent(peptidesClassesLbl)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 118, Short.MAX_VALUE)
+                .addComponent(peptideClassesScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 121, Short.MAX_VALUE)
                 .addGap(18, 18, 18)
                 .addComponent(psmsClassesLbl)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 116, Short.MAX_VALUE)
+                .addComponent(psmClassesScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -333,22 +362,22 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
         backgroundPanelLayout.setHorizontalGroup(
             backgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(backgroundPanelLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(okButton, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(cancelButton)
-                .addContainerGap())
-            .addGroup(backgroundPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(selectionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(backgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(backgroundPanelLayout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(okButton, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(cancelButton))
+                    .addComponent(selectionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         backgroundPanelLayout.setVerticalGroup(
             backgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, backgroundPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(selectionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(backgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cancelButton)
                     .addComponent(okButton))
@@ -359,7 +388,7 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(backgroundPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(backgroundPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -369,32 +398,47 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    /**
+     * Close the dialog and keep the changes.
+     * 
+     * @param evt 
+     */
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
         dispose();
     }//GEN-LAST:event_okButtonActionPerformed
 
+    /**
+     * Close the dialog and cancel the changes.
+     * 
+     * @param evt 
+     */
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         canceled = true;
         dispose();
     }//GEN-LAST:event_cancelButtonActionPerformed
 
-    private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
+    /**
+     * Cancel the dialog.
+     * 
+     * @param evt 
+     */
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         canceled = true;
         dispose();
-    }//GEN-LAST:event_formWindowClosed
+    }//GEN-LAST:event_formWindowClosing
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel backgroundPanel;
     private javax.swing.JButton cancelButton;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JButton okButton;
+    private javax.swing.JScrollPane peptideClassesScrollPane;
     private javax.swing.JTable peptideClassesTable;
     private javax.swing.JLabel peptidesClassesLbl;
+    private javax.swing.JScrollPane proteinClassesScrollPane;
     private javax.swing.JTable proteinClassesTable;
     private javax.swing.JLabel proteinsClassesLbl;
+    private javax.swing.JScrollPane psmClassesScrollPane;
     private javax.swing.JTable psmClassesTable;
     private javax.swing.JLabel psmsClassesLbl;
     private javax.swing.JPanel selectionPanel;
@@ -463,7 +507,7 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
         public String getColumnName(int column) {
             switch (column) {
                 case 1:
-                    return "Name";
+                    return "Category";
                 default:
                     return "";
             }

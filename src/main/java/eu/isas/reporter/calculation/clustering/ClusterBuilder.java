@@ -244,12 +244,12 @@ public class ClusterBuilder {
                             inCluster = false;
                         }
                         if (inCluster) {
-                            ArrayList<String> clusterKeys = filteredProteinKeys.get(keyName);
-                            if (clusterKeys == null) {
-                                clusterKeys = new ArrayList<String>();
-                                filteredProteinKeys.put(keyName, clusterKeys);
+                            ArrayList<String> tempClusterKeys = filteredProteinKeys.get(keyName);
+                            if (tempClusterKeys == null) {
+                                tempClusterKeys = new ArrayList<String>();
+                                filteredProteinKeys.put(keyName, tempClusterKeys);
                             }
-                            clusterKeys.add(proteinKey);
+                            tempClusterKeys.add(proteinKey);
                             ArrayList<String> clusters = proteinClusters.get(proteinKey);
                             if (clusters == null) {
                                 clusters = new ArrayList<String>(nProteinClusters);
@@ -380,15 +380,15 @@ public class ClusterBuilder {
                             inCluster = false;
                         }
                         if (inCluster) {
-                            ArrayList<String> clusterKeys = filteredPeptideKeys.get(keyName);
-                            if (clusterKeys == null) {
-                                clusterKeys = new ArrayList<String>();
-                                filteredPeptideKeys.put(keyName, clusterKeys);
+                            ArrayList<String> tempClusterKeys = filteredPeptideKeys.get(keyName);
+                            if (tempClusterKeys == null) {
+                                tempClusterKeys = new ArrayList<String>();
+                                filteredPeptideKeys.put(keyName, tempClusterKeys);
                             }
-                            clusterKeys.add(peptideKey);
+                            tempClusterKeys.add(peptideKey);
                             ArrayList<String> clusters = peptideClusters.get(peptideKey);
                             if (clusters == null) {
-                                clusters = new ArrayList<String>(nProteinClusters);
+                                clusters = new ArrayList<String>(nPeptideClusters);
                                 peptideClusters.put(peptideKey, clusters);
                             }
                             clusters.add(keyName);
@@ -453,7 +453,7 @@ public class ClusterBuilder {
 
                     if (psParameter.getMatchValidationLevel().isValidated()) {
                         boolean found = false;
-                        for (String keyName : clusteringSettings.getSelectedPeptideClasses()) {
+                        for (String keyName : clusteringSettings.getSelectedPsmClasses()) {
                             boolean inCluster = true;
                             PsmClusterClassKey psmClusterClassKey = clusteringSettings.getPsmClassKey(keyName);
                             if (psmClusterClassKey.getFile() != null && !spectrumFile.equals(psmClusterClassKey.getFile())) {
@@ -463,15 +463,15 @@ public class ClusterBuilder {
                                 inCluster = false;
                             }
                             if (inCluster) {
-                                ArrayList<String> clusterKeys = filteredPsmKeys.get(keyName);
-                                if (clusterKeys == null) {
-                                    clusterKeys = new ArrayList<String>();
-                                    filteredPsmKeys.put(keyName, clusterKeys);
+                                ArrayList<String> tempClusterKeys = filteredPsmKeys.get(keyName);
+                                if (tempClusterKeys == null) {
+                                    tempClusterKeys = new ArrayList<String>();
+                                    filteredPsmKeys.put(keyName, tempClusterKeys);
                                 }
-                                clusterKeys.add(spectrumKey);
+                                tempClusterKeys.add(spectrumKey);
                                 ArrayList<String> clusters = psmClusters.get(spectrumKey);
                                 if (clusters == null) {
-                                    clusters = new ArrayList<String>(nProteinClusters);
+                                    clusters = new ArrayList<String>(nPsmClusters);
                                     psmClusters.put(spectrumKey, clusters);
                                 }
                                 clusters.add(keyName);

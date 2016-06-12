@@ -483,7 +483,7 @@
                             </DimensionLayout>
                           </Layout>
                         </Container>
-                        <Container class="javax.swing.JPanel" name="proteinsLayeredPanel">
+                        <Container class="javax.swing.JPanel" name="proteinPeptidePsmLayeredPanel">
                           <Properties>
                             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                               <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
@@ -568,7 +568,10 @@
                                     </Component>
                                   </SubComponents>
                                 </Container>
-                                <Container class="javax.swing.JPanel" name="peptidesPanel">
+                                <Container class="javax.swing.JScrollPane" name="peptideScrollPane">
+                                  <AuxValues>
+                                    <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+                                  </AuxValues>
                                   <Constraints>
                                     <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
                                       <JTabbedPaneConstraints tabName="Peptides">
@@ -577,41 +580,21 @@
                                     </Constraint>
                                   </Constraints>
 
-                                  <Layout>
-                                    <DimensionLayout dim="0">
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="peptidesJScrollPane" alignment="0" pref="913" max="32767" attributes="0"/>
-                                      </Group>
-                                    </DimensionLayout>
-                                    <DimensionLayout dim="1">
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="peptidesJScrollPane" alignment="0" pref="277" max="32767" attributes="0"/>
-                                      </Group>
-                                    </DimensionLayout>
-                                  </Layout>
+                                  <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
                                   <SubComponents>
-                                    <Container class="javax.swing.JScrollPane" name="peptidesJScrollPane">
-                                      <AuxValues>
-                                        <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
-                                      </AuxValues>
-
-                                      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
-                                      <SubComponents>
-                                        <Component class="javax.swing.JTable" name="peptidesJTable">
-                                          <Properties>
-                                            <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                                              <Connection code="new PeptideTableModel()" type="code"/>
-                                            </Property>
-                                          </Properties>
-                                        </Component>
-                                      </SubComponents>
-                                    </Container>
+                                    <Component class="javax.swing.JTable" name="peptideTable">
+                                      <Properties>
+                                        <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                                          <Connection code="new PeptideTableModel()" type="code"/>
+                                        </Property>
+                                      </Properties>
+                                    </Component>
                                   </SubComponents>
                                 </Container>
-                                <Container class="javax.swing.JPanel" name="psmsPanel">
-                                  <Properties>
-                                    <Property name="opaque" type="boolean" value="false"/>
-                                  </Properties>
+                                <Container class="javax.swing.JScrollPane" name="psmScrollPane">
+                                  <AuxValues>
+                                    <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+                                  </AuxValues>
                                   <Constraints>
                                     <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
                                       <JTabbedPaneConstraints tabName="PSMs">
@@ -620,35 +603,15 @@
                                     </Constraint>
                                   </Constraints>
 
-                                  <Layout>
-                                    <DimensionLayout dim="0">
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="psmsJScrollPane" alignment="0" pref="913" max="32767" attributes="0"/>
-                                      </Group>
-                                    </DimensionLayout>
-                                    <DimensionLayout dim="1">
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="psmsJScrollPane" alignment="0" pref="277" max="32767" attributes="0"/>
-                                      </Group>
-                                    </DimensionLayout>
-                                  </Layout>
+                                  <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
                                   <SubComponents>
-                                    <Container class="javax.swing.JScrollPane" name="psmsJScrollPane">
-                                      <AuxValues>
-                                        <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
-                                      </AuxValues>
-
-                                      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
-                                      <SubComponents>
-                                        <Component class="javax.swing.JTable" name="psmsJTable">
-                                          <Properties>
-                                            <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                                              <Connection code="new PsmTableModel()" type="code"/>
-                                            </Property>
-                                          </Properties>
-                                        </Component>
-                                      </SubComponents>
-                                    </Container>
+                                    <Component class="javax.swing.JTable" name="psmTable">
+                                      <Properties>
+                                        <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                                          <Connection code="new PsmTableModel()" type="code"/>
+                                        </Property>
+                                      </Properties>
+                                    </Component>
                                   </SubComponents>
                                 </Container>
                               </SubComponents>

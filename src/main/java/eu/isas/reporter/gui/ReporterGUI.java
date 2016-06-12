@@ -231,9 +231,6 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
             }
 
             initComponents();
-            
-            categoriesMenuItem.setVisible(false);
-            jSeparator4.setVisible(false);
 
             overviewPanel = new OverviewPanel(this);
             overviewJPanel.add(overviewPanel);
@@ -757,7 +754,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         quantificationOptionsMenu.setMnemonic('E');
         quantificationOptionsMenu.setText("Edit");
 
-        categoriesMenuItem.setText("Categories");
+        categoriesMenuItem.setText("Cluster Settings");
         categoriesMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 categoriesMenuItemActionPerformed(evt);

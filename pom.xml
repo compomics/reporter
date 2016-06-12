@@ -5,7 +5,7 @@
     <groupId>eu.isas.reporter</groupId>
     <artifactId>Reporter</artifactId>
     <packaging>jar</packaging>
-    <version>0.4.0</version>
+    <version>0.5.0-beta</version>
     <name>Reporter</name>
     <url>https://github.com/compomics/reporter</url>
     <description>Protein quantification based on reporter ions</description>
