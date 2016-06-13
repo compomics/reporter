@@ -307,7 +307,7 @@
         <dependency>
             <groupId>com.compomics</groupId>
             <artifactId>utilities</artifactId>
-            <version>4.5.20</version>
+            <version>4.6.0</version>
             <exclusions>
                 <exclusion>
                     <artifactId>commons-math</artifactId>
@@ -363,7 +363,7 @@
         <dependency>
             <groupId>eu.isas.peptideshaker</groupId>
             <artifactId>PeptideShaker</artifactId>
-            <version>1.11.0</version>
+            <version>1.11.1-beta</version>
             <exclusions>
                 <exclusion>
                     <groupId>de.proteinms.omxparser</groupId>
