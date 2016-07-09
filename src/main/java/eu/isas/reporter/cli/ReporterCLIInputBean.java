@@ -42,6 +42,10 @@ public class ReporterCLIInputBean {
      * The path settings.
      */
     private PathSettingsCLIInputBean pathSettingsCLIInputBean;
+    /**
+     * The name of the reporter ion method as set in the isotopic distribution file.
+     */
+    private String reporterMethod = null;
 
     /**
      * Parses the arguments of a command line.
@@ -75,6 +79,12 @@ public class ReporterCLIInputBean {
         if (aLine.hasOption(ReporterCLIParameters.THREADS.id)) {
             arg = aLine.getOptionValue(ReporterCLIParameters.THREADS.id);
             nThreads = new Integer(arg);
+        }
+
+        // get the reporter ion method
+        if (aLine.hasOption(ReporterCLIParameters.METHOD.id)) {
+            arg = aLine.getOptionValue(ReporterCLIParameters.METHOD.id);
+            reporterMethod = arg;
         }
 
         // identification parameters
@@ -171,6 +181,15 @@ public class ReporterCLIInputBean {
     }
 
     /**
+     * Returns the name of the reporter methods provided by the user.
+     * 
+     * @return the name of the reporter method
+     */
+    public String getReporterMethod() {
+        return reporterMethod;
+    }
+
+    /**
      * Returns the identification parameters.
      *
      * @return the identification parameters
@@ -200,4 +219,6 @@ public class ReporterCLIInputBean {
     public PathSettingsCLIInputBean getPathSettingsCLIInputBean() {
         return pathSettingsCLIInputBean;
     }
+    
+    
 }

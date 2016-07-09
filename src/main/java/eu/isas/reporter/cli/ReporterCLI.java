@@ -1,20 +1,31 @@
 package eu.isas.reporter.cli;
 
 import com.compomics.software.settings.PathKey;
+import com.compomics.util.Util;
+import com.compomics.util.db.DerbyUtil;
 import com.compomics.util.experiment.biology.EnzymeFactory;
 import com.compomics.util.experiment.biology.taxonomy.SpeciesFactory;
+import com.compomics.util.experiment.identification.Identification;
+import com.compomics.util.experiment.identification.protein_sequences.SequenceFactory;
 import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
+import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
+import com.compomics.util.experiment.quantification.reporterion.ReporterMethodFactory;
 import com.compomics.util.gui.filehandling.TempFilesManager;
 import com.compomics.util.gui.waiting.waitinghandlers.WaitingHandlerCLIImpl;
 import com.compomics.util.preferences.IdentificationParameters;
 import com.compomics.util.preferences.ProcessingPreferences;
+import com.compomics.util.waiting.WaitingHandler;
+import eu.isas.peptideshaker.PeptideShaker;
+import eu.isas.peptideshaker.utils.CpsParent;
 import eu.isas.reporter.Reporter;
+import eu.isas.reporter.io.ProjectImporter;
 import eu.isas.reporter.preferences.ReporterPathPreferences;
 import eu.isas.reporter.utils.Properties;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.concurrent.Callable;
@@ -22,13 +33,14 @@ import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.compress.archivers.ArchiveException;
 
 /**
  * Command line interface for reporter.
  *
  * @author Marc Vaudel
  */
-public class ReporterCLI implements Callable {
+public class ReporterCLI extends CpsParent implements Callable {
 
     /**
      * The command line parameters.
@@ -46,6 +58,10 @@ public class ReporterCLI implements Callable {
      * The command line.
      */
     private CommandLine line;
+    /**
+     * The compomics reporter methods factory.
+     */
+    private ReporterMethodFactory methodsFactory = ReporterMethodFactory.getInstance();
 
     /**
      * Construct a new ReporterCLI runnable from a list of arguments.
@@ -148,8 +164,151 @@ public class ReporterCLI implements Callable {
             IdentificationParameters.saveIdentificationParameters(identificationParameters, parametersFile);
         }
 
-        // Start processing
+        // Import the PeptideShaker project
+        File selectedFile = reporterCLIInputBean.getPeptideShakerFile();
+        try {
+            loadPeptideShakerProject(selectedFile, waitingHandlerCLIImpl);
+        } catch (Exception e) {
+            waitingHandlerCLIImpl.appendReport(selectedFile.getAbsolutePath() + " could not be loaded.", true, true);
+            e.printStackTrace();
+            try {
+                close();
+            } catch (Exception eClose) {
+                // Ignore
+            }
+            return 1;
+        }
+
+        // Get reporter ion method
+        String selectedMethod = reporterCLIInputBean.getReporterMethod();
+
         return null;
+    }
+
+    /**
+     * Loads a PeptideShaker project from the given file.
+     *
+     * @param peptideShakerFile the PeptideShaker file as .cpsx or zip
+     * @param waitingHandler the waiting handler used to display progress to the
+     * user
+     *
+     * @throws IOException thrown of IOException occurs exception thrown
+     * whenever an error occurred while reading or writing a file
+     * @throws SQLException thrown of SQLException occurs exception thrown
+     * whenever an error occurred while interacting with the database
+     * @throws java.lang.ClassNotFoundException exception thrown whenever an
+     * error occurred while deserializing an object
+     * @throws java.lang.InterruptedException exception thrown whenever a
+     * threading error occurred while saving the project
+     * @throws org.apache.commons.compress.archivers.ArchiveException exception
+     * thrown whenever an error occurs while untaring the file
+     */
+    private void loadPeptideShakerProject(File peptideShakerFile, WaitingHandler waitingHandler) throws SQLException, IOException, ClassNotFoundException, InterruptedException, ArchiveException {
+
+        try {
+            if (Util.getExtension(peptideShakerFile).equalsIgnoreCase("zip")) {
+                loadCpsFromZipFile(peptideShakerFile, Reporter.getMatchesFolder(), waitingHandler);
+            } else if (peptideShakerFile != null) {
+                loadCpsFile(Reporter.getMatchesFolder(), waitingHandler);
+            } else {
+                throw new IllegalArgumentException("PeptideShaker project input missing.");
+            }
+        } catch (SQLException e) {
+            waitingHandler.appendReport("An error occurred while reading: " + peptideShakerFile + ". "
+                    + "It looks like another instance of PeptideShaker is still connected to the file. "
+                    + "Please close all instances of PeptideShaker and try again.", true, true);
+            throw e;
+        }
+
+        // load fasta file
+        if (!loadFastaFile(waitingHandler)) {
+            throw new IllegalArgumentException("The FASTA file was not found. Please provide its location in the command line parameters.");
+        }
+
+        // load the spectrum files
+        if (!loadSpectrumFiles(waitingHandler)) {
+            if (identification.getSpectrumFiles().size() > 1) {
+                waitingHandler.appendReport("The spectrum files were not found. Please provide their location in the command line parameters.", true, true);
+            } else {
+                waitingHandler.appendReport("The spectrum file was not found. Please provide its location in the command line parameters.", true, true);
+            }
+        }
+
+        // Load project specific PTMs
+        String error = PeptideShaker.loadModifications(getIdentificationParameters().getSearchParameters());
+        if (error != null) {
+            System.out.println(error);
+        }
+    }
+
+    /**
+     * Close the Reporter instance. Closes file connections and deletes
+     * temporary files.
+     *
+     * @throws IOException thrown of IOException occurs
+     * @throws SQLException thrown if SQLException occurs
+     */
+    public void close() throws IOException, SQLException {
+        close(identification);
+    }
+
+    /**
+     * Close the Reporter instance. Closes file connections and deletes
+     * temporary files.
+     *
+     * @param identification the identification
+     *
+     * @throws IOException thrown of IOException occurs
+     * @throws SQLException thrown if SQLException occurs
+     */
+    public static void close(Identification identification) throws IOException, SQLException {
+
+        try {
+            SpectrumFactory.getInstance().closeFiles();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
+            SequenceFactory.getInstance().closeFile();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            if (identification != null) {
+                identification.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            DerbyUtil.closeConnection();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            File matchFolder = Reporter.getMatchesFolder();
+            File[] tempFiles = matchFolder.listFiles();
+
+            if (tempFiles != null) {
+                for (File currentFile : tempFiles) {
+                    boolean deleted = Util.deleteDir(currentFile);
+                    if (!deleted) {
+                        System.out.println(currentFile.getAbsolutePath() + " could not be deleted!"); // @TODO: better handling of this error?
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            TempFilesManager.deleteTempFolders();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -200,7 +359,7 @@ public class ReporterCLI implements Callable {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
+
         // Delete temporary folders
         try {
             TempFilesManager.deleteTempFolders();

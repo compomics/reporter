@@ -20,6 +20,8 @@ public enum ReporterCLIParameters {
     OUT("out", "Output file to save the project.", false),
     ISOTOPES("isotopes", "The isotope correction factors file (.xml file).", false),
     
+    METHOD("method", "The reporter ion quantification method as used in the isotopic distribution file.", false),
+    
     THREADS("threads", "Number of threads to use for the processing, default: the number of cores on the machine.", false);
 
     /**
@@ -77,6 +79,9 @@ public enum ReporterCLIParameters {
         output += "Mandatory Parameters:\n\n";
         output += "-" + String.format(formatter, ID.id) + " " + ID.description + "\n";
         output += "-" + String.format(formatter, ISOTOPES.id) + " " + ISOTOPES.description + "\n";
+
+        output += "Reporter Ion options:\n\n";
+        output += "-" + String.format(formatter, METHOD.id) + " " + METHOD.description + "\n";
                 
         output += "\n\nOutput:\n\n";
         output += "-" + String.format(formatter, OUT.id) + " " + OUT.description + "\n";
