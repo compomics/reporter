@@ -51,10 +51,6 @@ import org.xmlpull.v1.XmlPullParserException;
 public class NewDialog extends javax.swing.JDialog {
 
     /**
-     * File containing the various reporter methods.
-     */
-    private final String METHODS_FILE = "resources/conf/reporterMethods.xml";
-    /**
      * The current methods file.
      */
     private File methodsFile;
@@ -147,7 +143,7 @@ public class NewDialog extends javax.swing.JDialog {
         this.reporterGui = reporterGui;
         this.welcomeDialog = null;
 
-        methodsFile = new File(reporterGui.getJarFilePath(), METHODS_FILE);
+        methodsFile = Reporter.getMethodsFile();
         importMethods();
 
         initComponents();
@@ -190,7 +186,7 @@ public class NewDialog extends javax.swing.JDialog {
         this.reporterGui = reporterGui;
         this.welcomeDialog = welcomeDialog;
 
-        methodsFile = new File(reporterGui.getJarFilePath(), METHODS_FILE);
+        methodsFile = Reporter.getMethodsFile();
         importMethods();
 
         initComponents();
@@ -1287,7 +1283,8 @@ public class NewDialog extends javax.swing.JDialog {
      * methods.
      */
     private void importMethodsError() {
-        JOptionPane.showMessageDialog(this, "\"" + METHODS_FILE + "\" could not be parsed, please select a method file.", "No Spectrum File Selected", JOptionPane.WARNING_MESSAGE);
+        
+        JOptionPane.showMessageDialog(this, "Default reporter methods file could not be parsed, please select a method file.", "No Spectrum File Selected", JOptionPane.WARNING_MESSAGE);
         JFileChooser fileChooser = new JFileChooser(reporterGui.getLastSelectedFolder().getLastSelectedFolder());
         fileChooser.setDialogTitle("Select Methods file");
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -1301,12 +1298,12 @@ public class NewDialog extends javax.swing.JDialog {
                 reporterGui.getLastSelectedFolder().setLastSelectedFolder(newFile.getPath());
             } catch (IOException e) {
                 JOptionPane.showMessageDialog(null,
-                        "File " + METHODS_FILE + " not found in conf folder.",
-                        "Methods file not found", JOptionPane.WARNING_MESSAGE);
+                        "File " + newFile + " could not be parsed.",
+                        "Methods file error", JOptionPane.WARNING_MESSAGE);
                 importMethodsError();
             } catch (XmlPullParserException e) {
                 JOptionPane.showMessageDialog(this,
-                        "An error occurred while parsing " + METHODS_FILE + " at line " + e.getLineNumber() + ".",
+                        "An error occurred while parsing " + newFile + " at line " + e.getLineNumber() + ".",
                         "Parsing error", JOptionPane.WARNING_MESSAGE);
                 importMethodsError();
             }

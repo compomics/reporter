@@ -3,11 +3,13 @@ package eu.isas.reporter.cli;
 import com.compomics.software.settings.PathKey;
 import com.compomics.util.Util;
 import com.compomics.util.db.DerbyUtil;
+import com.compomics.util.db.ObjectsCache;
 import com.compomics.util.experiment.biology.EnzymeFactory;
 import com.compomics.util.experiment.biology.taxonomy.SpeciesFactory;
 import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.protein_sequences.SequenceFactory;
 import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
+import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethodFactory;
 import com.compomics.util.gui.filehandling.TempFilesManager;
@@ -20,6 +22,7 @@ import eu.isas.peptideshaker.utils.CpsParent;
 import eu.isas.reporter.Reporter;
 import eu.isas.reporter.io.ProjectImporter;
 import eu.isas.reporter.preferences.ReporterPathPreferences;
+import eu.isas.reporter.settings.ReporterSettings;
 import eu.isas.reporter.utils.Properties;
 import java.io.EOFException;
 import java.io.File;
@@ -74,20 +77,28 @@ public class ReporterCLI extends CpsParent implements Callable {
      */
     private ReporterCLI(String[] args) throws ParseException {
 
-        // load enzymes
+        // Load enzymes
         try {
-            enzymeFactory.importEnzymes(Reporter.getEnzymesFile(Reporter.getJarFilePath()));
+            enzymeFactory.importEnzymes(Reporter.getEnzymesFile());
         } catch (Exception e) {
             System.out.println("An error occurred while loading the enzymes.");
             e.printStackTrace();
         }
 
-        // load species
+        // Load species
         try {
             SpeciesFactory speciesFactory = SpeciesFactory.getInstance();
             speciesFactory.initiate(Reporter.getJarFilePath());
         } catch (Exception e) {
             System.out.println("An error occurred while loading the species.");
+            e.printStackTrace();
+        }
+
+        // Load default methods
+        try {
+            methodsFactory.importMethods(Reporter.getMethodsFile());
+        } catch (Exception e) {
+            System.out.println("An error occurred while loading the methods.");
             e.printStackTrace();
         }
 
@@ -165,103 +176,34 @@ public class ReporterCLI extends CpsParent implements Callable {
             IdentificationParameters.saveIdentificationParameters(identificationParameters, parametersFile);
         }
 
-        // Import the PeptideShaker project
+        // Load the project from the cps file
+        ProjectImporter projectImporter = new ProjectImporter();
         File selectedFile = reporterCLIInputBean.getPeptideShakerFile();
         try {
-            loadPeptideShakerProject(selectedFile, waitingHandlerCLIImpl);
-        } catch (Exception e) {
-            waitingHandlerCLIImpl.appendReport(selectedFile.getAbsolutePath() + " could not be loaded.", true, true);
-            e.printStackTrace();
-            try {
-                close();
-            } catch (Exception eClose) {
-                // Ignore
-            }
-            return 1;
-        }
-
-        // Load default quantification settings from the identification
-        try {
-            ProjectImporter projectImporter = new ProjectImporter();
             projectImporter.importPeptideShakerProject(this, waitingHandlerCLIImpl);
             projectImporter.importReporterProject(this, waitingHandlerCLIImpl);
         } catch (OutOfMemoryError error) {
             System.out.println("Ran out of memory! (runtime.maxMemory(): " + Runtime.getRuntime().maxMemory() + ")");
-            error.printStackTrace();
             String errorText = "PeptideShaker used up all the available memory and had to be stopped.<br>"
                     + "Memory boundaries are changed in the the Welcome Dialog (Settings<br>"
                     + "& Help > Settings > Java Memory Settings) or in the Edit menu (Edit<br>"
                     + "Java Options). See also <a href=\"http://compomics.github.io/compomics-utilities/wiki/javatroubleshooting.html\">JavaTroubleShooting</a>.";
             waitingHandlerCLIImpl.appendReport(errorText, true, true);
+            error.printStackTrace();
             return 1;
         } catch (EOFException e) {
-            e.printStackTrace();
             String errorText = "An error occurred while reading:\n" + selectedFile + ".\n\n"
                     + "The file is corrupted and cannot be opened anymore.";
             waitingHandlerCLIImpl.appendReport(errorText, true, true);
+            e.printStackTrace();
             return 1;
         } catch (Exception e) {
-            e.printStackTrace();
             String errorText = "An error occurred while reading:\n" + selectedFile + ".\n\n"
                     + "Please verify that the PeptideShaker version used to create\n"
                     + "the file is compatible with your version of Reporter.";
             waitingHandlerCLIImpl.appendReport(errorText, true, true);
+            e.printStackTrace();
             return 1;
-        }
-
-        // Get reporter ion method
-        String selectedMethod = reporterCLIInputBean.getReporterMethod();
-
-        return null;
-    }
-
-    /**
-     * Loads a PeptideShaker project from the given file.
-     *
-     * @param peptideShakerFile the PeptideShaker file as .cpsx or zip
-     * @param waitingHandler the waiting handler used to display progress to the
-     * user
-     *
-     * @throws IOException thrown of IOException occurs exception thrown
-     * whenever an error occurred while reading or writing a file
-     * @throws SQLException thrown of SQLException occurs exception thrown
-     * whenever an error occurred while interacting with the database
-     * @throws java.lang.ClassNotFoundException exception thrown whenever an
-     * error occurred while deserializing an object
-     * @throws java.lang.InterruptedException exception thrown whenever a
-     * threading error occurred while saving the project
-     * @throws org.apache.commons.compress.archivers.ArchiveException exception
-     * thrown whenever an error occurs while untaring the file
-     */
-    private void loadPeptideShakerProject(File peptideShakerFile, WaitingHandler waitingHandler) throws SQLException, IOException, ClassNotFoundException, InterruptedException, ArchiveException {
-
-        try {
-            if (Util.getExtension(peptideShakerFile).equalsIgnoreCase("zip")) {
-                loadCpsFromZipFile(peptideShakerFile, Reporter.getMatchesFolder(), waitingHandler);
-            } else if (peptideShakerFile != null) {
-                loadCpsFile(Reporter.getMatchesFolder(), waitingHandler);
-            } else {
-                throw new IllegalArgumentException("PeptideShaker project input missing.");
-            }
-        } catch (SQLException e) {
-            waitingHandler.appendReport("An error occurred while reading: " + peptideShakerFile + ". "
-                    + "It looks like another instance of PeptideShaker is still connected to the file. "
-                    + "Please close all instances of PeptideShaker and try again.", true, true);
-            throw e;
-        }
-
-        // load fasta file
-        if (!loadFastaFile(waitingHandler)) {
-            throw new IllegalArgumentException("The FASTA file was not found. Please provide its location in the command line parameters.");
-        }
-
-        // load the spectrum files
-        if (!loadSpectrumFiles(waitingHandler)) {
-            if (identification.getSpectrumFiles().size() > 1) {
-                waitingHandler.appendReport("The spectrum files were not found. Please provide their location in the command line parameters.", true, true);
-            } else {
-                waitingHandler.appendReport("The spectrum file was not found. Please provide its location in the command line parameters.", true, true);
-            }
         }
 
         // Load project specific PTMs
@@ -269,6 +211,30 @@ public class ReporterCLI extends CpsParent implements Callable {
         if (error != null) {
             System.out.println(error);
         }
+
+        // get previously set quantification settings or defaults from the identification results
+        ReporterSettings reporterSettings = projectImporter.getReporterSettings();
+        ReporterIonQuantification reporterIonQuantification = projectImporter.getReporterIonQuantification();
+        ReporterMethod selectedMethod = reporterIonQuantification.getReporterMethod();
+
+        // overwrite settings according to the user settings
+        File methodsFile = reporterCLIInputBean.getIsotopesFile();
+        if (methodsFile != null) {
+            try {
+                methodsFactory.importMethods(methodsFile);
+            } catch (Exception e) {
+                String errorText = "An error occurred while parsing:\n" + methodsFile + ".\n\n";
+                waitingHandlerCLIImpl.appendReport(errorText, true, true);
+                e.printStackTrace();
+                return 1;
+            }
+        }
+        String specifiedMethodName = reporterCLIInputBean.getReporterMethod();
+        if (specifiedMethodName != null) {
+            selectedMethod = methodsFactory.getReporterMethod(specifiedMethodName);
+        }
+
+        return null;
     }
 
     /**

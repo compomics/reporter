@@ -66,6 +66,10 @@ public class Reporter {
      * Enzymes file.
      */
     private static String enzymeFile = "resources/conf/searchGUI_enzymes.xml";
+    /**
+     * Default methods file.
+     */
+    private static String methodsFile = "resources/conf/defaultMethods.xml";
 
     /**
      * Empty constructor for instantiation purposes.
@@ -579,15 +583,29 @@ public class Reporter {
     }
 
     /**
-     * Returns the user defined enzymes file.
-     *
-     * @param jarFilePath the path to the jar file
-     * @return the user defined enzymes file
+     * Returns the enzymes file.
+     * 
+     * @return the enzymes file
      */
-    public static File getEnzymesFile(String jarFilePath) {
+    public static File getEnzymesFile() {
+        String jarFilePath = getJarFilePath();
         File result = new File(jarFilePath, enzymeFile);
         if (!result.exists()) {
             JOptionPane.showMessageDialog(null, enzymeFile + " not found.", "Enzymes File Error", JOptionPane.ERROR_MESSAGE);
+        }
+        return result;
+    }
+
+    /**
+     * Returns the default methods file.
+     * 
+     * @return the default methods file
+     */
+    public static File getMethodsFile() {
+        String jarFilePath = getJarFilePath();
+        File result = new File(jarFilePath, methodsFile);
+        if (!result.exists()) {
+            JOptionPane.showMessageDialog(null, methodsFile + " not found.", "Methods File Error", JOptionPane.ERROR_MESSAGE);
         }
         return result;
     }

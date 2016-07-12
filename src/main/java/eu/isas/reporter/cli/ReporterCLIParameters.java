@@ -18,9 +18,10 @@ public enum ReporterCLIParameters {
     
     ID("id", "The PeptideShaker project (.cpsx or .zip).", true),
     OUT("out", "Output file to save the project.", false),
-    ISOTOPES("isotopes", "The isotope correction factors file (.xml file).", false),
+    ISOTOPES("isotopes", "The isotope correction factors file (.xml file). Default values will be used if not provided, it is strongly advised to provide the values corresponding to the labelling kit used during the experiment.", false),
     
-    METHOD("method", "The reporter ion quantification method as used in the isotopic distribution file.", false),
+    METHODS("methods_file", "Path to the isotope correction factors file containing the quantification methods including isotopic correction factors. Default values will be used if not provided.", false),
+    METHOD("method", "The reporter ion quantification method as used in the isotopic methods file. Will be inferred from identification parameters if not provided.", false),
     
     THREADS("threads", "Number of threads to use for the processing, default: the number of cores on the machine.", false);
 
@@ -80,7 +81,8 @@ public enum ReporterCLIParameters {
         output += "-" + String.format(formatter, ID.id) + " " + ID.description + "\n";
         output += "-" + String.format(formatter, ISOTOPES.id) + " " + ISOTOPES.description + "\n";
 
-        output += "Reporter Ion options:\n\n";
+        output += "Reporter Ion Methods options:\n\n";
+        output += "-" + String.format(formatter, METHODS.id) + " " + METHODS.description + "\n";
         output += "-" + String.format(formatter, METHOD.id) + " " + METHOD.description + "\n";
                 
         output += "\n\nOutput:\n\n";

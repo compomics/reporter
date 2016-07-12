@@ -172,19 +172,6 @@ public class ProjectImporter {
             return;
         }
 
-        waitingHandler.setWaitingText("Loading PTM(s). Please Wait...");
-
-        // Load project specific PTMs
-        String error = PeptideShaker.loadModifications(cpsParent.getIdentificationParameters().getSearchParameters());
-        if (error != null) {
-            System.out.println(error);
-        }
-
-        if (waitingHandler.isRunCanceled()) {
-            waitingHandler.setRunFinished();
-            return;
-        }
-
         waitingHandler.setPrimaryProgressCounterIndeterminate(true);
     }
 
