@@ -22,6 +22,7 @@ import eu.isas.peptideshaker.utils.CpsParent;
 import eu.isas.reporter.Reporter;
 import eu.isas.reporter.io.ProjectImporter;
 import eu.isas.reporter.preferences.ReporterPathPreferences;
+import eu.isas.reporter.settings.ReporterIonSelectionSettings;
 import eu.isas.reporter.settings.ReporterSettings;
 import eu.isas.reporter.utils.Properties;
 import java.io.EOFException;
@@ -217,7 +218,7 @@ public class ReporterCLI extends CpsParent implements Callable {
         ReporterIonQuantification reporterIonQuantification = projectImporter.getReporterIonQuantification();
         ReporterMethod selectedMethod = reporterIonQuantification.getReporterMethod();
 
-        // overwrite settings according to the user settings
+        // Update the method according to the command line
         File methodsFile = reporterCLIInputBean.getIsotopesFile();
         if (methodsFile != null) {
             try {
@@ -233,8 +234,45 @@ public class ReporterCLI extends CpsParent implements Callable {
         if (specifiedMethodName != null) {
             selectedMethod = methodsFactory.getReporterMethod(specifiedMethodName);
         }
+        if (selectedMethod == null && methodsFactory.getMethodsNames().size() == 1) {
+            selectedMethod = methodsFactory.getReporterMethod(methodsFactory.getMethodsNames().get(0));
+        }
+        if (selectedMethod == null) {
+            String errorText = "The reporter quantification methods to use could not be inferred, please specify a method from the isotopic correction file as command line parameter.\n\n";
+            waitingHandlerCLIImpl.appendReport(errorText, true, true);
+            return 1;
+        }
+        
+        // Update the quantification settings according to the command line
+        updateReporterIonSelectionSettings(reporterSettings.getReporterIonSelectionSettings());
 
         return null;
+    }
+    
+    /**
+     * Updates the reporter ion selection settings according to the command line
+     * 
+     * @param reporterIonSelectionSettings the reporter ion selection settings 
+     */
+    private void updateReporterIonSelectionSettings(ReporterIonSelectionSettings reporterIonSelectionSettings) {
+        if (reporterCLIInputBean.getReporterIonTolerance() != null) {
+            reporterIonSelectionSettings.setReporterIonsMzTolerance(reporterCLIInputBean.getReporterIonTolerance());
+        }
+        if (reporterCLIInputBean.getMostAccurate() != null) {
+            reporterIonSelectionSettings.setMostAccurate(reporterCLIInputBean.getMostAccurate());
+        }
+        if (reporterCLIInputBean.getSameSpectra() != null) {
+            reporterIonSelectionSettings.setSameSpectra(reporterCLIInputBean.getSameSpectra());
+        }
+        if (reporterCLIInputBean.getPrecMzTolerance() != null) {
+            reporterIonSelectionSettings.setPrecursorMzTolerance(reporterCLIInputBean.getPrecMzTolerance());
+        }
+        if (reporterCLIInputBean.getPrecMzTolerancePpm() != null) {
+            reporterIonSelectionSettings.setPrecursorMzPpm(reporterCLIInputBean.getPrecMzTolerancePpm());
+        }
+        if (reporterCLIInputBean.getPrecRtTolerance() != null) {
+            reporterIonSelectionSettings.setPrecursorRTTolerance(reporterCLIInputBean.getPrecRtTolerance());
+        }
     }
 
     /**

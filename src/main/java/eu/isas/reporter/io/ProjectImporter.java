@@ -92,7 +92,7 @@ public class ProjectImporter {
      * @param cpsParent the cps parent object where the cps file is loaded
      * @param waitingHandler a waiting handler to display the progress to the
      * user and allow interrupting the process
-     * 
+     *
      * @throws IOException thrown of IOException occurs exception thrown
      * whenever an error occurred while reading or writing a file
      * @throws SQLException thrown of SQLException occurs exception thrown
@@ -313,13 +313,13 @@ public class ProjectImporter {
             }
         }
 
-        // no method detected, default to the first
-        if (selectedMethod == null) {
-            selectedMethod = reporterMethodFactory.getReporterMethod(reporterMethodFactory.getMethodsNames().get(0));
-        }
-
         ReporterIonQuantification reporterIonQuantification = new ReporterIonQuantification(Quantification.QuantificationMethod.REPORTER_IONS);
-        reporterIonQuantification.setMethod(selectedMethod);
+
+        // no method detected, default to the first
+        if (selectedMethod != null) {
+            reporterIonQuantification.setMethod(selectedMethod);
+        }
+        
         return reporterIonQuantification;
     }
 

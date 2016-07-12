@@ -1211,6 +1211,10 @@ public class NewDialog extends javax.swing.JDialog {
                 reporterSettings = projectImporter.getReporterSettings();
                 reporterIonQuantification = projectImporter.getReporterIonQuantification();
                 selectedMethod = reporterIonQuantification.getReporterMethod();
+                if (selectedMethod == null) {
+                    // Default to the first one if not found
+                    selectedMethod = methodsFactory.getReporterMethod(methodsFactory.getMethodsNames().get(0));
+                }
                 reagents = selectedMethod.getReagentsSortedByMass();
 
                 // get the display preferences
@@ -1283,7 +1287,7 @@ public class NewDialog extends javax.swing.JDialog {
      * methods.
      */
     private void importMethodsError() {
-        
+
         JOptionPane.showMessageDialog(this, "Default reporter methods file could not be parsed, please select a method file.", "No Spectrum File Selected", JOptionPane.WARNING_MESSAGE);
         JFileChooser fileChooser = new JFileChooser(reporterGui.getLastSelectedFolder().getLastSelectedFolder());
         fileChooser.setDialogTitle("Select Methods file");

@@ -46,6 +46,30 @@ public class ReporterCLIInputBean {
      * The name of the reporter ion method as set in the isotopic distribution file.
      */
     private String reporterMethod = null;
+    /**
+     * The reporter ion tolerance.
+     */
+    private Double reporterIonTolerance = null;
+    /**
+     * Boolean indicating whether the most accurate reporter ion should be used.
+     */
+    private Boolean mostAccurate = null;
+    /**
+     * Boolean indicating whether the quantification peaks are in the same spectra as the identification peaks.
+     */
+    private Boolean sameSpectra = null;
+    /**
+     * The precursor window m/z tolerance.
+     */
+    private Double precMzTolerance = null;
+    /**
+     * Boolean indicating whether the precursor window m/z tolerance is in ppm.
+     */
+    private Boolean precMzTolerancePpm = null;
+    /**
+     * The precursor window RT tolerance in seconds.
+     */
+    private Double precRtTolerance = null;
 
     /**
      * Parses the arguments of a command line.
@@ -85,6 +109,48 @@ public class ReporterCLIInputBean {
         if (aLine.hasOption(ReporterCLIParameters.METHOD.id)) {
             arg = aLine.getOptionValue(ReporterCLIParameters.METHOD.id);
             reporterMethod = arg;
+        }
+
+        // get the reporter ion m/z tolerance
+        if (aLine.hasOption(ReporterCLIParameters.ION_TOL.id)) {
+            arg = aLine.getOptionValue(ReporterCLIParameters.ION_TOL.id);
+            Double input = new Double(arg);
+            reporterIonTolerance = input;
+        }
+
+        // get the most accurate option
+        if (aLine.hasOption(ReporterCLIParameters.MOST_ACCURATE.id)) {
+            arg = aLine.getOptionValue(ReporterCLIParameters.MOST_ACCURATE.id);
+            Integer input = new Integer(arg);
+            mostAccurate = input.equals(1);
+        }
+
+        // get the same spectra option
+        if (aLine.hasOption(ReporterCLIParameters.SAME_SPECTRA.id)) {
+            arg = aLine.getOptionValue(ReporterCLIParameters.SAME_SPECTRA.id);
+            Integer input = new Integer(arg);
+            sameSpectra = input.equals(1);
+        }
+
+        // get the precursor ion m/z tolerance
+        if (aLine.hasOption(ReporterCLIParameters.PREC_WINDOW_MZ_TOL.id)) {
+            arg = aLine.getOptionValue(ReporterCLIParameters.PREC_WINDOW_MZ_TOL.id);
+            Double input = new Double(arg);
+            precMzTolerance = input;
+        }
+
+        // get the precursor ion m/z tolerance unit
+        if (aLine.hasOption(ReporterCLIParameters.PREC_WINDOW_MZ_TOL_PPM.id)) {
+            arg = aLine.getOptionValue(ReporterCLIParameters.PREC_WINDOW_MZ_TOL_PPM.id);
+            Integer input = new Integer(arg);
+            precMzTolerancePpm = input.equals(1);
+        }
+
+        // get the precursor ion RT tolerance
+        if (aLine.hasOption(ReporterCLIParameters.PREC_WINDOW_RT_TOL.id)) {
+            arg = aLine.getOptionValue(ReporterCLIParameters.PREC_WINDOW_RT_TOL.id);
+            Double input = new Double(arg);
+            precRtTolerance = input;
         }
 
         // identification parameters
@@ -133,10 +199,58 @@ public class ReporterCLIInputBean {
             }
         }
 
-        // get the number of threads
+        // The number of threads
         if (aLine.hasOption(ReporterCLIParameters.THREADS.id)) {
             String arg = aLine.getOptionValue(ReporterCLIParameters.THREADS.id);
             if (!CommandParameter.isPositiveInteger(ReporterCLIParameters.THREADS.id, arg, false)) {
+                return false;
+            }
+        }
+        
+        // The ion tolerance
+        if (aLine.hasOption(ReporterCLIParameters.ION_TOL.id)) {
+            String arg = aLine.getOptionValue(ReporterCLIParameters.ION_TOL.id);
+            if (!CommandParameter.isPositiveDouble(ReporterCLIParameters.ION_TOL.id, arg, false)) {
+                return false;
+            }
+        }
+        
+        // Most accurate option
+        if (aLine.hasOption(ReporterCLIParameters.MOST_ACCURATE.id)) {
+            String arg = aLine.getOptionValue(ReporterCLIParameters.MOST_ACCURATE.id);
+            if (!CommandParameter.isBooleanInput(ReporterCLIParameters.MOST_ACCURATE.id, arg)) {
+                return false;
+            }
+        }
+        
+        // Same spectra option
+        if (aLine.hasOption(ReporterCLIParameters.SAME_SPECTRA.id)) {
+            String arg = aLine.getOptionValue(ReporterCLIParameters.SAME_SPECTRA.id);
+            if (!CommandParameter.isBooleanInput(ReporterCLIParameters.SAME_SPECTRA.id, arg)) {
+                return false;
+            }
+        }
+        
+        // The precursor ion m/z tolerance
+        if (aLine.hasOption(ReporterCLIParameters.PREC_WINDOW_MZ_TOL.id)) {
+            String arg = aLine.getOptionValue(ReporterCLIParameters.PREC_WINDOW_MZ_TOL.id);
+            if (!CommandParameter.isPositiveDouble(ReporterCLIParameters.PREC_WINDOW_MZ_TOL.id, arg, false)) {
+                return false;
+            }
+        }
+        
+        // The precursor ion m/z tolerance unit
+        if (aLine.hasOption(ReporterCLIParameters.PREC_WINDOW_MZ_TOL_PPM.id)) {
+            String arg = aLine.getOptionValue(ReporterCLIParameters.PREC_WINDOW_MZ_TOL_PPM.id);
+            if (!CommandParameter.isBooleanInput(ReporterCLIParameters.PREC_WINDOW_MZ_TOL_PPM.id, arg)) {
+                return false;
+            }
+        }
+        
+        // The precursor ion RT tolerance
+        if (aLine.hasOption(ReporterCLIParameters.PREC_WINDOW_RT_TOL.id)) {
+            String arg = aLine.getOptionValue(ReporterCLIParameters.PREC_WINDOW_RT_TOL.id);
+            if (!CommandParameter.isPositiveDouble(ReporterCLIParameters.PREC_WINDOW_RT_TOL.id, arg, false)) {
                 return false;
             }
         }
@@ -187,6 +301,60 @@ public class ReporterCLIInputBean {
      */
     public String getReporterMethod() {
         return reporterMethod;
+    }
+
+    /**
+     * Returns the tolerance used for the reporter ion matching in the spectrum.
+     * 
+     * @return the tolerance used for the reporter ion matching in the spectrum
+     */
+    public Double getReporterIonTolerance() {
+        return reporterIonTolerance;
+    }
+
+    /**
+     * Indicates whether the most accurate reporter ion should be used.
+     * 
+     * @return a boolean indicating whether the most accurate reporter ion should be used
+     */
+    public Boolean getMostAccurate() {
+        return mostAccurate;
+    }
+
+    /**
+     * Indicates whether the quantification peaks are in the same spectra as the identification peaks.
+     * 
+     * @return a boolean indicating whether the quantification peaks are in the same spectra as the identification peaks
+     */
+    public Boolean getSameSpectra() {
+        return sameSpectra;
+    }
+
+    /**
+     * Returns the m/z tolerance to use for the precursor ion window.
+     * 
+     * @return the m/z tolerance to use for the precursor ion window
+     */
+    public Double getPrecMzTolerance() {
+        return precMzTolerance;
+    }
+
+    /**
+     * Indicates whether the precursor ion window m/z tolerance is in ppm.
+     * 
+     * @return a boolean indicating whether the window precursor ion m/z tolerance is in ppm
+     */
+    public Boolean getPrecMzTolerancePpm() {
+        return precMzTolerancePpm;
+    }
+
+    /**
+     * Returns the RT tolerance to use for the precursor ion window in seconds.
+     * 
+     * @return the RT tolerance to use for the precursor ion window in seconds
+     */
+    public Double getPrecRtTolerance() {
+        return precRtTolerance;
     }
 
     /**
