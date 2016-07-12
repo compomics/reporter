@@ -21,6 +21,7 @@ import eu.isas.reporter.Reporter;
 import eu.isas.reporter.io.ProjectImporter;
 import eu.isas.reporter.preferences.ReporterPathPreferences;
 import eu.isas.reporter.utils.Properties;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -176,6 +177,35 @@ public class ReporterCLI extends CpsParent implements Callable {
             } catch (Exception eClose) {
                 // Ignore
             }
+            return 1;
+        }
+
+        // Load default quantification settings from the identification
+        try {
+            ProjectImporter projectImporter = new ProjectImporter();
+            projectImporter.importPeptideShakerProject(this, waitingHandlerCLIImpl);
+            projectImporter.importReporterProject(this, waitingHandlerCLIImpl);
+        } catch (OutOfMemoryError error) {
+            System.out.println("Ran out of memory! (runtime.maxMemory(): " + Runtime.getRuntime().maxMemory() + ")");
+            error.printStackTrace();
+            String errorText = "PeptideShaker used up all the available memory and had to be stopped.<br>"
+                    + "Memory boundaries are changed in the the Welcome Dialog (Settings<br>"
+                    + "& Help > Settings > Java Memory Settings) or in the Edit menu (Edit<br>"
+                    + "Java Options). See also <a href=\"http://compomics.github.io/compomics-utilities/wiki/javatroubleshooting.html\">JavaTroubleShooting</a>.";
+            waitingHandlerCLIImpl.appendReport(errorText, true, true);
+            return 1;
+        } catch (EOFException e) {
+            e.printStackTrace();
+            String errorText = "An error occurred while reading:\n" + selectedFile + ".\n\n"
+                    + "The file is corrupted and cannot be opened anymore.";
+            waitingHandlerCLIImpl.appendReport(errorText, true, true);
+            return 1;
+        } catch (Exception e) {
+            e.printStackTrace();
+            String errorText = "An error occurred while reading:\n" + selectedFile + ".\n\n"
+                    + "Please verify that the PeptideShaker version used to create\n"
+                    + "the file is compatible with your version of Reporter.";
+            waitingHandlerCLIImpl.appendReport(errorText, true, true);
             return 1;
         }
 

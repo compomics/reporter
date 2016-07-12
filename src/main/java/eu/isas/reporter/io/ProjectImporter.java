@@ -1,5 +1,6 @@
 package eu.isas.reporter.io;
 
+import com.compomics.util.Util;
 import com.compomics.util.db.ObjectsDB;
 import com.compomics.util.experiment.biology.PTM;
 import com.compomics.util.experiment.biology.PTMFactory;
@@ -14,8 +15,8 @@ import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethodFactory;
 import com.compomics.util.math.clustering.settings.KMeansClusteringSettings;
 import com.compomics.util.preferences.IdentificationParameters;
-import com.compomics.util.preferences.LastSelectedFolder;
 import com.compomics.util.waiting.WaitingHandler;
+import eu.isas.peptideshaker.PeptideShaker;
 import eu.isas.peptideshaker.utils.CpsParent;
 import eu.isas.reporter.Reporter;
 import eu.isas.reporter.calculation.clustering.keys.PeptideClusterClassKey;
@@ -29,11 +30,13 @@ import java.awt.Color;
 import java.awt.Dialog;
 import java.io.EOFException;
 import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import javax.swing.JOptionPane;
+import org.apache.commons.compress.archivers.ArchiveException;
 
 /**
  * Imports a project from a cps file.
@@ -46,14 +49,6 @@ public class ProjectImporter {
      * The dialog owner if operated from the GUI.
      */
     private Dialog owner;
-    /**
-     * The last selected folder.
-     */
-    private LastSelectedFolder lastSelectedFolder;
-    /**
-     * The cps parent used to load the file.
-     */
-    private CpsParent cpsParent = null;
     /**
      * The reporter settings loaded from the file.
      */
@@ -79,229 +74,165 @@ public class ProjectImporter {
      * Constructor.
      *
      * @param owner the dialog owner if operated from the GUI
-     * @param lastSelectedFolder the last selected folder
-     * @param cpsFile the file to import the project from
-     * @param waitingHandler waiting handler used to display progress and cancel
-     * the import
      */
-    public ProjectImporter(Dialog owner, LastSelectedFolder lastSelectedFolder, File cpsFile, WaitingHandler waitingHandler) {
-        cpsParent = new CpsParent(Reporter.getMatchesFolder());
+    public ProjectImporter(Dialog owner) {
         this.owner = owner;
-        this.lastSelectedFolder = lastSelectedFolder;
-        importPeptideShakerFile(cpsFile, waitingHandler);
     }
 
     /**
      * Constructor.
-     *
-     * @param lastSelectedFolder the last selected folder
-     * @param cpsFile the file to import the project from
-     * @param waitingHandler waiting handler used to display progress and cancel
-     * the import
      */
-    public ProjectImporter(LastSelectedFolder lastSelectedFolder, File cpsFile, WaitingHandler waitingHandler) {
-        this(null, lastSelectedFolder, cpsFile, waitingHandler);
+    public ProjectImporter() {
+        this(null);
     }
 
     /**
-     * Method used to import a PeptideShaker file.
+     * Imports the identification results from a PeptideShaker file.
      *
-     * @param psFile a PeptideShaker file
+     * @param cpsParent the cps parent object where the cps file is loaded
+     * @param waitingHandler a waiting handler to display the progress to the
+     * user and allow interrupting the process
+     * 
+     * @throws IOException thrown of IOException occurs exception thrown
+     * whenever an error occurred while reading or writing a file
+     * @throws SQLException thrown of SQLException occurs exception thrown
+     * whenever an error occurred while interacting with the database
+     * @throws java.lang.ClassNotFoundException exception thrown whenever an
+     * error occurred while deserializing an object
+     * @throws java.lang.InterruptedException exception thrown whenever a
+     * threading error occurred while saving the project
+     * @throws org.apache.commons.compress.archivers.ArchiveException exception
+     * thrown whenever an error occurs while untaring the file
      */
-    private void importPeptideShakerFile(File cpsFile, WaitingHandler waitingHandler) {
+    public void importPeptideShakerProject(CpsParent cpsParent, WaitingHandler waitingHandler) throws IOException, ClassNotFoundException, SQLException, InterruptedException, ArchiveException {
 
-        try {
-            cpsParent.setCpsFile(cpsFile);
+        File cpsFile = cpsParent.getCpsFile();
+        if (Util.getExtension(cpsFile).equalsIgnoreCase("zip")) {
+            cpsParent.loadCpsFromZipFile(cpsFile, Reporter.getMatchesFolder(), waitingHandler);
+        } else {
+            cpsParent.loadCpsFile(Reporter.getMatchesFolder(), waitingHandler);
+        }
 
+        if (waitingHandler.isRunCanceled()) {
+            waitingHandler.setRunFinished();
+            return;
+        }
+
+        waitingHandler.setWaitingText("Loading FASTA File. Please Wait...");
+
+        // load fasta file
+        if (owner != null) { // GUI
             try {
-                cpsParent.loadCpsFile(Reporter.getMatchesFolder(), waitingHandler);
-            } catch (SQLException e) {
-                e.printStackTrace();
-                String errorText = "An error occurred while reading:\n" + cpsFile + ".\n\n"
-                        + "It looks like another instance of PeptideShaker is still connected to the file.\n"
-                        + "Please close all instances of PeptideShaker and try again.";
-                if (owner != null) {
-                    JOptionPane.showMessageDialog(owner,
-                            errorText,
-                            "File Input Error", JOptionPane.ERROR_MESSAGE);
-                } else {
-                    throw new IllegalArgumentException(errorText);
-                }
-                return;
-            }
-
-            if (waitingHandler.isRunCanceled()) {
-                waitingHandler.setRunFinished();
-                return;
-            }
-
-            waitingHandler.setWaitingText("Loading FASTA File. Please Wait...");
-
-            try {
-                cpsParent.loadFastaFile(new File(lastSelectedFolder.getLastSelectedFolder()), waitingHandler);
+                cpsParent.loadFastaFile(waitingHandler);
             } catch (Exception e) {
-                //Ignore
-                e.printStackTrace();
+                // Ignore, can be set from the GUI
             }
-
-            if (waitingHandler.isRunCanceled()) {
-                waitingHandler.setRunFinished();
-                return;
+        } else { // CLI
+            if (!cpsParent.loadFastaFile(waitingHandler)) {
+                throw new IllegalArgumentException("The FASTA file was not found. Please provide its location in the command line parameters.");
             }
+        }
 
-            Identification identification = cpsParent.getIdentification();
-            ArrayList<String> spectrumFiles = identification.getSpectrumFiles();
+        if (waitingHandler.isRunCanceled()) {
+            waitingHandler.setRunFinished();
+            return;
+        }
 
-            waitingHandler.setWaitingText("Loading Spectrum Files. Please Wait...");
-            waitingHandler.setPrimaryProgressCounterIndeterminate(true);
+        // load the spectrum files
+        Identification identification = cpsParent.getIdentification();
+        ArrayList<String> spectrumFiles = identification.getSpectrumFiles();
+        waitingHandler.setWaitingText("Loading Spectrum Files. Please Wait...");
+        waitingHandler.setPrimaryProgressCounterIndeterminate(true);
+        int cpt = 0, total = identification.getSpectrumFiles().size();
+        for (String spectrumFileName : spectrumFiles) {
 
-            int cpt = 0, total = identification.getSpectrumFiles().size();
-            for (String spectrumFileName : spectrumFiles) {
+            waitingHandler.setWaitingText("Loading Spectrum Files (" + ++cpt + " of " + total + "). Please Wait...");
 
-                waitingHandler.setWaitingText("Loading Spectrum Files (" + ++cpt + " of " + total + "). Please Wait...");
-
+            if (owner != null) { // GUI
                 try {
                     cpsParent.loadSpectrumFile(spectrumFileName, waitingHandler);
                 } catch (Exception e) {
-                    //Ignore
-                    e.printStackTrace();
+                    // Ignore, can be set from the GUI
                 }
 
                 if (waitingHandler.isRunCanceled()) {
                     waitingHandler.setRunFinished();
                     break;
                 }
-            }
 
-            waitingHandler.setPrimaryProgressCounterIndeterminate(true);
+            } else { // CLI
+                if (!cpsParent.loadSpectrumFile(spectrumFileName, waitingHandler)) {
+                    throw new IllegalArgumentException(spectrumFileName + " was not found. Please provide its location in the command line parameters.");
+                }
+            }
+        }
 
-        } catch (OutOfMemoryError error) {
-            System.out.println("Ran out of memory! (runtime.maxMemory(): " + Runtime.getRuntime().maxMemory() + ")");
-            Runtime.getRuntime().gc();
-            String errorText = "PeptideShaker used up all the available memory and had to be stopped.<br>"
-                    + "Memory boundaries are changed in the the Welcome Dialog (Settings<br>"
-                    + "& Help > Settings > Java Memory Settings) or in the Edit menu (Edit<br>"
-                    + "Java Options). See also <a href=\"http://compomics.github.io/compomics-utilities/wiki/javatroubleshooting.html\">JavaTroubleShooting</a>.";
-            if (owner != null) {
-                JOptionPane.showMessageDialog(owner,
-                        errorText,
-                        "Out of Memory", JOptionPane.ERROR_MESSAGE);
-            } else {
-                throw new IllegalArgumentException(errorText);
-            }
-            waitingHandler.setRunFinished();
-            error.printStackTrace();
-            return;
-        } catch (EOFException e) {
-            e.printStackTrace();
-            String errorText = "An error occurred while reading:\n" + cpsFile + ".\n\n"
-                    + "The file is corrupted and cannot be opened anymore.";
-            if (owner != null) {
-                JOptionPane.showMessageDialog(owner,
-                        errorText,
-                        "Out of Memory", JOptionPane.ERROR_MESSAGE);
-            } else {
-                throw new IllegalArgumentException(errorText);
-            }
-            waitingHandler.setRunFinished();
-            return;
-        } catch (Exception e) {
-            e.printStackTrace();
-            String errorText = "An error occurred while reading:\n" + cpsFile + ".\n\n"
-                    + "Please verify that the PeptideShaker version used to create\n"
-                    + "the file is compatible with your version of Reporter.";
-            if (owner != null) {
-                JOptionPane.showMessageDialog(owner,
-                        errorText,
-                        "Out of Memory", JOptionPane.ERROR_MESSAGE);
-            } else {
-                throw new IllegalArgumentException(errorText);
-            }
+        if (waitingHandler.isRunCanceled()) {
             waitingHandler.setRunFinished();
             return;
         }
+
+        waitingHandler.setWaitingText("Loading PTM(s). Please Wait...");
+
+        // Load project specific PTMs
+        String error = PeptideShaker.loadModifications(cpsParent.getIdentificationParameters().getSearchParameters());
+        if (error != null) {
+            System.out.println(error);
+        }
+
+        if (waitingHandler.isRunCanceled()) {
+            waitingHandler.setRunFinished();
+            return;
+        }
+
+        waitingHandler.setPrimaryProgressCounterIndeterminate(true);
+    }
+
+    /**
+     * Loads the reporter project.
+     *
+     * @param cpsParent the cps parent object where the cps file is loaded
+     * @param waitingHandler a waiting handler to display the progress to the
+     * user and allow interrupting the process
+     *
+     * @throws SQLException exception thrown whenever an error occurs while
+     * interacting with the database
+     * @throws IOException exception thrown whenever an error occurs while
+     * reading or writing a file
+     * @throws ClassNotFoundException exception thrown whenever an error
+     * occurred while deserializing a file from the database
+     * @throws InterruptedException exception thrown if a threading error occurs
+     * while interacting with the database
+     */
+    public void importReporterProject(CpsParent cpsParent, WaitingHandler waitingHandler) throws SQLException, IOException, ClassNotFoundException, InterruptedException {
 
         // load reporter settings
         Identification identification = cpsParent.getIdentification();
         IdentificationParameters identificationParameters = cpsParent.getIdentificationParameters();
         ObjectsDB objectsDB = identification.getIdentificationDB().getObjectsDB();
+        File cpsFile = cpsParent.getCpsFile();
 
-        try {
-            if (objectsDB.hasTable(ProjectSaver.REPORTER_SETTINGS_TABLE_NAME)) {
-                waitingHandler.setWaitingText("Loading quantification results. Please Wait...");
-                try {
-                    reporterSettings = (ReporterSettings) objectsDB.retrieveObject(ProjectSaver.REPORTER_SETTINGS_TABLE_NAME, ReporterSettings.class.getName(), true, false);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    String errorText = "An error occurred while importing the reporter settings.";
-                    if (owner != null) {
-                        JOptionPane.showMessageDialog(owner,
-                                errorText,
-                                "Import Error", JOptionPane.ERROR_MESSAGE);
-                    } else {
-                        throw new IllegalArgumentException(errorText);
-                    }
-                    waitingHandler.setRunFinished();
-                    return;
-                }
-                try {
-                    reporterIonQuantification = (ReporterIonQuantification) objectsDB.retrieveObject(ProjectSaver.REPORTER_SETTINGS_TABLE_NAME, ReporterIonQuantification.class.getName(), true, false);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    String errorText = "An error occurred while importing the reporter settings.";
-                    if (owner != null) {
-                        JOptionPane.showMessageDialog(owner,
-                                errorText,
-                                "Import Error", JOptionPane.ERROR_MESSAGE);
-                    } else {
-                        throw new IllegalArgumentException(errorText);
-                    }
-                    waitingHandler.setRunFinished();
-                }
-                try {
-                    displayPreferences = (DisplayPreferences) objectsDB.retrieveObject(ProjectSaver.REPORTER_SETTINGS_TABLE_NAME, DisplayPreferences.class.getName(), true, false);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    String errorText = "An error occurred while importing the reporter settings.";
-                    if (owner != null) {
-                        JOptionPane.showMessageDialog(owner,
-                                errorText,
-                                "Import Error", JOptionPane.ERROR_MESSAGE);
-                    } else {
-                        throw new IllegalArgumentException(errorText);
-                    }
-                    waitingHandler.setRunFinished();
-                }
-            } else {
-                waitingHandler.setWaitingText("Inferring quantification parameters. Please Wait...");
-            }
-            if (reporterIonQuantification == null) {
-                reporterIonQuantification = getDefaultReporterIonQuantification(identificationParameters);
-            }
-            if (reporterSettings == null) {
-                reporterSettings = getDefaultReporterSettings(reporterIonQuantification.getReporterMethod(), identificationParameters);
-            }
-            if (displayPreferences == null) {
-                displayPreferences = new DisplayPreferences();
-                ClusteringSettings clusteringSettings = getDefaultClusterMetrics(identificationParameters, identification);
-                KMeansClusteringSettings kMeansClusteringSettings = new KMeansClusteringSettings();
-                clusteringSettings.setKMeansClusteringSettings(kMeansClusteringSettings);
-                displayPreferences.setClusteringSettings(clusteringSettings);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            String errorText = "An error occurred while importing the quantification details from " + cpsFile + ".";
-            if (owner != null) {
-                JOptionPane.showMessageDialog(owner,
-                        errorText,
-                        "Import Error", JOptionPane.ERROR_MESSAGE);
-            } else {
-                throw new IllegalArgumentException(errorText);
-            }
-            waitingHandler.setRunFinished();
+        if (objectsDB.hasTable(ProjectSaver.REPORTER_SETTINGS_TABLE_NAME)) {
+            waitingHandler.setWaitingText("Loading quantification results. Please Wait...");
+            reporterSettings = (ReporterSettings) objectsDB.retrieveObject(ProjectSaver.REPORTER_SETTINGS_TABLE_NAME, ReporterSettings.class.getName(), true, false);
+            reporterIonQuantification = (ReporterIonQuantification) objectsDB.retrieveObject(ProjectSaver.REPORTER_SETTINGS_TABLE_NAME, ReporterIonQuantification.class.getName(), true, false);
+            displayPreferences = (DisplayPreferences) objectsDB.retrieveObject(ProjectSaver.REPORTER_SETTINGS_TABLE_NAME, DisplayPreferences.class.getName(), true, false);
+        } else {
+            waitingHandler.setWaitingText("Inferring quantification parameters. Please Wait...");
         }
-
-        waitingHandler.setRunFinished();
+        if (reporterIonQuantification == null) {
+            reporterIonQuantification = getDefaultReporterIonQuantification(identificationParameters);
+        }
+        if (reporterSettings == null) {
+            reporterSettings = getDefaultReporterSettings(reporterIonQuantification.getReporterMethod(), identificationParameters);
+        }
+        if (displayPreferences == null) {
+            displayPreferences = new DisplayPreferences();
+            ClusteringSettings clusteringSettings = getDefaultClusterMetrics(identificationParameters, identification);
+            KMeansClusteringSettings kMeansClusteringSettings = new KMeansClusteringSettings();
+            clusteringSettings.setKMeansClusteringSettings(kMeansClusteringSettings);
+            displayPreferences.setClusteringSettings(clusteringSettings);
+        }
     }
 
     /**
@@ -498,15 +429,6 @@ public class ProjectImporter {
         clusteringSettings.setPsmClassKeys(psmClasses);
         clusteringSettings.addProteinClass(defaultClusterClass.toString());
         return clusteringSettings;
-    }
-
-    /**
-     * Returns the cps parent used to import the file.
-     *
-     * @return the cps parent used to import the file
-     */
-    public CpsParent getCpsParent() {
-        return cpsParent;
     }
 
     /**

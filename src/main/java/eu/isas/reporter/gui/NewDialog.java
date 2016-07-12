@@ -23,6 +23,7 @@ import com.compomics.util.preferences.ProcessingPreferences;
 import eu.isas.peptideshaker.PeptideShaker;
 import eu.isas.peptideshaker.preferences.ProjectDetails;
 import eu.isas.peptideshaker.utils.CpsParent;
+import eu.isas.reporter.Reporter;
 import eu.isas.reporter.gui.settings.ReporterSettingsDialog;
 import eu.isas.reporter.io.ProjectImporter;
 import eu.isas.reporter.preferences.DisplayPreferences;
@@ -1151,14 +1152,46 @@ public class NewDialog extends javax.swing.JDialog {
             @Override
             public void run() {
 
-                ProjectImporter projectImporter = new ProjectImporter(NewDialog.this, reporterGui.getLastSelectedFolder(), psFile, progressDialog);
+                cpsParent = new CpsParent(Reporter.getMatchesFolder());
+                cpsParent.setCpsFile(psFile);
+                ProjectImporter projectImporter = new ProjectImporter(NewDialog.this);
+                try {
+                    projectImporter.importPeptideShakerProject(cpsParent, progressDialog);
+                    projectImporter.importReporterProject(cpsParent, progressDialog);
+                } catch (OutOfMemoryError error) {
+                    System.out.println("Ran out of memory! (runtime.maxMemory(): " + Runtime.getRuntime().maxMemory() + ")");
+                    error.printStackTrace();
+                    String errorText = "PeptideShaker used up all the available memory and had to be stopped.<br>"
+                            + "Memory boundaries are changed in the the Welcome Dialog (Settings<br>"
+                            + "& Help > Settings > Java Memory Settings) or in the Edit menu (Edit<br>"
+                            + "Java Options). See also <a href=\"http://compomics.github.io/compomics-utilities/wiki/javatroubleshooting.html\">JavaTroubleShooting</a>.";
+                    JOptionPane.showMessageDialog(NewDialog.this,
+                            errorText,
+                            "Out of Memory", JOptionPane.ERROR_MESSAGE);
+                    return;
+                } catch (EOFException e) {
+                    e.printStackTrace();
+                    String errorText = "An error occurred while reading:\n" + psFile + ".\n\n"
+                            + "The file is corrupted and cannot be opened anymore.";
+                    JOptionPane.showMessageDialog(NewDialog.this,
+                            errorText,
+                            "Incomplete file", JOptionPane.ERROR_MESSAGE);
+                    return;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    String errorText = "An error occurred while reading:\n" + psFile + ".\n\n"
+                            + "Please verify that the PeptideShaker version used to create\n"
+                            + "the file is compatible with your version of Reporter.";
+                    JOptionPane.showMessageDialog(NewDialog.this,
+                            errorText,
+                            "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
 
                 if (progressDialog.isRunCanceled()) {
                     progressDialog.dispose();
                     return;
                 }
-
-                cpsParent = projectImporter.getCpsParent();
 
                 loadButton.setEnabled(true);
                 editQuantPrefsButton.setEnabled(true);
