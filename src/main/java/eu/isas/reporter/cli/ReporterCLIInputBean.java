@@ -70,6 +70,18 @@ public class ReporterCLIInputBean {
      * The precursor window RT tolerance in seconds.
      */
     private Double precRtTolerance = null;
+    /**
+     * Boolean indicating whether peptides presenting null intensities should be ignored.
+     */
+    private Boolean ignoreNull = null;
+    /**
+     * Boolean indicating whether peptides presenting missed cleavages should be ignored.
+     */
+    private Boolean ignoreMc = null;
+    /**
+     * The percentile for ratio window estimation.
+     */
+    private Double percentile = null;
 
     /**
      * Parses the arguments of a command line.
@@ -151,6 +163,27 @@ public class ReporterCLIInputBean {
             arg = aLine.getOptionValue(ReporterCLIParameters.PREC_WINDOW_RT_TOL.id);
             Double input = new Double(arg);
             precRtTolerance = input;
+        }
+        
+        // get the ignore null option
+        if (aLine.hasOption(ReporterCLIParameters.IGNORE_NULL.id)) {
+            arg = aLine.getOptionValue(ReporterCLIParameters.IGNORE_NULL.id);
+            Integer input = new Integer(arg);
+            ignoreNull = input.equals(1);
+        }
+        
+        // get the ignore missed cleavages option
+        if (aLine.hasOption(ReporterCLIParameters.IGNORE_MC.id)) {
+            arg = aLine.getOptionValue(ReporterCLIParameters.IGNORE_MC.id);
+            Integer input = new Integer(arg);
+            ignoreMc = input.equals(1);
+        }
+
+        // get the percentile option for ratio estimation
+        if (aLine.hasOption(ReporterCLIParameters.PERCENTILE.id)) {
+            arg = aLine.getOptionValue(ReporterCLIParameters.PERCENTILE.id);
+            Double input = new Double(arg);
+            percentile = input;
         }
 
         // identification parameters
@@ -251,6 +284,30 @@ public class ReporterCLIInputBean {
         if (aLine.hasOption(ReporterCLIParameters.PREC_WINDOW_RT_TOL.id)) {
             String arg = aLine.getOptionValue(ReporterCLIParameters.PREC_WINDOW_RT_TOL.id);
             if (!CommandParameter.isPositiveDouble(ReporterCLIParameters.PREC_WINDOW_RT_TOL.id, arg, false)) {
+                return false;
+            }
+        }
+        
+        // The ignore null option
+        if (aLine.hasOption(ReporterCLIParameters.IGNORE_NULL.id)) {
+            String arg = aLine.getOptionValue(ReporterCLIParameters.IGNORE_NULL.id);
+            if (!CommandParameter.isBooleanInput(ReporterCLIParameters.IGNORE_NULL.id, arg)) {
+                return false;
+            }
+        }
+        
+        // The ignore missed cleavages option
+        if (aLine.hasOption(ReporterCLIParameters.IGNORE_MC.id)) {
+            String arg = aLine.getOptionValue(ReporterCLIParameters.IGNORE_MC.id);
+            if (!CommandParameter.isBooleanInput(ReporterCLIParameters.IGNORE_MC.id, arg)) {
+                return false;
+            }
+        }
+        
+        // The percentile
+        if (aLine.hasOption(ReporterCLIParameters.PERCENTILE.id)) {
+            String arg = aLine.getOptionValue(ReporterCLIParameters.PERCENTILE.id);
+            if (!CommandParameter.isPositiveDouble(ReporterCLIParameters.PERCENTILE.id, arg, false)) {
                 return false;
             }
         }
@@ -387,6 +444,34 @@ public class ReporterCLIInputBean {
     public PathSettingsCLIInputBean getPathSettingsCLIInputBean() {
         return pathSettingsCLIInputBean;
     }
+
+    /**
+     * Returns a boolean indicating whether peptides presenting null intensities should be ignored.
+     * 
+     * @return a boolean indicating whether peptides presenting null intensities should be ignored
+     */
+    public Boolean getIgnoreNull() {
+        return ignoreNull;
+    }
+
+    /**
+     * Returns a boolean indicating whether peptides presenting missed cleavages should be ignored.
+     * 
+     * @return a boolean indicating whether peptides presenting missed cleavages should be ignored
+     */
+    public Boolean getIgnoreMc() {
+        return ignoreMc;
+    }
+
+    /**
+     * Returns the percentile for ratio window estimation.
+     * 
+     * @return the percentile for ratio window estimation
+     */
+    public Double getPercentile() {
+        return percentile;
+    }
+    
     
     
 }
