@@ -20,10 +20,12 @@ import com.compomics.util.preferences.IdentificationParameters;
 import com.compomics.util.preferences.ProcessingPreferences;
 import com.compomics.util.waiting.WaitingHandler;
 import eu.isas.peptideshaker.PeptideShaker;
+import eu.isas.peptideshaker.scoring.MatchValidationLevel;
 import eu.isas.peptideshaker.utils.CpsParent;
 import eu.isas.reporter.Reporter;
 import eu.isas.reporter.io.ProjectImporter;
 import eu.isas.reporter.preferences.ReporterPathPreferences;
+import eu.isas.reporter.settings.RatioEstimationSettings;
 import eu.isas.reporter.settings.ReporterIonSelectionSettings;
 import eu.isas.reporter.settings.ReporterSettings;
 import eu.isas.reporter.utils.Properties;
@@ -291,6 +293,39 @@ public class ReporterCLI extends CpsParent implements Callable {
         }
         if (reporterCLIInputBean.getPrecRtTolerance() != null) {
             reporterIonSelectionSettings.setPrecursorRTTolerance(reporterCLIInputBean.getPrecRtTolerance());
+        }
+    }
+
+    /**
+     * Updates the ratio estimation settings according to the command line
+     * input.
+     *
+     * @param ratioEstimationSettings the ratio estimation settings to update
+     */
+    private void updateRatioEstimationSettings(RatioEstimationSettings ratioEstimationSettings) {
+        if (reporterCLIInputBean.getIgnoreNull() != null) {
+            ratioEstimationSettings.setIgnoreNullIntensities(reporterCLIInputBean.getIgnoreNull());
+        }
+        if (reporterCLIInputBean.getIgnoreMc() != null) {
+            ratioEstimationSettings.setIgnoreMissedCleavages(reporterCLIInputBean.getIgnoreMc());
+        }
+        if (reporterCLIInputBean.getPercentile() != null) {
+            ratioEstimationSettings.setPercentile(reporterCLIInputBean.getPercentile());
+        }
+        if (reporterCLIInputBean.getResolution() != null) {
+            ratioEstimationSettings.setRatioResolution(reporterCLIInputBean.getResolution());
+        }
+        if (reporterCLIInputBean.getMinUnique() != null) {
+            ratioEstimationSettings.setMinUnique(reporterCLIInputBean.getMinUnique());
+        }
+        if (reporterCLIInputBean.getValidationPsm() != null) {
+            ratioEstimationSettings.setPsmValidationLevel(MatchValidationLevel.getMatchValidationLevel(reporterCLIInputBean.getValidationPsm()));
+        }
+        if (reporterCLIInputBean.getValidationPeptide() != null) {
+            ratioEstimationSettings.setPeptideValidationLevel(MatchValidationLevel.getMatchValidationLevel(reporterCLIInputBean.getValidationPeptide()));
+        }
+        if (reporterCLIInputBean.getValidationProtein() != null) {
+            ratioEstimationSettings.setProteinValidationLevel(MatchValidationLevel.getMatchValidationLevel(reporterCLIInputBean.getValidationProtein()));
         }
     }
 
