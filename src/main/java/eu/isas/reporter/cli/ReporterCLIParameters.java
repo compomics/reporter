@@ -23,6 +23,7 @@ public enum ReporterCLIParameters {
     
     METHODS("methods_file", "Path to the isotope correction factors file containing the quantification methods including isotopic correction factors. Default values will be used if not provided.", false),
     METHOD("method", "The reporter ion quantification method to use from the isotopic methods file in case multiple methods are listed in the file. Will be inferred from identification parameters if not provided.", false),
+    REFERENCE("ref_samples", "The reference samples as a comma separated list of integers where each sample is represented by its reagent ordered by mass starting from 1. No reference by default. Ex: 1,3 represent reagents 144 and 116 with iTRAQ 4-plex.", false),
     
     ION_TOL("ion_tol", "The reporter ion m/z tolerance. Default will be inferred from the identification parameters and reporter method.", false),
     MOST_ACCURATE("most_accurate", "Indicates whether the ion within the m/z tolerance with the most accurate m/z should be selected (1: yes, 0: no). If no, the most intense ion will be selected. Default will be inferred from the identification parameters.", false),

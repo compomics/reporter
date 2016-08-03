@@ -8,6 +8,7 @@ import eu.isas.reporter.calculation.normalization.NormalizationType;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import org.apache.commons.cli.CommandLine;
 
@@ -48,6 +49,10 @@ public class ReporterCLIInputBean {
      * file.
      */
     private String reporterMethod = null;
+    /**
+     * The list of reference samples indexed by ordered reagent mass, 1 is the first reagent
+     */
+    private ArrayList<Integer> referenceSamples = null;
     /**
      * The reporter ion tolerance.
      */
@@ -171,6 +176,13 @@ public class ReporterCLIInputBean {
         if (aLine.hasOption(ReporterCLIParameters.METHOD.id)) {
             arg = aLine.getOptionValue(ReporterCLIParameters.METHOD.id);
             reporterMethod = arg;
+        }
+
+        // get the reference samples
+        if (aLine.hasOption(ReporterCLIParameters.REFERENCE.id)) {
+            arg = aLine.getOptionValue(ReporterCLIParameters.REFERENCE.id);
+            referenceSamples = CommandLineUtils.getIntegerListFromString(arg, ",");
+            Collections.sort(referenceSamples);
         }
 
         // get the reporter ion m/z tolerance
@@ -343,6 +355,22 @@ public class ReporterCLIInputBean {
             HashSet<String> supportedFormats = new HashSet<String>(1);
             supportedFormats.add("xml");
             if (!CommandParameter.fileExists(ReporterCLIParameters.ISOTOPES.id, arg, supportedFormats)) {
+                return false;
+            }
+        }
+
+        // The reference samples
+        if (aLine.hasOption(ReporterCLIParameters.REFERENCE.id)) {
+            String arg = aLine.getOptionValue(ReporterCLIParameters.REFERENCE.id);
+            try {
+                ArrayList<Integer> input = CommandLineUtils.getIntegerListFromString(arg, ",");
+                for (Integer reagent : input) {
+                    if (!CommandParameter.isPositiveInteger(ReporterCLIParameters.REFERENCE.id, reagent + "", false)) {
+                        return false;
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println(System.getProperty("line.separator") + "Error parsing the " + ReporterCLIParameters.REFERENCE.id + " option: not a comma separated list of integers." + System.getProperty("line.separator"));
                 return false;
             }
         }
@@ -543,6 +571,15 @@ public class ReporterCLIInputBean {
      */
     public File getIsotopesFile() {
         return isotopesFile;
+    }
+
+    /**
+     * Returns the list of reference samples indexed by ordered reagent mass, 1 is the first reagent.
+     * 
+     * @return the list of reference samples indexed by ordered reagent mass, 1 is the first reagent
+     */
+    public ArrayList<Integer> getReferenceSamples() {
+        return referenceSamples;
     }
 
     /**

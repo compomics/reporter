@@ -197,7 +197,6 @@ public class ProjectImporter {
         Identification identification = cpsParent.getIdentification();
         IdentificationParameters identificationParameters = cpsParent.getIdentificationParameters();
         ObjectsDB objectsDB = identification.getIdentificationDB().getObjectsDB();
-        File cpsFile = cpsParent.getCpsFile();
 
         if (objectsDB.hasTable(ProjectSaver.REPORTER_SETTINGS_TABLE_NAME)) {
             waitingHandler.setWaitingText("Loading quantification results. Please Wait...");

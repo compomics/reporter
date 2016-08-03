@@ -7,10 +7,12 @@ import com.compomics.util.db.ObjectsCache;
 import com.compomics.util.experiment.biology.EnzymeFactory;
 import com.compomics.util.experiment.biology.PTM;
 import com.compomics.util.experiment.biology.PTMFactory;
+import com.compomics.util.experiment.biology.Sample;
 import com.compomics.util.experiment.biology.taxonomy.SpeciesFactory;
 import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.protein_sequences.SequenceFactory;
 import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
+import com.compomics.util.experiment.quantification.Quantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethodFactory;
@@ -265,12 +267,41 @@ public class ReporterCLI extends CpsParent implements Callable {
             return 1;
         }
 
+        // Set the method
+        reporterIonQuantification.setMethod(selectedMethod);
+
         // Update the quantification settings according to the command line
         updateReporterIonSelectionSettings(reporterSettings.getReporterIonSelectionSettings());
         updateRatioEstimationSettings(reporterSettings.getRatioEstimationSettings());
         updateNormalizationSettings(reporterSettings.getNormalizationSettings());
 
-        return null;
+        // Name samples according to their reagent
+        ArrayList<String> reagents = selectedMethod.getReagentsSortedByMass();
+        for (String reagent : reagents) {
+            reporterIonQuantification.assignSample(reagent, new Sample(reagent));
+        }
+
+        // Set reference samples
+        ArrayList<Integer> referenceIndexes = reporterCLIInputBean.getReferenceSamples();
+        if (referenceIndexes != null) {
+            ArrayList<String> referenceSamples = new ArrayList<String>(referenceIndexes.size());
+            for (Integer index : referenceIndexes) {
+                if (index > reagents.size()) {
+                    System.out.println(System.getProperty("line.separator") + "Reference sample index " + index + " is higher than the number of reagents (" + reagents.size() + ")." + System.getProperty("line.separator"));
+                    return 1;
+                }
+                referenceSamples.add(reagents.get(index - 1));
+            }
+            reporterIonQuantification.setControlSamples(referenceSamples);
+        }
+        
+        
+
+        if (waitingHandlerCLIImpl.isRunCanceled()) {
+            return 1;
+        }
+
+        return 0;
     }
 
     /**
@@ -471,7 +502,7 @@ public class ReporterCLI extends CpsParent implements Callable {
                 lPrintWriter.print(ReporterCLIParameters.getOptionsAsString());
                 lPrintWriter.flush();
                 lPrintWriter.close();
-                System.exit(0);
+                System.exit(1);
             } else {
                 // Valid command line, start the processing
                 reporterCLI.call();
