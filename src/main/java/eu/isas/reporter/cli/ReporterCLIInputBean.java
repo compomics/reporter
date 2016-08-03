@@ -1,14 +1,17 @@
 package eu.isas.reporter.cli;
 
+import com.compomics.software.cli.CommandLineUtils;
 import com.compomics.software.cli.CommandParameter;
 import com.compomics.util.Util;
 import com.compomics.util.experiment.identification.parameters_cli.IdentificationParametersInputBean;
 import com.compomics.util.preferences.IdentificationParameters;
+import eu.isas.peptideshaker.scoring.MatchValidationLevel;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import org.apache.commons.cli.CommandLine;
+import org.ujmp.core.collections.ArrayIndexList;
 
 /**
  * This class is used to verify that a command line is valid and parse its
@@ -82,6 +85,30 @@ public class ReporterCLIInputBean {
      * The percentile for ratio window estimation.
      */
     private Double percentile = null;
+    /**
+     * The resolution for ratio estimation.
+     */
+    private Double resolution = null;
+    /**
+     * The minimum number of unique peptides to consider only those for a protein group ratio estimation.
+     */
+    private Integer minUnique = null;
+    /**
+     * The list of ptms to ignore.
+     */
+    private ArrayList<String> ignoredPtms = null;
+    /**
+     * The validation level for a PSM to be considered for quantification.
+     */
+    private Integer validationPsm = null;
+    /**
+     * The validation level for a peptide to be considered for quantification.
+     */
+    private Integer validationPeptide = null;
+    /**
+     * The validation level for a protein to be considered for quantification.
+     */
+    private Integer validationProtein = null;
 
     /**
      * Parses the arguments of a command line.
@@ -184,6 +211,43 @@ public class ReporterCLIInputBean {
             arg = aLine.getOptionValue(ReporterCLIParameters.PERCENTILE.id);
             Double input = new Double(arg);
             percentile = input;
+        }
+
+        // get the resolution option for ratio estimation
+        if (aLine.hasOption(ReporterCLIParameters.RESOLUTION.id)) {
+            arg = aLine.getOptionValue(ReporterCLIParameters.RESOLUTION.id);
+            Double input = new Double(arg);
+            resolution = input;
+        }
+
+        // get the number of unique peptides
+        if (aLine.hasOption(ReporterCLIParameters.MIN_UNIQUE.id)) {
+            arg = aLine.getOptionValue(ReporterCLIParameters.MIN_UNIQUE.id);
+            minUnique = new Integer(arg);
+        }
+
+        // get the ignored PTMs
+        if (aLine.hasOption(ReporterCLIParameters.IGNORE_PTMS.id)) {
+            arg = aLine.getOptionValue(ReporterCLIParameters.IGNORE_PTMS.id);
+            ignoredPtms = CommandLineUtils.splitInput(arg);
+        }
+
+        // get the PSM validation level
+        if (aLine.hasOption(ReporterCLIParameters.VALIDATION_PSM.id)) {
+            arg = aLine.getOptionValue(ReporterCLIParameters.VALIDATION_PSM.id);
+            validationPsm = new Integer(arg);
+        }
+
+        // get the peptide validation level
+        if (aLine.hasOption(ReporterCLIParameters.VALIDATION_PEPTIDE.id)) {
+            arg = aLine.getOptionValue(ReporterCLIParameters.VALIDATION_PEPTIDE.id);
+            validationPeptide = new Integer(arg);
+        }
+
+        // get the peptide validation level
+        if (aLine.hasOption(ReporterCLIParameters.VALIDATION_PROTEIN.id)) {
+            arg = aLine.getOptionValue(ReporterCLIParameters.VALIDATION_PROTEIN.id);
+            validationProtein = new Integer(arg);
         }
 
         // identification parameters
@@ -308,6 +372,48 @@ public class ReporterCLIInputBean {
         if (aLine.hasOption(ReporterCLIParameters.PERCENTILE.id)) {
             String arg = aLine.getOptionValue(ReporterCLIParameters.PERCENTILE.id);
             if (!CommandParameter.isPositiveDouble(ReporterCLIParameters.PERCENTILE.id, arg, false)) {
+                return false;
+            }
+        }
+
+        // The resolution option for ratio estimation
+        if (aLine.hasOption(ReporterCLIParameters.RESOLUTION.id)) {
+            String arg = aLine.getOptionValue(ReporterCLIParameters.RESOLUTION.id);
+            if (!CommandParameter.isPositiveDouble(ReporterCLIParameters.RESOLUTION.id, arg, false)) {
+                return false;
+            }
+        }
+
+        // The number of unique peptides
+        if (aLine.hasOption(ReporterCLIParameters.MIN_UNIQUE.id)) {
+            String arg = aLine.getOptionValue(ReporterCLIParameters.MIN_UNIQUE.id);
+            if (!CommandParameter.isInteger(ReporterCLIParameters.MIN_UNIQUE.id, arg)) {
+                return false;
+            }
+        }
+
+        // The validation levels
+        ArrayList<String> validationLevels = new ArrayList<String>(3);
+        validationLevels.add("0");
+        validationLevels.add("1");
+        validationLevels.add("2");
+        // PSM
+        if (aLine.hasOption(ReporterCLIParameters.VALIDATION_PSM.id)) {
+            String arg = aLine.getOptionValue(ReporterCLIParameters.VALIDATION_PSM.id);
+            if (!CommandParameter.isInList(ReporterCLIParameters.VALIDATION_PSM.id, arg, validationLevels)) {
+                return false;
+            }
+        }
+        if (aLine.hasOption(ReporterCLIParameters.VALIDATION_PEPTIDE.id)) {
+            String arg = aLine.getOptionValue(ReporterCLIParameters.VALIDATION_PEPTIDE.id);
+            if (!CommandParameter.isInList(ReporterCLIParameters.VALIDATION_PEPTIDE.id, arg, validationLevels)) {
+                return false;
+            }
+        }
+        // Protein
+        if (aLine.hasOption(ReporterCLIParameters.VALIDATION_PROTEIN.id)) {
+            String arg = aLine.getOptionValue(ReporterCLIParameters.VALIDATION_PROTEIN.id);
+            if (!CommandParameter.isInList(ReporterCLIParameters.VALIDATION_PROTEIN.id, arg, validationLevels)) {
                 return false;
             }
         }
@@ -471,7 +577,59 @@ public class ReporterCLIInputBean {
     public Double getPercentile() {
         return percentile;
     }
-    
-    
+
+    /**
+     * Returns the resolution for ratio estimation.
+     * 
+     * @return the resolution for ratio estimation
+     */
+    public Double getResolution() {
+        return resolution;
+    }
+
+    /**
+     * Returns the minimum number of unique peptides to consider only those for a protein group ratio estimation.
+     * 
+     * @return the minimum number of unique peptides to consider only those for a protein group ratio estimation
+     */
+    public Integer getMinUnique() {
+        return minUnique;
+    }
+
+    /**
+     * Returns the list of ptms to ignore.
+     * 
+     * @return the list of ptms to ignore
+     */
+    public ArrayList<String> getIgnoredPtms() {
+        return ignoredPtms;
+    }
+
+    /**
+     * Returns the validation level to use for PSMs.
+     * 
+     * @return the validation level to use for PSMs
+     */
+    public Integer getValidationPsm() {
+        return validationPsm;
+    }
+
+    /**
+     * Returns the validation level to use for peptides.
+     * 
+     * @return the validation level to use for peptides
+     */
+    public Integer getValidationPeptide() {
+        return validationPeptide;
+    }
+
+    /**
+     * Returns the validation level to use for proteins.
+     * 
+     * @return the validation level to use for proteins
+     */
+    public Integer getValidationProtein() {
+        return validationProtein;
+    }
     
 }
