@@ -2,9 +2,7 @@ package eu.isas.reporter.cli;
 
 import com.compomics.software.cli.CommandLineUtils;
 import com.compomics.software.cli.CommandParameter;
-import com.compomics.util.Util;
 import com.compomics.util.experiment.identification.parameters_cli.IdentificationParametersInputBean;
-import com.compomics.util.experiment.normalization.NormalizationFactors;
 import com.compomics.util.preferences.IdentificationParameters;
 import eu.isas.reporter.calculation.normalization.NormalizationType;
 import java.io.File;
@@ -516,8 +514,7 @@ public class ReporterCLIInputBean {
                 return false;
             }
         }
-        
-        
+
         return true;
     }
 
@@ -744,7 +741,7 @@ public class ReporterCLIInputBean {
 
     /**
      * Returns the PSM normalization.
-     * 
+     *
      * @return the PSM normalization
      */
     public NormalizationType getPsmNormalizationType() {
@@ -753,7 +750,7 @@ public class ReporterCLIInputBean {
 
     /**
      * Returns the peptide normalization.
-     * 
+     *
      * @return the peptide normalization
      */
     public NormalizationType getPeptideNormalizationType() {
@@ -762,7 +759,7 @@ public class ReporterCLIInputBean {
 
     /**
      * Returns the protein normalization.
-     * 
+     *
      * @return the protein normalization
      */
     public NormalizationType getProteinNormalizationType() {
@@ -771,7 +768,7 @@ public class ReporterCLIInputBean {
 
     /**
      * Returns the file containing the stable proteins.
-     * 
+     *
      * @return the file containing the stable proteins
      */
     public File getStableProteins() {
@@ -780,11 +777,11 @@ public class ReporterCLIInputBean {
 
     /**
      * Returns the file containing the contaminants.
-     * 
+     *
      * @return the file containing the contaminants
      */
     public File getContaminants() {
         return contaminants;
     }
-    
+
 }

@@ -5,6 +5,8 @@ import com.compomics.util.Util;
 import com.compomics.util.db.DerbyUtil;
 import com.compomics.util.db.ObjectsCache;
 import com.compomics.util.experiment.biology.EnzymeFactory;
+import com.compomics.util.experiment.biology.PTM;
+import com.compomics.util.experiment.biology.PTMFactory;
 import com.compomics.util.experiment.biology.taxonomy.SpeciesFactory;
 import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.protein_sequences.SequenceFactory;
@@ -54,11 +56,11 @@ public class ReporterCLI extends CpsParent implements Callable {
     /**
      * The enzyme factory.
      */
-    private EnzymeFactory enzymeFactory = EnzymeFactory.getInstance();
+    private EnzymeFactory enzymeFactory;
     /**
-     * The spectrum factory.
+     * The PTM factory.
      */
-    private SpectrumFactory spectrumFactory = SpectrumFactory.getInstance();
+    private PTMFactory ptmFactory;
     /**
      * The command line.
      */
@@ -77,31 +79,6 @@ public class ReporterCLI extends CpsParent implements Callable {
      * an error occurred while parsing the command line
      */
     private ReporterCLI(String[] args) throws ParseException {
-
-        // Load enzymes
-        try {
-            enzymeFactory.importEnzymes(Reporter.getEnzymesFile());
-        } catch (Exception e) {
-            System.out.println("An error occurred while loading the enzymes.");
-            e.printStackTrace();
-        }
-
-        // Load species
-        try {
-            SpeciesFactory speciesFactory = SpeciesFactory.getInstance();
-            speciesFactory.initiate(Reporter.getJarFilePath());
-        } catch (Exception e) {
-            System.out.println("An error occurred while loading the species.");
-            e.printStackTrace();
-        }
-
-        // Load default methods
-        try {
-            methodsFactory.importMethods(Reporter.getMethodsFile());
-        } catch (Exception e) {
-            System.out.println("An error occurred while loading the methods.");
-            e.printStackTrace();
-        }
 
         // Get command line parameters
         Options lOptions = new Options();
@@ -155,6 +132,36 @@ public class ReporterCLI extends CpsParent implements Callable {
                 System.out.println("Unable to load the path configurations. Default paths will be used.");
             }
         }
+
+        // Load enzymes
+        enzymeFactory = EnzymeFactory.getInstance();
+        try {
+            enzymeFactory.importEnzymes(Reporter.getEnzymesFile());
+        } catch (Exception e) {
+            System.out.println("An error occurred while loading the enzymes.");
+            e.printStackTrace();
+        }
+
+        // Load species
+        try {
+            SpeciesFactory speciesFactory = SpeciesFactory.getInstance();
+            speciesFactory.initiate(Reporter.getJarFilePath());
+        } catch (Exception e) {
+            System.out.println("An error occurred while loading the species.");
+            e.printStackTrace();
+        }
+
+        // Load default methods
+        try {
+            methodsFactory.importMethods(Reporter.getMethodsFile());
+        } catch (Exception e) {
+            System.out.println("An error occurred while loading the methods.");
+            e.printStackTrace();
+            return 1;
+        }
+
+        // Load PTMs 
+        ptmFactory = PTMFactory.getInstance();
 
         // Initiate the waiting handler
         WaitingHandlerCLIImpl waitingHandlerCLIImpl = new WaitingHandlerCLIImpl();
@@ -213,6 +220,18 @@ public class ReporterCLI extends CpsParent implements Callable {
             System.out.println(error);
         }
 
+        // Verify that ignored PTMs are recognized
+        ArrayList<String> ignoredPtms = reporterCLIInputBean.getIgnoredPtms();
+        if (ignoredPtms != null) {
+            for (String ptmName : ignoredPtms) {
+                PTM ptm = ptmFactory.getPTM(ptmName);
+                if (ptm == null) {
+                    System.out.println("PTM " + ptmName + " not recognized.");
+                    return 1;
+                }
+            }
+        }
+
         // get previously set quantification settings or defaults from the identification results
         ReporterSettings reporterSettings = projectImporter.getReporterSettings();
         ReporterIonQuantification reporterIonQuantification = projectImporter.getReporterIonQuantification();
@@ -242,17 +261,17 @@ public class ReporterCLI extends CpsParent implements Callable {
             waitingHandlerCLIImpl.appendReport(errorText, true, true);
             return 1;
         }
-        
+
         // Update the quantification settings according to the command line
         updateReporterIonSelectionSettings(reporterSettings.getReporterIonSelectionSettings());
 
         return null;
     }
-    
+
     /**
      * Updates the reporter ion selection settings according to the command line
-     * 
-     * @param reporterIonSelectionSettings the reporter ion selection settings 
+     *
+     * @param reporterIonSelectionSettings the reporter ion selection settings
      */
     private void updateReporterIonSelectionSettings(ReporterIonSelectionSettings reporterIonSelectionSettings) {
         if (reporterCLIInputBean.getReporterIonTolerance() != null) {
