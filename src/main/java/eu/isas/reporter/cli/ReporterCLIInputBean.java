@@ -4,14 +4,14 @@ import com.compomics.software.cli.CommandLineUtils;
 import com.compomics.software.cli.CommandParameter;
 import com.compomics.util.Util;
 import com.compomics.util.experiment.identification.parameters_cli.IdentificationParametersInputBean;
+import com.compomics.util.experiment.normalization.NormalizationFactors;
 import com.compomics.util.preferences.IdentificationParameters;
-import eu.isas.peptideshaker.scoring.MatchValidationLevel;
+import eu.isas.reporter.calculation.normalization.NormalizationType;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import org.apache.commons.cli.CommandLine;
-import org.ujmp.core.collections.ArrayIndexList;
 
 /**
  * This class is used to verify that a command line is valid and parse its
@@ -46,7 +46,8 @@ public class ReporterCLIInputBean {
      */
     private PathSettingsCLIInputBean pathSettingsCLIInputBean;
     /**
-     * The name of the reporter ion method as set in the isotopic distribution file.
+     * The name of the reporter ion method as set in the isotopic distribution
+     * file.
      */
     private String reporterMethod = null;
     /**
@@ -58,7 +59,8 @@ public class ReporterCLIInputBean {
      */
     private Boolean mostAccurate = null;
     /**
-     * Boolean indicating whether the quantification peaks are in the same spectra as the identification peaks.
+     * Boolean indicating whether the quantification peaks are in the same
+     * spectra as the identification peaks.
      */
     private Boolean sameSpectra = null;
     /**
@@ -74,11 +76,13 @@ public class ReporterCLIInputBean {
      */
     private Double precRtTolerance = null;
     /**
-     * Boolean indicating whether peptides presenting null intensities should be ignored.
+     * Boolean indicating whether peptides presenting null intensities should be
+     * ignored.
      */
     private Boolean ignoreNull = null;
     /**
-     * Boolean indicating whether peptides presenting missed cleavages should be ignored.
+     * Boolean indicating whether peptides presenting missed cleavages should be
+     * ignored.
      */
     private Boolean ignoreMc = null;
     /**
@@ -90,7 +94,8 @@ public class ReporterCLIInputBean {
      */
     private Double resolution = null;
     /**
-     * The minimum number of unique peptides to consider only those for a protein group ratio estimation.
+     * The minimum number of unique peptides to consider only those for a
+     * protein group ratio estimation.
      */
     private Integer minUnique = null;
     /**
@@ -109,12 +114,32 @@ public class ReporterCLIInputBean {
      * The validation level for a protein to be considered for quantification.
      */
     private Integer validationProtein = null;
+    /**
+     * The normalization to use for PSMs.
+     */
+    private NormalizationType psmNormalizationType = null;
+    /**
+     * The normalization to use for peptides.
+     */
+    private NormalizationType peptideNormalizationType = null;
+    /**
+     * The normalization to use for proteins.
+     */
+    private NormalizationType proteinNormalizationType = null;
+    /**
+     * Fasta file containing stable proteins.
+     */
+    private File stableProteins = null;
+    /**
+     * Fasta file containing contaminants.
+     */
+    private File contaminants = null;
 
     /**
      * Parses the arguments of a command line.
      *
      * @param aLine the command line
-     * 
+     *
      * @throws IOException thrown if an error occurred while reading the FASTA
      * file
      * @throws ClassNotFoundException thrown if the search parameters cannot be
@@ -191,14 +216,14 @@ public class ReporterCLIInputBean {
             Double input = new Double(arg);
             precRtTolerance = input;
         }
-        
+
         // get the ignore null option
         if (aLine.hasOption(ReporterCLIParameters.IGNORE_NULL.id)) {
             arg = aLine.getOptionValue(ReporterCLIParameters.IGNORE_NULL.id);
             Integer input = new Integer(arg);
             ignoreNull = input.equals(1);
         }
-        
+
         // get the ignore missed cleavages option
         if (aLine.hasOption(ReporterCLIParameters.IGNORE_MC.id)) {
             arg = aLine.getOptionValue(ReporterCLIParameters.IGNORE_MC.id);
@@ -250,6 +275,39 @@ public class ReporterCLIInputBean {
             validationProtein = new Integer(arg);
         }
 
+        // get the PSM normalization
+        if (aLine.hasOption(ReporterCLIParameters.NORMALIZATION_PSM.id)) {
+            arg = aLine.getOptionValue(ReporterCLIParameters.NORMALIZATION_PSM.id);
+            Integer index = new Integer(arg);
+            psmNormalizationType = NormalizationType.getNormalizationType(index);
+        }
+
+        // get the peptide normalization
+        if (aLine.hasOption(ReporterCLIParameters.NORMALIZATION_PEPTIDE.id)) {
+            arg = aLine.getOptionValue(ReporterCLIParameters.NORMALIZATION_PEPTIDE.id);
+            Integer index = new Integer(arg);
+            peptideNormalizationType = NormalizationType.getNormalizationType(index);
+        }
+
+        // get the protein normalization
+        if (aLine.hasOption(ReporterCLIParameters.NORMALIZATION_PROTEIN.id)) {
+            arg = aLine.getOptionValue(ReporterCLIParameters.NORMALIZATION_PROTEIN.id);
+            Integer index = new Integer(arg);
+            proteinNormalizationType = NormalizationType.getNormalizationType(index);
+        }
+
+        // get the stable proteins
+        if (aLine.hasOption(ReporterCLIParameters.STABLE_PROTEINS.id)) {
+            arg = aLine.getOptionValue(ReporterCLIParameters.STABLE_PROTEINS.id);
+            stableProteins = new File(arg);
+        }
+
+        // get the contaminants
+        if (aLine.hasOption(ReporterCLIParameters.CONTAMINANTS.id)) {
+            arg = aLine.getOptionValue(ReporterCLIParameters.CONTAMINANTS.id);
+            contaminants = new File(arg);
+        }
+
         // identification parameters
         identificationParametersInputBean = new IdentificationParametersInputBean(aLine);
 
@@ -273,26 +331,21 @@ public class ReporterCLIInputBean {
             return false;
         } else {
             String arg = aLine.getOptionValue(ReporterCLIParameters.ID.id);
-            File input = new File(arg);
-            if (!input.exists()) {
-                System.out.println(System.getProperty("line.separator") + "PeptideShaker file \'" + input.getName() + "\' not found." + System.getProperty("line.separator"));
-            }
-            String extension = Util.getExtension(input);
-            if (!extension.equals("cpsx") || !extension.equals("zip")) {
-                System.out.println(System.getProperty("line.separator") + "Format \'" + extension + "\' not supported for PeptideShaker file." + System.getProperty("line.separator"));
+            HashSet<String> supportedFormats = new HashSet<String>(2);
+            supportedFormats.add("cpsx");
+            supportedFormats.add("zip");
+            if (!CommandParameter.fileExists(ReporterCLIParameters.ID.id, arg, supportedFormats)) {
+                return false;
             }
         }
 
         // The isotopes file
         if (aLine.hasOption(ReporterCLIParameters.ISOTOPES.id)) {
             String arg = aLine.getOptionValue(ReporterCLIParameters.ISOTOPES.id);
-            File input = new File(arg);
-            if (!input.exists()) {
-                System.out.println(System.getProperty("line.separator") + "Isotope correction factors file \'" + input.getName() + "\' not found." + System.getProperty("line.separator"));
-            }
-            String extension = Util.getExtension(input);
-            if (!extension.equals("xml")) {
-                System.out.println(System.getProperty("line.separator") + "Format \'" + extension + "\' not supported for Isotope correction factors file." + System.getProperty("line.separator"));
+            HashSet<String> supportedFormats = new HashSet<String>(1);
+            supportedFormats.add("xml");
+            if (!CommandParameter.fileExists(ReporterCLIParameters.ISOTOPES.id, arg, supportedFormats)) {
+                return false;
             }
         }
 
@@ -303,7 +356,7 @@ public class ReporterCLIInputBean {
                 return false;
             }
         }
-        
+
         // The ion tolerance
         if (aLine.hasOption(ReporterCLIParameters.ION_TOL.id)) {
             String arg = aLine.getOptionValue(ReporterCLIParameters.ION_TOL.id);
@@ -311,7 +364,7 @@ public class ReporterCLIInputBean {
                 return false;
             }
         }
-        
+
         // Most accurate option
         if (aLine.hasOption(ReporterCLIParameters.MOST_ACCURATE.id)) {
             String arg = aLine.getOptionValue(ReporterCLIParameters.MOST_ACCURATE.id);
@@ -319,7 +372,7 @@ public class ReporterCLIInputBean {
                 return false;
             }
         }
-        
+
         // Same spectra option
         if (aLine.hasOption(ReporterCLIParameters.SAME_SPECTRA.id)) {
             String arg = aLine.getOptionValue(ReporterCLIParameters.SAME_SPECTRA.id);
@@ -327,7 +380,7 @@ public class ReporterCLIInputBean {
                 return false;
             }
         }
-        
+
         // The precursor ion m/z tolerance
         if (aLine.hasOption(ReporterCLIParameters.PREC_WINDOW_MZ_TOL.id)) {
             String arg = aLine.getOptionValue(ReporterCLIParameters.PREC_WINDOW_MZ_TOL.id);
@@ -335,7 +388,7 @@ public class ReporterCLIInputBean {
                 return false;
             }
         }
-        
+
         // The precursor ion m/z tolerance unit
         if (aLine.hasOption(ReporterCLIParameters.PREC_WINDOW_MZ_TOL_PPM.id)) {
             String arg = aLine.getOptionValue(ReporterCLIParameters.PREC_WINDOW_MZ_TOL_PPM.id);
@@ -343,7 +396,7 @@ public class ReporterCLIInputBean {
                 return false;
             }
         }
-        
+
         // The precursor ion RT tolerance
         if (aLine.hasOption(ReporterCLIParameters.PREC_WINDOW_RT_TOL.id)) {
             String arg = aLine.getOptionValue(ReporterCLIParameters.PREC_WINDOW_RT_TOL.id);
@@ -351,7 +404,7 @@ public class ReporterCLIInputBean {
                 return false;
             }
         }
-        
+
         // The ignore null option
         if (aLine.hasOption(ReporterCLIParameters.IGNORE_NULL.id)) {
             String arg = aLine.getOptionValue(ReporterCLIParameters.IGNORE_NULL.id);
@@ -359,7 +412,7 @@ public class ReporterCLIInputBean {
                 return false;
             }
         }
-        
+
         // The ignore missed cleavages option
         if (aLine.hasOption(ReporterCLIParameters.IGNORE_MC.id)) {
             String arg = aLine.getOptionValue(ReporterCLIParameters.IGNORE_MC.id);
@@ -367,7 +420,7 @@ public class ReporterCLIInputBean {
                 return false;
             }
         }
-        
+
         // The percentile
         if (aLine.hasOption(ReporterCLIParameters.PERCENTILE.id)) {
             String arg = aLine.getOptionValue(ReporterCLIParameters.PERCENTILE.id);
@@ -404,6 +457,7 @@ public class ReporterCLIInputBean {
                 return false;
             }
         }
+        // Peptide
         if (aLine.hasOption(ReporterCLIParameters.VALIDATION_PEPTIDE.id)) {
             String arg = aLine.getOptionValue(ReporterCLIParameters.VALIDATION_PEPTIDE.id);
             if (!CommandParameter.isInList(ReporterCLIParameters.VALIDATION_PEPTIDE.id, arg, validationLevels)) {
@@ -417,13 +471,59 @@ public class ReporterCLIInputBean {
                 return false;
             }
         }
+
+        // Normalization
+        ArrayList<String> normalizationTypes = new ArrayList<String>(NormalizationType.values().length);
+        for (NormalizationType normalizationType : NormalizationType.values()) {
+            normalizationTypes.add(normalizationType.index + "");
+        }
+        // PSM
+        if (aLine.hasOption(ReporterCLIParameters.NORMALIZATION_PSM.id)) {
+            String arg = aLine.getOptionValue(ReporterCLIParameters.NORMALIZATION_PSM.id);
+            if (!CommandParameter.isInList(ReporterCLIParameters.NORMALIZATION_PSM.id, arg, normalizationTypes)) {
+                return false;
+            }
+        }
+        // Peptide
+        if (aLine.hasOption(ReporterCLIParameters.NORMALIZATION_PEPTIDE.id)) {
+            String arg = aLine.getOptionValue(ReporterCLIParameters.NORMALIZATION_PEPTIDE.id);
+            if (!CommandParameter.isInList(ReporterCLIParameters.NORMALIZATION_PEPTIDE.id, arg, normalizationTypes)) {
+                return false;
+            }
+        }
+        // Protein
+        if (aLine.hasOption(ReporterCLIParameters.NORMALIZATION_PROTEIN.id)) {
+            String arg = aLine.getOptionValue(ReporterCLIParameters.NORMALIZATION_PROTEIN.id);
+            if (!CommandParameter.isInList(ReporterCLIParameters.NORMALIZATION_PROTEIN.id, arg, normalizationTypes)) {
+                return false;
+            }
+        }
+        // Stable proteins
+        if (aLine.hasOption(ReporterCLIParameters.STABLE_PROTEINS.id)) {
+            String arg = aLine.getOptionValue(ReporterCLIParameters.STABLE_PROTEINS.id);
+            HashSet<String> supportedFormats = new HashSet<String>(1);
+            supportedFormats.add("fasta");
+            if (!CommandParameter.fileExists(ReporterCLIParameters.STABLE_PROTEINS.id, arg, supportedFormats)) {
+                return false;
+            }
+        }
+        // Contaminants
+        if (aLine.hasOption(ReporterCLIParameters.CONTAMINANTS.id)) {
+            String arg = aLine.getOptionValue(ReporterCLIParameters.CONTAMINANTS.id);
+            HashSet<String> supportedFormats = new HashSet<String>(1);
+            supportedFormats.add("fasta");
+            if (!CommandParameter.fileExists(ReporterCLIParameters.CONTAMINANTS.id, arg, supportedFormats)) {
+                return false;
+            }
+        }
+        
         
         return true;
     }
 
     /**
      * Returns the PeptideShaker file.
-     * 
+     *
      * @return the PeptideShaker file
      */
     public File getPeptideShakerFile() {
@@ -432,7 +532,7 @@ public class ReporterCLIInputBean {
 
     /**
      * Returns the output file where to save the project, null if not set.
-     * 
+     *
      * @return the output file
      */
     public File getOutputFile() {
@@ -441,7 +541,7 @@ public class ReporterCLIInputBean {
 
     /**
      * Returns the isotope correction file, null if not set.
-     * 
+     *
      * @return the isotope correction file
      */
     public File getIsotopesFile() {
@@ -450,7 +550,7 @@ public class ReporterCLIInputBean {
 
     /**
      * Returns the number of threads to use.
-     * 
+     *
      * @return the number of threads to use
      */
     public int getnThreads() {
@@ -459,7 +559,7 @@ public class ReporterCLIInputBean {
 
     /**
      * Returns the name of the reporter methods provided by the user.
-     * 
+     *
      * @return the name of the reporter method
      */
     public String getReporterMethod() {
@@ -468,7 +568,7 @@ public class ReporterCLIInputBean {
 
     /**
      * Returns the tolerance used for the reporter ion matching in the spectrum.
-     * 
+     *
      * @return the tolerance used for the reporter ion matching in the spectrum
      */
     public Double getReporterIonTolerance() {
@@ -477,17 +577,20 @@ public class ReporterCLIInputBean {
 
     /**
      * Indicates whether the most accurate reporter ion should be used.
-     * 
-     * @return a boolean indicating whether the most accurate reporter ion should be used
+     *
+     * @return a boolean indicating whether the most accurate reporter ion
+     * should be used
      */
     public Boolean getMostAccurate() {
         return mostAccurate;
     }
 
     /**
-     * Indicates whether the quantification peaks are in the same spectra as the identification peaks.
-     * 
-     * @return a boolean indicating whether the quantification peaks are in the same spectra as the identification peaks
+     * Indicates whether the quantification peaks are in the same spectra as the
+     * identification peaks.
+     *
+     * @return a boolean indicating whether the quantification peaks are in the
+     * same spectra as the identification peaks
      */
     public Boolean getSameSpectra() {
         return sameSpectra;
@@ -495,7 +598,7 @@ public class ReporterCLIInputBean {
 
     /**
      * Returns the m/z tolerance to use for the precursor ion window.
-     * 
+     *
      * @return the m/z tolerance to use for the precursor ion window
      */
     public Double getPrecMzTolerance() {
@@ -504,8 +607,9 @@ public class ReporterCLIInputBean {
 
     /**
      * Indicates whether the precursor ion window m/z tolerance is in ppm.
-     * 
-     * @return a boolean indicating whether the window precursor ion m/z tolerance is in ppm
+     *
+     * @return a boolean indicating whether the window precursor ion m/z
+     * tolerance is in ppm
      */
     public Boolean getPrecMzTolerancePpm() {
         return precMzTolerancePpm;
@@ -513,7 +617,7 @@ public class ReporterCLIInputBean {
 
     /**
      * Returns the RT tolerance to use for the precursor ion window in seconds.
-     * 
+     *
      * @return the RT tolerance to use for the precursor ion window in seconds
      */
     public Double getPrecRtTolerance() {
@@ -552,18 +656,22 @@ public class ReporterCLIInputBean {
     }
 
     /**
-     * Returns a boolean indicating whether peptides presenting null intensities should be ignored.
-     * 
-     * @return a boolean indicating whether peptides presenting null intensities should be ignored
+     * Returns a boolean indicating whether peptides presenting null intensities
+     * should be ignored.
+     *
+     * @return a boolean indicating whether peptides presenting null intensities
+     * should be ignored
      */
     public Boolean getIgnoreNull() {
         return ignoreNull;
     }
 
     /**
-     * Returns a boolean indicating whether peptides presenting missed cleavages should be ignored.
-     * 
-     * @return a boolean indicating whether peptides presenting missed cleavages should be ignored
+     * Returns a boolean indicating whether peptides presenting missed cleavages
+     * should be ignored.
+     *
+     * @return a boolean indicating whether peptides presenting missed cleavages
+     * should be ignored
      */
     public Boolean getIgnoreMc() {
         return ignoreMc;
@@ -571,7 +679,7 @@ public class ReporterCLIInputBean {
 
     /**
      * Returns the percentile for ratio window estimation.
-     * 
+     *
      * @return the percentile for ratio window estimation
      */
     public Double getPercentile() {
@@ -580,7 +688,7 @@ public class ReporterCLIInputBean {
 
     /**
      * Returns the resolution for ratio estimation.
-     * 
+     *
      * @return the resolution for ratio estimation
      */
     public Double getResolution() {
@@ -588,9 +696,11 @@ public class ReporterCLIInputBean {
     }
 
     /**
-     * Returns the minimum number of unique peptides to consider only those for a protein group ratio estimation.
-     * 
-     * @return the minimum number of unique peptides to consider only those for a protein group ratio estimation
+     * Returns the minimum number of unique peptides to consider only those for
+     * a protein group ratio estimation.
+     *
+     * @return the minimum number of unique peptides to consider only those for
+     * a protein group ratio estimation
      */
     public Integer getMinUnique() {
         return minUnique;
@@ -598,7 +708,7 @@ public class ReporterCLIInputBean {
 
     /**
      * Returns the list of ptms to ignore.
-     * 
+     *
      * @return the list of ptms to ignore
      */
     public ArrayList<String> getIgnoredPtms() {
@@ -607,7 +717,7 @@ public class ReporterCLIInputBean {
 
     /**
      * Returns the validation level to use for PSMs.
-     * 
+     *
      * @return the validation level to use for PSMs
      */
     public Integer getValidationPsm() {
@@ -616,7 +726,7 @@ public class ReporterCLIInputBean {
 
     /**
      * Returns the validation level to use for peptides.
-     * 
+     *
      * @return the validation level to use for peptides
      */
     public Integer getValidationPeptide() {
@@ -625,11 +735,56 @@ public class ReporterCLIInputBean {
 
     /**
      * Returns the validation level to use for proteins.
-     * 
+     *
      * @return the validation level to use for proteins
      */
     public Integer getValidationProtein() {
         return validationProtein;
+    }
+
+    /**
+     * Returns the PSM normalization.
+     * 
+     * @return the PSM normalization
+     */
+    public NormalizationType getPsmNormalizationType() {
+        return psmNormalizationType;
+    }
+
+    /**
+     * Returns the peptide normalization.
+     * 
+     * @return the peptide normalization
+     */
+    public NormalizationType getPeptideNormalizationType() {
+        return peptideNormalizationType;
+    }
+
+    /**
+     * Returns the protein normalization.
+     * 
+     * @return the protein normalization
+     */
+    public NormalizationType getProteinNormalizationType() {
+        return proteinNormalizationType;
+    }
+
+    /**
+     * Returns the file containing the stable proteins.
+     * 
+     * @return the file containing the stable proteins
+     */
+    public File getStableProteins() {
+        return stableProteins;
+    }
+
+    /**
+     * Returns the file containing the contaminants.
+     * 
+     * @return the file containing the contaminants
+     */
+    public File getContaminants() {
+        return contaminants;
     }
     
 }

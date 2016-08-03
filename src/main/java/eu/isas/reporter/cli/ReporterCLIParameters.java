@@ -1,6 +1,7 @@
 package eu.isas.reporter.cli;
 
 import com.compomics.util.experiment.identification.parameters_cli.IdentificationParametersCLIParams;
+import eu.isas.reporter.calculation.normalization.NormalizationType;
 import org.apache.commons.cli.Options;
 
 /**
@@ -39,6 +40,12 @@ public enum ReporterCLIParameters {
     VALIDATION_PSM("validation_psm", "Validation level for a PSM to be considered for quantification (0: all, 1: validated, 2: confident). Default is 1.", false),
     VALIDATION_PEPTIDE("validation_peptide", "Validation level for a peptide to be considered for quantification (0: all, 1: validated, 2: confident). Default is 1.", false),
     VALIDATION_PROTEIN("validation_protein", "Validation level for a protein to be considered for quantification (0: all, 1: validated, 2: confident). Default is 1.", false),
+    
+    NORMALIZATION_PSM("normalization_psm", "Normalization at the PSM level (" + NormalizationType.getCommandLineDescription() + "). Default is 0.", false),
+    NORMALIZATION_PEPTIDE("normalization_peptide", "Normalization at the peptide level (" + NormalizationType.getCommandLineDescription() + "). Default is 1.", false),
+    NORMALIZATION_PROTEIN("normalization_protein", "Normalization at the protein level (" + NormalizationType.getCommandLineDescription() + "). Default is 1.", false),
+    STABLE_PROTEINS("stable_proteins", "Path to a fasta file containing proteins to consider most stable between samples.", false),
+    CONTAMINANTS("contaminants", "Path to a fasta file containing proteins to consider as contaminants. Default is resources/crap.fasta.", false),
     
     THREADS("threads", "Number of threads to use for the processing, default: the number of cores on the machine.", false);
 
