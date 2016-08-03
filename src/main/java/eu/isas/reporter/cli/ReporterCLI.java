@@ -25,6 +25,7 @@ import eu.isas.peptideshaker.utils.CpsParent;
 import eu.isas.reporter.Reporter;
 import eu.isas.reporter.io.ProjectImporter;
 import eu.isas.reporter.preferences.ReporterPathPreferences;
+import eu.isas.reporter.settings.NormalizationSettings;
 import eu.isas.reporter.settings.RatioEstimationSettings;
 import eu.isas.reporter.settings.ReporterIonSelectionSettings;
 import eu.isas.reporter.settings.ReporterSettings;
@@ -266,6 +267,8 @@ public class ReporterCLI extends CpsParent implements Callable {
 
         // Update the quantification settings according to the command line
         updateReporterIonSelectionSettings(reporterSettings.getReporterIonSelectionSettings());
+        updateRatioEstimationSettings(reporterSettings.getRatioEstimationSettings());
+        updateNormalizationSettings(reporterSettings.getNormalizationSettings());
 
         return null;
     }
@@ -318,6 +321,12 @@ public class ReporterCLI extends CpsParent implements Callable {
         if (reporterCLIInputBean.getMinUnique() != null) {
             ratioEstimationSettings.setMinUnique(reporterCLIInputBean.getMinUnique());
         }
+        if (reporterCLIInputBean.getIgnoredPtms() != null) {
+            ratioEstimationSettings.emptyPTMList();
+            for (String ptmName : reporterCLIInputBean.getIgnoredPtms()) {
+                ratioEstimationSettings.addExcludingPtm(ptmName);
+            }
+        }
         if (reporterCLIInputBean.getValidationPsm() != null) {
             ratioEstimationSettings.setPsmValidationLevel(MatchValidationLevel.getMatchValidationLevel(reporterCLIInputBean.getValidationPsm()));
         }
@@ -326,6 +335,29 @@ public class ReporterCLI extends CpsParent implements Callable {
         }
         if (reporterCLIInputBean.getValidationProtein() != null) {
             ratioEstimationSettings.setProteinValidationLevel(MatchValidationLevel.getMatchValidationLevel(reporterCLIInputBean.getValidationProtein()));
+        }
+    }
+
+    /**
+     * Updates the normalization settings according to the command line input.
+     *
+     * @param normalizationSettings the normalization settings to update
+     */
+    private void updateNormalizationSettings(NormalizationSettings normalizationSettings) {
+        if (reporterCLIInputBean.getPsmNormalizationType() != null) {
+            normalizationSettings.setPsmNormalization(reporterCLIInputBean.getPsmNormalizationType());
+        }
+        if (reporterCLIInputBean.getPeptideNormalizationType() != null) {
+            normalizationSettings.setPeptideNormalization(reporterCLIInputBean.getPeptideNormalizationType());
+        }
+        if (reporterCLIInputBean.getProteinNormalizationType() != null) {
+            normalizationSettings.setProteinNormalization(reporterCLIInputBean.getProteinNormalizationType());
+        }
+        if (reporterCLIInputBean.getStableProteins() != null) {
+            normalizationSettings.setStableProteinsFastaFile(reporterCLIInputBean.getStableProteins());
+        }
+        if (reporterCLIInputBean.getContaminants() != null) {
+            normalizationSettings.setContaminantsFastaFile(reporterCLIInputBean.getContaminants());
         }
     }
 
