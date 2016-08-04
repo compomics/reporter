@@ -23,6 +23,7 @@ import com.compomics.util.preferences.ProcessingPreferences;
 import eu.isas.peptideshaker.PeptideShaker;
 import eu.isas.peptideshaker.preferences.ProjectDetails;
 import eu.isas.peptideshaker.utils.CpsParent;
+import eu.isas.reporter.Reporter;
 import eu.isas.reporter.gui.settings.ReporterSettingsDialog;
 import eu.isas.reporter.io.ProjectImporter;
 import eu.isas.reporter.preferences.DisplayPreferences;
@@ -49,10 +50,6 @@ import org.xmlpull.v1.XmlPullParserException;
  */
 public class NewDialog extends javax.swing.JDialog {
 
-    /**
-     * File containing the various reporter methods.
-     */
-    private final String METHODS_FILE = "resources/conf/reporterMethods.xml";
     /**
      * The current methods file.
      */
@@ -100,7 +97,7 @@ public class NewDialog extends javax.swing.JDialog {
     /**
      * The spectrum factory.
      */
-    private SpectrumFactory spectrumFactory = SpectrumFactory.getInstance(10000);
+    private SpectrumFactory spectrumFactory = SpectrumFactory.getInstance();
     /**
      * List of all sample names.
      */
@@ -146,7 +143,7 @@ public class NewDialog extends javax.swing.JDialog {
         this.reporterGui = reporterGui;
         this.welcomeDialog = null;
 
-        methodsFile = new File(reporterGui.getJarFilePath(), METHODS_FILE);
+        methodsFile = Reporter.getMethodsFile();
         importMethods();
 
         initComponents();
@@ -189,7 +186,7 @@ public class NewDialog extends javax.swing.JDialog {
         this.reporterGui = reporterGui;
         this.welcomeDialog = welcomeDialog;
 
-        methodsFile = new File(reporterGui.getJarFilePath(), METHODS_FILE);
+        methodsFile = Reporter.getMethodsFile();
         importMethods();
 
         initComponents();
@@ -1151,14 +1148,46 @@ public class NewDialog extends javax.swing.JDialog {
             @Override
             public void run() {
 
-                ProjectImporter projectImporter = new ProjectImporter(NewDialog.this, reporterGui.getLastSelectedFolder(), psFile, progressDialog);
+                cpsParent = new CpsParent(Reporter.getMatchesFolder());
+                cpsParent.setCpsFile(psFile);
+                ProjectImporter projectImporter = new ProjectImporter(NewDialog.this);
+                try {
+                    projectImporter.importPeptideShakerProject(cpsParent, progressDialog);
+                    projectImporter.importReporterProject(cpsParent, progressDialog);
+                } catch (OutOfMemoryError error) {
+                    System.out.println("Ran out of memory! (runtime.maxMemory(): " + Runtime.getRuntime().maxMemory() + ")");
+                    error.printStackTrace();
+                    String errorText = "PeptideShaker used up all the available memory and had to be stopped.<br>"
+                            + "Memory boundaries are changed in the the Welcome Dialog (Settings<br>"
+                            + "& Help > Settings > Java Memory Settings) or in the Edit menu (Edit<br>"
+                            + "Java Options). See also <a href=\"http://compomics.github.io/compomics-utilities/wiki/javatroubleshooting.html\">JavaTroubleShooting</a>.";
+                    JOptionPane.showMessageDialog(NewDialog.this,
+                            errorText,
+                            "Out of Memory", JOptionPane.ERROR_MESSAGE);
+                    return;
+                } catch (EOFException e) {
+                    e.printStackTrace();
+                    String errorText = "An error occurred while reading:\n" + psFile + ".\n\n"
+                            + "The file is corrupted and cannot be opened anymore.";
+                    JOptionPane.showMessageDialog(NewDialog.this,
+                            errorText,
+                            "Incomplete file", JOptionPane.ERROR_MESSAGE);
+                    return;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    String errorText = "An error occurred while reading:\n" + psFile + ".\n\n"
+                            + "Please verify that the PeptideShaker version used to create\n"
+                            + "the file is compatible with your version of Reporter.";
+                    JOptionPane.showMessageDialog(NewDialog.this,
+                            errorText,
+                            "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
 
                 if (progressDialog.isRunCanceled()) {
                     progressDialog.dispose();
                     return;
                 }
-
-                cpsParent = projectImporter.getCpsParent();
 
                 loadButton.setEnabled(true);
                 editQuantPrefsButton.setEnabled(true);
@@ -1182,6 +1211,10 @@ public class NewDialog extends javax.swing.JDialog {
                 reporterSettings = projectImporter.getReporterSettings();
                 reporterIonQuantification = projectImporter.getReporterIonQuantification();
                 selectedMethod = reporterIonQuantification.getReporterMethod();
+                if (selectedMethod == null) {
+                    // Default to the first one if not found
+                    selectedMethod = methodsFactory.getReporterMethod(methodsFactory.getMethodsNames().get(0));
+                }
                 reagents = selectedMethod.getReagentsSortedByMass();
 
                 // get the display preferences
@@ -1254,7 +1287,8 @@ public class NewDialog extends javax.swing.JDialog {
      * methods.
      */
     private void importMethodsError() {
-        JOptionPane.showMessageDialog(this, "\"" + METHODS_FILE + "\" could not be parsed, please select a method file.", "No Spectrum File Selected", JOptionPane.WARNING_MESSAGE);
+
+        JOptionPane.showMessageDialog(this, "Default reporter methods file could not be parsed, please select a method file.", "No Spectrum File Selected", JOptionPane.WARNING_MESSAGE);
         JFileChooser fileChooser = new JFileChooser(reporterGui.getLastSelectedFolder().getLastSelectedFolder());
         fileChooser.setDialogTitle("Select Methods file");
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -1268,12 +1302,12 @@ public class NewDialog extends javax.swing.JDialog {
                 reporterGui.getLastSelectedFolder().setLastSelectedFolder(newFile.getPath());
             } catch (IOException e) {
                 JOptionPane.showMessageDialog(null,
-                        "File " + METHODS_FILE + " not found in conf folder.",
-                        "Methods file not found", JOptionPane.WARNING_MESSAGE);
+                        "File " + newFile + " could not be parsed.",
+                        "Methods file error", JOptionPane.WARNING_MESSAGE);
                 importMethodsError();
             } catch (XmlPullParserException e) {
                 JOptionPane.showMessageDialog(this,
-                        "An error occurred while parsing " + METHODS_FILE + " at line " + e.getLineNumber() + ".",
+                        "An error occurred while parsing " + newFile + " at line " + e.getLineNumber() + ".",
                         "Parsing error", JOptionPane.WARNING_MESSAGE);
                 importMethodsError();
             }

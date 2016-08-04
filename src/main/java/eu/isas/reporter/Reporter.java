@@ -1,6 +1,7 @@
 package eu.isas.reporter;
 
 import com.compomics.software.CompomicsWrapper;
+import com.compomics.software.settings.UtilitiesPathPreferences;
 import com.compomics.util.experiment.biology.Peptide;
 import com.compomics.util.experiment.biology.Protein;
 import com.compomics.util.experiment.biology.ions.ReporterIon;
@@ -31,6 +32,7 @@ import eu.isas.reporter.calculation.Deisotoper;
 import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
 import eu.isas.reporter.calculation.QuantificationFilter;
 import eu.isas.reporter.calculation.RatioEstimator;
+import eu.isas.reporter.preferences.ReporterPathPreferences;
 import eu.isas.reporter.settings.RatioEstimationSettings;
 import eu.isas.reporter.settings.ReporterIonSelectionSettings;
 import eu.isas.reporter.quantificationdetails.PeptideQuantificationDetails;
@@ -44,6 +46,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
+import javax.swing.JOptionPane;
 import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
 
 /**
@@ -59,6 +62,14 @@ public class Reporter {
      * editable by the user
      */
     private static String MATCHES_FOLDER = "resources/matches";
+    /**
+     * Enzymes file.
+     */
+    private static String enzymeFile = "resources/conf/searchGUI_enzymes.xml";
+    /**
+     * Default methods file.
+     */
+    private static String methodsFile = "resources/conf/defaultMethods.xml";
 
     /**
      * Empty constructor for instantiation purposes.
@@ -556,5 +567,46 @@ public class Reporter {
      */
     public static File getMatchesFolder() {
         return new File(getJarFilePath(), MATCHES_FOLDER);
+    }
+
+    /**
+     * Sets the path configuration.
+     *
+     * @throws java.io.IOException exception thrown whenever an error occurs
+     * while reading or writing the paths configuration file
+     */
+    public static void setPathConfiguration() throws IOException {
+        File pathConfigurationFile = new File(getJarFilePath(), UtilitiesPathPreferences.configurationFileName);
+        if (pathConfigurationFile.exists()) {
+            ReporterPathPreferences.loadPathPreferencesFromFile(pathConfigurationFile);
+        }
+    }
+
+    /**
+     * Returns the enzymes file.
+     * 
+     * @return the enzymes file
+     */
+    public static File getEnzymesFile() {
+        String jarFilePath = getJarFilePath();
+        File result = new File(jarFilePath, enzymeFile);
+        if (!result.exists()) {
+            JOptionPane.showMessageDialog(null, enzymeFile + " not found.", "Enzymes File Error", JOptionPane.ERROR_MESSAGE);
+        }
+        return result;
+    }
+
+    /**
+     * Returns the default methods file.
+     * 
+     * @return the default methods file
+     */
+    public static File getMethodsFile() {
+        String jarFilePath = getJarFilePath();
+        File result = new File(jarFilePath, methodsFile);
+        if (!result.exists()) {
+            JOptionPane.showMessageDialog(null, methodsFile + " not found.", "Methods File Error", JOptionPane.ERROR_MESSAGE);
+        }
+        return result;
     }
 }

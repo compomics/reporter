@@ -1,8 +1,11 @@
 package eu.isas.reporter;
 
 import com.compomics.software.CompomicsWrapper;
+import com.compomics.software.settings.PathKey;
+import eu.isas.reporter.preferences.ReporterPathPreferences;
 import eu.isas.reporter.utils.Properties;
 import java.io.*;
+import java.util.ArrayList;
 
 /**
  * A wrapper class used to start the jar file with parameters. The parameters
@@ -31,9 +34,20 @@ public class ReporterWrapper extends CompomicsWrapper {
 
         // set path for utilities preferences
         try {
-            //setPathConfiguration(); // @TODO: implement..?
+            Reporter.setPathConfiguration();
         } catch (Exception e) {
             System.out.println("Impossible to load path configuration, default will be used.");
+        }
+        try {
+            ArrayList<PathKey> errorKeys = ReporterPathPreferences.getErrorKeys(getJarFilePath());
+            if (!errorKeys.isEmpty()) {
+                System.out.println("Unable to write in the following configuration folders. Please edit the configuration paths.");
+                for (PathKey pathKey : errorKeys) {
+                    System.out.println(pathKey.getId() + ": " + pathKey.getDescription());
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Unable to load the path configurations. Default paths will be used.");
         }
 
         launchTool("Reporter", jarFile, splash, mainClass, args);

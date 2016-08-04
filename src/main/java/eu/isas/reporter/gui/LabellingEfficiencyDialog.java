@@ -21,6 +21,7 @@ import com.compomics.util.preferences.LastSelectedFolder;
 import com.compomics.util.preferences.SequenceMatchingPreferences;
 import eu.isas.peptideshaker.parameters.PSParameter;
 import eu.isas.peptideshaker.utils.CpsParent;
+import eu.isas.reporter.Reporter;
 import eu.isas.reporter.io.ProjectImporter;
 import java.awt.Dialog;
 import java.awt.Image;
@@ -75,7 +76,7 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
     /**
      * The spectrum factory.
      */
-    private SpectrumFactory spectrumFactory = SpectrumFactory.getInstance(10000);
+    private SpectrumFactory spectrumFactory = SpectrumFactory.getInstance(100000);
     /**
      * The PTM factory.
      */
@@ -531,14 +532,17 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
             public void run() {
 
                 try {
-                    ProjectImporter projectImporter = new ProjectImporter(LabellingEfficiencyDialog.this, lastSelectedFolder, psFile, progressDialog);
+                    cpsParent = new CpsParent(Reporter.getMatchesFolder());
+                    cpsParent.setCpsFile(psFile);
+                    ProjectImporter projectImporter = new ProjectImporter(LabellingEfficiencyDialog.this);
+                    projectImporter.importPeptideShakerProject(cpsParent, progressDialog);
+                    projectImporter.importReporterProject(cpsParent, progressDialog);
 
                     if (progressDialog.isRunCanceled()) {
+                        progressDialog.setRunFinished();
                         progressDialog.dispose();
                         return;
                     }
-
-                    cpsParent = projectImporter.getCpsParent();
 
                     txtSpectraFileLocation.setText(cpsParent.getIdentification().getSpectrumFiles().size() + " files loaded"); //@TODO: allow editing
                     fastaTxt.setText(cpsParent.getIdentificationParameters().getSearchParameters().getFastaFile().getName());

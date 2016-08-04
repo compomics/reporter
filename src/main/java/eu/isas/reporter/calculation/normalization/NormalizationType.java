@@ -64,4 +64,20 @@ public enum NormalizationType {
         }
         throw new IllegalArgumentException("No normalization type found for name " + name + ".");
     }
+    
+    /**
+     * Returns the different options as command line description.
+     * 
+     * @return the different options as command line description
+     */
+    public static String getCommandLineDescription() {
+        StringBuilder sb = new StringBuilder();
+        for (NormalizationType normalizationType : values()) {
+            if (sb.length() > 0) {
+                sb.append(", ");
+            }
+            sb.append(normalizationType.index).append(": ").append(normalizationType.name);
+        }
+        return sb.toString();
+    }
 }
