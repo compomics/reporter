@@ -20,6 +20,7 @@ import com.compomics.util.gui.filehandling.TempFilesManager;
 import com.compomics.util.gui.waiting.waitinghandlers.WaitingHandlerCLIImpl;
 import com.compomics.util.preferences.IdentificationParameters;
 import com.compomics.util.preferences.ProcessingPreferences;
+import com.compomics.util.preferences.UtilitiesUserPreferences;
 import com.compomics.util.waiting.WaitingHandler;
 import eu.isas.peptideshaker.PeptideShaker;
 import eu.isas.peptideshaker.scoring.MatchValidationLevel;
@@ -74,6 +75,10 @@ public class ReporterCLI extends CpsParent implements Callable {
      * The compomics reporter methods factory.
      */
     private ReporterMethodFactory methodsFactory = ReporterMethodFactory.getInstance();
+    /**
+     * The utilities user preferences.
+     */
+    private UtilitiesUserPreferences utilitiesUserPreferences;
 
     /**
      * Construct a new ReporterCLI runnable from a list of arguments.
@@ -137,6 +142,12 @@ public class ReporterCLI extends CpsParent implements Callable {
                 System.out.println("Unable to load the path configurations. Default paths will be used.");
             }
         }
+
+        // Load user preferences
+        utilitiesUserPreferences = UtilitiesUserPreferences.loadUserPreferences();
+
+        // Instantiate factories
+        PeptideShaker.instantiateFacories(utilitiesUserPreferences);
 
         // Load enzymes
         enzymeFactory = EnzymeFactory.getInstance();

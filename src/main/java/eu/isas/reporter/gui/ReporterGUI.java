@@ -14,6 +14,7 @@ import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuant
 import com.compomics.util.exceptions.ExceptionHandler;
 import com.compomics.util.exceptions.exception_handlers.FrameExceptionHandler;
 import com.compomics.util.experiment.ShotgunProtocol;
+import com.compomics.util.experiment.biology.PTMFactory;
 import com.compomics.util.experiment.biology.genes.GeneMaps;
 import com.compomics.util.experiment.identification.protein_sequences.SequenceFactory;
 import com.compomics.util.experiment.normalization.NormalizationFactors;
@@ -30,6 +31,7 @@ import com.compomics.util.preferences.LastSelectedFolder;
 import com.compomics.util.preferences.ProcessingPreferences;
 import com.compomics.util.preferences.UtilitiesUserPreferences;
 import com.compomics.util.waiting.WaitingHandler;
+import eu.isas.peptideshaker.PeptideShaker;
 import eu.isas.peptideshaker.preferences.FilterPreferences;
 import eu.isas.peptideshaker.preferences.ProjectDetails;
 import eu.isas.peptideshaker.preferences.SpectrumCountingPreferences;
@@ -98,11 +100,11 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
     /**
      * The spectrum factory.
      */
-    private SpectrumFactory spectrumFactory = SpectrumFactory.getInstance(100);
+    private SpectrumFactory spectrumFactory = SpectrumFactory.getInstance();
     /**
      * The sequence factory.
      */
-    private SequenceFactory sequenceFactory = SequenceFactory.getInstance(100000);
+    private SequenceFactory sequenceFactory = SequenceFactory.getInstance();
     /**
      * The exception handler.
      */
@@ -229,6 +231,11 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
                     addShortcutAtDeskTop();
                 }
             }
+
+            // Instantiate factories
+            PeptideShaker.instantiateFacories(utilitiesUserPreferences);
+            spectrumFactory = SpectrumFactory.getInstance();
+            sequenceFactory = SequenceFactory.getInstance();
 
             initComponents();
 

@@ -97,7 +97,7 @@ public class NewDialog extends javax.swing.JDialog {
     /**
      * The spectrum factory.
      */
-    private SpectrumFactory spectrumFactory = SpectrumFactory.getInstance(10000);
+    private SpectrumFactory spectrumFactory = SpectrumFactory.getInstance();
     /**
      * List of all sample names.
      */
