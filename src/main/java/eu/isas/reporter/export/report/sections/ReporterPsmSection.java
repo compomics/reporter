@@ -291,7 +291,11 @@ public class ReporterPsmSection {
                                 fractionPrefix += linePrefix;
                             }
                             fractionPrefix += line + ".";
-                            fragmentSection.writeSection(spectrumMatch, shotgunProtocol, identificationParameters, fractionPrefix, null);
+                            if (spectrumMatch.getBestPeptideAssumption() != null) {
+                                fragmentSection.writeSection(spectrumKey, spectrumMatch.getBestPeptideAssumption(), shotgunProtocol, identificationParameters, fractionPrefix, null);
+                            } else if (spectrumMatch.getBestTagAssumption() != null) {
+                                fragmentSection.writeSection(spectrumKey, spectrumMatch.getBestTagAssumption(), shotgunProtocol, identificationParameters, fractionPrefix, null);
+                            }
                         }
                         line++;
                     }
