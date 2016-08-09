@@ -50,7 +50,8 @@ public class ReporterCLIInputBean {
      */
     private String reporterMethod = null;
     /**
-     * The list of reference samples indexed by ordered reagent mass, 1 is the first reagent
+     * The list of reference samples indexed by ordered reagent mass, 1 is the
+     * first reagent.
      */
     private ArrayList<Integer> referenceSamples = null;
     /**
@@ -102,7 +103,7 @@ public class ReporterCLIInputBean {
      */
     private Integer minUnique = null;
     /**
-     * The list of ptms to ignore.
+     * The list of PTMs to ignore.
      */
     private ArrayList<String> ignoredPtms = null;
     /**
@@ -130,11 +131,11 @@ public class ReporterCLIInputBean {
      */
     private NormalizationType proteinNormalizationType = null;
     /**
-     * Fasta file containing stable proteins.
+     * FASTA file containing stable proteins.
      */
     private File stableProteins = null;
     /**
-     * Fasta file containing contaminants.
+     * FASTA file containing contaminants.
      */
     private File contaminants = null;
 
@@ -323,7 +324,6 @@ public class ReporterCLIInputBean {
 
         // path settings
         pathSettingsCLIInputBean = new PathSettingsCLIInputBean(aLine);
-
     }
 
     /**
@@ -370,7 +370,8 @@ public class ReporterCLIInputBean {
                     }
                 }
             } catch (Exception e) {
-                System.out.println(System.getProperty("line.separator") + "Error parsing the " + ReporterCLIParameters.REFERENCE.id + " option: not a comma separated list of integers." + System.getProperty("line.separator"));
+                System.out.println(System.getProperty("line.separator") + "Error parsing the " + ReporterCLIParameters.REFERENCE.id 
+                        + " option: not a comma separated list of integers." + System.getProperty("line.separator"));
                 return false;
             }
         }
@@ -574,9 +575,11 @@ public class ReporterCLIInputBean {
     }
 
     /**
-     * Returns the list of reference samples indexed by ordered reagent mass, 1 is the first reagent.
-     * 
-     * @return the list of reference samples indexed by ordered reagent mass, 1 is the first reagent
+     * Returns the list of reference samples indexed by ordered reagent mass, 1
+     * is the first reagent.
+     *
+     * @return the list of reference samples indexed by ordered reagent mass, 1
+     * is the first reagent
      */
     public ArrayList<Integer> getReferenceSamples() {
         return referenceSamples;
@@ -820,5 +823,4 @@ public class ReporterCLIInputBean {
     public File getContaminants() {
         return contaminants;
     }
-
 }

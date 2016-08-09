@@ -3,7 +3,6 @@ package eu.isas.reporter.cli;
 import com.compomics.software.settings.PathKey;
 import com.compomics.util.Util;
 import com.compomics.util.db.DerbyUtil;
-import com.compomics.util.db.ObjectsCache;
 import com.compomics.util.experiment.biology.EnzymeFactory;
 import com.compomics.util.experiment.biology.PTM;
 import com.compomics.util.experiment.biology.PTMFactory;
@@ -12,7 +11,6 @@ import com.compomics.util.experiment.biology.taxonomy.SpeciesFactory;
 import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.protein_sequences.SequenceFactory;
 import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
-import com.compomics.util.experiment.quantification.Quantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethodFactory;
@@ -21,7 +19,6 @@ import com.compomics.util.gui.waiting.waitinghandlers.WaitingHandlerCLIImpl;
 import com.compomics.util.preferences.IdentificationParameters;
 import com.compomics.util.preferences.ProcessingPreferences;
 import com.compomics.util.preferences.UtilitiesUserPreferences;
-import com.compomics.util.waiting.WaitingHandler;
 import eu.isas.peptideshaker.PeptideShaker;
 import eu.isas.peptideshaker.scoring.MatchValidationLevel;
 import eu.isas.peptideshaker.utils.CpsParent;
@@ -46,7 +43,6 @@ import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.compress.archivers.ArchiveException;
 
 /**
  * Command line interface for reporter.
@@ -187,17 +183,17 @@ public class ReporterCLI extends CpsParent implements Callable {
         processingPreferences.setnThreads(reporterCLIInputBean.getnThreads());
 
         // Update the identification parameters if changed and save the changes
-        IdentificationParameters identificationParameters = reporterCLIInputBean.getIdentificationParameters();
+        IdentificationParameters tempIdentificationParameters = reporterCLIInputBean.getIdentificationParameters();
         File parametersFile = reporterCLIInputBean.getIdentificationParametersFile();
         if (parametersFile == null) {
-            String name = identificationParameters.getName();
+            String name = tempIdentificationParameters.getName();
             if (name == null) {
                 name = "SearchCLI.par";
             } else {
                 name += ".par";
             }
             parametersFile = new File(reporterCLIInputBean.getOutputFile(), name);
-            IdentificationParameters.saveIdentificationParameters(identificationParameters, parametersFile);
+            IdentificationParameters.saveIdentificationParameters(tempIdentificationParameters, parametersFile);
         }
 
         // Load the project from the cps file
@@ -298,15 +294,14 @@ public class ReporterCLI extends CpsParent implements Callable {
             ArrayList<String> referenceSamples = new ArrayList<String>(referenceIndexes.size());
             for (Integer index : referenceIndexes) {
                 if (index > reagents.size()) {
-                    System.out.println(System.getProperty("line.separator") + "Reference sample index " + index + " is higher than the number of reagents (" + reagents.size() + ")." + System.getProperty("line.separator"));
+                    System.out.println(System.getProperty("line.separator") + "Reference sample index " + index 
+                            + " is higher than the number of reagents (" + reagents.size() + ")." + System.getProperty("line.separator"));
                     return 1;
                 }
                 referenceSamples.add(reagents.get(index - 1));
             }
             reporterIonQuantification.setControlSamples(referenceSamples);
         }
-        
-        
 
         if (waitingHandlerCLIImpl.isRunCanceled()) {
             return 1;
@@ -317,6 +312,7 @@ public class ReporterCLI extends CpsParent implements Callable {
 
     /**
      * Updates the reporter ion selection settings according to the command line
+     * input.
      *
      * @param reporterIonSelectionSettings the reporter ion selection settings
      */
@@ -531,7 +527,7 @@ public class ReporterCLI extends CpsParent implements Callable {
     }
 
     /**
-     * redirects the error stream to the PeptideShaker.log of a given folder.
+     * Redirects the error stream to the PeptideShaker.log of a given folder.
      *
      * @param logFolder the folder where to save the log
      */
@@ -552,5 +548,4 @@ public class ReporterCLI extends CpsParent implements Callable {
             e.printStackTrace();
         }
     }
-
 }

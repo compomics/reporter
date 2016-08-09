@@ -16,7 +16,6 @@ import com.compomics.util.experiment.quantification.reporterion.ReporterMethodFa
 import com.compomics.util.math.clustering.settings.KMeansClusteringSettings;
 import com.compomics.util.preferences.IdentificationParameters;
 import com.compomics.util.waiting.WaitingHandler;
-import eu.isas.peptideshaker.PeptideShaker;
 import eu.isas.peptideshaker.utils.CpsParent;
 import eu.isas.reporter.Reporter;
 import eu.isas.reporter.calculation.clustering.keys.PeptideClusterClassKey;
@@ -28,14 +27,12 @@ import eu.isas.reporter.settings.ReporterIonSelectionSettings;
 import eu.isas.reporter.settings.ReporterSettings;
 import java.awt.Color;
 import java.awt.Dialog;
-import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import javax.swing.JOptionPane;
 import org.apache.commons.compress.archivers.ArchiveException;
 
 /**
@@ -176,7 +173,7 @@ public class ProjectImporter {
     }
 
     /**
-     * Loads the reporter project.
+     * Loads the Reporter project.
      *
      * @param cpsParent the cps parent object where the cps file is loaded
      * @param waitingHandler a waiting handler to display the progress to the

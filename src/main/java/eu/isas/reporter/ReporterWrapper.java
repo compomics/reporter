@@ -25,8 +25,8 @@ public class ReporterWrapper extends CompomicsWrapper {
 
         // get the version number set in the pom file
         String jarFileName = "Reporter-" + new Properties().getVersion() + ".jar";
-        String path = getJarFilePath();
-        File jarFile = new File(path, jarFileName);
+        String jarFilePath = Reporter.getJarFilePath();
+        File jarFile = new File(jarFilePath, jarFileName);
 
         // get the splash 
         String splash = "reporter-splash.png";
@@ -39,7 +39,7 @@ public class ReporterWrapper extends CompomicsWrapper {
             System.out.println("Impossible to load path configuration, default will be used.");
         }
         try {
-            ArrayList<PathKey> errorKeys = ReporterPathPreferences.getErrorKeys(getJarFilePath());
+            ArrayList<PathKey> errorKeys = ReporterPathPreferences.getErrorKeys(jarFilePath);
             if (!errorKeys.isEmpty()) {
                 System.out.println("Unable to write in the following configuration folders. Please edit the configuration paths.");
                 for (PathKey pathKey : errorKeys) {
@@ -51,15 +51,6 @@ public class ReporterWrapper extends CompomicsWrapper {
         }
 
         launchTool("Reporter", jarFile, splash, mainClass, args);
-    }
-
-    /**
-     * Returns the path to the jar file.
-     *
-     * @return the path to the jar file
-     */
-    public String getJarFilePath() {
-        return CompomicsWrapper.getJarFilePath(this.getClass().getResource("ReporterWrapper.class").getPath(), "Reporter");
     }
 
     /**

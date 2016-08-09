@@ -14,7 +14,6 @@ import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuant
 import com.compomics.util.exceptions.ExceptionHandler;
 import com.compomics.util.exceptions.exception_handlers.FrameExceptionHandler;
 import com.compomics.util.experiment.ShotgunProtocol;
-import com.compomics.util.experiment.biology.PTMFactory;
 import com.compomics.util.experiment.biology.genes.GeneMaps;
 import com.compomics.util.experiment.identification.protein_sequences.SequenceFactory;
 import com.compomics.util.experiment.normalization.NormalizationFactors;
@@ -200,26 +199,26 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
 
         // check for new version
         boolean newVersion = false;
-        if (!getJarFilePath().equalsIgnoreCase(".") && utilitiesUserPreferences.isAutoUpdate()) {
+        if (!Reporter.getJarFilePath().equalsIgnoreCase(".") && utilitiesUserPreferences.isAutoUpdate()) {
             newVersion = checkForNewVersion();
         }
 
         if (!newVersion) {
 
             // set this version as the default Reporter version
-            if (!getJarFilePath().equalsIgnoreCase(".")) {
-                utilitiesUserPreferences.setReporterPath(new File(getJarFilePath(), "Reporter-" + new Properties().getVersion() + ".jar").getAbsolutePath());
+            if (!Reporter.getJarFilePath().equalsIgnoreCase(".")) {
+                utilitiesUserPreferences.setReporterPath(new File(Reporter.getJarFilePath(), "Reporter-" + new Properties().getVersion() + ".jar").getAbsolutePath());
                 UtilitiesUserPreferences.saveUserPreferences(utilitiesUserPreferences);
             }
 
             // add desktop shortcut?
-            if (!getJarFilePath().equalsIgnoreCase(".")
+            if (!Reporter.getJarFilePath().equalsIgnoreCase(".")
                     && System.getProperty("os.name").lastIndexOf("Windows") != -1
-                    && new File(getJarFilePath() + "/resources/conf/firstRun").exists()) {
+                    && new File(Reporter.getJarFilePath() + "/resources/conf/firstRun").exists()) {
 
                 // @TODO: add support for desktop icons in mac and linux??
                 // delete the firstRun file such that the user is not asked the next time around
-                new File(getJarFilePath() + "/resources/conf/firstRun").delete();
+                new File(Reporter.getJarFilePath() + "/resources/conf/firstRun").delete();
 
                 int value = JOptionPane.showConfirmDialog(null,
                         "Create a shortcut to Reporter on the desktop?",
@@ -264,15 +263,6 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
 
             new WelcomeDialog(this, !java64bit || !memoryOk, javaVersionWarning, true);
         }
-    }
-
-    /**
-     * Returns the path to the jar file.
-     *
-     * @return the path to the jar file
-     */
-    public String getJarFilePath() {
-        return CompomicsWrapper.getJarFilePath(this.getClass().getResource("ReporterGUI.class").getPath(), "Reporter");
     }
 
     /**
@@ -922,7 +912,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
     private void logReportMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logReportMenuActionPerformed
         new BugReport(this, lastSelectedFolder, "Reporter", "reporter",
                 new Properties().getVersion(), "reporter_software", "Reporter",
-                new File(getJarFilePath() + "/resources/Reporter.log"));
+                new File(Reporter.getJarFilePath() + "/resources/Reporter.log"));
     }//GEN-LAST:event_logReportMenuActionPerformed
 
     /**
@@ -1341,8 +1331,8 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      */
     private void setUpLogFile() {
         try {
-            if (useLogFile && !getJarFilePath().equalsIgnoreCase(".")) {
-                String path = getJarFilePath() + "/resources/Reporter.log";
+            if (useLogFile && !Reporter.getJarFilePath().equalsIgnoreCase(".")) {
+                String path = Reporter.getJarFilePath() + "/resources/Reporter.log";
 
                 File file = new File(path);
                 System.setOut(new java.io.PrintStream(new FileOutputStream(file, true)));
@@ -1372,7 +1362,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      */
     private void addShortcutAtDeskTop() {
 
-        String jarFilePath = getJarFilePath();
+        String jarFilePath = Reporter.getJarFilePath();
 
         if (!jarFilePath.equalsIgnoreCase(".")) {
 

@@ -13,6 +13,7 @@ import com.compomics.util.gui.error_handlers.BugReport;
 import com.compomics.util.gui.error_handlers.HelpDialog;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
 import com.compomics.util.preferences.UtilitiesUserPreferences;
+import eu.isas.reporter.Reporter;
 import eu.isas.reporter.utils.Properties;
 import java.awt.Image;
 import java.awt.Toolkit;
@@ -729,7 +730,7 @@ public class WelcomeDialog extends javax.swing.JDialog {
     private void bugReportMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bugReportMenuItemActionPerformed
         new BugReport(this, reporterGUI.getLastSelectedFolder(), "Reporter", "reporter",
                 new Properties().getVersion(), "reporter", "Reporter",
-                new File(reporterGUI.getJarFilePath() + "/resources/Reporter.log"));
+                new File(Reporter.getJarFilePath() + "/resources/Reporter.log"));
     }//GEN-LAST:event_bugReportMenuItemActionPerformed
 
     /**

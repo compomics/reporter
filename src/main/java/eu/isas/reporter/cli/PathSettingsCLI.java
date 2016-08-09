@@ -1,6 +1,5 @@
 package eu.isas.reporter.cli;
 
-import com.compomics.software.CompomicsWrapper;
 import com.compomics.software.settings.UtilitiesPathPreferences;
 import eu.isas.reporter.Reporter;
 import eu.isas.reporter.preferences.ReporterPathPreferences;
