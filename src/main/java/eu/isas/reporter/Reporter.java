@@ -41,6 +41,7 @@ import eu.isas.reporter.quantificationdetails.PsmQuantificationDetails;
 import eu.isas.reporter.quantificationdetails.ProteinPtmQuantificationDetails;
 import eu.isas.reporter.quantificationdetails.SpectrumQuantificationDetails;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -591,7 +592,9 @@ public class Reporter {
         String jarFilePath = getJarFilePath();
         File result = new File(jarFilePath, enzymeFile);
         if (!result.exists()) {
-            JOptionPane.showMessageDialog(null, enzymeFile + " not found.", "Enzymes File Error", JOptionPane.ERROR_MESSAGE);
+            System.out.println(result.getAbsolutePath() + " not found!");
+            FileNotFoundException ex = new FileNotFoundException(result.getAbsolutePath() + " not found!");
+            ex.printStackTrace();
         }
         return result;
     }
@@ -605,7 +608,9 @@ public class Reporter {
         String jarFilePath = getJarFilePath();
         File result = new File(jarFilePath, methodsFile);
         if (!result.exists()) {
-            JOptionPane.showMessageDialog(null, methodsFile + " not found.", "Methods File Error", JOptionPane.ERROR_MESSAGE);
+            System.out.println(result.getAbsolutePath() + " not found!");
+            FileNotFoundException ex = new FileNotFoundException(result.getAbsolutePath() + " not found!");
+            ex.printStackTrace();
         }
         return result;
     }
