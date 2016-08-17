@@ -467,10 +467,11 @@ public class Reporter {
      * while interacting with a file
      * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown
      * whenever an error occurred while reading an mzML file
+     * @throws InterruptedException exception thrown if the thread is interrupted
      */
     public static SpectrumQuantificationDetails estimateSpectrumQuantificationDetails(Identification identification,
             QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification,
-            ReporterIonSelectionSettings reporterIonSelectionSettings, String matchKey) throws IOException, MzMLUnmarshallerException {
+            ReporterIonSelectionSettings reporterIonSelectionSettings, String matchKey) throws IOException, MzMLUnmarshallerException, InterruptedException {
 
         ReporterMethod reporterMethod = reporterIonQuantification.getReporterMethod();
         MSnSpectrum spectrum = (MSnSpectrum) SpectrumFactory.getInstance().getSpectrum(matchKey);
@@ -516,8 +517,10 @@ public class Reporter {
      * should be selected
      *
      * @return the best ion match
+     * 
+     * @throws InterruptedException exception thrown if the thread is interrupted
      */
-    public static IonMatch getBestReporterIonMatch(ReporterIon reporterIon, int charge, Spectrum spectrum, double mzTolerance, boolean mostAccurate) {
+    public static IonMatch getBestReporterIonMatch(ReporterIon reporterIon, int charge, Spectrum spectrum, double mzTolerance, boolean mostAccurate) throws InterruptedException {
         ArrayList<IonMatch> ionMatches = SpectrumAnnotator.matchReporterIon(reporterIon, 1, spectrum, mzTolerance);
         IonMatch bestMatch = null;
         double bestError = mzTolerance;
