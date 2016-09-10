@@ -1152,7 +1152,7 @@ public class NewDialog extends javax.swing.JDialog {
                 cpsParent.setCpsFile(psFile);
                 ProjectImporter projectImporter = new ProjectImporter(NewDialog.this);
                 try {
-                    projectImporter.importPeptideShakerProject(cpsParent, progressDialog);
+                    projectImporter.importPeptideShakerProject(cpsParent, mgfFiles, progressDialog);
                     projectImporter.importReporterProject(cpsParent, progressDialog);
                 } catch (OutOfMemoryError error) {
                     System.out.println("Ran out of memory! (runtime.maxMemory(): " + Runtime.getRuntime().maxMemory() + ")");

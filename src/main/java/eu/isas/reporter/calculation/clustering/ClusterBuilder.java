@@ -144,6 +144,10 @@ public class ClusterBuilder {
 
         // Perform the clustering
         String[] keysArray = clusterKeys.toArray(new String[clusterKeys.size()]);
+        int numClusters = displayPreferences.getClusteringSettings().getKMeansClusteringSettings().getnClusters();
+        if (ratios.length < numClusters) {
+            displayPreferences.getClusteringSettings().getKMeansClusteringSettings().setnClusters(ratios.length);
+        }
         KMeansClustering kMeansClutering = new KMeansClustering(ratios, keysArray, displayPreferences.getClusteringSettings().getKMeansClusteringSettings().getnClusters());
         kMeansClutering.kMeanCluster(waitingHandler);
 
@@ -508,7 +512,7 @@ public class ClusterBuilder {
                 }
             }
         }
-        ratios = ratiosList.toArray(new double[sampleIndexes.size()][ratiosList.size()]);
+        ratios = ratiosList.toArray(new double[ratiosList.size()][sampleIndexes.size()]);
     }
 
     /**

@@ -40,7 +40,8 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
 
 /**
- *
+ * Labeling efficiency dialog.
+ * 
  * @author Marc Vaudel
  */
 public class LabellingEfficiencyDialog extends javax.swing.JDialog {
@@ -86,11 +87,11 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
      */
     private ObjectsCache cache;
     /**
-     * List of the sorted modificaitons.
+     * List of the sorted modifications.
      */
     private ArrayList<String> sortedModifications;
     /**
-     * Map of the labelling efficiency: ptm name | efficiency
+     * Map of the labeling efficiency: PTM name | efficiency
      */
     private HashMap<String, Double> labellingEfficiency;
 
@@ -119,9 +120,7 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
      * Set up the GUI.
      */
     private void setUpGui() {
-
         setTableProperties();
-
     }
 
     /**
@@ -535,7 +534,7 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
                     cpsParent = new CpsParent(Reporter.getMatchesFolder());
                     cpsParent.setCpsFile(psFile);
                     ProjectImporter projectImporter = new ProjectImporter(LabellingEfficiencyDialog.this);
-                    projectImporter.importPeptideShakerProject(cpsParent, progressDialog);
+                    projectImporter.importPeptideShakerProject(cpsParent, mgfFiles, progressDialog);
                     projectImporter.importReporterProject(cpsParent, progressDialog);
 
                     if (progressDialog.isRunCanceled()) {
@@ -557,13 +556,11 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
                     progressDialog.setRunFinished();
 
                 } catch (Exception e) {
-
                     e.printStackTrace();
                     progressDialog.setRunCanceled();
                     JOptionPane.showMessageDialog(LabellingEfficiencyDialog.this,
                             "An error occurred while estimating the labelling efficiency.",
                             "Error", JOptionPane.ERROR_MESSAGE);
-
                 }
             }
         }.start();

@@ -39,6 +39,7 @@ import org.apache.commons.compress.archivers.ArchiveException;
  * Imports a project from a cps file.
  *
  * @author Marc Vaudel
+ * @author Harald Barsnes
  */
 public class ProjectImporter {
 
@@ -87,6 +88,7 @@ public class ProjectImporter {
      * Imports the identification results from a PeptideShaker file.
      *
      * @param cpsParent the cps parent object where the cps file is loaded
+     * @param mgfFiles the arraylist to add the detected mgf files to
      * @param waitingHandler a waiting handler to display the progress to the
      * user and allow interrupting the process
      *
@@ -101,7 +103,7 @@ public class ProjectImporter {
      * @throws org.apache.commons.compress.archivers.ArchiveException exception
      * thrown whenever an error occurs while untaring the file
      */
-    public void importPeptideShakerProject(CpsParent cpsParent, WaitingHandler waitingHandler) throws IOException, ClassNotFoundException, SQLException, InterruptedException, ArchiveException {
+    public void importPeptideShakerProject(CpsParent cpsParent, ArrayList<File> mgfFiles, WaitingHandler waitingHandler) throws IOException, ClassNotFoundException, SQLException, InterruptedException, ArchiveException {
 
         File cpsFile = cpsParent.getCpsFile();
         if (Util.getExtension(cpsFile).equalsIgnoreCase("zip")) {
@@ -141,13 +143,14 @@ public class ProjectImporter {
         waitingHandler.setWaitingText("Loading Spectrum Files. Please Wait...");
         waitingHandler.setPrimaryProgressCounterIndeterminate(true);
         int cpt = 0, total = identification.getSpectrumFiles().size();
+
         for (String spectrumFileName : spectrumFiles) {
 
             waitingHandler.setWaitingText("Loading Spectrum Files (" + ++cpt + " of " + total + "). Please Wait...");
 
             if (owner != null) { // GUI
                 try {
-                    cpsParent.loadSpectrumFile(spectrumFileName, waitingHandler);
+                    cpsParent.loadSpectrumFile(spectrumFileName, mgfFiles, waitingHandler);
                 } catch (Exception e) {
                     // Ignore, can be set from the GUI
                 }
@@ -158,7 +161,7 @@ public class ProjectImporter {
                 }
 
             } else { // CLI
-                if (!cpsParent.loadSpectrumFile(spectrumFileName, waitingHandler)) {
+                if (!cpsParent.loadSpectrumFile(spectrumFileName, mgfFiles, waitingHandler)) {
                     throw new IllegalArgumentException(spectrumFileName + " was not found. Please provide its location in the command line parameters.");
                 }
             }
@@ -196,12 +199,12 @@ public class ProjectImporter {
         ObjectsDB objectsDB = identification.getIdentificationDB().getObjectsDB();
 
         if (objectsDB.hasTable(ProjectSaver.REPORTER_SETTINGS_TABLE_NAME)) {
-            waitingHandler.setWaitingText("Loading quantification results. Please Wait...");
+            waitingHandler.setWaitingText("Loading Quantification Results. Please Wait...");
             reporterSettings = (ReporterSettings) objectsDB.retrieveObject(ProjectSaver.REPORTER_SETTINGS_TABLE_NAME, ReporterSettings.class.getName(), true, false);
             reporterIonQuantification = (ReporterIonQuantification) objectsDB.retrieveObject(ProjectSaver.REPORTER_SETTINGS_TABLE_NAME, ReporterIonQuantification.class.getName(), true, false);
             displayPreferences = (DisplayPreferences) objectsDB.retrieveObject(ProjectSaver.REPORTER_SETTINGS_TABLE_NAME, DisplayPreferences.class.getName(), true, false);
         } else {
-            waitingHandler.setWaitingText("Inferring quantification parameters. Please Wait...");
+            waitingHandler.setWaitingText("Inferring Quantification Parameters. Please Wait...");
         }
         if (reporterIonQuantification == null) {
             reporterIonQuantification = getDefaultReporterIonQuantification(identificationParameters);

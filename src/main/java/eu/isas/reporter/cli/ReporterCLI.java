@@ -75,6 +75,10 @@ public class ReporterCLI extends CpsParent implements Callable {
      * The utilities user preferences.
      */
     private UtilitiesUserPreferences utilitiesUserPreferences;
+    /**
+     * The mgf files loaded.
+     */
+    private ArrayList<File> mgfFiles = new ArrayList<File>();
 
     /**
      * Construct a new ReporterCLI runnable from a list of arguments.
@@ -200,7 +204,7 @@ public class ReporterCLI extends CpsParent implements Callable {
         ProjectImporter projectImporter = new ProjectImporter();
         File selectedFile = reporterCLIInputBean.getPeptideShakerFile();
         try {
-            projectImporter.importPeptideShakerProject(this, waitingHandlerCLIImpl);
+            projectImporter.importPeptideShakerProject(this, mgfFiles, waitingHandlerCLIImpl);
             projectImporter.importReporterProject(this, waitingHandlerCLIImpl);
         } catch (OutOfMemoryError error) {
             System.out.println("Ran out of memory! (runtime.maxMemory(): " + Runtime.getRuntime().maxMemory() + ")");
