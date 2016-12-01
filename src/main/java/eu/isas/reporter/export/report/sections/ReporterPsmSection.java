@@ -242,11 +242,11 @@ public class ReporterPsmSection {
                             String feature;
                             if (peptideAssumption != null) {
                                 peptideAssumption = spectrumMatch.getBestPeptideAssumption();
-                                feature = PsIdentificationAlgorithmMatchesSection.getPeptideAssumptionFeature(identification, identificationFeaturesGenerator, shotgunProtocol,
+                                feature = PsIdentificationAlgorithmMatchesSection.getPeptideAssumptionFeature(identification, identificationFeaturesGenerator,
                                         identificationParameters, keys, linePrefix, nSurroundingAA, peptideAssumption, spectrumMatch.getKey(), psParameter, identificationAlgorithmMatchesFeature, waitingHandler);
                             } else if (spectrumMatch.getBestTagAssumption() != null) {
                                 TagAssumption tagAssumption = spectrumMatch.getBestTagAssumption();
-                                feature = PsIdentificationAlgorithmMatchesSection.getTagAssumptionFeature(identification, identificationFeaturesGenerator, shotgunProtocol,
+                                feature = PsIdentificationAlgorithmMatchesSection.getTagAssumptionFeature(identification, identificationFeaturesGenerator,
                                         identificationParameters, keys, linePrefix, tagAssumption, spectrumMatch.getKey(), psParameter, identificationAlgorithmMatchesFeature, waitingHandler);
                             } else {
                                 throw new IllegalArgumentException("No best match found for spectrum " + spectrumMatch.getKey() + ".");

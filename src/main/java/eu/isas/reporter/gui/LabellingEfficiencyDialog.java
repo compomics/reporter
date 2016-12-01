@@ -77,7 +77,7 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
     /**
      * The spectrum factory.
      */
-    private SpectrumFactory spectrumFactory = SpectrumFactory.getInstance(100000);
+    private SpectrumFactory spectrumFactory = SpectrumFactory.getInstance();
     /**
      * The PTM factory.
      */

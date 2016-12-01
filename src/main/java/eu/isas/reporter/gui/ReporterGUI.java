@@ -291,7 +291,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         this.processingPreferences = processingPreferences;
         this.displayPreferences = displayPreferences;
 
-        identificationFeaturesGenerator = new IdentificationFeaturesGenerator(getIdentification(), cpsParent.getShotgunProtocol(),
+        identificationFeaturesGenerator = new IdentificationFeaturesGenerator(getIdentification(),
                 cpsParent.getIdentificationParameters(), cpsParent.getMetrics(), cpsParent.getSpectrumCountingPreferences());
         displayFeaturesGenerator = new DisplayFeaturesGenerator(cpsParent.getIdentificationParameters().getSearchParameters().getPtmSettings(), exceptionHandler);
         displayFeaturesGenerator.setDisplayedPTMs(cpsParent.getDisplayPreferences().getDisplayedPtms());

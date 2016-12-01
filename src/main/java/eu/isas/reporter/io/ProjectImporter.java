@@ -299,8 +299,8 @@ public class ProjectImporter {
                 selectedMethod = reporterMethodFactory.getReporterMethod("TMT 2-plex");
                 break;
             } else if (ptmName.contains("TMT") && ptmName.contains("6-plex")) {
-                if (searchParameters.getIonSearched1() == PeptideFragmentIon.Y_ION
-                        || searchParameters.getIonSearched2() == PeptideFragmentIon.Y_ION) {
+                if (searchParameters.getForwardIons().contains(PeptideFragmentIon.Y_ION)
+                        || searchParameters.getRewindIons().contains(PeptideFragmentIon.Y_ION)) {
                     selectedMethod = reporterMethodFactory.getReporterMethod("TMT 6-plex (HCD)");
                 } else {
                     selectedMethod = reporterMethodFactory.getReporterMethod("TMT 6-plex (ETD)");

@@ -56,10 +56,6 @@ public class ReporterCLI extends CpsParent implements Callable {
      */
     private ReporterCLIInputBean reporterCLIInputBean;
     /**
-     * The enzyme factory.
-     */
-    private EnzymeFactory enzymeFactory;
-    /**
      * The PTM factory.
      */
     private PTMFactory ptmFactory;
@@ -148,15 +144,6 @@ public class ReporterCLI extends CpsParent implements Callable {
 
         // Instantiate factories
         PeptideShaker.instantiateFacories(utilitiesUserPreferences);
-
-        // Load enzymes
-        enzymeFactory = EnzymeFactory.getInstance();
-        try {
-            enzymeFactory.importEnzymes(Reporter.getEnzymesFile());
-        } catch (Exception e) {
-            System.out.println("An error occurred while loading the enzymes.");
-            e.printStackTrace();
-        }
 
         // Load species
         try {

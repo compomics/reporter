@@ -6,6 +6,7 @@ import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.identification_parameters.SearchParameters;
 import com.compomics.util.experiment.identification.matches.ModificationMatch;
 import com.compomics.util.experiment.identification.matches.PeptideMatch;
+import com.compomics.util.preferences.DigestionPreferences;
 import eu.isas.peptideshaker.parameters.PSParameter;
 import eu.isas.reporter.settings.RatioEstimationSettings;
 import java.io.IOException;
@@ -87,10 +88,16 @@ public class QuantificationFilter {
 
         // check enzymaticity
         Peptide peptide = peptideMatch.getTheoreticPeptide();
-        Enzyme enzyme = searchParameters.getEnzyme();
-        if (!enzyme.isSemiSpecific()) {
-            int nMissedCleavages = peptide.getNMissedCleavages(searchParameters.getEnzyme());
-            if (ratioEstimationSettings.isIgnoreMissedCleavages() && nMissedCleavages > 0) {
+        DigestionPreferences digestionPreferences = searchParameters.getDigestionPreferences();
+        if (digestionPreferences.getCleavagePreference() == DigestionPreferences.CleavagePreference.enzyme) {
+            Integer minMissedCleavages = null;
+            for (Enzyme enzyme : digestionPreferences.getEnzymes()) {
+                int nMissedCleavages = peptide.getNMissedCleavages(enzyme);
+                if (minMissedCleavages == null || nMissedCleavages < minMissedCleavages) {
+                    minMissedCleavages = nMissedCleavages;
+                }
+            }
+            if (minMissedCleavages != null && minMissedCleavages > 0 && ratioEstimationSettings.isIgnoreMissedCleavages()) {
                 return false;
             }
         }
