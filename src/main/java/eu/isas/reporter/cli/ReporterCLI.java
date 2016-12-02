@@ -3,7 +3,8 @@ package eu.isas.reporter.cli;
 import com.compomics.software.settings.PathKey;
 import com.compomics.util.Util;
 import com.compomics.util.db.DerbyUtil;
-import com.compomics.util.experiment.biology.EnzymeFactory;
+import com.compomics.util.exceptions.ExceptionHandler;
+import com.compomics.util.exceptions.exception_handlers.CommandLineExceptionHandler;
 import com.compomics.util.experiment.biology.PTM;
 import com.compomics.util.experiment.biology.PTMFactory;
 import com.compomics.util.experiment.biology.Sample;
@@ -11,6 +12,7 @@ import com.compomics.util.experiment.biology.taxonomy.SpeciesFactory;
 import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.protein_sequences.SequenceFactory;
 import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
+import com.compomics.util.experiment.normalization.NormalizationFactors;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethodFactory;
@@ -20,10 +22,16 @@ import com.compomics.util.preferences.IdentificationParameters;
 import com.compomics.util.preferences.ProcessingPreferences;
 import com.compomics.util.preferences.UtilitiesUserPreferences;
 import eu.isas.peptideshaker.PeptideShaker;
+import eu.isas.peptideshaker.export.ProjectExport;
 import eu.isas.peptideshaker.scoring.MatchValidationLevel;
 import eu.isas.peptideshaker.utils.CpsParent;
 import eu.isas.reporter.Reporter;
+import eu.isas.reporter.calculation.QuantificationFeaturesCache;
+import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
+import eu.isas.reporter.calculation.normalization.Normalizer;
 import eu.isas.reporter.io.ProjectImporter;
+import eu.isas.reporter.io.ProjectSaver;
+import eu.isas.reporter.preferences.DisplayPreferences;
 import eu.isas.reporter.preferences.ReporterPathPreferences;
 import eu.isas.reporter.settings.NormalizationSettings;
 import eu.isas.reporter.settings.RatioEstimationSettings;
@@ -32,6 +40,7 @@ import eu.isas.reporter.settings.ReporterSettings;
 import eu.isas.reporter.utils.Properties;
 import java.io.EOFException;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -75,6 +84,10 @@ public class ReporterCLI extends CpsParent implements Callable {
      * The mgf files loaded.
      */
     private ArrayList<File> mgfFiles = new ArrayList<File>();
+    /**
+     * Handler for the exceptions.
+     */
+    private ExceptionHandler exceptionHandler = new CommandLineExceptionHandler();
 
     /**
      * Construct a new ReporterCLI runnable from a list of arguments.
@@ -167,7 +180,7 @@ public class ReporterCLI extends CpsParent implements Callable {
         ptmFactory = PTMFactory.getInstance();
 
         // Initiate the waiting handler
-        WaitingHandlerCLIImpl waitingHandlerCLIImpl = new WaitingHandlerCLIImpl();
+        WaitingHandlerCLIImpl waitingHandler = new WaitingHandlerCLIImpl();
 
         // Set processing preferences
         ProcessingPreferences processingPreferences = new ProcessingPreferences();
@@ -191,31 +204,32 @@ public class ReporterCLI extends CpsParent implements Callable {
         ProjectImporter projectImporter = new ProjectImporter();
         File selectedFile = reporterCLIInputBean.getPeptideShakerFile();
         try {
-            projectImporter.importPeptideShakerProject(this, mgfFiles, waitingHandlerCLIImpl);
-            projectImporter.importReporterProject(this, waitingHandlerCLIImpl);
+            projectImporter.importPeptideShakerProject(this, mgfFiles, waitingHandler);
+            projectImporter.importReporterProject(this, waitingHandler);
         } catch (OutOfMemoryError error) {
             System.out.println("Ran out of memory! (runtime.maxMemory(): " + Runtime.getRuntime().maxMemory() + ")");
             String errorText = "PeptideShaker used up all the available memory and had to be stopped.<br>"
                     + "Memory boundaries are changed in the the Welcome Dialog (Settings<br>"
                     + "& Help > Settings > Java Memory Settings) or in the Edit menu (Edit<br>"
                     + "Java Options). See also <a href=\"http://compomics.github.io/compomics-utilities/wiki/javatroubleshooting.html\">JavaTroubleShooting</a>.";
-            waitingHandlerCLIImpl.appendReport(errorText, true, true);
+            waitingHandler.appendReport(errorText, true, true);
             error.printStackTrace();
             return 1;
         } catch (EOFException e) {
             String errorText = "An error occurred while reading:\n" + selectedFile + ".\n\n"
                     + "The file is corrupted and cannot be opened anymore.";
-            waitingHandlerCLIImpl.appendReport(errorText, true, true);
+            waitingHandler.appendReport(errorText, true, true);
             e.printStackTrace();
             return 1;
         } catch (Exception e) {
             String errorText = "An error occurred while reading:\n" + selectedFile + ".\n\n"
                     + "Please verify that the PeptideShaker version used to create\n"
                     + "the file is compatible with your version of Reporter.";
-            waitingHandlerCLIImpl.appendReport(errorText, true, true);
+            waitingHandler.appendReport(errorText, true, true);
             e.printStackTrace();
             return 1;
         }
+        DisplayPreferences displayPreferences = projectImporter.getDisplayPreferences();
 
         // Load project specific PTMs
         String error = PeptideShaker.loadModifications(getIdentificationParameters().getSearchParameters());
@@ -247,7 +261,7 @@ public class ReporterCLI extends CpsParent implements Callable {
                 methodsFactory.importMethods(methodsFile);
             } catch (Exception e) {
                 String errorText = "An error occurred while parsing:\n" + methodsFile + ".\n\n";
-                waitingHandlerCLIImpl.appendReport(errorText, true, true);
+                waitingHandler.appendReport(errorText, true, true);
                 e.printStackTrace();
                 return 1;
             }
@@ -261,7 +275,7 @@ public class ReporterCLI extends CpsParent implements Callable {
         }
         if (selectedMethod == null) {
             String errorText = "The reporter quantification methods to use could not be inferred, please specify a method from the isotopic correction file as command line parameter.\n\n";
-            waitingHandlerCLIImpl.appendReport(errorText, true, true);
+            waitingHandler.appendReport(errorText, true, true);
             return 1;
         }
 
@@ -285,7 +299,7 @@ public class ReporterCLI extends CpsParent implements Callable {
             ArrayList<String> referenceSamples = new ArrayList<String>(referenceIndexes.size());
             for (Integer index : referenceIndexes) {
                 if (index > reagents.size()) {
-                    System.out.println(System.getProperty("line.separator") + "Reference sample index " + index 
+                    System.out.println(System.getProperty("line.separator") + "Reference sample index " + index
                             + " is higher than the number of reagents (" + reagents.size() + ")." + System.getProperty("line.separator"));
                     return 1;
                 }
@@ -294,7 +308,124 @@ public class ReporterCLI extends CpsParent implements Callable {
             reporterIonQuantification.setControlSamples(referenceSamples);
         }
 
-        if (waitingHandlerCLIImpl.isRunCanceled()) {
+        // Create quantification features generator
+        QuantificationFeaturesGenerator quantificationFeaturesGenerator = new QuantificationFeaturesGenerator(new QuantificationFeaturesCache(), getIdentification(), getIdentificationFeaturesGenerator(), reporterSettings, reporterIonQuantification,
+                identificationParameters.getSearchParameters(), identificationParameters.getSequenceMatchingPreferences());
+
+        // Set Normalization factors
+        NormalizationFactors normalizationFactors = reporterIonQuantification.getNormalizationFactors();
+        if (!normalizationFactors.hasNormalizationFactors()) {
+            try {
+                Normalizer normalizer = new Normalizer();
+                if (!normalizationFactors.hasPsmNormalisationFactors()) {
+                    normalizer.setPsmNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(), reporterSettings.getNormalizationSettings(), getIdentificationParameters().getSequenceMatchingPreferences(), getIdentification(), quantificationFeaturesGenerator, processingPreferences, exceptionHandler, waitingHandler);
+                }
+                if (!normalizationFactors.hasPeptideNormalisationFactors()) {
+                    normalizer.setPeptideNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(), reporterSettings.getNormalizationSettings(), getIdentificationParameters().getSequenceMatchingPreferences(), getIdentification(), quantificationFeaturesGenerator, processingPreferences, exceptionHandler, waitingHandler);
+                }
+                if (!normalizationFactors.hasProteinNormalisationFactors()) {
+                    normalizer.setProteinNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(), reporterSettings.getNormalizationSettings(), getIdentification(), getMetrics(), quantificationFeaturesGenerator, processingPreferences, exceptionHandler, waitingHandler);
+                }
+            } catch (Exception e) {
+                System.out.println(System.getProperty("line.separator") + "An error occurred while estimating the ratios." + System.getProperty("line.separator"));
+                e.printStackTrace();
+                return 1;
+            }
+        }
+
+        // Save the project in the cps file
+        File destinationFile = reporterCLIInputBean.getOutputFile();
+        if (destinationFile == null) {
+            destinationFile = cpsFile;
+        }
+        try {
+            ProjectSaver.saveProject(reporterSettings, reporterIonQuantification, displayPreferences, this, waitingHandler);
+        } catch (Exception e) {
+            System.out.println(System.getProperty("line.separator") + "An error occurred while saving the project." + System.getProperty("line.separator"));
+            e.printStackTrace();
+            return 1;
+        }
+
+        // report export if needed
+        ReportCLIInputBean reportCLIInputBean = reporterCLIInputBean.getReportCLIInputBean();
+
+        // see if output folder is set, and if not set to the same folder as the cps file
+        if (reportCLIInputBean.getReportOutputFolder() == null) {
+            reportCLIInputBean.setReportOutputFolder(destinationFile.getParentFile());
+        }
+
+        if (reportCLIInputBean.exportNeeded()) {
+            waitingHandler.appendReport("Starting report export.", true, true);
+
+            // Export report(s)
+            if (reportCLIInputBean.exportNeeded()) {
+                int nSurroundingAAs = 2; //@TODO: this shall not be hard coded //peptideShakerGUI.getDisplayPreferences().getnAASurroundingPeptides()
+                for (String reportType : reportCLIInputBean.getReportTypes()) {
+                    try {
+                        CLIExportMethods.exportReport(reportCLIInputBean, reportType, experiment.getReference(), sample.getReference(), replicateNumber, projectDetails, identification, geneMaps, identificationFeaturesGenerator, quantificationFeaturesGenerator, reporterIonQuantification, reporterSettings, identificationParameters, nSurroundingAAs, spectrumCountingPreferences, waitingHandler);
+                    } catch (Exception e) {
+                        waitingHandler.appendReport("An error occurred while exporting the " + reportType + ".", true, true);
+                        e.printStackTrace();
+                        waitingHandler.setRunCanceled();
+                    }
+                }
+            }
+
+            // export documentation
+            if (reportCLIInputBean.documentationExportNeeded()) {
+                for (String reportType : reportCLIInputBean.getReportTypes()) {
+                    try {
+                        CLIExportMethods.exportDocumentation(reportCLIInputBean, reportType, waitingHandler);
+                    } catch (Exception e) {
+                        waitingHandler.appendReport("An error occurred while exporting the documentation for " + reportType + ".", true, true);
+                        e.printStackTrace();
+                        waitingHandler.setRunCanceled();
+                    }
+                }
+            }
+        }
+
+        // export as zip
+        File zipFile = reporterCLIInputBean.getZipExport();
+        if (zipFile != null) {
+
+            waitingHandler.appendReportEndLine();
+            waitingHandler.appendReport("Zipping project.", true, true);
+
+            File parent = zipFile.getParentFile();
+            try {
+                parent.mkdirs();
+            } catch (Exception e) {
+                waitingHandler.appendReport("An error occurred while creating folder " + parent.getAbsolutePath() + ".", true, true);
+                waitingHandler.setRunCanceled();
+            }
+
+            File fastaFile = identificationParameters.getProteinInferencePreferences().getProteinSequenceDatabase();
+            ArrayList<File> spectrumFiles = new ArrayList<File>();
+            for (String spectrumFileName : getIdentification().getSpectrumFiles()) {
+                File spectrumFile = getProjectDetails().getSpectrumFile(spectrumFileName);
+                spectrumFiles.add(spectrumFile);
+            }
+
+            try {
+                ProjectExport.exportProjectAsZip(zipFile, fastaFile, spectrumFiles, cpsFile, waitingHandler);
+                final int NUMBER_OF_BYTES_PER_MEGABYTE = 1048576;
+                double sizeOfZippedFile = Util.roundDouble(((double) zipFile.length() / NUMBER_OF_BYTES_PER_MEGABYTE), 2);
+                waitingHandler.appendReport("Project zipped to \'" + zipFile.getAbsolutePath() + "\' (" + sizeOfZippedFile + " MB)", true, true);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+                waitingHandler.appendReport("An error occurred while attempting to zip project in " + zipFile.getAbsolutePath() + ".", true, true);
+                waitingHandler.setRunCanceled();
+            } catch (IOException e) {
+                e.printStackTrace();
+                waitingHandler.appendReport("An error occurred while attempting to zip project in " + zipFile.getAbsolutePath() + ".", true, true);
+                waitingHandler.setRunCanceled();
+            }
+        }
+
+        waitingHandler.appendReportEndLine();
+
+        if (waitingHandler.isRunCanceled()) {
             return 1;
         }
 

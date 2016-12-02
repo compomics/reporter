@@ -113,7 +113,6 @@ public class ReporterPeptideSection {
      * @param reporterIonQuantification the reporter ion quantification object
      * containing the quantification configuration
      * @param reporterSettings the reporter settings
-     * @param shotgunProtocol the shotgun protocol
      * @param identificationParameters the identification parameters
      * @param keys the keys of the protein matches to output
      * @param nSurroundingAA the number of surrounding amino acids to export
@@ -135,7 +134,7 @@ public class ReporterPeptideSection {
      */
     public void writeSection(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator,
             QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, ReporterSettings reporterSettings,
-            ShotgunProtocol shotgunProtocol, IdentificationParameters identificationParameters,
+            IdentificationParameters identificationParameters,
             ArrayList<String> keys, int nSurroundingAA, String linePrefix, boolean validatedOnly, boolean decoys, WaitingHandler waitingHandler)
             throws IOException, IllegalArgumentException, SQLException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
 
@@ -201,7 +200,7 @@ public class ReporterPeptideSection {
                             first = false;
                         }
                         PsPeptideFeature peptideFeature = (PsPeptideFeature) exportFeature;
-                        writer.write(PsPeptideSection.getfeature(identification, identificationFeaturesGenerator, shotgunProtocol, identificationParameters,
+                        writer.write(PsPeptideSection.getfeature(identification, identificationFeaturesGenerator, identificationParameters,
                                 keys, nSurroundingAA, linePrefix, peptideMatch, psParameter, peptideFeature, validatedOnly, decoys, waitingHandler));
                     }
 
@@ -237,7 +236,7 @@ public class ReporterPeptideSection {
                         psmSectionPrefix += line + ".";
                         writer.increaseDepth();
                         psmSection.writeSection(identification, identificationFeaturesGenerator, quantificationFeaturesGenerator, reporterIonQuantification, reporterSettings,
-                                shotgunProtocol, identificationParameters, peptideMatch.getSpectrumMatchesKeys(), psmSectionPrefix, nSurroundingAA, validatedOnly, decoys, null);
+                                identificationParameters, peptideMatch.getSpectrumMatchesKeys(), psmSectionPrefix, nSurroundingAA, validatedOnly, decoys, null);
                         writer.decreseDepth();
                     }
                     line++;

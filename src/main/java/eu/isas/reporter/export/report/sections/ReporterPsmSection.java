@@ -1,6 +1,5 @@
 package eu.isas.reporter.export.report.sections;
 
-import com.compomics.util.experiment.ShotgunProtocol;
 import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.matches.IonMatch;
 import com.compomics.util.experiment.identification.matches.SpectrumMatch;
@@ -123,7 +122,6 @@ public class ReporterPsmSection {
      * @param reporterIonQuantification the reporter ion quantification object
      * containing the quantification configuration
      * @param reporterSettings the reporter settings
-     * @param shotgunProtocol the shotgun protocol
      * @param identificationParameters the identification parameters
      * @param keys the keys of the PSM matches to output
      * @param linePrefix the line prefix
@@ -144,7 +142,7 @@ public class ReporterPsmSection {
      * threading error occurred
      */
     public void writeSection(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, ReporterSettings reporterSettings,
-            ShotgunProtocol shotgunProtocol, IdentificationParameters identificationParameters, ArrayList<String> keys, String linePrefix, int nSurroundingAA, boolean validatedOnly, boolean decoys, WaitingHandler waitingHandler) throws IOException, IllegalArgumentException, SQLException,
+            IdentificationParameters identificationParameters, ArrayList<String> keys, String linePrefix, int nSurroundingAA, boolean validatedOnly, boolean decoys, WaitingHandler waitingHandler) throws IOException, IllegalArgumentException, SQLException,
             ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
 
         if (waitingHandler != null) {
@@ -259,7 +257,7 @@ public class ReporterPsmSection {
                             } else {
                                 first = false;
                             }
-                            writer.write(PsPsmSection.getFeature(identification, identificationFeaturesGenerator, shotgunProtocol,
+                            writer.write(PsPsmSection.getFeature(identification, identificationFeaturesGenerator,
                                     identificationParameters, keys, linePrefix, spectrumMatch, psParameter, psmFeature, validatedOnly, decoys, waitingHandler));
                         }
                         ArrayList<String> sampleIndexes = new ArrayList<String>(reporterIonQuantification.getSampleIndexes());
@@ -292,9 +290,9 @@ public class ReporterPsmSection {
                             }
                             fractionPrefix += line + ".";
                             if (spectrumMatch.getBestPeptideAssumption() != null) {
-                                fragmentSection.writeSection(spectrumKey, spectrumMatch.getBestPeptideAssumption(), shotgunProtocol, identificationParameters, fractionPrefix, null);
+                                fragmentSection.writeSection(spectrumKey, spectrumMatch.getBestPeptideAssumption(), identificationParameters, fractionPrefix, null);
                             } else if (spectrumMatch.getBestTagAssumption() != null) {
-                                fragmentSection.writeSection(spectrumKey, spectrumMatch.getBestTagAssumption(), shotgunProtocol, identificationParameters, fractionPrefix, null);
+                                fragmentSection.writeSection(spectrumKey, spectrumMatch.getBestTagAssumption(), identificationParameters, fractionPrefix, null);
                             }
                         }
                         line++;

@@ -1,6 +1,5 @@
 package eu.isas.reporter.export.report.sections;
 
-import com.compomics.util.experiment.ShotgunProtocol;
 import com.compomics.util.experiment.biology.genes.GeneMaps;
 import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.matches.ProteinMatch;
@@ -123,7 +122,6 @@ public class ReporterProteinSection {
      * @param reporterIonQuantification the reporter ion quantification object
      * containing the quantification configuration
      * @param reporterSettings the reporter settings
-     * @param shotgunProtocol the shotgun protocol
      * @param identificationParameters the identification parameters
      * @param keys the keys of the protein matches to output. if null all
      * proteins will be exported.
@@ -147,7 +145,7 @@ public class ReporterProteinSection {
      * an error occurred while transforming the ratios
      */
     public void writeSection(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, GeneMaps geneMaps, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, ReporterSettings reporterSettings,
-            ShotgunProtocol shotgunProtocol, IdentificationParameters identificationParameters, ArrayList<String> keys, int nSurroundingAas, boolean validatedOnly, boolean decoys, WaitingHandler waitingHandler)
+            IdentificationParameters identificationParameters, ArrayList<String> keys, int nSurroundingAas, boolean validatedOnly, boolean decoys, WaitingHandler waitingHandler)
             throws IOException, IllegalArgumentException, SQLException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException, MathException {
 
         if (waitingHandler != null) {
@@ -206,7 +204,7 @@ public class ReporterProteinSection {
                             first = false;
                         }
                         PsProteinFeature tempProteinFeatures = (PsProteinFeature) exportFeature;
-                        writer.write(PsProteinSection.getFeature(identificationFeaturesGenerator, geneMaps, shotgunProtocol, identificationParameters,
+                        writer.write(PsProteinSection.getFeature(identificationFeaturesGenerator, geneMaps, identificationParameters,
                                 keys, nSurroundingAas, proteinKey, proteinMatch, psParameter, tempProteinFeatures, waitingHandler));
                     }
 
@@ -238,7 +236,7 @@ public class ReporterProteinSection {
                     if (peptideSection != null) {
                         writer.increaseDepth();
                         peptideSection.writeSection(identification, identificationFeaturesGenerator, quantificationFeaturesGenerator, reporterIonQuantification, reporterSettings,
-                                shotgunProtocol, identificationParameters, proteinMatch.getPeptideMatchesKeys(), nSurroundingAas,
+                                identificationParameters, proteinMatch.getPeptideMatchesKeys(), nSurroundingAas,
                                 line + ".", validatedOnly, decoys, null);
                         writer.decreseDepth();
                     }

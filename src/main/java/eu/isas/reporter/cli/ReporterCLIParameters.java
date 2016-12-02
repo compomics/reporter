@@ -1,6 +1,7 @@
 package eu.isas.reporter.cli;
 
 import com.compomics.util.experiment.identification.parameters_cli.IdentificationParametersCLIParams;
+import static eu.isas.peptideshaker.cmd.PeptideShakerCLIParams.ZIP;
 import eu.isas.reporter.calculation.normalization.NormalizationType;
 import org.apache.commons.cli.Options;
 
@@ -47,6 +48,8 @@ public enum ReporterCLIParameters {
     NORMALIZATION_PROTEIN("normalization_protein", "Normalization at the protein level (" + NormalizationType.getCommandLineDescription() + "). Default is 1.", false),
     STABLE_PROTEINS("stable_proteins", "Path to a FASTA file containing proteins to consider most stable between samples.", false),
     CONTAMINANTS("contaminants", "Path to a FASTA file containing proteins to consider as contaminants. Default is resources/crap.fasta.", false),
+    
+    ZIP("zip", "Exports the entire project as a zip file in the file specified.", false),
     
     THREADS("threads", "Number of threads to use for the processing, default: the number of cores on the machine.", false);
 
@@ -112,6 +115,9 @@ public enum ReporterCLIParameters {
 
         output += "\n\nOutput:\n\n";
         output += "-" + String.format(formatter, OUT.id) + " " + OUT.description + "\n";
+
+        output += "\n\nOptional Export Parameters:\n\n";
+        output += "-" + String.format(formatter, ZIP.id) + " " + ZIP.description + "\n";
 
         output += "\n\nProcessing Options:\n\n";
         output += "-" + String.format(formatter, THREADS.id) + " " + THREADS.description + "\n";

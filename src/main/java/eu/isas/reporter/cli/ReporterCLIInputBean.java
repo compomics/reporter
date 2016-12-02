@@ -45,6 +45,10 @@ public class ReporterCLIInputBean {
      */
     private PathSettingsCLIInputBean pathSettingsCLIInputBean;
     /**
+     * The report export options.
+     */
+    private ReportCLIInputBean reportCLIInputBean;
+    /**
      * The name of the reporter ion method as set in the isotopic distribution
      * file.
      */
@@ -138,6 +142,10 @@ public class ReporterCLIInputBean {
      * FASTA file containing contaminants.
      */
     private File contaminants = null;
+    /**
+     * File where to export the zipped folder.
+     */
+    private File zipExport = null;
 
     /**
      * Parses the arguments of a command line.
@@ -318,6 +326,14 @@ public class ReporterCLIInputBean {
             arg = aLine.getOptionValue(ReporterCLIParameters.CONTAMINANTS.id);
             contaminants = new File(arg);
         }
+
+        // zipped export
+        if (aLine.hasOption(ReporterCLIParameters.ZIP.id)) {
+            zipExport = new File(aLine.getOptionValue(ReporterCLIParameters.ZIP.id));
+        }
+        
+        // Reports
+        reportCLIInputBean = new ReportCLIInputBean(aLine);
 
         // identification parameters
         identificationParametersInputBean = new IdentificationParametersInputBean(aLine);
@@ -662,15 +678,6 @@ public class ReporterCLIInputBean {
     }
 
     /**
-     * Returns the identification parameters.
-     *
-     * @return the identification parameters
-     */
-    public IdentificationParameters getIdentificationParameters() {
-        return identificationParametersInputBean.getIdentificationParameters();
-    }
-
-    /**
      * Returns the identification parameters file.
      *
      * @return the identification parameters file
@@ -681,15 +688,6 @@ public class ReporterCLIInputBean {
         } else {
             return identificationParametersInputBean.getInputFile();
         }
-    }
-
-    /**
-     * Returns the path settings provided by the user.
-     *
-     * @return the path settings provided by the user
-     */
-    public PathSettingsCLIInputBean getPathSettingsCLIInputBean() {
-        return pathSettingsCLIInputBean;
     }
 
     /**
@@ -822,5 +820,42 @@ public class ReporterCLIInputBean {
      */
     public File getContaminants() {
         return contaminants;
+    }
+
+    /**
+     * Returns the file where to export the project as zip file. Null if not
+     * set.
+     *
+     * @return the file where to export the project as zip file
+     */
+    public File getZipExport() {
+        return zipExport;
+    }
+
+    /**
+     * Returns the identification parameters.
+     *
+     * @return the identification parameters
+     */
+    public IdentificationParameters getIdentificationParameters() {
+        return identificationParametersInputBean.getIdentificationParameters();
+    }
+
+    /**
+     * Returns the path settings provided by the user.
+     *
+     * @return the path settings provided by the user
+     */
+    public PathSettingsCLIInputBean getPathSettingsCLIInputBean() {
+        return pathSettingsCLIInputBean;
+    }
+
+    /**
+     * Returns the report export options required.
+     *
+     * @return the report export options required
+     */
+    public ReportCLIInputBean getReportCLIInputBean() {
+        return reportCLIInputBean;
     }
 }
