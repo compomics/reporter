@@ -20,7 +20,6 @@ import eu.isas.peptideshaker.cmd.PeptideShakerCLI;
 import static eu.isas.peptideshaker.cmd.PeptideShakerCLI.redirectErrorStream;
 import eu.isas.peptideshaker.preferences.PeptideShakerPathPreferences;
 import eu.isas.peptideshaker.utils.CpsParent;
-import eu.isas.reporter.Reporter;
 import eu.isas.reporter.calculation.QuantificationFeaturesCache;
 import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
 import eu.isas.reporter.io.ProjectImporter;

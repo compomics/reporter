@@ -358,8 +358,8 @@ public class ReporterCLIInputBean {
         } else {
             String arg = aLine.getOptionValue(ReporterCLIParameters.ID.id);
             HashSet<String> supportedFormats = new HashSet<String>(2);
-            supportedFormats.add("cpsx");
-            supportedFormats.add("zip");
+            supportedFormats.add(".cpsx");
+            supportedFormats.add(".zip");
             if (!CommandParameter.fileExists(ReporterCLIParameters.ID.id, arg, supportedFormats)) {
                 return false;
             }
@@ -369,7 +369,7 @@ public class ReporterCLIInputBean {
         if (aLine.hasOption(ReporterCLIParameters.ISOTOPES.id)) {
             String arg = aLine.getOptionValue(ReporterCLIParameters.ISOTOPES.id);
             HashSet<String> supportedFormats = new HashSet<String>(1);
-            supportedFormats.add("xml");
+            supportedFormats.add(".xml");
             if (!CommandParameter.fileExists(ReporterCLIParameters.ISOTOPES.id, arg, supportedFormats)) {
                 return false;
             }
@@ -545,7 +545,7 @@ public class ReporterCLIInputBean {
         if (aLine.hasOption(ReporterCLIParameters.STABLE_PROTEINS.id)) {
             String arg = aLine.getOptionValue(ReporterCLIParameters.STABLE_PROTEINS.id);
             HashSet<String> supportedFormats = new HashSet<String>(1);
-            supportedFormats.add("fasta");
+            supportedFormats.add(".fasta");
             if (!CommandParameter.fileExists(ReporterCLIParameters.STABLE_PROTEINS.id, arg, supportedFormats)) {
                 return false;
             }
@@ -554,7 +554,7 @@ public class ReporterCLIInputBean {
         if (aLine.hasOption(ReporterCLIParameters.CONTAMINANTS.id)) {
             String arg = aLine.getOptionValue(ReporterCLIParameters.CONTAMINANTS.id);
             HashSet<String> supportedFormats = new HashSet<String>(1);
-            supportedFormats.add("fasta");
+            supportedFormats.add(".fasta");
             if (!CommandParameter.fileExists(ReporterCLIParameters.CONTAMINANTS.id, arg, supportedFormats)) {
                 return false;
             }

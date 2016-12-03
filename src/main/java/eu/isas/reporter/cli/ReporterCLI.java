@@ -202,7 +202,8 @@ public class ReporterCLI extends CpsParent implements Callable {
 
         // Load the project from the cps file
         ProjectImporter projectImporter = new ProjectImporter();
-        File selectedFile = reporterCLIInputBean.getPeptideShakerFile();
+        cpsFile = reporterCLIInputBean.getPeptideShakerFile();
+        setDbFolder(Reporter.getMatchesFolder());
         try {
             projectImporter.importPeptideShakerProject(this, mgfFiles, waitingHandler);
             projectImporter.importReporterProject(this, waitingHandler);
@@ -216,13 +217,13 @@ public class ReporterCLI extends CpsParent implements Callable {
             error.printStackTrace();
             return 1;
         } catch (EOFException e) {
-            String errorText = "An error occurred while reading:\n" + selectedFile + ".\n\n"
+            String errorText = "An error occurred while reading:\n" + cpsFile + ".\n\n"
                     + "The file is corrupted and cannot be opened anymore.";
             waitingHandler.appendReport(errorText, true, true);
             e.printStackTrace();
             return 1;
         } catch (Exception e) {
-            String errorText = "An error occurred while reading:\n" + selectedFile + ".\n\n"
+            String errorText = "An error occurred while reading:\n" + cpsFile + ".\n\n"
                     + "Please verify that the PeptideShaker version used to create\n"
                     + "the file is compatible with your version of Reporter.";
             waitingHandler.appendReport(errorText, true, true);
