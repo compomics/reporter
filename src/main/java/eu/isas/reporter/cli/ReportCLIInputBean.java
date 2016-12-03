@@ -47,7 +47,7 @@ public class ReportCLIInputBean {
             if (file.toLowerCase().endsWith(".cpsx") || file.toLowerCase().endsWith(".zip")) {
                 cpsFile = new File(file);
             } else {
-                    throw new IllegalArgumentException("Unknown file format \'" + file + "\' for PeptideShaker project input.");
+                throw new IllegalArgumentException("Unknown file format \'" + file + "\' for PeptideShaker project input.");
             }
         }
         if (aLine.hasOption(ReportCLIParams.EXPORT_FOLDER.id)) {
@@ -141,10 +141,10 @@ public class ReportCLIInputBean {
     public boolean documentationExportNeeded() {
         return reportOutputFolder != null && !documentationTypes.isEmpty();
     }
-    
+
     /**
      * Returns the path settings provided by the user.
-     * 
+     *
      * @return the path settings provided by the user
      */
     public PathSettingsCLIInputBean getPathSettingsCLIInputBean() {

@@ -27,7 +27,6 @@ import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
  */
 public class CLIExportMethods {
 
-
     /**
      * Writes an export according to the command line settings contained in the
      * reportCLIInputBean.
@@ -68,7 +67,8 @@ public class CLIExportMethods {
      * protein
      */
     public static void exportReport(ReportCLIInputBean reportCLIInputBean, String reportType, String experiment, String sample, int replicateNumber,
-            ProjectDetails projectDetails, Identification identification, GeneMaps geneMaps, IdentificationFeaturesGenerator identificationFeaturesGenerator, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, ReporterSettings reporterSettings,
+            ProjectDetails projectDetails, Identification identification, GeneMaps geneMaps, IdentificationFeaturesGenerator identificationFeaturesGenerator, 
+            QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, ReporterSettings reporterSettings,
             IdentificationParameters identificationParameters, int nSurroundingAA, SpectrumCountingPreferences spectrumCountingPreferences, WaitingHandler waitingHandler)
             throws IOException, IllegalArgumentException, SQLException, ClassNotFoundException,
             InterruptedException, MzMLUnmarshallerException, MathException {
@@ -79,7 +79,8 @@ public class CLIExportMethods {
         File reportFile = new File(reportCLIInputBean.getReportOutputFolder(), ReporterExportFactory.getDefaultReportName(experiment, sample, replicateNumber, reportName));
 
         //@TODO: allow format selection
-        ReporterExportFactory.writeExport(exportScheme, reportFile, ExportFormat.text, experiment, sample, replicateNumber, projectDetails, identification, identificationFeaturesGenerator, geneMaps, quantificationFeaturesGenerator, reporterIonQuantification, reporterSettings, identificationParameters,
+        ReporterExportFactory.writeExport(exportScheme, reportFile, ExportFormat.text, experiment, sample, replicateNumber, projectDetails, identification, 
+                identificationFeaturesGenerator, geneMaps, quantificationFeaturesGenerator, reporterIonQuantification, reporterSettings, identificationParameters,
                 null, null, null, null, nSurroundingAA, spectrumCountingPreferences, waitingHandler);
     }
 
