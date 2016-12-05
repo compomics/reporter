@@ -2,7 +2,7 @@
 
 This project aims to provide a user friendly environment to perform protein quantification based on reporter ions (iTRAQ, TMT).
 
-Reporter assumes that the data has been processed by [PeptideShaker v1.0.0 or newer](http://compomics.github.io/projects/peptide-shaker.html).
+Reporter assumes that the data has been processed by the latest version of [PeptideShaker](http://compomics.github.io/projects/peptide-shaker.html).
 
 ---
 
