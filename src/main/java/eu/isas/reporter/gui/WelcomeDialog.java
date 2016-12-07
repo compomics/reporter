@@ -46,7 +46,7 @@ public class WelcomeDialog extends javax.swing.JDialog {
      * The progress dialog.
      */
     private ProgressDialogX progressDialog;
-
+ 
     /**
      * Create a new WelcomeDialog.
      *
@@ -824,7 +824,7 @@ public class WelcomeDialog extends javax.swing.JDialog {
                     reporterGUI.catchException(e);
                 }
             }
-        }, "StartSearchGUI").start();
+        }, "StartPeptideShaker").start();
     }//GEN-LAST:event_reshakeJButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
