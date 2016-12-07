@@ -2,13 +2,13 @@
 
 This project aims to provide a user friendly environment to perform protein quantification based on reporter ions (iTRAQ, TMT).
 
-Reporter assumes that the data has been processed by [PeptideShaker v1.0.0 or newer](http://compomics.github.io/projects/peptide-shaker.html).
+Reporter assumes that the data has been processed by the latest version of [PeptideShaker](http://compomics.github.io/projects/peptide-shaker.html).
 
 ---
 
 |   |   |   |
 | :------------------------- | :---------------: | :--: |
-| [![download](https://github.com/compomics/reporter/wiki/images/download_button.png)](http://genesis.ugent.be/maven2/eu/isas/reporter/Reporter/0.6.0/Reporter-0.6.0.zip) | *v0.6.0 (beta) - All platforms* | [ReleaseNotes](https://github.com/compomics/reporter/wiki/ReleaseNotes) |
+| [![download](https://github.com/compomics/reporter/wiki/images/download_button.png)](http://genesis.ugent.be/maven2/eu/isas/reporter/Reporter/0.6.1/Reporter-0.6.1.zip) | *v0.6.1 (beta) - All platforms* | [ReleaseNotes](https://github.com/compomics/reporter/wiki/ReleaseNotes) |
 
 ---
 
