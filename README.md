@@ -8,7 +8,7 @@ Reporter assumes that the data has been processed by the latest version of [Pept
 
 |   |   |   |
 | :------------------------- | :---------------: | :--: |
-| [![download](https://github.com/compomics/reporter/wiki/images/download_button.png)](http://genesis.ugent.be/maven2/eu/isas/reporter/Reporter/0.6.2/Reporter-0.6.2.zip) | *v0.6.2 (beta) - All platforms* | [ReleaseNotes](https://github.com/compomics/reporter/wiki/ReleaseNotes) |
+| [![download](https://github.com/compomics/reporter/wiki/images/download_button.png)](http://genesis.ugent.be/maven2/eu/isas/reporter/Reporter/0.6.5/Reporter-0.6.5.zip) | *v0.6.5 (beta) - All platforms* | [ReleaseNotes](https://github.com/compomics/reporter/wiki/ReleaseNotes) |
 
 ---
 
