@@ -355,10 +355,11 @@ public class ReportCLI extends CpsParent {
     /**
      * Close the PeptideShaker instance by clearing up factories and cache.
      *
-     * @throws IOException thrown of IOException occurs
-     * @throws SQLException thrown if SQLException occurs
+     * @throws IOException thrown if an exception occurred when closing the connection to a file
+     * @throws SQLException thrown if an exception occurred when closing the connection to the back-end database
+     * @throws java.lang.InterruptedException thrown if a threading error occurred
      */
-    public void closePeptideShaker() throws IOException, SQLException {
+    public void closePeptideShaker() throws IOException, SQLException, InterruptedException {
 
         SpectrumFactory.getInstance().closeFiles();
         SequenceFactory.getInstance().closeFile();
