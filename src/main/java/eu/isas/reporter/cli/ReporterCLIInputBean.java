@@ -2,7 +2,7 @@ package eu.isas.reporter.cli;
 
 import com.compomics.software.cli.CommandLineUtils;
 import com.compomics.software.cli.CommandParameter;
-import com.compomics.util.experiment.identification.parameters_cli.IdentificationParametersInputBean;
+import com.compomics.cli.identification_parameters.IdentificationParametersInputBean;
 import com.compomics.util.preferences.IdentificationParameters;
 import eu.isas.reporter.calculation.normalization.NormalizationType;
 import java.io.File;
