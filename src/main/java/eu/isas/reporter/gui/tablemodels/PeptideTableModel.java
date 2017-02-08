@@ -14,10 +14,10 @@ import com.compomics.util.math.BasicMathFunctions;
 import com.compomics.util.preferences.IdentificationParameters;
 import com.compomics.util.waiting.WaitingHandler;
 import eu.isas.peptideshaker.parameters.PSParameter;
-import eu.isas.peptideshaker.preferences.DisplayPreferences;
 import eu.isas.peptideshaker.utils.DisplayFeaturesGenerator;
 import eu.isas.peptideshaker.utils.IdentificationFeaturesGenerator;
 import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
+import eu.isas.reporter.preferences.DisplayPreferences;
 import eu.isas.reporter.quantificationdetails.PeptideQuantificationDetails;
 import java.awt.Color;
 import java.io.IOException;
@@ -91,6 +91,10 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
      * The exception handler catches exceptions.
      */
     private ExceptionHandler exceptionHandler;
+    /**
+     * The display preferences.
+     */
+    private DisplayPreferences displayPreferences;
 
     /**
      * Constructor which sets a new table.
@@ -102,6 +106,7 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
      * @param quantificationFeaturesGenerator the quantification feature
      * generator
      * @param displayFeaturesGenerator the display features generator
+     * @param displayPreferences the display preferences
      * @param identificationParameters the identification parameters
      * @param proteinAccession the protein accession
      * @param peptideKeys the peptide keys
@@ -111,19 +116,20 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
      */
     public PeptideTableModel(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator,
             ReporterIonQuantification reporterIonQuantification, QuantificationFeaturesGenerator quantificationFeaturesGenerator,
-            DisplayFeaturesGenerator displayFeaturesGenerator, IdentificationParameters identificationParameters, String proteinAccession,
+            DisplayFeaturesGenerator displayFeaturesGenerator, DisplayPreferences displayPreferences, IdentificationParameters identificationParameters, String proteinAccession,
             ArrayList<String> peptideKeys, boolean displayScores, ExceptionHandler exceptionHandler) {
         this.identification = identification;
         this.identificationFeaturesGenerator = identificationFeaturesGenerator;
         this.reporterIonQuantification = reporterIonQuantification;
         this.quantificationFeaturesGenerator = quantificationFeaturesGenerator;
         this.displayFeaturesGenerator = displayFeaturesGenerator;
+        this.displayPreferences = displayPreferences;
         this.identificationParameters = identificationParameters;
         this.peptideKeys = peptideKeys;
         this.proteinAccession = proteinAccession;
         this.showScores = displayScores;
         this.exceptionHandler = exceptionHandler;
-        
+
         sampleIndexes = new ArrayList<String>(reporterIonQuantification.getSampleIndexes());
         Collections.sort(sampleIndexes);
     }
@@ -139,6 +145,7 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
      * @param quantificationFeaturesGenerator the quantification feature
      * generator
      * @param displayFeaturesGenerator the display features generator
+     * @param displayPreferences the display preferences
      * @param identificationParameters the identification parameters
      * @param proteinAccession the protein accession
      * @param peptideKeys the peptide keys
@@ -147,18 +154,19 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
      */
     public void updateDataModel(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator,
             ReporterIonQuantification reporterIonQuantification, QuantificationFeaturesGenerator quantificationFeaturesGenerator,
-            DisplayFeaturesGenerator displayFeaturesGenerator, IdentificationParameters identificationParameters,
+            DisplayFeaturesGenerator displayFeaturesGenerator, DisplayPreferences displayPreferences, IdentificationParameters identificationParameters,
             String proteinAccession, ArrayList<String> peptideKeys, boolean showScores) {
         this.identification = identification;
         this.identificationFeaturesGenerator = identificationFeaturesGenerator;
         this.reporterIonQuantification = reporterIonQuantification;
         this.quantificationFeaturesGenerator = quantificationFeaturesGenerator;
         this.displayFeaturesGenerator = displayFeaturesGenerator;
+        this.displayPreferences = displayPreferences;
         this.identificationParameters = identificationParameters;
         this.proteinAccession = proteinAccession;
         this.peptideKeys = peptideKeys;
         this.showScores = showScores;
-        
+
         sampleIndexes = new ArrayList<String>(reporterIonQuantification.getSampleIndexes());
         Collections.sort(sampleIndexes);
     }
@@ -241,9 +249,10 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
                     ArrayList<Double> data = new ArrayList<Double>();
                     PeptideMatch peptideMatch = identification.getPeptideMatch(peptideKey, useDB && !isScrolling);
                     PeptideQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideMatch, null);
-
-                    for (String sampleIndex : sampleIndexes) {
-                        Double ratio = quantificationDetails.getRatio(sampleIndex, reporterIonQuantification.getNormalizationFactors());
+                    ArrayList<String> reagentsOrder = displayPreferences.getReagents();
+                    for (String tempReagent : reagentsOrder) {
+                        int sampleIndex = sampleIndexes.indexOf(tempReagent);
+                        Double ratio = quantificationDetails.getRatio(sampleIndexes.get(sampleIndex), reporterIonQuantification.getNormalizationFactors());
                         if (ratio != null) {
                             if (ratio != 0) {
                                 ratio = BasicMathFunctions.log(ratio, 2);
@@ -252,7 +261,6 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
                             data.add(ratio);
                         }
                     }
-
                     return new JSparklinesDataSeries(data, Color.BLACK, null);
                 case 2:
                     PSParameter psParameter = (PSParameter) identification.getPeptideMatchParameter(peptideKey, new PSParameter(), useDB && !isScrolling);

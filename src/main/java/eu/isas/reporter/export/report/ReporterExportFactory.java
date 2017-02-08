@@ -1,6 +1,5 @@
 package eu.isas.reporter.export.report;
 
-import com.compomics.util.experiment.ShotgunProtocol;
 import com.compomics.util.experiment.biology.genes.GeneMaps;
 import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;

@@ -143,13 +143,18 @@ public class ClusterBuilder {
         }
 
         // Perform the clustering
-        String[] keysArray = clusterKeys.toArray(new String[clusterKeys.size()]);
-        int numClusters = displayPreferences.getClusteringSettings().getKMeansClusteringSettings().getnClusters();
-        if (ratios.length < numClusters) {
-            displayPreferences.getClusteringSettings().getKMeansClusteringSettings().setnClusters(ratios.length);
+        KMeansClustering kMeansClutering = null;
+
+        if (ratios.length > 0) {
+            String[] keysArray = clusterKeys.toArray(new String[clusterKeys.size()]);
+            int numClusters = displayPreferences.getClusteringSettings().getKMeansClusteringSettings().getnClusters();
+            if (ratios.length < numClusters) {
+                displayPreferences.getClusteringSettings().getKMeansClusteringSettings().setnClusters(ratios.length);
+            }
+
+            kMeansClutering = new KMeansClustering(ratios, keysArray, displayPreferences.getClusteringSettings().getKMeansClusteringSettings().getnClusters());
+            kMeansClutering.kMeanCluster(waitingHandler);
         }
-        KMeansClustering kMeansClutering = new KMeansClustering(ratios, keysArray, displayPreferences.getClusteringSettings().getKMeansClusteringSettings().getnClusters());
-        kMeansClutering.kMeanCluster(waitingHandler);
 
         return kMeansClutering;
     }
@@ -606,34 +611,34 @@ public class ClusterBuilder {
     public Integer getProteinIndex(String accession) {
         return proteinKeysIndexes.get(accession);
     }
-    
+
     /**
      * Returns the cluster classes corresponding to a protein match.
-     * 
+     *
      * @param key the match key
-     * 
+     *
      * @return the cluster classes corresponding to this protein
      */
     public ArrayList<String> getProteinClasses(String key) {
         return proteinClusters.get(key);
     }
-    
+
     /**
      * Returns the cluster classes corresponding to a peptide match.
-     * 
+     *
      * @param key the match key
-     * 
+     *
      * @return the cluster classes corresponding to this peptide
      */
     public ArrayList<String> getPeptideClasses(String key) {
         return peptideClusters.get(key);
     }
-    
+
     /**
      * Returns the cluster classes corresponding to a PSM.
-     * 
+     *
      * @param key the match key
-     * 
+     *
      * @return the cluster classes corresponding to this PSM
      */
     public ArrayList<String> getPsmClasses(String key) {

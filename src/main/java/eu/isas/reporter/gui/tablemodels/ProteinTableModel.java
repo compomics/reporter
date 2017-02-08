@@ -14,11 +14,11 @@ import com.compomics.util.gui.tablemodels.SelfUpdatingTableModel;
 import com.compomics.util.math.BasicMathFunctions;
 import com.compomics.util.waiting.WaitingHandler;
 import eu.isas.peptideshaker.parameters.PSParameter;
-import eu.isas.peptideshaker.preferences.DisplayPreferences;
 import eu.isas.peptideshaker.scoring.MatchValidationLevel;
 import eu.isas.peptideshaker.utils.DisplayFeaturesGenerator;
 import eu.isas.peptideshaker.utils.IdentificationFeaturesGenerator;
 import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
+import eu.isas.reporter.preferences.DisplayPreferences;
 import eu.isas.reporter.quantificationdetails.ProteinQuantificationDetails;
 import java.awt.Color;
 import java.awt.Component;
@@ -101,6 +101,10 @@ public class ProteinTableModel extends SelfUpdatingTableModel {
      * The batch size.
      */
     private int batchSize = 20;
+    /**
+     * The display preferences.
+     */
+    private DisplayPreferences displayPreferences;
 
     /**
      * Constructor for an empty table.
@@ -121,18 +125,20 @@ public class ProteinTableModel extends SelfUpdatingTableModel {
      * generator
      * @param displayFeaturesGenerator the display features generator generating
      * the display elements
+     * @param displayPreferences the display preferences
      * @param exceptionHandler an exception handler catching exceptions
      * @param proteinKeys the keys of the protein matches to display
      */
     public ProteinTableModel(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, GeneMaps geneMaps,
             ReporterIonQuantification reporterIonQuantification, QuantificationFeaturesGenerator quantificationFeaturesGenerator,
-            DisplayFeaturesGenerator displayFeaturesGenerator, ExceptionHandler exceptionHandler, ArrayList<String> proteinKeys) {
+            DisplayFeaturesGenerator displayFeaturesGenerator, DisplayPreferences displayPreferences, ExceptionHandler exceptionHandler, ArrayList<String> proteinKeys) {
         this.identification = identification;
         this.identificationFeaturesGenerator = identificationFeaturesGenerator;
         this.geneMaps = geneMaps;
         this.reporterIonQuantification = reporterIonQuantification;
         this.quantificationFeaturesGenerator = quantificationFeaturesGenerator;
         this.displayFeaturesGenerator = displayFeaturesGenerator;
+        this.displayPreferences = displayPreferences;
         this.exceptionHandler = exceptionHandler;
         this.keys = proteinKeys;
 
@@ -154,17 +160,19 @@ public class ProteinTableModel extends SelfUpdatingTableModel {
      * generator
      * @param displayFeaturesGenerator the display features generator generating
      * the display elements
+     * @param displayPreferences the display preferences
      * @param proteinKeys the keys of the protein matches to display
      */
     public void updateDataModel(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, GeneMaps geneMaps,
             ReporterIonQuantification reporterIonQuantification, QuantificationFeaturesGenerator quantificationFeaturesGenerator,
-            DisplayFeaturesGenerator displayFeaturesGenerator, ArrayList<String> proteinKeys) {
+            DisplayFeaturesGenerator displayFeaturesGenerator, DisplayPreferences displayPreferences, ArrayList<String> proteinKeys) {
         this.identification = identification;
         this.identificationFeaturesGenerator = identificationFeaturesGenerator;
         this.geneMaps = geneMaps;
         this.reporterIonQuantification = reporterIonQuantification;
         this.quantificationFeaturesGenerator = quantificationFeaturesGenerator;
         this.displayFeaturesGenerator = displayFeaturesGenerator;
+        this.displayPreferences = displayPreferences;
         this.keys = proteinKeys;
 
         sampleIndexes = new ArrayList<String>(reporterIonQuantification.getSampleIndexes());
@@ -255,9 +263,10 @@ public class ProteinTableModel extends SelfUpdatingTableModel {
                     case 1:
                         ArrayList<Double> data = new ArrayList<Double>();
                         ProteinQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(proteinKey, null);
-
-                        for (String sampleIndex : sampleIndexes) {
-                            Double ratio = quantificationDetails.getRatio(sampleIndex, reporterIonQuantification.getNormalizationFactors());
+                        ArrayList<String> reagentsOrder = displayPreferences.getReagents();
+                        for (String tempReagent : reagentsOrder) {
+                            int sampleIndex = sampleIndexes.indexOf(tempReagent);
+                            Double ratio = quantificationDetails.getRatio(sampleIndexes.get(sampleIndex), reporterIonQuantification.getNormalizationFactors());
                             if (ratio != null) {
                                 if (ratio != 0) {
                                     ratio = BasicMathFunctions.log(ratio, 2);
@@ -266,7 +275,6 @@ public class ProteinTableModel extends SelfUpdatingTableModel {
                                 data.add(ratio);
                             }
                         }
-
                         return new JSparklinesDataSeries(data, Color.BLACK, null);
                     case 2:
                         PSParameter psParameter = (PSParameter) identification.getProteinMatchParameter(proteinKey, new PSParameter(), useDB && !isScrolling);

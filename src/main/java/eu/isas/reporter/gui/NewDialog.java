@@ -32,12 +32,14 @@ import eu.isas.reporter.settings.ReporterSettings;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 import no.uib.jsparklines.extra.TrueFalseIconRenderer;
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -61,7 +63,7 @@ public class NewDialog extends javax.swing.JDialog {
     /**
      * The reporter class.
      */
-    private ReporterGUI reporterGui;
+    private ReporterGUI reporterGUI;
     /**
      * The method selected.
      */
@@ -130,17 +132,21 @@ public class NewDialog extends javax.swing.JDialog {
      * The default reporter ion tolerance for iTRAQ data.
      */
     private final double DEFAULT_REPORTER_ION_TOLERANCE_ITRAQ = 0.05;
+    /**
+     * The sample assignment table column header tooltips.
+     */
+    private ArrayList<String> sampleAssignmentTableToolTips;
 
     /**
      * Constructor.
      *
-     * @param reporterGui the reporter class
+     * @param reporterGUI the reporter class
      * @param modal if the dialog is modal or not
      */
-    public NewDialog(ReporterGUI reporterGui, boolean modal) {
-        super(reporterGui, modal);
+    public NewDialog(ReporterGUI reporterGUI, boolean modal) {
+        super(reporterGUI, modal);
 
-        this.reporterGui = reporterGui;
+        this.reporterGUI = reporterGUI;
         this.welcomeDialog = null;
 
         methodsFile = Reporter.getMethodsFile();
@@ -165,11 +171,11 @@ public class NewDialog extends javax.swing.JDialog {
             }
         });
 
-        reporterGui.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")));
+        reporterGUI.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")));
 
         refresh();
 
-        setLocationRelativeTo(reporterGui);
+        setLocationRelativeTo(reporterGUI);
         setVisible(true);
     }
 
@@ -183,7 +189,7 @@ public class NewDialog extends javax.swing.JDialog {
     public NewDialog(WelcomeDialog welcomeDialog, ReporterGUI reporterGui, boolean modal) {
         super(welcomeDialog, modal);
 
-        this.reporterGui = reporterGui;
+        this.reporterGUI = reporterGui;
         this.welcomeDialog = welcomeDialog;
 
         methodsFile = Reporter.getMethodsFile();
@@ -220,6 +226,13 @@ public class NewDialog extends javax.swing.JDialog {
      * Set up the GUI.
      */
     private void setUpGui() {
+        
+        // table header tooltips
+        sampleAssignmentTableToolTips = new ArrayList<String>();
+        sampleAssignmentTableToolTips.add(null);
+        sampleAssignmentTableToolTips.add("The reporter label");
+        sampleAssignmentTableToolTips.add("The sample name");
+        sampleAssignmentTableToolTips.add("The reference sample(s)");
 
         // make sure that the scroll panes are see-through
         sampleAssignmentJScrollPane.getViewport().setOpaque(false);
@@ -272,10 +285,27 @@ public class NewDialog extends javax.swing.JDialog {
         addDbButton = new javax.swing.JButton();
         samplePanel = new javax.swing.JPanel();
         sampleAssignmentJScrollPane = new javax.swing.JScrollPane();
-        sampleAssignmentTable = new javax.swing.JTable();
+        sampleAssignmentTable = new JTable() {
+            protected JTableHeader createDefaultTableHeader() {
+                return new JTableHeader(columnModel) {
+                    public String getToolTipText(MouseEvent e) {
+                        java.awt.Point p = e.getPoint();
+                        int index = columnModel.getColumnIndexAtX(p.x);
+                        int realIndex = columnModel.getColumn(index).getModelIndex();
+                        String tip = (String) sampleAssignmentTableToolTips.get(realIndex);
+                        return tip;
+                    }
+                };
+            }
+        };
         reporterMethodLabel = new javax.swing.JLabel();
         reporterMethodComboBox = new javax.swing.JComboBox();
         methodSettingsButton = new javax.swing.JButton();
+        orderSettingsPanel = new javax.swing.JPanel();
+        moveUpButton = new javax.swing.JButton();
+        moveTopButton = new javax.swing.JButton();
+        moveDownButton = new javax.swing.JButton();
+        moveBottomButton = new javax.swing.JButton();
         advancedSettingsPanel = new javax.swing.JPanel();
         quantPreferencesLabel = new javax.swing.JLabel();
         quantificationPreferencesTxt = new javax.swing.JTextField();
@@ -388,6 +418,12 @@ public class NewDialog extends javax.swing.JDialog {
 
         sampleAssignmentTable.setModel(new AssignementTableModel());
         sampleAssignmentTable.setOpaque(false);
+        sampleAssignmentTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        sampleAssignmentTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                sampleAssignmentTableMouseReleased(evt);
+            }
+        });
         sampleAssignmentJScrollPane.setViewportView(sampleAssignmentTable);
 
         reporterMethodLabel.setText("Reporter Method");
@@ -417,21 +453,103 @@ public class NewDialog extends javax.swing.JDialog {
             }
         });
 
+        orderSettingsPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
+        orderSettingsPanel.setOpaque(false);
+
+        moveUpButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/arrowUp_grey.png"))); // NOI18N
+        moveUpButton.setToolTipText("Move Up");
+        moveUpButton.setBorderPainted(false);
+        moveUpButton.setContentAreaFilled(false);
+        moveUpButton.setEnabled(false);
+        moveUpButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/arrowUp.png"))); // NOI18N
+        moveUpButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                moveUpButtonActionPerformed(evt);
+            }
+        });
+
+        moveTopButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/arrowUpTop_grey.png"))); // NOI18N
+        moveTopButton.setToolTipText("Move to Top");
+        moveTopButton.setBorderPainted(false);
+        moveTopButton.setContentAreaFilled(false);
+        moveTopButton.setEnabled(false);
+        moveTopButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/arrowUpTop.png"))); // NOI18N
+        moveTopButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                moveTopButtonActionPerformed(evt);
+            }
+        });
+
+        moveDownButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/arrowDown_grey.png"))); // NOI18N
+        moveDownButton.setToolTipText("Move Down");
+        moveDownButton.setBorderPainted(false);
+        moveDownButton.setContentAreaFilled(false);
+        moveDownButton.setEnabled(false);
+        moveDownButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/arrowDown.png"))); // NOI18N
+        moveDownButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                moveDownButtonActionPerformed(evt);
+            }
+        });
+
+        moveBottomButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/arrowDownBottom_grey.png"))); // NOI18N
+        moveBottomButton.setToolTipText("Move to Bottom");
+        moveBottomButton.setBorderPainted(false);
+        moveBottomButton.setContentAreaFilled(false);
+        moveBottomButton.setEnabled(false);
+        moveBottomButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/arrowDownBottom.png"))); // NOI18N
+        moveBottomButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                moveBottomButtonActionPerformed(evt);
+            }
+        });
+
+        org.jdesktop.layout.GroupLayout orderSettingsPanelLayout = new org.jdesktop.layout.GroupLayout(orderSettingsPanel);
+        orderSettingsPanel.setLayout(orderSettingsPanelLayout);
+        orderSettingsPanelLayout.setHorizontalGroup(
+            orderSettingsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, orderSettingsPanelLayout.createSequentialGroup()
+                .add(0, 0, Short.MAX_VALUE)
+                .add(orderSettingsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, moveUpButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, moveDownButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, moveBottomButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 36, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(moveTopButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 36, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+        );
+        orderSettingsPanelLayout.setVerticalGroup(
+            orderSettingsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, orderSettingsPanelLayout.createSequentialGroup()
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(moveTopButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(moveUpButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(moveDownButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(moveBottomButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
         org.jdesktop.layout.GroupLayout samplePanelLayout = new org.jdesktop.layout.GroupLayout(samplePanel);
         samplePanel.setLayout(samplePanelLayout);
         samplePanelLayout.setHorizontalGroup(
             samplePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(samplePanelLayout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, samplePanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(samplePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(sampleAssignmentJScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 734, Short.MAX_VALUE)
                     .add(samplePanelLayout.createSequentialGroup()
                         .add(reporterMethodLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 120, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(reporterMethodComboBox, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(methodSettingsButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 66, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
+                        .add(reporterMethodComboBox, 0, 533, Short.MAX_VALUE))
+                    .add(sampleAssignmentJScrollPane))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(samplePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(samplePanelLayout.createSequentialGroup()
+                        .add(methodSettingsButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 66, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, samplePanelLayout.createSequentialGroup()
+                        .add(orderSettingsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(18, 18, 18))))
         );
         samplePanelLayout.setVerticalGroup(
             samplePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -442,7 +560,11 @@ public class NewDialog extends javax.swing.JDialog {
                     .add(reporterMethodComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(methodSettingsButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(sampleAssignmentJScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 205, Short.MAX_VALUE)
+                .add(samplePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(sampleAssignmentJScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 205, Short.MAX_VALUE)
+                    .add(samplePanelLayout.createSequentialGroup()
+                        .add(0, 0, Short.MAX_VALUE)
+                        .add(orderSettingsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
 
@@ -617,7 +739,7 @@ public class NewDialog extends javax.swing.JDialog {
 
         String cpsFileFilterDescription = "PeptideShaker (.cpsx)";
         //String zipFileFilterDescription = "Zipped PeptideShaker (.zip)"; // @TODO: support zip files
-        String lastSelectedFolderPath = reporterGui.getLastSelectedFolder().getLastSelectedFolder();
+        String lastSelectedFolderPath = reporterGUI.getLastSelectedFolder().getLastSelectedFolder();
 //        FileAndFileFilter selectedFileAndFilter = Util.getUserSelectedFile(this, new String[]{".cpsx", ".zip"}, 
 //                new String[]{cpsFileFilterDescription, zipFileFilterDescription}, "Select Identification File(s)", lastSelectedFolderPath, null, true, false, false, 0);
         FileAndFileFilter selectedFileAndFilter = Util.getUserSelectedFile(this, new String[]{".cpsx"},
@@ -626,7 +748,7 @@ public class NewDialog extends javax.swing.JDialog {
         if (selectedFileAndFilter != null) {
 
             File selectedFile = selectedFileAndFilter.getFile();
-            reporterGui.getLastSelectedFolder().setLastSelectedFolder(selectedFile.getParent());
+            reporterGUI.getLastSelectedFolder().setLastSelectedFolder(selectedFile.getParent());
 
             if (selectedFile.getName().endsWith(".zip")) {
                 //importPeptideShakerZipFile(selectedFile); // @TODO: support zip files
@@ -648,7 +770,7 @@ public class NewDialog extends javax.swing.JDialog {
     private void addSpectraFilesJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addSpectraFilesJButtonActionPerformed
 
         // @TODO: add mgf validation etc like for PeptideShaker
-        final JFileChooser fileChooser = new JFileChooser(reporterGui.getLastSelectedFolder().getLastSelectedFolder());
+        final JFileChooser fileChooser = new JFileChooser(reporterGUI.getLastSelectedFolder().getLastSelectedFolder());
         fileChooser.setDialogTitle("Select Spectrum File(s)");
         fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         fileChooser.setMultiSelectionEnabled(true);
@@ -670,11 +792,11 @@ public class NewDialog extends javax.swing.JDialog {
 
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             if (welcomeDialog != null) {
-                progressDialog = new ProgressDialogX(welcomeDialog, reporterGui,
+                progressDialog = new ProgressDialogX(welcomeDialog, reporterGUI,
                         Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
                         Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
             } else {
-                progressDialog = new ProgressDialogX(this, reporterGui,
+                progressDialog = new ProgressDialogX(this, reporterGUI,
                         Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
                         Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
             }
@@ -713,7 +835,7 @@ public class NewDialog extends javax.swing.JDialog {
                                 }
                             }
 
-                            reporterGui.getLastSelectedFolder().setLastSelectedFolder(newFile.getPath());
+                            reporterGUI.getLastSelectedFolder().setLastSelectedFolder(newFile.getPath());
                         }
 
                         int cpt = 0;
@@ -768,7 +890,7 @@ public class NewDialog extends javax.swing.JDialog {
 //        } else {
 //            fileChooser = new JFileChooser(peptideShakerGUI.getLastSelectedFolder());
 //        }
-        final JFileChooser fileChooser = new JFileChooser(reporterGui.getLastSelectedFolder().getLastSelectedFolder());
+        final JFileChooser fileChooser = new JFileChooser(reporterGUI.getLastSelectedFolder().getLastSelectedFolder());
 
         fileChooser.setDialogTitle("Select FASTA File(s)");
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -793,11 +915,11 @@ public class NewDialog extends javax.swing.JDialog {
         int returnVal = fileChooser.showDialog(this.getParent(), "Open");
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             if (welcomeDialog != null) {
-                progressDialog = new ProgressDialogX(welcomeDialog, reporterGui,
+                progressDialog = new ProgressDialogX(welcomeDialog, reporterGUI,
                         Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
                         Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
             } else {
-                progressDialog = new ProgressDialogX(this, reporterGui,
+                progressDialog = new ProgressDialogX(this, reporterGUI,
                         Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
                         Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
             }
@@ -819,7 +941,7 @@ public class NewDialog extends javax.swing.JDialog {
                 @Override
                 public void run() {
                     File fastaFile = fileChooser.getSelectedFile();
-                    reporterGui.getLastSelectedFolder().setLastSelectedFolder(fastaFile.getAbsolutePath());
+                    reporterGUI.getLastSelectedFolder().setLastSelectedFolder(fastaFile.getAbsolutePath());
                     try {
                         SequenceFactory.getInstance().loadFastaFile(fastaFile, progressDialog);
 
@@ -962,8 +1084,11 @@ public class NewDialog extends javax.swing.JDialog {
             if (welcomeDialog != null) {
                 welcomeDialog.setVisible(false);
             }
+            
+            // set the user defined reagents order
+            displayPreferences.setReagents(reagents);
 
-            reporterGui.createNewProject(cpsParent, reporterSettings, reporterIonQuantification, processingPreferences, displayPreferences);
+            reporterGUI.createNewProject(cpsParent, reporterSettings, reporterIonQuantification, processingPreferences, displayPreferences);
             dispose();
         }
     }//GEN-LAST:event_loadButtonActionPerformed
@@ -974,12 +1099,107 @@ public class NewDialog extends javax.swing.JDialog {
      * @param evt
      */
     private void editProcessingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editProcessingButtonActionPerformed
-        ProcessingPreferencesDialog processingPreferencesDialog = new ProcessingPreferencesDialog(this, reporterGui, processingPreferences, true);
+        ProcessingPreferencesDialog processingPreferencesDialog = new ProcessingPreferencesDialog(this, reporterGUI, processingPreferences, true);
         if (!processingPreferencesDialog.isCanceled()) {
             processingPreferences = processingPreferencesDialog.getProcessingPreferences();
             processingTxt.setText(processingPreferences.getnThreads() + " cores");
         }
     }//GEN-LAST:event_editProcessingButtonActionPerformed
+
+    /**
+     * Move the selected row up.
+     * 
+     * @param evt 
+     */
+    private void moveUpButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveUpButtonActionPerformed
+        int[] selectedRows = sampleAssignmentTable.getSelectedRows();
+
+        if (selectedRows.length > 0 && selectedRows[0] > 0) {
+            String toMove = reagents.get(selectedRows[0]);
+            String toReplace = reagents.get(selectedRows[0] - 1);
+            reagents.set(selectedRows[0] - 1, toMove);
+            reagents.set(selectedRows[0], toReplace); 
+            sampleAssignmentTable.setRowSelectionInterval(selectedRows[0] - 1, selectedRows[0] - 1 + selectedRows.length - 1);
+            resetTableIndexes();
+            sampleAssignmentTableMouseReleased(null);
+        }
+    }//GEN-LAST:event_moveUpButtonActionPerformed
+
+    /**
+     * Move the selected row to the top.
+     * 
+     * @param evt 
+     */
+    private void moveTopButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveTopButtonActionPerformed
+        int[] selectedRows = sampleAssignmentTable.getSelectedRows();
+
+        if (selectedRows.length > 0 && selectedRows[0] > 0) {
+            String toMove = reagents.get(selectedRows[0]);
+            reagents.remove(selectedRows[0]);
+            reagents.add(0, toMove);
+            sampleAssignmentTable.setRowSelectionInterval(0, selectedRows.length - 1);
+            resetTableIndexes();
+            sampleAssignmentTableMouseReleased(null);
+        }
+    }//GEN-LAST:event_moveTopButtonActionPerformed
+
+    /**
+     * Move the selected row down.
+     * 
+     * @param evt 
+     */
+    private void moveDownButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveDownButtonActionPerformed
+        int[] selectedRows = sampleAssignmentTable.getSelectedRows();
+
+        if (selectedRows.length > 0 && selectedRows[selectedRows.length - 1] < sampleAssignmentTable.getRowCount() - 1) {
+            String toMove = reagents.get(selectedRows[0]);
+            String toReplace = reagents.get(selectedRows[0] + 1);
+            reagents.set(selectedRows[0] + 1, toMove);
+            reagents.set(selectedRows[0], toReplace); 
+            sampleAssignmentTable.setRowSelectionInterval(selectedRows[0] + 1, selectedRows[0] + selectedRows.length);
+            resetTableIndexes();
+            sampleAssignmentTableMouseReleased(null);
+        }
+    }//GEN-LAST:event_moveDownButtonActionPerformed
+
+    /**
+     * Move the selected row to the bottom.
+     * 
+     * @param evt 
+     */
+    private void moveBottomButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveBottomButtonActionPerformed
+        int[] selectedRows = sampleAssignmentTable.getSelectedRows();
+
+        if (selectedRows.length > 0 && selectedRows[selectedRows.length - 1] < sampleAssignmentTable.getRowCount() - 1) {
+            String toMove = reagents.get(selectedRows[0]);
+            reagents.remove(selectedRows[0]);
+            reagents.add(toMove);
+            sampleAssignmentTable.setRowSelectionInterval(sampleAssignmentTable.getRowCount() - selectedRows.length, sampleAssignmentTable.getRowCount() - 1);
+            resetTableIndexes();
+            sampleAssignmentTableMouseReleased(null);
+        }
+    }//GEN-LAST:event_moveBottomButtonActionPerformed
+
+    /**
+     * Enable/disable the move options based on which rows that are selected.
+     *
+     * @param evt the mouse event
+     */
+    private void sampleAssignmentTableMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_sampleAssignmentTableMouseReleased
+        int selectedRows[] = sampleAssignmentTable.getSelectedRows();
+
+        if (selectedRows.length > 0) {
+            moveUpButton.setEnabled(selectedRows[0] > 0);
+            moveTopButton.setEnabled(selectedRows[0] > 0);
+            moveDownButton.setEnabled(selectedRows[selectedRows.length - 1] < sampleAssignmentTable.getRowCount() - 1);
+            moveBottomButton.setEnabled(selectedRows[selectedRows.length - 1] < sampleAssignmentTable.getRowCount() - 1);
+        } else {
+            moveUpButton.setEnabled(false);
+            moveTopButton.setEnabled(false);
+            moveDownButton.setEnabled(false);
+            moveBottomButton.setEnabled(false);
+        }
+    }//GEN-LAST:event_sampleAssignmentTableMouseReleased
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton aboutButton;
@@ -996,6 +1216,11 @@ public class NewDialog extends javax.swing.JDialog {
     private javax.swing.JLabel idFilesLabel;
     private javax.swing.JButton loadButton;
     private javax.swing.JButton methodSettingsButton;
+    private javax.swing.JButton moveBottomButton;
+    private javax.swing.JButton moveDownButton;
+    private javax.swing.JButton moveTopButton;
+    private javax.swing.JButton moveUpButton;
+    private javax.swing.JPanel orderSettingsPanel;
     private javax.swing.JLabel processingLbl;
     private javax.swing.JTextField processingTxt;
     private javax.swing.JLabel quantPreferencesLabel;
@@ -1122,11 +1347,11 @@ public class NewDialog extends javax.swing.JDialog {
     private void importPeptideShakerFile(final File psFile) {
 
         if (welcomeDialog != null) {
-            progressDialog = new ProgressDialogX(welcomeDialog, reporterGui,
+            progressDialog = new ProgressDialogX(welcomeDialog, reporterGUI,
                     Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
                     Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
         } else {
-            progressDialog = new ProgressDialogX(this, reporterGui,
+            progressDialog = new ProgressDialogX(this, reporterGUI,
                     Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
                     Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
         }
@@ -1289,7 +1514,7 @@ public class NewDialog extends javax.swing.JDialog {
     private void importMethodsError() {
 
         JOptionPane.showMessageDialog(this, "Default reporter methods file could not be parsed, please select a method file.", "No Spectrum File Selected", JOptionPane.WARNING_MESSAGE);
-        JFileChooser fileChooser = new JFileChooser(reporterGui.getLastSelectedFolder().getLastSelectedFolder());
+        JFileChooser fileChooser = new JFileChooser(reporterGUI.getLastSelectedFolder().getLastSelectedFolder());
         fileChooser.setDialogTitle("Select Methods file");
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fileChooser.setMultiSelectionEnabled(false);
@@ -1299,7 +1524,7 @@ public class NewDialog extends javax.swing.JDialog {
             File newFile = fileChooser.getSelectedFile();
             try {
                 methodsFactory.importMethods(newFile);
-                reporterGui.getLastSelectedFolder().setLastSelectedFolder(newFile.getPath());
+                reporterGUI.getLastSelectedFolder().setLastSelectedFolder(newFile.getPath());
             } catch (IOException e) {
                 JOptionPane.showMessageDialog(null,
                         "File " + newFile + " could not be parsed.",
@@ -1343,7 +1568,7 @@ public class NewDialog extends javax.swing.JDialog {
      * @param files the spectra files to process
      */
     public void addSpectrumFiles(ArrayList<File> files) {
-        progressDialog = new ProgressDialogX(this, reporterGui,
+        progressDialog = new ProgressDialogX(this, reporterGUI,
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
         progressDialog.setPrimaryProgressCounterIndeterminate(true);
@@ -1468,7 +1693,7 @@ public class NewDialog extends javax.swing.JDialog {
      * @return the reporterGui
      */
     public ReporterGUI getReporterGui() {
-        return reporterGui;
+        return reporterGUI;
     }
 
     /**
@@ -1613,5 +1838,14 @@ public class NewDialog extends javax.swing.JDialog {
     public void updateReagentNames() {
         sampleAssignmentTable.revalidate();
         sampleAssignmentTable.repaint();
+    }
+    
+    /**
+     * Resets the table indexes.
+     */
+    private void resetTableIndexes() {
+        for (int i = 0; i < sampleAssignmentTable.getRowCount(); i++) {
+            sampleAssignmentTable.setValueAt((i + 1), i, 0);
+        }
     }
 }

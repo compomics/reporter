@@ -111,7 +111,6 @@
                 <Property name="dividerSize" type="int" value="0"/>
                 <Property name="orientation" type="int" value="0"/>
                 <Property name="resizeWeight" type="double" value="0.5"/>
-                <Property name="opaque" type="boolean" value="false"/>
               </Properties>
 
               <Layout class="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout"/>
@@ -527,9 +526,6 @@
                               <Layout class="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout"/>
                               <SubComponents>
                                 <Container class="javax.swing.JScrollPane" name="proteinScrollPane">
-                                  <Properties>
-                                    <Property name="opaque" type="boolean" value="false"/>
-                                  </Properties>
                                   <AuxValues>
                                     <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
                                   </AuxValues>
@@ -588,6 +584,10 @@
                                           <Connection code="new PeptideTableModel()" type="code"/>
                                         </Property>
                                       </Properties>
+                                      <Events>
+                                        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="peptideTableMouseReleased"/>
+                                        <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="peptideTableKeyReleased"/>
+                                      </Events>
                                     </Component>
                                   </SubComponents>
                                 </Container>
@@ -611,6 +611,10 @@
                                           <Connection code="new PsmTableModel()" type="code"/>
                                         </Property>
                                       </Properties>
+                                      <Events>
+                                        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="psmTableMouseReleased"/>
+                                        <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="psmTableKeyReleased"/>
+                                      </Events>
                                     </Component>
                                   </SubComponents>
                                 </Container>

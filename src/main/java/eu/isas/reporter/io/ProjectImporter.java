@@ -314,11 +314,13 @@ public class ProjectImporter {
 
         ReporterIonQuantification reporterIonQuantification = new ReporterIonQuantification(Quantification.QuantificationMethod.REPORTER_IONS);
 
-        // no method detected, default to the first
-        if (selectedMethod != null) {
-            reporterIonQuantification.setMethod(selectedMethod);
+        // no method detected, default to TMT 10-plex
+        if (selectedMethod == null) {
+            selectedMethod = reporterMethodFactory.getReporterMethod("TMT 10-plex");
         }
-        
+
+        reporterIonQuantification.setMethod(selectedMethod);
+
         return reporterIonQuantification;
     }
 

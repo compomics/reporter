@@ -170,6 +170,14 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      */
     private ArrayList<String> selectedProteins = new ArrayList<String>();
     /**
+     * List of the currently selected peptides.
+     */
+    private ArrayList<String> selectedPeptides = new ArrayList<String>();
+     /**
+     * List of the currently selected PSMs.
+     */
+    private ArrayList<String> selectedPsms = new ArrayList<String>();
+    /**
      * The Jump To panel.
      */
     private JumpToPanel jumpToPanel;
@@ -296,6 +304,8 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         displayFeaturesGenerator = new DisplayFeaturesGenerator(cpsParent.getIdentificationParameters().getSearchParameters().getPtmSettings(), exceptionHandler);
         displayFeaturesGenerator.setDisplayedPTMs(cpsParent.getDisplayPreferences().getDisplayedPtms());
         selectedProteins = new ArrayList<String>();
+        selectedPeptides = new ArrayList<String>();
+        selectedPsms = new ArrayList<String>();
 
         projectSaved = false;
         quantificationFeaturesGenerator = new QuantificationFeaturesGenerator(new QuantificationFeaturesCache(), getIdentification(), getIdentificationFeaturesGenerator(), reporterSettings, reporterIonQuantification,
@@ -650,6 +660,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         exitMenuItem = new javax.swing.JMenuItem();
         quantificationOptionsMenu = new javax.swing.JMenu();
         categoriesMenuItem = new javax.swing.JMenuItem();
+        reagentOrderMenuItem = new javax.swing.JMenuItem();
         jSeparator4 = new javax.swing.JPopupMenu.Separator();
         processingSettingsMenuItem = new javax.swing.JMenuItem();
         javaOptionsMenuItem = new javax.swing.JMenuItem();
@@ -758,6 +769,14 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
             }
         });
         quantificationOptionsMenu.add(categoriesMenuItem);
+
+        reagentOrderMenuItem.setText("Reagent Order");
+        reagentOrderMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                reagentOrderMenuItemActionPerformed(evt);
+            }
+        });
+        quantificationOptionsMenu.add(reagentOrderMenuItem);
         quantificationOptionsMenu.add(jSeparator4);
 
         processingSettingsMenuItem.setText("Processing Settings");
@@ -971,6 +990,11 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         saveProjectAs(false, false);
     }//GEN-LAST:event_saveAsMenuItemActionPerformed
 
+    /**
+     * Open the ProcessingPreferencesDialog.
+     * 
+     * @param evt 
+     */
     private void processingSettingsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_processingSettingsMenuItemActionPerformed
         ProcessingPreferencesDialog processingPreferencesDialog = new ProcessingPreferencesDialog(this, processingPreferences, true);
         if (!processingPreferencesDialog.isCanceled()) {
@@ -978,6 +1002,11 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         }
     }//GEN-LAST:event_processingSettingsMenuItemActionPerformed
 
+    /**
+     * Open the ClusteringSettingsDialog.
+     * 
+     * @param evt 
+     */
     private void categoriesMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_categoriesMenuItemActionPerformed
         ClusteringSettingsDialog clusteringSettingsDialog = new ClusteringSettingsDialog(this, displayPreferences.getClusteringSettings(), true);
         if (!clusteringSettingsDialog.isCanceled()) { //@TODO: check whether the settings changed
@@ -988,6 +1017,20 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
             recluster(kMeansClusteringSettings.getnClusters(), true);
         }
     }//GEN-LAST:event_categoriesMenuItemActionPerformed
+
+    /**
+     * Open the ReagentOrderDialog.
+     * 
+     * @param evt 
+     */
+    private void reagentOrderMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reagentOrderMenuItemActionPerformed
+        ReagentOrderDialog reagentOrderDialog =  new ReagentOrderDialog(this, true, displayPreferences.getReagents(), reporterIonQuantification.getReporterMethod(), getSample(), reporterIonQuantification, reporterIonQuantification.getControlSamples());
+        if (!reagentOrderDialog.isCancelled()) {
+            displayPreferences.setReagents(reagentOrderDialog.getReagentOrder());
+            KMeansClusteringSettings kMeansClusteringSettings = displayPreferences.getClusteringSettings().getKMeansClusteringSettings();
+            recluster(kMeansClusteringSettings.getnClusters(), false);
+        }
+    }//GEN-LAST:event_reagentOrderMenuItemActionPerformed
 
     /**
      * Saves the quantification details in the cpsx file.
@@ -1251,6 +1294,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
     private javax.swing.JMenuItem privacyMenuItem;
     private javax.swing.JMenuItem processingSettingsMenuItem;
     private javax.swing.JMenu quantificationOptionsMenu;
+    private javax.swing.JMenuItem reagentOrderMenuItem;
     private javax.swing.JMenuItem saveAsMenuItem;
     private javax.swing.JMenuItem saveMenuItem;
     private javax.swing.JTabbedPane tabPanel;
@@ -1533,6 +1577,24 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
     public ArrayList<String> getSelectedProteins() {
         return selectedProteins;
     }
+    
+    /**
+     * Returns the list of selected peptides.
+     *
+     * @return the list of selected peptides
+     */
+    public ArrayList<String> getSelectedPeptides() {
+        return selectedPeptides;
+    }
+    
+    /**
+     * Returns the list of selected PSMs.
+     *
+     * @return the list of selected PSMs
+     */
+    public ArrayList<String> getSelectedPsms() {
+        return selectedPsms;
+    }
 
     /**
      * If a chart is maximized, then minimize it. If not, do nothing.
@@ -1550,6 +1612,34 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      */
     public void setSelectedProteins(ArrayList<String> selectedProteins, boolean updateSelection, boolean clearSelection) {
         this.selectedProteins = selectedProteins;
+        if (updateSelection) {         
+            overviewPanel.updateSelection(clearSelection);
+        }
+    }
+    
+    /**
+     * Set the list of selected peptides.
+     *
+     * @param selectedPeptides the list of selected peptides
+     * @param updateSelection if true, the selection is updated in the GUI
+     * @param clearSelection if true, the current selection will be removed
+     */
+    public void setSelectedPeptides(ArrayList<String> selectedPeptides, boolean updateSelection, boolean clearSelection) {
+        this.selectedPeptides = selectedPeptides;
+        if (updateSelection) {         
+            overviewPanel.updateSelection(clearSelection);
+        }
+    }
+    
+    /**
+     * Set the list of selected PSMs.
+     *
+     * @param selectedPsms the list of selected PSMs
+     * @param updateSelection if true, the selection is updated in the GUI
+     * @param clearSelection if true, the current selection will be removed
+     */
+    public void setSelectedPsms(ArrayList<String> selectedPsms, boolean updateSelection, boolean clearSelection) {
+        this.selectedPsms = selectedPsms;
         if (updateSelection) {         
             overviewPanel.updateSelection(clearSelection);
         }

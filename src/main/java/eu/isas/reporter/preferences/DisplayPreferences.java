@@ -2,6 +2,7 @@ package eu.isas.reporter.preferences;
 
 import eu.isas.reporter.settings.ClusteringSettings;
 import java.io.Serializable;
+import java.util.ArrayList;
 
 /**
  * Reporter display preferences.
@@ -18,6 +19,14 @@ public class DisplayPreferences implements Serializable {
      * The type of ratio to display.
      */
     private int proteinRatioType = 0;
+    /**
+     * The list of the reagents on the user defined order. Null if not set.
+     */
+    private ArrayList<String> reagents = null;
+    /**
+     * The text displayed in the cell of a table in case the data is not loaded.
+     */
+    public static final String LOADING_MESSAGE = "Loading...";
 
     /**
      * Constructor.
@@ -61,5 +70,23 @@ public class DisplayPreferences implements Serializable {
      */
     public void setProteinRatioType(int proteinRatioType) {
         this.proteinRatioType = proteinRatioType;
+    }
+    
+    /**
+     * Returns the reagents in the user defined order.
+     * 
+     * @return the reagents in the user defined order
+     */
+    public ArrayList<String> getReagents() {
+        return reagents;
+    }
+    
+    /**
+     * Set the regents.
+     * 
+     * @param reagents the regents
+     */
+    public void setReagents(ArrayList<String> reagents) {
+        this.reagents = reagents;
     }
 }
