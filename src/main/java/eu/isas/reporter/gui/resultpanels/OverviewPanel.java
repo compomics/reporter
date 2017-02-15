@@ -1164,7 +1164,7 @@ public class OverviewPanel extends javax.swing.JPanel {
         maximizeChartJButton.setBounds(50, 50, 20, 19);
 
         ratioPlotsTitledPanel.setBackground(new java.awt.Color(255, 255, 255));
-        ratioPlotsTitledPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Protein Profile Clusters"));
+        ratioPlotsTitledPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Profile Clusters"));
         ratioPlotsTitledPanel.setOpaque(false);
 
         plotPanel.setOpaque(false);
