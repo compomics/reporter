@@ -16,6 +16,6 @@ Reporter assumes that the data has been processed by the latest version of [Pept
 
 Please note that Reporter is still in a beta testing mode. If you come across any issues please set up an issue using the [issue tracker](https://github.com/compomics/reporter/issues).
 
-For general questions or comments please contact the others via the [Reporter Google Group](https://groups.google.com/forum/#!forum/reporter_software).
+For general questions or comments please use the [Reporter Google Group](https://groups.google.com/forum/#!forum/reporter_software).
 
 ---
