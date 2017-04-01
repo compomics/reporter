@@ -1,7 +1,6 @@
 package eu.isas.reporter.cli;
 
 import com.compomics.cli.identification_parameters.IdentificationParametersCLIParams;
-import static eu.isas.peptideshaker.cmd.PeptideShakerCLIParams.ZIP;
 import eu.isas.reporter.calculation.normalization.NormalizationType;
 import org.apache.commons.cli.Options;
 
