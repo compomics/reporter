@@ -163,13 +163,13 @@ public class ReporterCLIInputBean {
         String arg = aLine.getOptionValue(ReporterCLIParameters.ID.id);
         peptideShakerFile = new File(arg);
 
-        // The output file
+        // the output file
         if (aLine.hasOption(ReporterCLIParameters.OUT.id)) {
             arg = aLine.getOptionValue(ReporterCLIParameters.OUT.id);
             outputFile = new File(arg);
         }
 
-        // The isotopes file
+        // the isotopes file
         if (aLine.hasOption(ReporterCLIParameters.ISOTOPES.id)) {
             arg = aLine.getOptionValue(ReporterCLIParameters.ISOTOPES.id);
             isotopesFile = new File(arg);

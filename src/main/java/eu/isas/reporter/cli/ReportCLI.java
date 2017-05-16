@@ -52,7 +52,7 @@ public class ReportCLI extends CpsParent {
     private EnzymeFactory enzymeFactory;
     /**
      * The Progress messaging handler reports the status throughout all
-     * PeptideShaker processes.
+     * Reporter processes.
      */
     private WaitingHandler waitingHandler;
     /**
@@ -80,7 +80,7 @@ public class ReportCLI extends CpsParent {
     }
 
     /**
-     * Calling this method will run the configured PeptideShaker process.
+     * Calling this method will run the configured Reporter process.
      *
      * @return returns 1 if the process was canceled
      */
@@ -142,10 +142,10 @@ public class ReportCLI extends CpsParent {
             projectImporter.importReporterProject(this, waitingHandler);
         } catch (OutOfMemoryError error) {
             System.out.println("Ran out of memory! (runtime.maxMemory(): " + Runtime.getRuntime().maxMemory() + ")");
-            String errorText = "PeptideShaker used up all the available memory and had to be stopped.<br>"
+            String errorText = "Reporter used up all the available memory and had to be stopped.<br>"
                     + "Memory boundaries are changed in the the Welcome Dialog (Settings<br>"
                     + "& Help > Settings > Java Memory Settings) or in the Edit menu (Edit<br>"
-                    + "Java Options). See also <a href=\"http://compomics.github.io/compomics-utilities/wiki/javatroubleshooting.html\">JavaTroubleShooting</a>.";
+                    + "Java Options). See also <a href=\"http://compomics.github.io/projects/compomics-utilities/wiki/javatroubleshooting.html\">JavaTroubleShooting</a>.";
             waitingHandler.appendReport(errorText, true, true);
             error.printStackTrace();
             return 1;
@@ -157,7 +157,7 @@ public class ReportCLI extends CpsParent {
             return 1;
         } catch (Exception e) {
             String errorText = "An error occurred while reading:\n" + selectedFile + ".\n\n"
-                    + "Please verify that the PeptideShaker version used to create\n"
+                    + "Please verify that the Reporter version used to create\n"
                     + "the file is compatible with your version of Reporter.";
             waitingHandler.appendReport(errorText, true, true);
             e.printStackTrace();
@@ -221,7 +221,7 @@ public class ReportCLI extends CpsParent {
         try {
             PeptideShakerCLI.closePeptideShaker(identification);
         } catch (Exception e2) {
-            waitingHandler.appendReport("An error occurred while closing reporter.", true, true);
+            waitingHandler.appendReport("An error occurred while closing Reporter.", true, true);
             e2.printStackTrace();
         }
 
@@ -248,15 +248,15 @@ public class ReportCLI extends CpsParent {
     }
 
     /**
-     * PeptideShaker report CLI header message when printing the usage.
+     * Reporter report CLI header message when printing the usage.
      */
     private static String getHeader() {
         return System.getProperty("line.separator")
-                + "The PeptideShaker report command line takes a cpsx file and generates various types of reports." + System.getProperty("line.separator")
+                + "The Reporter report command line takes a cpsx file and generates various types of reports." + System.getProperty("line.separator")
                 + System.getProperty("line.separator")
-                + "For further help see http://compomics.github.io/projects/peptide-shaker.html and http://compomics.github.io/peptide-shaker/wiki/peptideshakercli.html." + System.getProperty("line.separator")
+                + "For further help see http://compomics.github.io/projects/reporter.html and http://compomics.github.io/projects/reporter/wiki/reportercli.html." + System.getProperty("line.separator")
                 + System.getProperty("line.separator")
-                + "Or contact the developers at https://groups.google.com/group/peptide-shaker." + System.getProperty("line.separator")
+                + "Or contact the developers at https://groups.google.com/group/reporter_software." + System.getProperty("line.separator")
                 + System.getProperty("line.separator")
                 + "----------------------"
                 + System.getProperty("line.separator")
@@ -319,7 +319,7 @@ public class ReportCLI extends CpsParent {
             if (!isValidStartup(line)) {
                 PrintWriter lPrintWriter = new PrintWriter(System.out);
                 lPrintWriter.print(System.getProperty("line.separator") + "===============================================" + System.getProperty("line.separator"));
-                lPrintWriter.print("PeptideShaker Report Exporter - Command Line" + System.getProperty("line.separator"));
+                lPrintWriter.print("Reporter Report Exporter - Command Line" + System.getProperty("line.separator"));
                 lPrintWriter.print("===============================================" + System.getProperty("line.separator"));
                 lPrintWriter.print(getHeader());
                 lPrintWriter.print(ReportCLIParams.getOptionsAsString());
@@ -333,7 +333,7 @@ public class ReportCLI extends CpsParent {
                 cli.call();
             }
         } catch (OutOfMemoryError e) {
-            System.out.println("<CompomicsError>PeptideShaker used up all the memory and had to be stopped. See the PeptideShaker log for details.</CompomicsError>");
+            System.out.println("<CompomicsError>Reporter used up all the memory and had to be stopped. See the Reporter log for details.</CompomicsError>");
             System.err.println("Ran out of memory!");
             System.err.println("Memory given to the Java virtual machine: " + Runtime.getRuntime().maxMemory() + ".");
             System.err.println("Memory used by the Java virtual machine: " + Runtime.getRuntime().totalMemory() + ".");
@@ -341,7 +341,7 @@ public class ReportCLI extends CpsParent {
             e.printStackTrace();
             System.exit(1);
         } catch (Exception e) {
-            System.out.print("<CompomicsError>PeptideShaker processing failed. See the PeptideShaker log for details.</CompomicsError>");
+            System.out.print("<CompomicsError>Reporter processing failed. See the Reporter log for details.</CompomicsError>");
             e.printStackTrace();
             System.exit(1);
         }
@@ -353,7 +353,7 @@ public class ReportCLI extends CpsParent {
     }
 
     /**
-     * Close the PeptideShaker instance by clearing up factories and cache.
+     * Close the Reporter instance by clearing up factories and cache.
      *
      * @throws IOException thrown if an exception occurred when closing the connection to a file
      * @throws SQLException thrown if an exception occurred when closing the connection to the back-end database
