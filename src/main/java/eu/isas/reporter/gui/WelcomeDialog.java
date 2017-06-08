@@ -8,6 +8,7 @@ import com.compomics.software.autoupdater.MavenJarFile;
 import com.compomics.software.autoupdater.WebDAO;
 import com.compomics.util.examples.BareBonesBrowserLaunch;
 import com.compomics.software.dialogs.JavaSettingsDialog;
+import com.compomics.util.FileAndFileFilter;
 import com.compomics.util.Util;
 import com.compomics.util.gui.error_handlers.BugReport;
 import com.compomics.util.gui.error_handlers.HelpDialog;
@@ -476,14 +477,14 @@ public class WelcomeDialog extends javax.swing.JDialog {
     private void openJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openJButtonActionPerformed
 
         // @TODO: implement me!
-//        String cpsFileFilterDescription = "PeptideShaker (.cpsx)";
-//        String zipFileFilterDescription = "Zipped PeptideShaker (.zip)";
-//        String lastSelectedFolderPath = reporterGUI.getLastSelectedFolder().getLastSelectedFolder();
-//        FileAndFileFilter selectedFileAndFilter = Util.getUserSelectedFile(this, new String[]{".cpsx", ".zip"}, 
-//                new String[]{cpsFileFilterDescription, zipFileFilterDescription}, "Open PeptideShaker Project", lastSelectedFolderPath, true, false, false, 0);
-//
-//        if (selectedFileAndFilter != null) {
-//
+        String cpsFileFilterDescription = "PeptideShaker (.cpsx)";
+        String zipFileFilterDescription = "Zipped PeptideShaker (.zip)";
+        String lastSelectedFolderPath = reporterGUI.getLastSelectedFolder().getLastSelectedFolder();
+        FileAndFileFilter selectedFileAndFilter = Util.getUserSelectedFile(this, new String[]{".cpsx", ".zip"}, 
+                new String[]{cpsFileFilterDescription, zipFileFilterDescription}, "Open PeptideShaker Project", lastSelectedFolderPath, null, true, false, false, 0);
+
+        if (selectedFileAndFilter != null) {
+
 //            File selectedFile = selectedFileAndFilter.getFile(); 
 //            reporterGUI.getLastSelectedFolder().setLastSelectedFolder(selectedFile.getParent());
 //
@@ -504,7 +505,7 @@ public class WelcomeDialog extends javax.swing.JDialog {
 //            } else {
 //                JOptionPane.showMessageDialog(this, "Not a PeptideShaker file (.cpsx).", "Unsupported File.", JOptionPane.WARNING_MESSAGE);
 //            }
-//        }
+        }
     }//GEN-LAST:event_openJButtonActionPerformed
 
     /**
@@ -795,7 +796,7 @@ public class WelcomeDialog extends javax.swing.JDialog {
         new Thread(new Runnable() {
             public void run() {
                 try {
-                    ToolFactory.startSearchGUI(dummyParentFrame, null, null, null, null, null, null);
+                    ToolFactory.startSearchGUI(dummyParentFrame, null, null, null, null, null, null, null);
                     reporterGUI.closeReporter();
                 } catch (Exception e) {
                     reporterGUI.catchException(e);
