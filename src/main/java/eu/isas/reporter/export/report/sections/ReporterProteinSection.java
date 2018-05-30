@@ -171,8 +171,9 @@ public class ReporterProteinSection {
         }
 
         ProteinMatchesIterator proteinMatchesIterator = identification.getProteinMatchesIterator(keys, parameters, peptideSection != null, parameters, peptideSection != null, parameters, waitingHandler);
+        ProteinMatch proteinMatch;
 
-        while (proteinMatchesIterator.hasNext()) {
+        while ((proteinMatch = proteinMatchesIterator.next()) != null) {
 
             if (waitingHandler != null) {
                 if (waitingHandler.isRunCanceled()) {
@@ -181,7 +182,6 @@ public class ReporterProteinSection {
                 waitingHandler.increaseSecondaryProgressCounter();
             }
 
-            ProteinMatch proteinMatch = proteinMatchesIterator.next();
             String proteinKey = proteinMatch.getKey();
 
             if (decoys || !ProteinMatch.isDecoy(proteinKey)) {

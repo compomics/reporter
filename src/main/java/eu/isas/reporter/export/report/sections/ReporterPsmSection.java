@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import org.apache.commons.math.MathException;
 import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
 
 /**
@@ -140,10 +141,12 @@ public class ReporterPsmSection {
      * whenever an error occurred while reading an mzML file
      * @throws java.lang.InterruptedException exception thrown whenever a
      * threading error occurred
+     * @throws org.apache.commons.math.MathException exception thrown whenever
+     * an error occurred while transforming the ratios
      */
     public void writeSection(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, ReporterSettings reporterSettings,
             IdentificationParameters identificationParameters, ArrayList<String> keys, String linePrefix, int nSurroundingAA, boolean validatedOnly, boolean decoys, WaitingHandler waitingHandler) throws IOException, IllegalArgumentException, SQLException,
-            ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
+            ClassNotFoundException, InterruptedException, MzMLUnmarshallerException, MathException {
 
         if (waitingHandler != null) {
             waitingHandler.setSecondaryProgressCounterIndeterminate(true);
@@ -201,8 +204,9 @@ public class ReporterPsmSection {
             ArrayList<String> fileKeys = new ArrayList<String>(psmMap.get(spectrumFile));
 
             PsmIterator psmIterator = identification.getPsmIterator(spectrumFile, fileKeys, parameters, false, waitingHandler);
+            SpectrumMatch spectrumMatch;
 
-            while (psmIterator.hasNext()) {
+            while ((spectrumMatch = psmIterator.next()) != null) {
 
                 if (waitingHandler != null) {
                     if (waitingHandler.isRunCanceled()) {
@@ -211,7 +215,6 @@ public class ReporterPsmSection {
                     waitingHandler.increaseSecondaryProgressCounter();
                 }
 
-                SpectrumMatch spectrumMatch = psmIterator.next();
                 String spectrumKey = spectrumMatch.getKey();
 
                 psParameter = (PSParameter) identification.getSpectrumMatchParameter(spectrumKey, psParameter);

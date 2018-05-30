@@ -604,10 +604,10 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
         parameters.add(psParameter);
 
         PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(parameters, false, null, progressDialog);
+        PeptideMatch peptideMatch;
 
-        while (peptideMatchesIterator.hasNext()) {
+        while ((peptideMatch = peptideMatchesIterator.next()) != null) {
 
-            PeptideMatch peptideMatch = peptideMatchesIterator.next();
             Peptide peptide = peptideMatch.getTheoreticPeptide();
 
             for (PTM ptm : ptms) {

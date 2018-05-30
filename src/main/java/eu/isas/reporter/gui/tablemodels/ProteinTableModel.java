@@ -527,10 +527,11 @@ public class ProteinTableModel extends SelfUpdatingTableModel {
 
             ProteinMatchesIterator proteinMatchesIterator = identification.getProteinMatchesIterator(tempKeys, parameters, true, parameters, true, parameters, waitingHandler);
             proteinMatchesIterator.setBatchSize(batchSize);
+            ProteinMatch proteinMatch;
 
             int i = 0;
-            while (proteinMatchesIterator.hasNext()) {
-                ProteinMatch proteinMatch = proteinMatchesIterator.next();
+            
+            while ((proteinMatch = proteinMatchesIterator.next()) != null) {
                 String proteinKey = proteinMatch.getKey();
                 if (waitingHandler.isRunCanceled()) {
                     return rows.get(i);

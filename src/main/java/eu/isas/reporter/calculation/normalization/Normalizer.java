@@ -585,10 +585,9 @@ public class Normalizer {
 
             try {
                 PSParameter psParameter = new PSParameter();
+                ProteinMatch proteinMatch;
 
-                while (proteinMatchesIterator.hasNext()) {
-
-                    ProteinMatch proteinMatch = proteinMatchesIterator.next();
+                while ((proteinMatch = proteinMatchesIterator.next()) != null) {
 
                     if (proteinMatch != null) {
 
@@ -817,10 +816,9 @@ public class Normalizer {
 
             try {
                 PSParameter psParameter = new PSParameter();
+                PeptideMatch peptideMatch;
 
-                while (peptideMatchesIterator.hasNext()) {
-
-                    PeptideMatch peptideMatch = peptideMatchesIterator.next();
+                while ((peptideMatch = peptideMatchesIterator.next()) != null) {
 
                     if (peptideMatch != null) {
                         Peptide peptide = peptideMatch.getTheoreticPeptide();
@@ -979,10 +977,9 @@ public class Normalizer {
 
             try {
                 PSParameter psParameter = new PSParameter();
+                SpectrumMatch spectrumMatch;
 
-                while (psmIterator.hasNext()) {
-
-                    SpectrumMatch spectrumMatch = psmIterator.next();
+                while ((spectrumMatch = psmIterator.next()) != null) {
 
                     if (spectrumMatch != null) {
 

@@ -432,10 +432,11 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
             parameters.add(new PSParameter());
             PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(tempKeys, parameters, true, parameters, waitingHandler);
             peptideMatchesIterator.setBatchSize(batchSize);
+            PeptideMatch peptideMatch;
 
             int i = 0;
-            while (peptideMatchesIterator.hasNext()) {
-                PeptideMatch peptideMatch = peptideMatchesIterator.next();
+            
+            while ((peptideMatch = peptideMatchesIterator.next()) != null) {
                 if (waitingHandler.isRunCanceled()) {
                     return rows.get(i);
                 }

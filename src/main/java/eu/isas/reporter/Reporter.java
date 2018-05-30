@@ -47,7 +47,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
-import javax.swing.JOptionPane;
 import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
 
 /**
@@ -124,11 +123,9 @@ public class Reporter {
         parameters.add(psParameter);
 
         PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(proteinMatch.getPeptideMatchesKeys(), parameters, false, null, waitingHandler);
+        PeptideMatch peptideMatch;
 
-        while (peptideMatchesIterator.hasNext()) {
-
-            PeptideMatch peptideMatch = peptideMatchesIterator.next();
-
+        while ((peptideMatch = peptideMatchesIterator.next()) != null) {
             if (QuantificationFilter.isPeptideValid(ratioEstimationSettings, identification, searchParameters, peptideMatch)) {
                 for (String index : indexes) {
                     PeptideQuantificationDetails peptideQuantification = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideMatch, waitingHandler);
@@ -219,10 +216,10 @@ public class Reporter {
         ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
         parameters.add(psParameter);
         PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(proteinMatch.getPeptideMatchesKeys(), parameters, false, parameters, waitingHandler);
+        PeptideMatch peptideMatch;
+        
+        while ((peptideMatch = peptideMatchesIterator.next()) != null) {
 
-        while (peptideMatchesIterator.hasNext()) {
-
-            PeptideMatch peptideMatch = peptideMatchesIterator.next();
             Peptide peptide = peptideMatch.getTheoreticPeptide();
             if (peptide.isModified()) {
                 boolean modified = false;
@@ -308,10 +305,10 @@ public class Reporter {
         parameters.add(psParameter);
 
         PsmIterator psmIterator = identification.getPsmIterator(peptideMatch.getSpectrumMatchesKeys(), parameters, false, waitingHandler);
+        SpectrumMatch spectrumMatch;
 
-        while (psmIterator.hasNext()) {
+        while ((spectrumMatch = psmIterator.next()) != null) {
 
-            SpectrumMatch spectrumMatch = psmIterator.next();
             String spectrumKey = spectrumMatch.getKey();
 
             if (QuantificationFilter.isPsmValid(ratioEstimationSettings, identification, spectrumKey)) {

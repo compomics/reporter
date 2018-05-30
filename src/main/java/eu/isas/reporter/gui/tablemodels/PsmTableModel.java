@@ -393,9 +393,11 @@ public class PsmTableModel extends SelfUpdatingTableModel {
             parameters.add(new PSParameter());
             PsmIterator psmIterator = identification.getPsmIterator(tempPsmKeys, parameters, true, waitingHandler);
             psmIterator.setBatchSize(batchSize);
+            SpectrumMatch spectrumMatch;
 
             int i = 0;
-            while (psmIterator.hasNext()) {
+            
+            while ((spectrumMatch = psmIterator.next()) != null) {
                 psmIterator.next();
                 if (waitingHandler.isRunCanceled()) {
                     return rows.get(i);

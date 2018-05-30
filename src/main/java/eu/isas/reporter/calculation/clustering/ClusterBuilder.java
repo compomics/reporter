@@ -238,9 +238,10 @@ public class ClusterBuilder {
                 proteinMatchesIterator = identification.getProteinMatchesIterator(metrics.getProteinKeys(), parameters, true, parameters, true, parameters, waitingHandler);
             }
 
-            while (proteinMatchesIterator.hasNext() && !waitingHandler.isRunCanceled()) {
+            ProteinMatch proteinMatch;
+            
+            while ((proteinMatch = proteinMatchesIterator.next()) != null) {
 
-                ProteinMatch proteinMatch = proteinMatchesIterator.next();
                 String proteinKey = proteinMatch.getKey();
                 psParameter = (PSParameter) identification.getProteinMatchParameter(proteinKey, psParameter);
 
@@ -325,9 +326,11 @@ public class ClusterBuilder {
                 peptideMatchesIterator = identification.getPeptideMatchesIterator(parameters, true, parameters, waitingHandler);
             }
 
-            while (peptideMatchesIterator.hasNext() && !waitingHandler.isRunCanceled()) {
+            
+            PeptideMatch peptideMatch;
+            
+            while ((peptideMatch = peptideMatchesIterator.next()) != null) {
 
-                PeptideMatch peptideMatch = peptideMatchesIterator.next();
                 Peptide peptide = peptideMatch.getTheoreticPeptide();
                 String peptideKey = peptideMatch.getKey();
                 psParameter = (PSParameter) identification.getPeptideMatchParameter(peptideKey, psParameter);
@@ -453,10 +456,10 @@ public class ClusterBuilder {
             for (String spectrumFile : neededFiles) {
 
                 PsmIterator psmMatchesIterator = identification.getPsmIterator(spectrumFile, parameters, false, waitingHandler); //@TODO: sort the PSMs in some way?
+                SpectrumMatch spectrumMatch;
+                
+                while ((spectrumMatch = psmMatchesIterator.next()) != null) {
 
-                while (psmMatchesIterator.hasNext() && !waitingHandler.isRunCanceled()) {
-
-                    SpectrumMatch spectrumMatch = psmMatchesIterator.next();
                     String spectrumKey = spectrumMatch.getKey();
                     psParameter = (PSParameter) identification.getSpectrumMatchParameter(spectrumKey, psParameter);
 
