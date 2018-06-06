@@ -498,7 +498,7 @@ public class RatioEstimationSettingsDialog extends javax.swing.JDialog {
      */
     private void helpLinkLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_helpLinkLabelMouseClicked
         this.setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
-        BareBonesBrowserLaunch.openURL("http://onlinelibrary.wiley.com/doi/10.1002/pmic.201000711/abstract");
+        BareBonesBrowserLaunch.openURL("https://onlinelibrary.wiley.com/doi/10.1002/pmic.201000711/abstract");
         this.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_helpLinkLabelMouseClicked
 

@@ -100,7 +100,7 @@ public class PathSettingsCLI {
         return System.getProperty("line.separator")
                 + "The Reporter path settings command line allows setting the path of every configuration file created by Reporter or set a temporary folder where all files will be stored." + System.getProperty("line.separator")
                 + System.getProperty("line.separator")
-                + "For further help see http://compomics.github.io/projects/reporter.html and http://compomics.github.io/projects/reporter/wiki/reportercli.html." + System.getProperty("line.separator")
+                + "For further help see https://compomics.github.io/projects/reporter.html and https://compomics.github.io/projects/reporter/wiki/reportercli.html." + System.getProperty("line.separator")
                 + System.getProperty("line.separator")
                 + "Or contact the developers at https://groups.google.com/group/reporter." + System.getProperty("line.separator")
                 + System.getProperty("line.separator")

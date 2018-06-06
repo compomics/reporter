@@ -1034,7 +1034,7 @@ public class NewDialog extends javax.swing.JDialog {
      */
     private void aboutButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutButtonActionPerformed
         this.setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
-        BareBonesBrowserLaunch.openURL("http://compomics.github.io/projects/reporter.html");
+        BareBonesBrowserLaunch.openURL("https://compomics.github.io/projects/reporter.html");
         this.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_aboutButtonActionPerformed
 
@@ -1045,7 +1045,7 @@ public class NewDialog extends javax.swing.JDialog {
      */
     private void reporterPublicationLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_reporterPublicationLabelMouseClicked
         this.setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
-        BareBonesBrowserLaunch.openURL("http://compomics.github.io/projects/reporter.html");
+        BareBonesBrowserLaunch.openURL("https://compomics.github.io/projects/reporter.html");
         this.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_reporterPublicationLabelMouseClicked
 
@@ -1385,7 +1385,7 @@ public class NewDialog extends javax.swing.JDialog {
                     String errorText = "PeptideShaker used up all the available memory and had to be stopped.<br>"
                             + "Memory boundaries are changed in the the Welcome Dialog (Settings<br>"
                             + "& Help > Settings > Java Memory Settings) or in the Edit menu (Edit<br>"
-                            + "Java Options). See also <a href=\"http://compomics.github.io/projects/compomics-utilities/wiki/javatroubleshooting.html\">JavaTroubleShooting</a>.";
+                            + "Java Options). See also <a href=\"https://compomics.github.io/projects/compomics-utilities/wiki/javatroubleshooting.html\">JavaTroubleShooting</a>.";
                     JOptionPane.showMessageDialog(NewDialog.this,
                             errorText,
                             "Out of Memory", JOptionPane.ERROR_MESSAGE);

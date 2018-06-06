@@ -212,7 +212,7 @@ public class ReporterCLI extends CpsParent implements Callable {
             String errorText = "Reporter used up all the available memory and had to be stopped.<br>"
                     + "Memory boundaries are changed in the the Welcome Dialog (Settings<br>"
                     + "& Help > Settings > Java Memory Settings) or in the Edit menu (Edit<br>"
-                    + "Java Options). See also <a href=\"http://compomics.github.io/projects/compomics-utilities.html\">JavaTroubleShooting</a>.";
+                    + "Java Options). See also <a href=\"https://compomics.github.io/projects/compomics-utilities.html\">JavaTroubleShooting</a>.";
             waitingHandler.appendReport(errorText, true, true);
             error.printStackTrace();
             return 1;
@@ -599,7 +599,7 @@ public class ReporterCLI extends CpsParent implements Callable {
         return System.getProperty("line.separator")
                 + "ReporterCLI estimates abundance ratios from PeptideShaker projects based on reporter ion quantification." + System.getProperty("line.separator")
                 + System.getProperty("line.separator")
-                + "For further help see http://compomics.github.io/projects/reporter.html and http://compomics.github.io/projects/reporter/wiki/reportercli.html." + System.getProperty("line.separator")
+                + "For further help see https://compomics.github.io/projects/reporter.html and https://compomics.github.io/projects/reporter/wiki/reportercli.html." + System.getProperty("line.separator")
                 + System.getProperty("line.separator")
                 + "Or contact the developers at https://groups.google.com/group/reporter." + System.getProperty("line.separator")
                 + System.getProperty("line.separator")
