@@ -1,7 +1,6 @@
 package eu.isas.reporter.cli;
 
 import com.compomics.software.cli.CommandLineUtils;
-import com.compomics.software.cli.CommandParameter;
 import com.compomics.cli.identification_parameters.IdentificationParametersInputBean;
 import com.compomics.util.preferences.IdentificationParameters;
 import eu.isas.reporter.calculation.normalization.NormalizationType;
@@ -9,7 +8,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import org.apache.commons.cli.CommandLine;
 
 /**
@@ -17,6 +15,7 @@ import org.apache.commons.cli.CommandLine;
  * parameters.
  *
  * @author Marc Vaudel
+ * @author Harald Barsnes
  */
 public class ReporterCLIInputBean {
 
@@ -340,227 +339,6 @@ public class ReporterCLIInputBean {
 
         // path settings
         pathSettingsCLIInputBean = new PathSettingsCLIInputBean(aLine);
-    }
-
-    /**
-     * Verifies that the command line is valid.
-     *
-     * @param aLine the command line to validate
-     *
-     * @return a boolean indicating whether the command line is valid.
-     */
-    public static boolean isValidStartup(CommandLine aLine) {
-
-        // PeptideShaker file
-        if (!aLine.hasOption(ReporterCLIParameters.ID.id) || ((String) aLine.getOptionValue(ReporterCLIParameters.ID.id)).equals("")) {
-            System.out.println(System.getProperty("line.separator") + "PeptideShaker file not specified." + System.getProperty("line.separator"));
-            return false;
-        } else {
-            String arg = aLine.getOptionValue(ReporterCLIParameters.ID.id);
-            HashSet<String> supportedFormats = new HashSet<String>(2);
-            supportedFormats.add(".cpsx");
-            supportedFormats.add(".zip");
-            if (!CommandParameter.fileExists(ReporterCLIParameters.ID.id, arg, supportedFormats)) {
-                return false;
-            }
-        }
-
-        // The isotopes file
-        if (aLine.hasOption(ReporterCLIParameters.ISOTOPES.id)) {
-            String arg = aLine.getOptionValue(ReporterCLIParameters.ISOTOPES.id);
-            HashSet<String> supportedFormats = new HashSet<String>(1);
-            supportedFormats.add(".xml");
-            if (!CommandParameter.fileExists(ReporterCLIParameters.ISOTOPES.id, arg, supportedFormats)) {
-                return false;
-            }
-        }
-
-        // The reference samples
-        if (aLine.hasOption(ReporterCLIParameters.REFERENCE.id)) {
-            String arg = aLine.getOptionValue(ReporterCLIParameters.REFERENCE.id);
-            try {
-                ArrayList<Integer> input = CommandLineUtils.getIntegerListFromString(arg, ",");
-                for (Integer reagent : input) {
-                    if (!CommandParameter.isPositiveInteger(ReporterCLIParameters.REFERENCE.id, reagent + "", false)) {
-                        return false;
-                    }
-                }
-            } catch (Exception e) {
-                System.out.println(System.getProperty("line.separator") + "Error parsing the " + ReporterCLIParameters.REFERENCE.id 
-                        + " option: not a comma separated list of integers." + System.getProperty("line.separator"));
-                return false;
-            }
-        }
-
-        // The number of threads
-        if (aLine.hasOption(ReporterCLIParameters.THREADS.id)) {
-            String arg = aLine.getOptionValue(ReporterCLIParameters.THREADS.id);
-            if (!CommandParameter.isPositiveInteger(ReporterCLIParameters.THREADS.id, arg, false)) {
-                return false;
-            }
-        }
-
-        // The ion tolerance
-        if (aLine.hasOption(ReporterCLIParameters.ION_TOL.id)) {
-            String arg = aLine.getOptionValue(ReporterCLIParameters.ION_TOL.id);
-            if (!CommandParameter.isPositiveDouble(ReporterCLIParameters.ION_TOL.id, arg, false)) {
-                return false;
-            }
-        }
-
-        // Most accurate option
-        if (aLine.hasOption(ReporterCLIParameters.MOST_ACCURATE.id)) {
-            String arg = aLine.getOptionValue(ReporterCLIParameters.MOST_ACCURATE.id);
-            if (!CommandParameter.isBooleanInput(ReporterCLIParameters.MOST_ACCURATE.id, arg)) {
-                return false;
-            }
-        }
-
-        // Same spectra option
-        if (aLine.hasOption(ReporterCLIParameters.SAME_SPECTRA.id)) {
-            String arg = aLine.getOptionValue(ReporterCLIParameters.SAME_SPECTRA.id);
-            if (!CommandParameter.isBooleanInput(ReporterCLIParameters.SAME_SPECTRA.id, arg)) {
-                return false;
-            }
-        }
-
-        // The precursor ion m/z tolerance
-        if (aLine.hasOption(ReporterCLIParameters.PREC_WINDOW_MZ_TOL.id)) {
-            String arg = aLine.getOptionValue(ReporterCLIParameters.PREC_WINDOW_MZ_TOL.id);
-            if (!CommandParameter.isPositiveDouble(ReporterCLIParameters.PREC_WINDOW_MZ_TOL.id, arg, false)) {
-                return false;
-            }
-        }
-
-        // The precursor ion m/z tolerance unit
-        if (aLine.hasOption(ReporterCLIParameters.PREC_WINDOW_MZ_TOL_PPM.id)) {
-            String arg = aLine.getOptionValue(ReporterCLIParameters.PREC_WINDOW_MZ_TOL_PPM.id);
-            if (!CommandParameter.isBooleanInput(ReporterCLIParameters.PREC_WINDOW_MZ_TOL_PPM.id, arg)) {
-                return false;
-            }
-        }
-
-        // The precursor ion RT tolerance
-        if (aLine.hasOption(ReporterCLIParameters.PREC_WINDOW_RT_TOL.id)) {
-            String arg = aLine.getOptionValue(ReporterCLIParameters.PREC_WINDOW_RT_TOL.id);
-            if (!CommandParameter.isPositiveDouble(ReporterCLIParameters.PREC_WINDOW_RT_TOL.id, arg, false)) {
-                return false;
-            }
-        }
-
-        // The ignore null option
-        if (aLine.hasOption(ReporterCLIParameters.IGNORE_NULL.id)) {
-            String arg = aLine.getOptionValue(ReporterCLIParameters.IGNORE_NULL.id);
-            if (!CommandParameter.isBooleanInput(ReporterCLIParameters.IGNORE_NULL.id, arg)) {
-                return false;
-            }
-        }
-
-        // The ignore missed cleavages option
-        if (aLine.hasOption(ReporterCLIParameters.IGNORE_MC.id)) {
-            String arg = aLine.getOptionValue(ReporterCLIParameters.IGNORE_MC.id);
-            if (!CommandParameter.isBooleanInput(ReporterCLIParameters.IGNORE_MC.id, arg)) {
-                return false;
-            }
-        }
-
-        // The percentile
-        if (aLine.hasOption(ReporterCLIParameters.PERCENTILE.id)) {
-            String arg = aLine.getOptionValue(ReporterCLIParameters.PERCENTILE.id);
-            if (!CommandParameter.isPositiveDouble(ReporterCLIParameters.PERCENTILE.id, arg, false)) {
-                return false;
-            }
-        }
-
-        // The resolution option for ratio estimation
-        if (aLine.hasOption(ReporterCLIParameters.RESOLUTION.id)) {
-            String arg = aLine.getOptionValue(ReporterCLIParameters.RESOLUTION.id);
-            if (!CommandParameter.isPositiveDouble(ReporterCLIParameters.RESOLUTION.id, arg, false)) {
-                return false;
-            }
-        }
-
-        // The number of unique peptides
-        if (aLine.hasOption(ReporterCLIParameters.MIN_UNIQUE.id)) {
-            String arg = aLine.getOptionValue(ReporterCLIParameters.MIN_UNIQUE.id);
-            if (!CommandParameter.isInteger(ReporterCLIParameters.MIN_UNIQUE.id, arg)) {
-                return false;
-            }
-        }
-
-        // The validation levels
-        ArrayList<String> validationLevels = new ArrayList<String>(3);
-        validationLevels.add("0");
-        validationLevels.add("1");
-        validationLevels.add("2");
-        // PSM
-        if (aLine.hasOption(ReporterCLIParameters.VALIDATION_PSM.id)) {
-            String arg = aLine.getOptionValue(ReporterCLIParameters.VALIDATION_PSM.id);
-            if (!CommandParameter.isInList(ReporterCLIParameters.VALIDATION_PSM.id, arg, validationLevels)) {
-                return false;
-            }
-        }
-        // Peptide
-        if (aLine.hasOption(ReporterCLIParameters.VALIDATION_PEPTIDE.id)) {
-            String arg = aLine.getOptionValue(ReporterCLIParameters.VALIDATION_PEPTIDE.id);
-            if (!CommandParameter.isInList(ReporterCLIParameters.VALIDATION_PEPTIDE.id, arg, validationLevels)) {
-                return false;
-            }
-        }
-        // Protein
-        if (aLine.hasOption(ReporterCLIParameters.VALIDATION_PROTEIN.id)) {
-            String arg = aLine.getOptionValue(ReporterCLIParameters.VALIDATION_PROTEIN.id);
-            if (!CommandParameter.isInList(ReporterCLIParameters.VALIDATION_PROTEIN.id, arg, validationLevels)) {
-                return false;
-            }
-        }
-
-        // Normalization
-        ArrayList<String> normalizationTypes = new ArrayList<String>(NormalizationType.values().length);
-        for (NormalizationType normalizationType : NormalizationType.values()) {
-            normalizationTypes.add(normalizationType.index + "");
-        }
-        // PSM
-        if (aLine.hasOption(ReporterCLIParameters.NORMALIZATION_PSM.id)) {
-            String arg = aLine.getOptionValue(ReporterCLIParameters.NORMALIZATION_PSM.id);
-            if (!CommandParameter.isInList(ReporterCLIParameters.NORMALIZATION_PSM.id, arg, normalizationTypes)) {
-                return false;
-            }
-        }
-        // Peptide
-        if (aLine.hasOption(ReporterCLIParameters.NORMALIZATION_PEPTIDE.id)) {
-            String arg = aLine.getOptionValue(ReporterCLIParameters.NORMALIZATION_PEPTIDE.id);
-            if (!CommandParameter.isInList(ReporterCLIParameters.NORMALIZATION_PEPTIDE.id, arg, normalizationTypes)) {
-                return false;
-            }
-        }
-        // Protein
-        if (aLine.hasOption(ReporterCLIParameters.NORMALIZATION_PROTEIN.id)) {
-            String arg = aLine.getOptionValue(ReporterCLIParameters.NORMALIZATION_PROTEIN.id);
-            if (!CommandParameter.isInList(ReporterCLIParameters.NORMALIZATION_PROTEIN.id, arg, normalizationTypes)) {
-                return false;
-            }
-        }
-        // Stable proteins
-        if (aLine.hasOption(ReporterCLIParameters.STABLE_PROTEINS.id)) {
-            String arg = aLine.getOptionValue(ReporterCLIParameters.STABLE_PROTEINS.id);
-            HashSet<String> supportedFormats = new HashSet<String>(1);
-            supportedFormats.add(".fasta");
-            if (!CommandParameter.fileExists(ReporterCLIParameters.STABLE_PROTEINS.id, arg, supportedFormats)) {
-                return false;
-            }
-        }
-        // Contaminants
-        if (aLine.hasOption(ReporterCLIParameters.CONTAMINANTS.id)) {
-            String arg = aLine.getOptionValue(ReporterCLIParameters.CONTAMINANTS.id);
-            HashSet<String> supportedFormats = new HashSet<String>(1);
-            supportedFormats.add(".fasta");
-            if (!CommandParameter.fileExists(ReporterCLIParameters.CONTAMINANTS.id, arg, supportedFormats)) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     /**

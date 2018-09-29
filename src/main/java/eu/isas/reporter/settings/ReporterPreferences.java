@@ -82,7 +82,7 @@ public class ReporterPreferences implements Serializable {
             }
             SerializationUtils.writeObject(userPreferences, file);
         } catch (Exception e) {
-            System.err.println("An error occurred while saving " + USER_PREFERENCES_FILE + " (see below).");
+            System.err.println("An error occurred while saving " + USER_PREFERENCES_FILE + ".");
             e.printStackTrace();
         }
     }
@@ -104,7 +104,7 @@ public class ReporterPreferences implements Serializable {
             try {
                 userPreferences = (ReporterPreferences) SerializationUtils.readObject(file);
             } catch (Exception e) {
-                System.err.println("An error occurred while loading " + USER_PREFERENCES_FILE + " (see below). Preferences set back to default.");
+                System.err.println("An error occurred while loading " + USER_PREFERENCES_FILE + ". Preferences set back to default.");
                 e.printStackTrace();
                 userPreferences = new ReporterPreferences();
                 ReporterPreferences.saveUserPreferences(userPreferences);

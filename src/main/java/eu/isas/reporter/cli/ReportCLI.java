@@ -1,7 +1,5 @@
 package eu.isas.reporter.cli;
 
-import com.compomics.software.settings.PathKey;
-import com.compomics.software.settings.UtilitiesPathPreferences;
 import com.compomics.util.Util;
 import com.compomics.util.db.DerbyUtil;
 import com.compomics.util.experiment.biology.EnzymeFactory;
@@ -17,8 +15,6 @@ import com.compomics.util.gui.waiting.waitinghandlers.WaitingHandlerCLIImpl;
 import com.compomics.util.preferences.UtilitiesUserPreferences;
 import eu.isas.peptideshaker.PeptideShaker;
 import eu.isas.peptideshaker.cmd.PeptideShakerCLI;
-import static eu.isas.peptideshaker.cmd.PeptideShakerCLI.redirectErrorStream;
-import eu.isas.peptideshaker.preferences.PeptideShakerPathPreferences;
 import eu.isas.peptideshaker.utils.CpsParent;
 import eu.isas.reporter.calculation.QuantificationFeaturesCache;
 import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
@@ -39,6 +35,7 @@ import org.apache.commons.cli.Options;
  * This class performs the command line export of reports in command line.
  *
  * @author Marc Vaudel
+ * @author Harald Barsnes
  */
 public class ReportCLI extends CpsParent {
 
@@ -86,52 +83,20 @@ public class ReportCLI extends CpsParent {
      */
     public Object call() {
 
-        PathSettingsCLIInputBean pathSettingsCLIInputBean = reportCLIInputBean.getPathSettingsCLIInputBean();
-
-        if (pathSettingsCLIInputBean.getLogFolder() != null) {
-            redirectErrorStream(pathSettingsCLIInputBean.getLogFolder());
-        }
-
-        if (pathSettingsCLIInputBean.hasInput()) {
-            PathSettingsCLI pathSettingsCLI = new PathSettingsCLI(pathSettingsCLIInputBean);
-            pathSettingsCLI.setPathSettings();
-        } else {
-            try {
-                setPathConfiguration();
-            } catch (Exception e) {
-                System.out.println("An error occurred when setting path configurations. Default paths will be used.");
-                e.printStackTrace();
-            }
-        }
-
         setDbFolder(PeptideShaker.getMatchesFolder());
 
-        try {
-            ArrayList<PathKey> errorKeys = PeptideShakerPathPreferences.getErrorKeys();
-            if (!errorKeys.isEmpty()) {
-                System.out.println("Unable to write in the following configuration folders. Please use a temporary folder, "
-                        + "the path configuration command line, or edit the configuration paths from the graphical interface.");
-                for (PathKey pathKey : errorKeys) {
-                    System.out.println(pathKey.getId() + ": " + pathKey.getDescription());
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("Unable to load the path configurations. Default paths will be used.");
-            e.printStackTrace();
-        }
-
-        // Load user preferences
+        // load user preferences
         utilitiesUserPreferences = UtilitiesUserPreferences.loadUserPreferences();
 
-        // Instantiate factories
+        // instantiate factories
         PeptideShaker.instantiateFacories(utilitiesUserPreferences);
         ptmFactory = PTMFactory.getInstance();
         enzymeFactory = EnzymeFactory.getInstance();
 
-        // Load resources files
+        // load resources files
         loadSpecies();
 
-        // Set waiting handler
+        // set waiting handler
         waitingHandler = new WaitingHandlerCLIImpl();
 
         // Load the project from the cps file
@@ -164,7 +129,7 @@ public class ReportCLI extends CpsParent {
             return 1;
         }
 
-        // Load project specific PTMs
+        // load project specific PTMs
         String error = PeptideShaker.loadModifications(getIdentificationParameters().getSearchParameters());
         if (error != null) {
             System.out.println(error);
@@ -175,7 +140,7 @@ public class ReportCLI extends CpsParent {
         ReporterIonQuantification reporterIonQuantification = projectImporter.getReporterIonQuantification();
         ReporterMethod selectedMethod = reporterIonQuantification.getReporterMethod();
 
-        // Verify that ignored PTMs are recognized
+        // verify that ignored PTMs are recognized
         HashSet<String> ignoredPtms = reporterSettings.getRatioEstimationSettings().getExcludingPtms();
         if (ignoredPtms != null) {
             for (String ptmName : ignoredPtms) {
@@ -187,7 +152,7 @@ public class ReportCLI extends CpsParent {
             }
         }
         
-        // Create quantification features generator
+        // create quantification features generator
         QuantificationFeaturesGenerator quantificationFeaturesGenerator = new QuantificationFeaturesGenerator(new QuantificationFeaturesCache(), getIdentification(), getIdentificationFeaturesGenerator(), reporterSettings, reporterIonQuantification,
                 identificationParameters.getSearchParameters(), identificationParameters.getSequenceMatchingPreferences());
 
@@ -234,16 +199,6 @@ public class ReportCLI extends CpsParent {
             System.exit(1); // @TODO: Find other ways of cancelling the process? If not cancelled searchgui will not stop.
             // Note that if a different solution is found, the DummyFrame has to be closed similar to the setVisible method in the WelcomeDialog!!
             return 1;
-        }
-    }
-
-    /**
-     * Sets the path configuration.
-     */
-    private void setPathConfiguration() throws IOException {
-        File pathConfigurationFile = new File(PeptideShaker.getJarFilePath(), UtilitiesPathPreferences.configurationFileName);
-        if (pathConfigurationFile.exists()) {
-            PeptideShakerPathPreferences.loadPathPreferencesFromFile(pathConfigurationFile);
         }
     }
 
@@ -311,10 +266,14 @@ public class ReportCLI extends CpsParent {
     public static void main(String[] args) {
 
         try {
-            Options lOptions = new Options();
-            ReportCLIParams.createOptionsCLI(lOptions);
+            // check if there are updates to the paths
+            String[] nonPathSettingArgsAsList = PathSettingsCLI.extractAndUpdatePathOptions(args);
+            
+            // parse the rest of the cptions   
+            Options nonPathOptions = new Options();
+            ReportCLIParams.createOptionsCLI(nonPathOptions);
             BasicParser parser = new BasicParser();
-            CommandLine line = parser.parse(lOptions, args);
+            CommandLine line = parser.parse(nonPathOptions, nonPathSettingArgsAsList);
 
             if (!isValidStartup(line)) {
                 PrintWriter lPrintWriter = new PrintWriter(System.out);
