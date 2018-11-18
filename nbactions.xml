@@ -39,8 +39,5 @@
                 <exec.executable>java</exec.executable>
             </properties>
         </action>
-        <action>
-            <actionName>CUSTOM-deploy</actionName>
-            <displayName>deploy</displayName>
-        </action>
+        
     </actions>
