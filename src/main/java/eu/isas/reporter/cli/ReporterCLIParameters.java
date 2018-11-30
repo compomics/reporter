@@ -20,8 +20,6 @@ public enum ReporterCLIParameters {
     ID("id", "The PeptideShaker project (.cpsx or .zip).", true),
     OUT("out", "Output file to save the project.", false),
     ISOTOPES("isotopes", "The isotope correction factors file (.xml file). Default values used if not provided. It is strongly advised to provide the values corresponding to the labelling kit used during the experiment.", false),
-    
-    METHODS("methods_file", "Path to the isotope correction factors file containing the quantification methods including isotopic correction factors. Default values used if not provided.", false),
     METHOD("method", "The reporter ion quantification method to use from the isotopic methods file in case multiple methods are listed in the file. Inferred from the identification parameters if not provided.", false),
     REFERENCE("ref_samples", "The reference sample(s) as a comma separated list of integers where each sample is represented by its reagent ordered by mass starting from 1. Ex: 1,3 represent reagents 144 and 116 with iTRAQ 4-plex. Default: no reference.", false),
     
@@ -107,30 +105,27 @@ public enum ReporterCLIParameters {
         String output = "";
         String formatter = "%-25s";
 
-        output += "Mandatory Parameters:\n\n";
+        output += "Mandatory Parameters:\n";
         output += "-" + String.format(formatter, ID.id) + " " + ID.description + "\n";
         output += "-" + String.format(formatter, ISOTOPES.id) + " " + ISOTOPES.description + "\n";
-
-        output += "Reporter Ion Methods options:\n\n";
-        output += "-" + String.format(formatter, METHODS.id) + " " + METHODS.description + "\n";
         output += "-" + String.format(formatter, METHOD.id) + " " + METHOD.description + "\n";
 
-        output += "\n\nOutput:\n\n";
+        output += "\n\nOutput:\n";
         output += "-" + String.format(formatter, OUT.id) + " " + OUT.description + "\n";
 
-        output += "\n\nOptional Export Parameters:\n\n";
+        output += "\n\nOptional Export Parameters:\n";
         output += "-" + String.format(formatter, ZIP.id) + " " + ZIP.description + "\n";
 
-        output += "\n\nProcessing Options:\n\n";
+        output += "\n\nProcessing Options:\n";
         output += "-" + String.format(formatter, THREADS.id) + " " + THREADS.description + "\n";
 
-        output += "\n\nAdvanced Options:\n\n";
+        output += "\n\nAdvanced Options:\n";
 //        output += "-" + String.format(formatter, REFERENCE_MASS.id) + " " + REFERENCE_MASS.description + "\n"; TODO
 
-        output += "\n\nOptional Temporary Folder:\n\n";
+        output += "\n\nOptional Temporary Folder:\n";
         output += "-" + String.format(formatter, PathSettingsCLIParams.ALL.id) + " " + PathSettingsCLIParams.ALL.description + "\n";
 
-        output += "\n\nOptional Input Parameters:\n\n";
+        output += "\n\nOptional Input Parameters:\n";
         output += "-" + String.format(formatter, IdentificationParametersCLIParams.IDENTIFICATION_PARAMETERS.id) + " " + IdentificationParametersCLIParams.IDENTIFICATION_PARAMETERS.description + "\n";
 
         output += "\n\n\nFor identification parameters options:\nReplace eu.isas.reporter.cmd.ReporterCLI with eu.isas.reportergui.cmd.IdentificationParametersCLI\n\n";
