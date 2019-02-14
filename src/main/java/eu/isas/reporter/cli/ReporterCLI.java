@@ -523,9 +523,12 @@ public class ReporterCLI extends CpsParent implements Callable {
         File destinationFile = reporterCLIInputBean.getOutputFile();
         if (destinationFile == null) {
             destinationFile = cpsFile;
+        } else {
+            cpsFile = destinationFile;
         }
         try {
             ProjectSaver.saveProject(reporterSettings, reporterIonQuantification, displayPreferences, this, waitingHandler);
+            waitingHandler.appendReport("Project saved as " + destinationFile.getAbsolutePath() + ".", true, true);
         } catch (Exception e) {
             System.out.println(System.getProperty("line.separator") + "An error occurred while saving the project." + System.getProperty("line.separator"));
             e.printStackTrace();
@@ -614,6 +617,8 @@ public class ReporterCLI extends CpsParent implements Callable {
         if (waitingHandler.isRunCanceled()) {
             return 1;
         }
+        
+        waitingHandler.appendReport("Reporter processing completed.", true, true);
 
         return 0;
     }
@@ -810,7 +815,7 @@ public class ReporterCLI extends CpsParent implements Callable {
 
             // parse the rest of the cptions   
             Options nonPathOptions = new Options();
-            ReportCLIParams.createOptionsCLI(nonPathOptions);
+            ReporterCLIParameters.createOptionsCLI(nonPathOptions);
             BasicParser parser = new BasicParser();
             CommandLine line = parser.parse(nonPathOptions, nonPathSettingArgsAsList);
 
