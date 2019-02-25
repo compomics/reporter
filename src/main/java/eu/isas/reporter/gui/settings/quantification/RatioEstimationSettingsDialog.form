@@ -53,7 +53,7 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" attributes="0">
-                          <EmptySpace min="10" pref="10" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                           <Component id="helpLabel" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="helpLinkLabel" min="-2" max="-2" attributes="0"/>
@@ -62,12 +62,17 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="cancelButton" min="-2" pref="69" max="-2" attributes="0"/>
                       </Group>
-                      <Group type="102" attributes="0">
-                          <Component id="ratioEstimationsPanel" min="-2" max="-2" attributes="1"/>
+                      <Group type="102" alignment="0" attributes="0">
+                          <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                              <Component id="idSelectionPanel" alignment="0" max="32767" attributes="1"/>
+                              <Group type="102" attributes="0">
+                                  <Component id="ratioEstimationsPanel" linkSize="24" min="-2" max="-2" attributes="1"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="proteinGroupJPanel" linkSize="24" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
                           <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                       </Group>
-                      <Component id="proteinGroupJPanel" max="32767" attributes="0"/>
-                      <Component id="idSelectionPanel" alignment="1" max="32767" attributes="1"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -77,12 +82,13 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="ratioEstimationsPanel" min="-2" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                      <Component id="ratioEstimationsPanel" max="32767" attributes="0"/>
+                      <Component id="proteinGroupJPanel" max="32767" attributes="0"/>
+                  </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="idSelectionPanel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="proteinGroupJPanel" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace type="separate" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="2" attributes="0">
                       <Component id="helpLabel" alignment="2" min="-2" max="-2" attributes="0"/>
                       <Component id="helpLinkLabel" alignment="2" min="-2" max="-2" attributes="0"/>
@@ -109,30 +115,25 @@
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="selectedPtmsScrollPane" linkSize="21" min="-2" pref="315" max="-2" attributes="1"/>
-                              <EmptySpace max="-2" attributes="0"/>
+                          <Group type="102" attributes="0">
+                              <Component id="selectedPtmsScrollPane" linkSize="25" min="-2" pref="408" max="-2" attributes="1"/>
+                              <EmptySpace max="32767" attributes="0"/>
                               <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                   <Component id="addModifications" max="32767" attributes="0"/>
                                   <Component id="removeModification" min="-2" max="-2" attributes="0"/>
                               </Group>
+                              <EmptySpace max="32767" attributes="0"/>
                           </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
+                          <Group type="102" attributes="0">
                               <Component id="excludePeptidesLabel" min="-2" max="-2" attributes="1"/>
+                              <EmptySpace max="32767" attributes="0"/>
                           </Group>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="allPtmsScrollPane" linkSize="21" min="-2" pref="293" max="-2" attributes="0"/>
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
-                              <Component id="availablePtmsLabel" min="-2" max="-2" attributes="0"/>
-                          </Group>
+                          <Component id="allPtmsScrollPane" linkSize="25" min="-2" pref="405" max="-2" attributes="0"/>
+                          <Component id="availablePtmsLabel" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -142,27 +143,25 @@
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
-                              <Component id="availablePtmsLabel" min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="availablePtmsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="excludePeptidesLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="allPtmsScrollPane" max="32767" attributes="1"/>
                               <EmptySpace max="-2" attributes="0"/>
                           </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="excludePeptidesLabel" min="-2" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" attributes="0">
-                                      <EmptySpace min="-2" pref="15" max="-2" attributes="0"/>
-                                      <Component id="addModifications" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="removeModification" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace min="69" pref="117" max="32767" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" attributes="0">
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="selectedPtmsScrollPane" max="32767" attributes="1"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                  </Group>
-                              </Group>
+                          <Group type="102" attributes="0">
+                              <EmptySpace min="-2" pref="31" max="-2" attributes="0"/>
+                              <Component id="addModifications" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="removeModification" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="69" pref="117" max="32767" attributes="0"/>
+                          </Group>
+                          <Group type="102" attributes="0">
+                              <EmptySpace min="-2" pref="22" max="-2" attributes="0"/>
+                              <Component id="selectedPtmsScrollPane" max="32767" attributes="1"/>
+                              <EmptySpace max="-2" attributes="0"/>
                           </Group>
                       </Group>
                   </Group>
@@ -261,42 +260,39 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
+                  <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Group type="102" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="peptidesLabel" linkSize="17" alignment="0" min="-2" pref="150" max="-2" attributes="0"/>
-                                  <Component id="psmsLabel" linkSize="17" alignment="0" min="-2" pref="150" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="psmValidationCmb" min="-2" pref="150" max="-2" attributes="0"/>
-                                  <Component id="peptideValidationCmb" min="-2" pref="150" max="-2" attributes="0"/>
-                              </Group>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="proteinsLabel" linkSize="17" min="-2" pref="150" max="-2" attributes="0"/>
-                              <EmptySpace type="separate" max="-2" attributes="0"/>
-                              <Component id="proteinValidationCmb" max="32767" attributes="0"/>
-                          </Group>
-                      </Group>
-                      <EmptySpace min="-2" pref="44" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="nullIntensitiesCheck" min="-2" max="-2" attributes="0"/>
+                          <Component id="peptidesLabel" linkSize="17" alignment="0" min="-2" pref="150" max="-2" attributes="0"/>
+                          <Component id="psmsLabel" linkSize="17" alignment="0" min="-2" pref="150" max="-2" attributes="0"/>
+                          <Component id="proteinsLabel" linkSize="17" alignment="0" min="-2" pref="150" max="-2" attributes="0"/>
+                          <Component id="resolutionLabel" min="-2" pref="150" max="-2" attributes="0"/>
+                          <Component id="windowWidthLabel" min="-2" pref="150" max="-2" attributes="0"/>
+                          <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace pref="115" max="32767" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace min="1" pref="1" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="resolutionLabel" min="-2" pref="150" max="-2" attributes="0"/>
-                                  <Component id="windowWidthLabel" min="-2" pref="150" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                  <Component id="widthTxt" max="32767" attributes="0"/>
-                                  <Component id="resolutionTxt" min="-2" pref="150" max="-2" attributes="1"/>
+                                  <Component id="psmValidationCmb" linkSize="23" min="-2" pref="150" max="-2" attributes="0"/>
+                                  <Component id="peptideValidationCmb" linkSize="23" min="-2" pref="150" max="-2" attributes="0"/>
                               </Group>
                           </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace min="1" pref="1" max="-2" attributes="0"/>
+                              <Component id="proteinValidationCmb" linkSize="23" pref="150" max="32767" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace min="1" pref="1" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="resolutionTxt" linkSize="23" min="-2" pref="150" max="-2" attributes="1"/>
+                                  <Component id="widthTxt" linkSize="23" pref="150" max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
+                          <Component id="excludeMissingIntensitiesCmb" alignment="0" min="-2" pref="150" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="29" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -304,36 +300,34 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="1" attributes="0">
-                          <Group type="102" attributes="0">
-                              <Group type="103" groupAlignment="3" attributes="0">
-                                  <Component id="proteinsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="proteinValidationCmb" alignment="3" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="3" attributes="0">
-                                  <Component id="peptidesLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="peptideValidationCmb" alignment="3" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="3" attributes="0">
-                                  <Component id="psmsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="psmValidationCmb" alignment="3" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                          </Group>
-                          <Group type="102" attributes="0">
-                              <Group type="103" groupAlignment="3" attributes="0">
-                                  <Component id="resolutionTxt" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="resolutionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="3" attributes="0">
-                                  <Component id="widthTxt" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="windowWidthLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="nullIntensitiesCheck" min="-2" max="-2" attributes="0"/>
-                          </Group>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="proteinsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="proteinValidationCmb" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="peptidesLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="peptideValidationCmb" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="psmsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="psmValidationCmb" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="resolutionTxt" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="resolutionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="widthTxt" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="windowWidthLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace min="-2" pref="3" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="excludeMissingIntensitiesCmb" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="32767" attributes="0"/>
                   </Group>
@@ -341,13 +335,6 @@
             </DimensionLayout>
           </Layout>
           <SubComponents>
-            <Component class="javax.swing.JCheckBox" name="nullIntensitiesCheck">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Exclude Missing Intensities"/>
-                <Property name="iconTextGap" type="int" value="10"/>
-                <Property name="opaque" type="boolean" value="false"/>
-              </Properties>
-            </Component>
             <Component class="javax.swing.JLabel" name="resolutionLabel">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Resolution"/>
@@ -416,6 +403,21 @@
                 </Property>
               </Properties>
             </Component>
+            <Component class="javax.swing.JLabel" name="jLabel1">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Exclude Missing Intensities"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JComboBox" name="excludeMissingIntensitiesCmb">
+              <Properties>
+                <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+                  <StringArray count="2">
+                    <StringItem index="0" value="Yes"/>
+                    <StringItem index="1" value="No"/>
+                  </StringArray>
+                </Property>
+              </Properties>
+            </Component>
           </SubComponents>
         </Container>
         <Component class="javax.swing.JLabel" name="helpLabel">
@@ -470,14 +472,15 @@
                   <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <Component id="excludeSharedCheckBox" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="154" max="-2" attributes="0"/>
-                              <Component id="uniquePeptidesLbl" min="-2" pref="150" max="-2" attributes="0"/>
-                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                              <Component id="uniquePeptidesSpinner" min="-2" pref="150" max="-2" attributes="0"/>
-                          </Group>
-                          <Component id="miscleavageCheck" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabel2" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabel3" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="uniquePeptidesLbl" alignment="0" min="-2" pref="150" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace min="-2" pref="30" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="uniquePeptidesSpinner" min="-2" pref="150" max="-2" attributes="0"/>
+                          <Component id="excludeMiscleavedCmb" min="-2" pref="150" max="-2" attributes="0"/>
+                          <Component id="excludeSharedCmb" min="-2" pref="150" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="32767" attributes="0"/>
                   </Group>
@@ -485,40 +488,28 @@
             </DimensionLayout>
             <DimensionLayout dim="1">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="1" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="103" alignment="0" groupAlignment="3" attributes="0">
-                              <Component id="uniquePeptidesLbl" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="uniquePeptidesSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Component id="excludeSharedCheckBox" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="excludeSharedCmb" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="miscleavageCheck" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="excludeMiscleavedCmb" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabel3" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="uniquePeptidesSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="uniquePeptidesLbl" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
                       <EmptySpace max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
           </Layout>
           <SubComponents>
-            <Component class="javax.swing.JCheckBox" name="miscleavageCheck">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Exclude Miscleaved Peptides"/>
-                <Property name="iconTextGap" type="int" value="10"/>
-                <Property name="opaque" type="boolean" value="false"/>
-              </Properties>
-            </Component>
-            <Component class="javax.swing.JCheckBox" name="excludeSharedCheckBox">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Exclude Shared Peptides If Enough Unique"/>
-                <Property name="iconTextGap" type="int" value="10"/>
-                <Property name="opaque" type="boolean" value="false"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="excludeSharedCheckBoxActionPerformed"/>
-              </Events>
-            </Component>
             <Component class="javax.swing.JSpinner" name="uniquePeptidesSpinner">
               <Properties>
                 <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
@@ -529,6 +520,36 @@
             <Component class="javax.swing.JLabel" name="uniquePeptidesLbl">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Minimum Unique"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JLabel" name="jLabel2">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Exclude Shared Peptides If Enough Unique"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JLabel" name="jLabel3">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Exclude Miscleaved Peptides"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JComboBox" name="excludeSharedCmb">
+              <Properties>
+                <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+                  <StringArray count="2">
+                    <StringItem index="0" value="Yes"/>
+                    <StringItem index="1" value="No"/>
+                  </StringArray>
+                </Property>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JComboBox" name="excludeMiscleavedCmb">
+              <Properties>
+                <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+                  <StringArray count="2">
+                    <StringItem index="0" value="Yes"/>
+                    <StringItem index="1" value="No"/>
+                  </StringArray>
+                </Property>
               </Properties>
             </Component>
           </SubComponents>
