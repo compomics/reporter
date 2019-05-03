@@ -258,7 +258,7 @@ public class NewDialog extends javax.swing.JDialog {
         sampleAssignmentTable.getColumnModel().getColumn(3).setMaxWidth(80);
 
         sampleAssignmentTable.getColumnModel().getColumn(3).setCellRenderer(new TrueFalseIconRenderer(
-                new ImageIcon(this.getClass().getResource("/icons/selected_green.png")),
+                new ImageIcon(this.getClass().getResource("/icons/selected_green-new.png")),
                 null,
                 "Yes", "No"));
     }
