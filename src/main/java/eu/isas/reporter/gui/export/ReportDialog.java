@@ -408,7 +408,7 @@ public class ReportDialog extends javax.swing.JDialog {
         String excelFileFilterDescription = "Excel Workbook (.xls)";
         String lastSelectedFolderPath = reporterGUI.getLastSelectedFolder().getLastSelectedFolder();
         FileAndFileFilter selectedFileAndFilter = Util.getUserSelectedFile(this, new String[]{".xls", ".txt"},
-                new String[]{excelFileFilterDescription, textFileFilterDescription}, "Export Report", lastSelectedFolderPath, schemeName, false, true, false, 0);
+                new String[]{excelFileFilterDescription, textFileFilterDescription}, "Export Report", lastSelectedFolderPath, schemeName, false, true, false, 1);
 
         if (selectedFileAndFilter != null) {
 
