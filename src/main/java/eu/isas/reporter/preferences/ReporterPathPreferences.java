@@ -1,8 +1,8 @@
 package eu.isas.reporter.preferences;
 
 import com.compomics.software.settings.PathKey;
-import com.compomics.software.settings.UtilitiesPathPreferences;
-import eu.isas.peptideshaker.preferences.PeptideShakerPathPreferences;
+import com.compomics.software.settings.UtilitiesPathParameters;
+import eu.isas.peptideshaker.preferences.PeptideShakerPathParameters;
 import eu.isas.reporter.export.report.ReporterExportFactory;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -17,6 +17,7 @@ import java.util.ArrayList;
  * This class sets the path preferences for the files to read/write.
  *
  * @author Marc Vaudel
+ * @author Harald Barsnes
  */
 public class ReporterPathPreferences {
 
@@ -129,16 +130,16 @@ public class ReporterPathPreferences {
      * @throws FileNotFoundException thrown of the file cannot be found
      */
     public static void loadPathPreferenceFromLine(String line) throws FileNotFoundException, IOException {
-        String id = UtilitiesPathPreferences.getPathID(line);
+        String id = UtilitiesPathParameters.getPathID(line);
         if (id.equals("")) {
             throw new IllegalArgumentException("Impossible to parse path in " + line + ".");
         }
         ReporterPathKey reporterPathKey = ReporterPathKey.getKeyFromId(id);
         if (reporterPathKey == null) {
-            PeptideShakerPathPreferences.loadPathPreferenceFromLine(line);
+            PeptideShakerPathParameters.loadPathPreferenceFromLine(line);
         } else {
-            String path = UtilitiesPathPreferences.getPath(line);
-            if (!path.equals(UtilitiesPathPreferences.defaultPath)) {
+            String path = UtilitiesPathParameters.getPath(line);
+            if (!path.equals(UtilitiesPathParameters.defaultPath)) {
                 File file = new File(path);
                 if (!file.exists()) {
                     throw new FileNotFoundException("File " + path + " not found.");
@@ -186,7 +187,7 @@ public class ReporterPathPreferences {
             }
             setPathPreference(reporterPathKey, newFile.getAbsolutePath());
         }
-        UtilitiesPathPreferences.setAllPathsIn(path);
+        UtilitiesPathParameters.setAllPathsIn(path);
     }
 
     /**
@@ -216,7 +217,7 @@ public class ReporterPathPreferences {
         for (ReporterPathKey pathKey : ReporterPathKey.values()) {
             writePathToFile(bw, pathKey);
         }
-        PeptideShakerPathPreferences.writeConfigurationToFile(bw);
+        PeptideShakerPathParameters.writeConfigurationToFile(bw);
     }
 
     /**
@@ -228,12 +229,12 @@ public class ReporterPathPreferences {
      * @throws IOException thrown if an IOException occurs
      */
     public static void writePathToFile(BufferedWriter bw, ReporterPathKey pathKey) throws IOException {
-        bw.write(pathKey.id + UtilitiesPathPreferences.separator);
+        bw.write(pathKey.id + UtilitiesPathParameters.separator);
         switch (pathKey) {
             case reporterExports:
                 String toWrite = ReporterExportFactory.getSerializationFolder();
                 if (toWrite == null) {
-                    toWrite = UtilitiesPathPreferences.defaultPath;
+                    toWrite = UtilitiesPathParameters.defaultPath;
                 }
                 bw.write(toWrite);
                 break;
@@ -276,11 +277,11 @@ public class ReporterPathPreferences {
         ArrayList<PathKey> result = new ArrayList<PathKey>();
         for (ReporterPathKey pathKey : ReporterPathKey.values()) {
             String folder = ReporterPathPreferences.getPathPreference(pathKey, jarFilePath);
-            if (folder != null && !UtilitiesPathPreferences.testPath(folder)) {
+            if (folder != null && !UtilitiesPathParameters.testPath(folder)) {
                 result.add(pathKey);
             }
         }
-        result.addAll(UtilitiesPathPreferences.getErrorKeys());
+        result.addAll(UtilitiesPathParameters.getErrorKeys());
         return result;
     }
 }

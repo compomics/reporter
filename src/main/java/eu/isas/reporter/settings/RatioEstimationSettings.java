@@ -1,6 +1,6 @@
 package eu.isas.reporter.settings;
 
-import eu.isas.peptideshaker.scoring.MatchValidationLevel;
+import com.compomics.util.experiment.identification.validation.MatchValidationLevel;
 import java.io.Serializable;
 import java.util.HashSet;
 
@@ -8,6 +8,7 @@ import java.util.HashSet;
  * Settings for the estimation of a peptide or protein ratio.
  *
  * @author Marc Vaudel
+ * @author Harald Barsnes
  */
 public class RatioEstimationSettings implements Serializable {
 

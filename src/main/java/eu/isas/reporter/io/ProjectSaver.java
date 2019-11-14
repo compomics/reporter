@@ -1,6 +1,5 @@
 package eu.isas.reporter.io;
 
-import com.compomics.util.db.ObjectsDB;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.waiting.WaitingHandler;
 import eu.isas.peptideshaker.utils.CpsParent;
@@ -11,9 +10,10 @@ import java.sql.SQLException;
 import org.apache.commons.compress.archivers.ArchiveException;
 
 /**
- * This class can be used to save the Reporter projets in a cps file.
+ * This class can be used to save the Reporter projects in a cps file.
  *
  * @author Marc Vaudel
+ * @author Harald Barsnes
  */
 public class ProjectSaver {
 
@@ -47,25 +47,25 @@ public class ProjectSaver {
     public static void saveProject(ReporterSettings reporterSettings, ReporterIonQuantification reporterIonQuantification, DisplayPreferences displayPreferences, CpsParent cpsParent,
             WaitingHandler waitingHandler) throws IOException, SQLException, ClassNotFoundException, InterruptedException, ArchiveException {
 
-        ObjectsDB objectsDB = cpsParent.getIdentification().getIdentificationDB().getObjectsDB();
-        if (!objectsDB.hasTable(REPORTER_SETTINGS_TABLE_NAME)) {
-            objectsDB.addTable(REPORTER_SETTINGS_TABLE_NAME);
-        }
-        if (objectsDB.inDB(REPORTER_SETTINGS_TABLE_NAME, ReporterSettings.class.getName(), false)) {
-            objectsDB.updateObject(REPORTER_SETTINGS_TABLE_NAME, ReporterSettings.class.getName(), reporterSettings, false);
-        } else {
-            objectsDB.insertObject(REPORTER_SETTINGS_TABLE_NAME, ReporterSettings.class.getName(), reporterSettings, false);
-        }
-        if (objectsDB.inDB(REPORTER_SETTINGS_TABLE_NAME, ReporterIonQuantification.class.getName(), false)) {
-            objectsDB.updateObject(REPORTER_SETTINGS_TABLE_NAME, ReporterIonQuantification.class.getName(), reporterIonQuantification, false);
-        } else {
-            objectsDB.insertObject(REPORTER_SETTINGS_TABLE_NAME, ReporterIonQuantification.class.getName(), reporterIonQuantification, false);
-        }
-        if (objectsDB.inDB(REPORTER_SETTINGS_TABLE_NAME, DisplayPreferences.class.getName(), false)) {
-            objectsDB.updateObject(REPORTER_SETTINGS_TABLE_NAME, DisplayPreferences.class.getName(), displayPreferences, false);
-        } else {
-            objectsDB.insertObject(REPORTER_SETTINGS_TABLE_NAME, DisplayPreferences.class.getName(), displayPreferences, false);
-        }
+//        ObjectsDB objectsDB = cpsParent.getIdentification().getIdentificationDB().getObjectsDB();
+//        if (!objectsDB.hasTable(REPORTER_SETTINGS_TABLE_NAME)) {
+//            objectsDB.addTable(REPORTER_SETTINGS_TABLE_NAME);
+//        }
+//        if (objectsDB.inDB(REPORTER_SETTINGS_TABLE_NAME, ReporterSettings.class.getName(), false)) {
+//            objectsDB.updateObject(REPORTER_SETTINGS_TABLE_NAME, ReporterSettings.class.getName(), reporterSettings, false);
+//        } else {
+//            objectsDB.insertObject(REPORTER_SETTINGS_TABLE_NAME, ReporterSettings.class.getName(), reporterSettings, false);
+//        }
+//        if (objectsDB.inDB(REPORTER_SETTINGS_TABLE_NAME, ReporterIonQuantification.class.getName(), false)) {
+//            objectsDB.updateObject(REPORTER_SETTINGS_TABLE_NAME, ReporterIonQuantification.class.getName(), reporterIonQuantification, false);
+//        } else {
+//            objectsDB.insertObject(REPORTER_SETTINGS_TABLE_NAME, ReporterIonQuantification.class.getName(), reporterIonQuantification, false);
+//        }
+//        if (objectsDB.inDB(REPORTER_SETTINGS_TABLE_NAME, DisplayPreferences.class.getName(), false)) {
+//            objectsDB.updateObject(REPORTER_SETTINGS_TABLE_NAME, DisplayPreferences.class.getName(), displayPreferences, false);
+//        } else {
+//            objectsDB.insertObject(REPORTER_SETTINGS_TABLE_NAME, DisplayPreferences.class.getName(), displayPreferences, false);
+//        }
 
         cpsParent.saveProject(waitingHandler, false);
     }

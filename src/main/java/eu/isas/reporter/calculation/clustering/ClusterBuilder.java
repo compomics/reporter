@@ -1,6 +1,6 @@
 package eu.isas.reporter.calculation.clustering;
 
-import com.compomics.util.experiment.biology.Peptide;
+import com.compomics.util.experiment.biology.proteins.Peptide;
 import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.matches.ModificationMatch;
 import com.compomics.util.experiment.identification.matches.PeptideMatch;
@@ -8,15 +8,17 @@ import com.compomics.util.experiment.identification.matches.ProteinMatch;
 import com.compomics.util.experiment.identification.matches.SpectrumMatch;
 import com.compomics.util.experiment.identification.matches_iterators.PeptideMatchesIterator;
 import com.compomics.util.experiment.identification.matches_iterators.ProteinMatchesIterator;
-import com.compomics.util.experiment.identification.matches_iterators.PsmIterator;
+import com.compomics.util.experiment.identification.matches_iterators.SpectrumMatchesIterator;
+import com.compomics.util.experiment.identification.peptide_shaker.Metrics;
+import com.compomics.util.experiment.identification.peptide_shaker.PSParameter;
+import com.compomics.util.experiment.identification.utils.PeptideUtils;
+import com.compomics.util.experiment.io.biology.protein.SequenceProvider;
 import com.compomics.util.experiment.personalization.UrParameter;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.math.BasicMathFunctions;
 import com.compomics.util.math.clustering.KMeansClustering;
-import com.compomics.util.preferences.IdentificationParameters;
+import com.compomics.util.parameters.identification.IdentificationParameters;
 import com.compomics.util.waiting.WaitingHandler;
-import eu.isas.peptideshaker.parameters.PSParameter;
-import eu.isas.peptideshaker.utils.Metrics;
 import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
 import eu.isas.reporter.calculation.clustering.keys.PeptideClusterClassKey;
 import eu.isas.reporter.calculation.clustering.keys.ProteinClusterClassKey;
@@ -47,27 +49,27 @@ public class ClusterBuilder {
     /**
      * The filtered protein keys indexed by cluster class key.
      */
-    private HashMap<String, ArrayList<String>> filteredProteinKeys;
+    private HashMap<String, ArrayList<Long>> filteredProteinKeys;
     /**
      * The clusters corresponding to every protein.
      */
-    private HashMap<String, ArrayList<String>> proteinClusters;
+    private HashMap<Long, ArrayList<String>> proteinClusters;
     /**
      * The index of the protein keys in clusterKeys.
      */
-    private HashMap<String, Integer> proteinKeysIndexes;
+    private HashMap<Long, Integer> proteinKeysIndexes;
     /**
      * The filtered peptide keys indexed by cluster class key.
      */
-    private HashMap<String, ArrayList<String>> filteredPeptideKeys;
+    private HashMap<String, ArrayList<Long>> filteredPeptideKeys;
     /**
      * The clusters corresponding to every peptide.
      */
-    private HashMap<String, ArrayList<String>> peptideClusters;
+    private HashMap<Long, ArrayList<String>> peptideClusters;
     /**
      * The index of the peptide keys in clusterKeys.
      */
-    private HashMap<String, Integer> peptideKeysIndexes;
+    private HashMap<Long, Integer> peptideKeysIndexes;
     /**
      * The filtered PSM keys indexed by cluster class key.
      */
@@ -109,6 +111,7 @@ public class ClusterBuilder {
      *
      * @param identification the identification
      * @param identificationParameters the identification parameters
+     * @param sequenceProvider the sequence provider
      * @param metrics the PeptideShaker metrics
      * @param reporterIonQuantification the reporter ion quantification
      * @param quantificationFeaturesGenerator the quantification features
@@ -125,7 +128,7 @@ public class ClusterBuilder {
      * @throws InterruptedException if an InterruptedException occurs
      * @throws MzMLUnmarshallerException if an MzMLUnmarshallerException occurs
      */
-    public KMeansClustering clusterProfiles(Identification identification, IdentificationParameters identificationParameters, Metrics metrics,
+    public KMeansClustering clusterProfiles(Identification identification, IdentificationParameters identificationParameters, SequenceProvider sequenceProvider, Metrics metrics,
             ReporterIonQuantification reporterIonQuantification, QuantificationFeaturesGenerator quantificationFeaturesGenerator,
             DisplayPreferences displayPreferences, boolean loadData, WaitingHandler waitingHandler)
             throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
@@ -135,7 +138,7 @@ public class ClusterBuilder {
         // Load data if needed
         if (loadData) {
             waitingHandler.setWaitingText("Loading data (1/2). Please Wait...");
-            loadData(identification, identificationParameters, metrics, displayPreferences, reporterIonQuantification, quantificationFeaturesGenerator, waitingHandler);
+            loadData(identification, identificationParameters, sequenceProvider, metrics, displayPreferences, reporterIonQuantification, quantificationFeaturesGenerator, waitingHandler);
             waitingHandler.setSecondaryProgressCounterIndeterminate(true);
             waitingHandler.setWaitingText("Clustering Data (2/2). Please Wait...");
         } else {
@@ -165,6 +168,7 @@ public class ClusterBuilder {
      *
      * @param identification the identification
      * @param identificationParameters the identification parameters
+     * @param sequenceProvider the sequence provider
      * @param metrics the PeptideShaker metrics
      * @param displayPreferences the display preferences
      * @param reporterIonQuantification the reporter ion quantification
@@ -182,12 +186,15 @@ public class ClusterBuilder {
      * @throws MzMLUnmarshallerException if an exception occurs while reading an
      * mzML file
      */
-    public void loadData(Identification identification, IdentificationParameters identificationParameters, Metrics metrics, DisplayPreferences displayPreferences, ReporterIonQuantification reporterIonQuantification, QuantificationFeaturesGenerator quantificationFeaturesGenerator, WaitingHandler waitingHandler) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
+    public void loadData(Identification identification, IdentificationParameters identificationParameters, SequenceProvider sequenceProvider, Metrics metrics,
+            DisplayPreferences displayPreferences, ReporterIonQuantification reporterIonQuantification,
+            QuantificationFeaturesGenerator quantificationFeaturesGenerator, WaitingHandler waitingHandler)
+            throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
 
         ClusteringSettings clusteringSettings = displayPreferences.getClusteringSettings();
 
-        HashSet<String> proteinKeys = identification.getProteinIdentification();
-        HashSet<String> peptideKeys = identification.getPeptideIdentification();
+        HashSet<Long> proteinKeys = identification.getProteinIdentification();
+        HashSet<Long> peptideKeys = identification.getPeptideIdentification();
 
         int nProteinClusters = clusteringSettings.getSelectedProteinClasses().size();
         int nPeptideClusters = clusteringSettings.getSelectedPeptideClasses().size();
@@ -219,9 +226,9 @@ public class ClusterBuilder {
         clusterKeys = new ArrayList<String>(metrics.getnValidatedProteins());
         ArrayList<double[]> ratiosList = new ArrayList<double[]>(metrics.getnValidatedProteins());
 
-        proteinClusters = new HashMap<String, ArrayList<String>>(nProteinClusters);
-        proteinKeysIndexes = new HashMap<String, Integer>(metrics.getnValidatedProteins());
-        filteredProteinKeys = new HashMap<String, ArrayList<String>>(metrics.getnValidatedProteins());
+        proteinClusters = new HashMap<Long, ArrayList<String>>(nProteinClusters);
+        proteinKeysIndexes = new HashMap<Long, Integer>(metrics.getnValidatedProteins());
+        filteredProteinKeys = new HashMap<String, ArrayList<Long>>(metrics.getnValidatedProteins());
 
         if (nProteinClusters > 0) {
 
@@ -233,30 +240,30 @@ public class ClusterBuilder {
 
             ProteinMatchesIterator proteinMatchesIterator;
             if (quantificationFeaturesGenerator.getQuantificationFeaturesCache().memoryCheck()) {
-                proteinMatchesIterator = identification.getProteinMatchesIterator(metrics.getProteinKeys(), parameters, false, null, false, null, waitingHandler);
+                proteinMatchesIterator = identification.getProteinMatchesIterator(metrics.getProteinKeys(), waitingHandler);
             } else {
-                proteinMatchesIterator = identification.getProteinMatchesIterator(metrics.getProteinKeys(), parameters, true, parameters, true, parameters, waitingHandler);
+                proteinMatchesIterator = identification.getProteinMatchesIterator(metrics.getProteinKeys(), waitingHandler);
             }
 
             ProteinMatch proteinMatch;
-            
+
             while ((proteinMatch = proteinMatchesIterator.next()) != null) {
 
-                String proteinKey = proteinMatch.getKey();
-                psParameter = (PSParameter) identification.getProteinMatchParameter(proteinKey, psParameter);
+                long proteinKey = proteinMatch.getKey();
+                psParameter = (PSParameter) identification.getProteinMatch(proteinKey).getUrParam(psParameter);
 
                 if (psParameter.getMatchValidationLevel().isValidated()) {
                     boolean found = false;
                     for (String keyName : clusteringSettings.getSelectedProteinClasses()) {
                         boolean inCluster = true;
                         ProteinClusterClassKey proteinClusterClassKey = clusteringSettings.getProteinClassKey(keyName);
-                        if (proteinClusterClassKey.isStarred() && !psParameter.isStarred()) {
+                        if (proteinClusterClassKey.isStarred() && !psParameter.getStarred()) {
                             inCluster = false;
                         }
                         if (inCluster) {
-                            ArrayList<String> tempClusterKeys = filteredProteinKeys.get(keyName);
+                            ArrayList<Long> tempClusterKeys = filteredProteinKeys.get(keyName);
                             if (tempClusterKeys == null) {
-                                tempClusterKeys = new ArrayList<String>();
+                                tempClusterKeys = new ArrayList<Long>();
                                 filteredProteinKeys.put(keyName, tempClusterKeys);
                             }
                             tempClusterKeys.add(proteinKey);
@@ -313,55 +320,43 @@ public class ClusterBuilder {
             }
         }
 
-        filteredPeptideKeys = new HashMap<String, ArrayList<String>>(metrics.getnValidatedProteins());
-        peptideKeysIndexes = new HashMap<String, Integer>(metrics.getnValidatedProteins());
-        peptideClusters = new HashMap<String, ArrayList<String>>(nPeptideClusters);
+        filteredPeptideKeys = new HashMap<String, ArrayList<Long>>(metrics.getnValidatedProteins());
+        peptideKeysIndexes = new HashMap<Long, Integer>(metrics.getnValidatedProteins());
+        peptideClusters = new HashMap<Long, ArrayList<String>>(nPeptideClusters);
 
         if (nPeptideClusters > 0) {
 
-            PeptideMatchesIterator peptideMatchesIterator; //@TODO: sort the peptides in some way?
-            if (quantificationFeaturesGenerator.getQuantificationFeaturesCache().memoryCheck()) {
-                peptideMatchesIterator = identification.getPeptideMatchesIterator(parameters, false, null, waitingHandler);
-            } else {
-                peptideMatchesIterator = identification.getPeptideMatchesIterator(parameters, true, parameters, waitingHandler);
-            }
+            PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(waitingHandler);
 
-            
             PeptideMatch peptideMatch;
-            
+
             while ((peptideMatch = peptideMatchesIterator.next()) != null) {
 
-                Peptide peptide = peptideMatch.getTheoreticPeptide();
-                String peptideKey = peptideMatch.getKey();
-                psParameter = (PSParameter) identification.getPeptideMatchParameter(peptideKey, psParameter);
+                Peptide peptide = peptideMatch.getPeptide();
+                long peptideKey = peptideMatch.getKey();
+                psParameter = (PSParameter) identification.getPeptideMatch(peptideKey).getUrParam(psParameter);
 
                 if (psParameter.getMatchValidationLevel().isValidated()) {
                     boolean found = false;
                     for (String keyName : clusteringSettings.getSelectedPeptideClasses()) {
                         boolean inCluster = true;
                         PeptideClusterClassKey peptideClusterClassKey = clusteringSettings.getPeptideClassKey(keyName);
-                        if (peptideClusterClassKey.isStarred() && !psParameter.isStarred()) {
+                        if (peptideClusterClassKey.isStarred() && !psParameter.getStarred()) {
                             inCluster = false;
                         }
                         if (inCluster && peptideClusterClassKey.isNotModified()) {
-                            if (peptide.getModificationMatches() != null) {
-                                for (ModificationMatch modificationMatch : peptide.getModificationMatches()) {
-                                    if (modificationMatch.isVariable()) {
-                                        inCluster = false;
-                                        break;
-                                    }
-                                }
+                            if (peptide.getNVariableModifications() > 0) {
+                                inCluster = false;
+                                break;
                             }
                         }
                         if (inCluster && peptideClusterClassKey.getPossiblePtms() != null) {
                             boolean possiblePtms = false;
-                            if (peptide.getModificationMatches() != null) {
-                                for (ModificationMatch modificationMatch : peptide.getModificationMatches()) {
-                                    if (modificationMatch.isVariable()) {
-                                        if (peptideClusterClassKey.getPossiblePtmsAsSet().contains(modificationMatch.getTheoreticPtm())) {
-                                            possiblePtms = true;
-                                            break;
-                                        }
+                            if (peptide.getNVariableModifications() > 0) {
+                                for (ModificationMatch modificationMatch : peptide.getVariableModifications()) {
+                                    if (peptideClusterClassKey.getPossiblePtmsAsSet().contains(modificationMatch.getModification())) {
+                                        possiblePtms = true;
+                                        break;
                                     }
                                 }
                             }
@@ -371,13 +366,11 @@ public class ClusterBuilder {
                         }
                         if (inCluster && peptideClusterClassKey.getForbiddenPtms() != null) {
                             boolean forbiddenPtms = false;
-                            if (peptide.getModificationMatches() != null) {
-                                for (ModificationMatch modificationMatch : peptide.getModificationMatches()) {
-                                    if (modificationMatch.isVariable()) {
-                                        if (peptideClusterClassKey.getForbiddenPtmsAsSet().contains(modificationMatch.getTheoreticPtm())) {
-                                            forbiddenPtms = true;
-                                            break;
-                                        }
+                            if (peptide.getNVariableModifications() > 0) {
+                                for (ModificationMatch modificationMatch : peptide.getVariableModifications()) {
+                                    if (peptideClusterClassKey.getForbiddenPtmsAsSet().contains(modificationMatch.getModification())) {
+                                        forbiddenPtms = true;
+                                        break;
                                     }
                                 }
                             }
@@ -385,16 +378,16 @@ public class ClusterBuilder {
                                 inCluster = false;
                             }
                         }
-                        if (inCluster && peptideClusterClassKey.isNTerm() && peptide.isNterm(identificationParameters.getSequenceMatchingPreferences()).isEmpty()) {
+                        if (inCluster && peptideClusterClassKey.isNTerm() && PeptideUtils.isNterm(peptide, sequenceProvider)) {
                             inCluster = false;
                         }
-                        if (inCluster && peptideClusterClassKey.isCTerm() && peptide.isCterm(identificationParameters.getSequenceMatchingPreferences()).isEmpty()) {
+                        if (inCluster && peptideClusterClassKey.isCTerm() && PeptideUtils.isCterm(peptide, sequenceProvider)) {
                             inCluster = false;
                         }
                         if (inCluster) {
-                            ArrayList<String> tempClusterKeys = filteredPeptideKeys.get(keyName);
+                            ArrayList<Long> tempClusterKeys = filteredPeptideKeys.get(keyName);
                             if (tempClusterKeys == null) {
-                                tempClusterKeys = new ArrayList<String>();
+                                tempClusterKeys = new ArrayList<Long>();
                                 filteredPeptideKeys.put(keyName, tempClusterKeys);
                             }
                             tempClusterKeys.add(peptideKey);
@@ -455,13 +448,13 @@ public class ClusterBuilder {
 
             for (String spectrumFile : neededFiles) {
 
-                PsmIterator psmMatchesIterator = identification.getPsmIterator(spectrumFile, parameters, false, waitingHandler); //@TODO: sort the PSMs in some way?
+                SpectrumMatchesIterator spectrumMatchesIterator = identification.getSpectrumMatchesIterator(waitingHandler); //@TODO: sort the PSMs in some way?
                 SpectrumMatch spectrumMatch;
-                
-                while ((spectrumMatch = psmMatchesIterator.next()) != null) {
 
-                    String spectrumKey = spectrumMatch.getKey();
-                    psParameter = (PSParameter) identification.getSpectrumMatchParameter(spectrumKey, psParameter);
+                while ((spectrumMatch = spectrumMatchesIterator.next()) != null) {
+
+                    String spectrumKey = spectrumMatch.getSpectrumKey();
+                    psParameter = (PSParameter) identification.getSpectrumMatch(spectrumMatch.getKey()).getUrParam(psParameter);
 
                     if (psParameter.getMatchValidationLevel().isValidated()) {
                         boolean found = false;
@@ -471,7 +464,7 @@ public class ClusterBuilder {
                             if (psmClusterClassKey.getFile() != null && !spectrumFile.equals(psmClusterClassKey.getFile())) {
                                 inCluster = false;
                             }
-                            if (inCluster && psmClusterClassKey.isStarred() && !psParameter.isStarred()) {
+                            if (inCluster && psmClusterClassKey.isStarred() && !psParameter.getStarred()) {
                                 inCluster = false;
                             }
                             if (inCluster) {
@@ -528,7 +521,7 @@ public class ClusterBuilder {
      *
      * @return the protein keys retained after filtering
      */
-    public Set<String> getFilteredProteins() {
+    public Set<Long> getFilteredProteins() {
         return proteinClusters.keySet();
     }
 
@@ -537,7 +530,7 @@ public class ClusterBuilder {
      *
      * @return the peptide keys retained after filtering
      */
-    public Set<String> getFilteredPeptides() {
+    public Set<Long> getFilteredPeptides() {
         return peptideClusters.keySet();
     }
 
@@ -546,7 +539,7 @@ public class ClusterBuilder {
      *
      * @return the PSM keys retained after filtering
      */
-    public Set<String> getFilteredPsms() {
+    public Set<Long> getFilteredPsms() {
         return psmClusters.keySet();
     }
 
@@ -580,39 +573,39 @@ public class ClusterBuilder {
     }
 
     /**
-     * Returns the index of the cluster of the given PSM accession. Null if not
+     * Returns the index of the cluster of the given PSM key. Null if not
      * found or not a PSM.
      *
-     * @param accession the PSM accession
+     * @param key the PSM key
      *
      * @return the index in the cluster
      */
-    public Integer getPsmIndex(String accession) {
-        return psmKeysIndexes.get(accession);
+    public Integer getPsmIndex(Long key) {
+        return psmKeysIndexes.get(key);
     }
 
     /**
-     * Returns the index of the cluster of the given peptide accession. Null if
+     * Returns the index of the cluster of the given peptide key. Null if
      * not found or not a peptide.
      *
-     * @param accession the peptide accession
+     * @param key the peptide key
      *
      * @return the index in the cluster
      */
-    public Integer getPeptideIndex(String accession) {
-        return peptideKeysIndexes.get(accession);
+    public Integer getPeptideIndex(Long key) {
+        return peptideKeysIndexes.get(key);
     }
 
     /**
-     * Returns the index of the cluster of the given protein accession. Null if
+     * Returns the index of the cluster of the given protein key. Null if
      * not found or not a protein.
      *
-     * @param accession the protein accession
+     * @param key the protein key
      *
      * @return the index in the cluster
      */
-    public Integer getProteinIndex(String accession) {
-        return proteinKeysIndexes.get(accession);
+    public Integer getProteinIndex(Long key) {
+        return proteinKeysIndexes.get(key);
     }
 
     /**
@@ -622,7 +615,7 @@ public class ClusterBuilder {
      *
      * @return the cluster classes corresponding to this protein
      */
-    public ArrayList<String> getProteinClasses(String key) {
+    public ArrayList<String> getProteinClasses(Long key) {
         return proteinClusters.get(key);
     }
 
@@ -633,7 +626,7 @@ public class ClusterBuilder {
      *
      * @return the cluster classes corresponding to this peptide
      */
-    public ArrayList<String> getPeptideClasses(String key) {
+    public ArrayList<String> getPeptideClasses(Long key) {
         return peptideClusters.get(key);
     }
 
@@ -644,7 +637,7 @@ public class ClusterBuilder {
      *
      * @return the cluster classes corresponding to this PSM
      */
-    public ArrayList<String> getPsmClasses(String key) {
+    public ArrayList<String> getPsmClasses(Long key) {
         return psmClusters.get(key);
     }
 }

@@ -2,24 +2,21 @@ package eu.isas.reporter.gui;
 
 import com.compomics.util.FileAndFileFilter;
 import com.compomics.util.Util;
-import com.compomics.util.db.ObjectsCache;
+import com.compomics.util.db.object.ObjectsCache;
 import com.compomics.util.examples.BareBonesBrowserLaunch;
-import com.compomics.util.experiment.MsExperiment;
-import com.compomics.util.experiment.biology.Sample;
-import com.compomics.util.experiment.biology.ions.ReporterIon;
+import com.compomics.util.experiment.biology.ions.impl.ReporterIon;
 import com.compomics.util.experiment.identification.Identification;
-import com.compomics.util.experiment.identification.identification_parameters.SearchParameters;
-import com.compomics.util.experiment.identification.protein_sequences.SequenceFactory;
-import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
+import com.compomics.util.experiment.mass_spectrometry.SpectrumFactory;
 import com.compomics.util.experiment.quantification.Quantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethodFactory;
-import com.compomics.util.gui.parameters.ProcessingPreferencesDialog;
+import com.compomics.util.gui.parameters.tools.ProcessingParametersDialog;
 import com.compomics.util.gui.renderers.AlignedListCellRenderer;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
-import com.compomics.util.preferences.IdentificationParameters;
-import com.compomics.util.preferences.ProcessingPreferences;
+import com.compomics.util.parameters.identification.IdentificationParameters;
+import com.compomics.util.parameters.identification.search.SearchParameters;
+import com.compomics.util.parameters.tools.ProcessingParameters;
 import eu.isas.peptideshaker.PeptideShaker;
 import eu.isas.peptideshaker.preferences.ProjectDetails;
 import eu.isas.peptideshaker.utils.CpsParent;
@@ -85,9 +82,9 @@ public class NewDialog extends javax.swing.JDialog {
      */
     private DisplayPreferences displayPreferences;
     /**
-     * The processing preferences.
+     * The processing parameters.
      */
-    private ProcessingPreferences processingPreferences = new ProcessingPreferences();
+    private ProcessingParameters processingParameters = new ProcessingParameters();
     /**
      * A simple progress dialog.
      */
@@ -243,7 +240,7 @@ public class NewDialog extends javax.swing.JDialog {
         // disable the user to drag column headers to reorder columns
         sampleAssignmentTable.getTableHeader().setReorderingAllowed(false);
 
-        processingTxt.setText(processingPreferences.getnThreads() + " cores");
+        processingTxt.setText(processingParameters.getnThreads() + " cores");
     }
 
     /**
@@ -1001,7 +998,7 @@ public class NewDialog extends javax.swing.JDialog {
      * @param evt
      */
     private void editQuantPrefsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editQuantPrefsButtonActionPerformed
-        ReporterSettingsDialog reporterSettingsDialog = new ReporterSettingsDialog(this, reporterSettings, cpsParent.getIdentificationParameters().getSearchParameters().getPtmSettings(), getSelectedMethod(), true);
+        ReporterSettingsDialog reporterSettingsDialog = new ReporterSettingsDialog(this, reporterSettings, cpsParent.getIdentificationParameters().getSearchParameters().getModificationParameters(), getSelectedMethod(), true);
         ReporterSettings newSettings = reporterSettingsDialog.getReporterSettings();
         if (!reporterSettingsDialog.isCanceled()) {
             reporterSettings = newSettings;
@@ -1076,7 +1073,7 @@ public class NewDialog extends javax.swing.JDialog {
         if (validateInput()) {
             reporterIonQuantification = new ReporterIonQuantification(Quantification.QuantificationMethod.REPORTER_IONS);
             for (String key : sampleNames.keySet()) {
-                reporterIonQuantification.assignSample(key, new Sample(sampleNames.get(key)));
+                reporterIonQuantification.assignSample(key, sampleNames.get(key));
             }
             reporterIonQuantification.setMethod(selectedMethod);
             reporterIonQuantification.setControlSamples(controlSamples);
@@ -1088,7 +1085,7 @@ public class NewDialog extends javax.swing.JDialog {
             // set the user defined reagents order
             displayPreferences.setReagents(reagents);
 
-            reporterGUI.createNewProject(cpsParent, reporterSettings, reporterIonQuantification, processingPreferences, displayPreferences);
+            reporterGUI.createNewProject(cpsParent, reporterSettings, reporterIonQuantification, processingParameters, displayPreferences);
             dispose();
         }
     }//GEN-LAST:event_loadButtonActionPerformed
@@ -1099,10 +1096,10 @@ public class NewDialog extends javax.swing.JDialog {
      * @param evt
      */
     private void editProcessingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editProcessingButtonActionPerformed
-        ProcessingPreferencesDialog processingPreferencesDialog = new ProcessingPreferencesDialog(this, reporterGUI, processingPreferences, true);
-        if (!processingPreferencesDialog.isCanceled()) {
-            processingPreferences = processingPreferencesDialog.getProcessingPreferences();
-            processingTxt.setText(processingPreferences.getnThreads() + " cores");
+        ProcessingParametersDialog processingParametersDialog = new ProcessingParametersDialog(this, reporterGUI, processingParameters, true);
+        if (!processingParametersDialog.isCanceled()) {
+            processingParameters = processingParametersDialog.getProcessingParameters();
+            processingTxt.setText(processingParameters.getnThreads() + " cores");
         }
     }//GEN-LAST:event_editProcessingButtonActionPerformed
 
@@ -1430,7 +1427,6 @@ public class NewDialog extends javax.swing.JDialog {
 
                 // set up cache
                 cache = new ObjectsCache();
-                cache.setAutomatedMemoryManagement(true);
 
                 // set up quantification settings
                 reporterSettings = projectImporter.getReporterSettings();
@@ -1469,33 +1465,6 @@ public class NewDialog extends javax.swing.JDialog {
      */
     public SearchParameters getSearchParameters() {
         return cpsParent.getIdentificationParameters().getSearchParameters();
-    }
-
-    /**
-     * Returns the experiment.
-     *
-     * @return the experiment
-     */
-    public MsExperiment getExperiment() {
-        return cpsParent.getExperiment();
-    }
-
-    /**
-     * Returns the sample.
-     *
-     * @return the sample
-     */
-    public Sample getSample() {
-        return cpsParent.getSample();
-    }
-
-    /**
-     * Returns the replicate number.
-     *
-     * @return the replicateNumber
-     */
-    public int getReplicateNumber() {
-        return cpsParent.getReplicateNumber();
     }
 
     /**
@@ -1740,10 +1709,10 @@ public class NewDialog extends javax.swing.JDialog {
                     ReporterIon reporterIon = selectedMethod.getReporterIon(reagentName);
                     return reporterIon.getName();
                 case 2:
-                    Sample sample = getSample();
+                    String projectName = reporterGUI.getProjectParameters().getProjectUniqueName();
                     if (sampleNames.get(reagentName) == null) {
-                        if (sample != null) {
-                            sampleNames.put(reagentName, sample.getReference() + " " + reagentName);
+                        if (projectName != null) {
+                            sampleNames.put(reagentName, projectName + " " + reagentName);
                         } else {
                             sampleNames.put(reagentName, "Sample " + reagentName);
                         }

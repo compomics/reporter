@@ -1,6 +1,6 @@
 package eu.isas.reporter.calculation;
 
-import com.compomics.util.experiment.biology.Atom;
+import com.compomics.util.experiment.biology.atoms.Atom;
 import java.util.HashMap;
 
 /**
@@ -8,6 +8,7 @@ import java.util.HashMap;
  * labels to be corrected.
  *
  * @author Marc Vaudel
+ * @author Harald Barsnes
  */
 public class CorrectionMatrix {
 

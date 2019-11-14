@@ -1,7 +1,7 @@
 package eu.isas.reporter.gui;
 
 import com.compomics.util.Util;
-import com.compomics.util.experiment.biology.ions.ElementaryIon;
+import com.compomics.util.experiment.biology.ions.impl.ElementaryIon;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethodFactory;
 import java.io.File;
 import java.io.IOException;

@@ -1,6 +1,6 @@
 package eu.isas.reporter.settings;
 
-import com.compomics.util.experiment.identification.spectrum_annotation.AnnotationSettings;
+import com.compomics.util.experiment.identification.spectrum_annotation.AnnotationParameters;
 import eu.isas.reporter.preferences.ProjectDetails;
 import java.io.Serializable;
 
@@ -8,13 +8,14 @@ import java.io.Serializable;
  * This class contains the reporter settings for this project.
  *
  * @author Marc Vaudel
+ * @author Harald Barsnes
  */
 public class ReporterSettings implements Serializable {
 
     /**
-     * The annotation settings.
+     * The annotation parameters.
      */
-    private AnnotationSettings annotationSettings;
+    private AnnotationParameters annotationParameters;
     /**
      * The project details.
      */
@@ -44,7 +45,7 @@ public class ReporterSettings implements Serializable {
         clone.setReporterIonSelectionSettings(reporterIonSelectionSettings.clone());
         clone.setRatioEstimationSettings(ratioEstimationSettings.clone());
         clone.setNormalizationSettings(normalizationSettings.clone());
-        clone.setAnnotationPreferences(annotationSettings.clone());
+        clone.setAnnotationParameters(annotationParameters.clone());
         clone.setProjectDetails(projectDetails); //@TODO add cloning of the project details after implementation of the project details
         return clone;
     }
@@ -64,21 +65,21 @@ public class ReporterSettings implements Serializable {
     }
 
     /**
-     * Returns the spectrum annotation preferences.
+     * Returns the spectrum annotation parameters.
      *
-     * @return the spectrum annotation preferences
+     * @return the spectrum annotation parameters
      */
-    public AnnotationSettings getAnnotationSettings() {
-        return annotationSettings;
+    public AnnotationParameters getAnnotationParameters() {
+        return annotationParameters;
     }
 
     /**
-     * Sets the spectrum annotation preferences.
+     * Sets the spectrum annotation parameters.
      *
-     * @param annotationSettings the spectrum annotation preferences
+     * @param annotationParameters the spectrum annotation parameters
      */
-    public void setAnnotationPreferences(AnnotationSettings annotationSettings) {
-        this.annotationSettings = annotationSettings;
+    public void setAnnotationParameters(AnnotationParameters annotationParameters) {
+        this.annotationParameters = annotationParameters;
     }
 
     /**

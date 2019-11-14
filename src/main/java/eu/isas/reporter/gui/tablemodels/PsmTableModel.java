@@ -2,20 +2,17 @@ package eu.isas.reporter.gui.tablemodels;
 
 import com.compomics.util.exceptions.ExceptionHandler;
 import com.compomics.util.experiment.identification.Identification;
-import com.compomics.util.experiment.identification.SpectrumIdentificationAssumption;
-import com.compomics.util.experiment.identification.identification_parameters.SearchParameters;
 import com.compomics.util.experiment.identification.matches.SpectrumMatch;
-import com.compomics.util.experiment.identification.matches_iterators.PsmIterator;
-import com.compomics.util.experiment.massspectrometry.Precursor;
-import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
-import com.compomics.util.experiment.personalization.UrParameter;
+import com.compomics.util.experiment.identification.peptide_shaker.PSParameter;
+import com.compomics.util.experiment.mass_spectrometry.SpectrumFactory;
+import com.compomics.util.experiment.mass_spectrometry.spectra.Precursor;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.gui.tablemodels.SelfUpdatingTableModel;
 import com.compomics.util.math.BasicMathFunctions;
-import com.compomics.util.preferences.IdentificationParameters;
+import com.compomics.util.parameters.identification.IdentificationParameters;
+import com.compomics.util.parameters.identification.search.SearchParameters;
 import com.compomics.util.waiting.WaitingHandler;
 import eu.isas.peptideshaker.gui.tabpanels.SpectrumIdentificationPanel;
-import eu.isas.peptideshaker.parameters.PSParameter;
 import eu.isas.peptideshaker.scoring.PSMaps;
 import eu.isas.peptideshaker.scoring.maps.InputMap;
 import eu.isas.peptideshaker.utils.DisplayFeaturesGenerator;
@@ -23,10 +20,8 @@ import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
 import eu.isas.reporter.preferences.DisplayPreferences;
 import eu.isas.reporter.quantificationdetails.PsmQuantificationDetails;
 import java.awt.Color;
-import java.sql.SQLNonTransientConnectionException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import no.uib.jsparklines.data.JSparklinesDataSeries;
 
 /**
@@ -68,7 +63,7 @@ public class PsmTableModel extends SelfUpdatingTableModel {
     /**
      * A list of ordered PSM keys.
      */
-    private ArrayList<String> psmKeys = null;
+    private long[] psmKeys = null;
     /**
      * Indicates whether the scores should be displayed instead of the
      * confidence
@@ -103,7 +98,7 @@ public class PsmTableModel extends SelfUpdatingTableModel {
      */
     public PsmTableModel(Identification identification, DisplayFeaturesGenerator displayFeaturesGenerator, DisplayPreferences displayPreferences, IdentificationParameters identificationParameters,
             ReporterIonQuantification reporterIonQuantification, QuantificationFeaturesGenerator quantificationFeaturesGenerator,
-            ArrayList<String> psmKeys, boolean displayScores, ExceptionHandler exceptionHandler) {
+            long[] psmKeys, boolean displayScores, ExceptionHandler exceptionHandler) {
         this.identification = identification;
         this.displayFeaturesGenerator = displayFeaturesGenerator;
         this.displayPreferences = displayPreferences;
@@ -138,7 +133,7 @@ public class PsmTableModel extends SelfUpdatingTableModel {
      */
     public void updateDataModel(Identification identification, DisplayFeaturesGenerator displayFeaturesGenerator, DisplayPreferences displayPreferences, IdentificationParameters identificationParameters,
             ReporterIonQuantification reporterIonQuantification, QuantificationFeaturesGenerator quantificationFeaturesGenerator,
-            ArrayList<String> psmKeys, boolean displayScores) {
+            long[] psmKeys, boolean displayScores) {
         this.identification = identification;
         this.displayFeaturesGenerator = displayFeaturesGenerator;
         this.displayPreferences = displayPreferences;
@@ -171,11 +166,7 @@ public class PsmTableModel extends SelfUpdatingTableModel {
 
     @Override
     public int getRowCount() {
-        if (psmKeys != null) {
-            return psmKeys.size();
-        } else {
-            return 0;
-        }
+        return psmKeys == null ? 0 : psmKeys.length;
     }
 
     @Override
@@ -214,141 +205,91 @@ public class PsmTableModel extends SelfUpdatingTableModel {
     @Override
     public Object getValueAt(int row, int column) {
 
-        try {
-            int viewIndex = getViewIndex(row);
+        int viewIndex = getViewIndex(row);
 
-            if (viewIndex < psmKeys.size()) { // escape possible null pointer
+        if (viewIndex < psmKeys.length) {
 
-                String psmKey = psmKeys.get(viewIndex);
-                boolean useDB = !isSelfUpdating();
-
-                switch (column) {
-                    case 0:
-                        return viewIndex + 1;
-                    case 1:
-                        ArrayList<Double> data = new ArrayList<Double>();
-                        PsmQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getPSMQuantificationDetails(psmKey);
-                        ArrayList<String> reagentsOrder = displayPreferences.getReagents();
-                        for (String tempReagent : reagentsOrder) {
-                            int sampleIndex = sampleIndexes.indexOf(tempReagent);
-                            Double ratio = quantificationDetails.getRatio(sampleIndexes.get(sampleIndex), reporterIonQuantification.getNormalizationFactors());
-                            if (ratio != null) {
-                                if (ratio != 0) {
-                                    ratio = BasicMathFunctions.log(ratio, 2);
-                                }
-
-                                data.add(ratio);
-                            }
-                        }
-                        return new JSparklinesDataSeries(data, Color.BLACK, null);
-                    case 2:
-                        SpectrumMatch spectrumMatch = identification.getSpectrumMatch(psmKey, useDB && !isScrolling);
-                        if (spectrumMatch == null) {
-                            if (isScrolling()) {
-                                return null;
-                            } else if (!useDB) {
-                                dataMissingAtRow(row);
-                                return DisplayPreferences.LOADING_MESSAGE;
-                            }
-                        }
-
-                        HashMap<Integer, HashMap<Double, ArrayList<SpectrumIdentificationAssumption>>> assumptions = identification.getAssumptions(psmKey);
-                        return SpectrumIdentificationPanel.isBestPsmEqualForAllIdSoftware(spectrumMatch, assumptions, identificationParameters.getSequenceMatchingPreferences(), inputMap.getInputAlgorithmsSorted().size());
-                    case 3:
-                        spectrumMatch = identification.getSpectrumMatch(psmKey, useDB && !isScrolling);
-                        if (spectrumMatch == null) {
-                            if (isScrolling()) {
-                                return null;
-                            } else if (!useDB) {
-                                dataMissingAtRow(row);
-                                return DisplayPreferences.LOADING_MESSAGE;
-                            }
-                        }
-                        return displayFeaturesGenerator.getTaggedPeptideSequence(spectrumMatch, true, true, true);
-                    case 4:
-                        spectrumMatch = identification.getSpectrumMatch(psmKey, useDB && !isScrolling);
-                        if (spectrumMatch == null) {
-                            if (isScrolling()) {
-                                return null;
-                            } else if (!useDB) {
-                                dataMissingAtRow(row);
-                                return DisplayPreferences.LOADING_MESSAGE;
-                            }
-                        }
-                        if (spectrumMatch.getBestPeptideAssumption() != null) {
-                            return spectrumMatch.getBestPeptideAssumption().getIdentificationCharge().value;
-                        } else if (spectrumMatch.getBestTagAssumption() != null) {
-                            return spectrumMatch.getBestTagAssumption().getIdentificationCharge().value;
-                        } else {
-                            throw new IllegalArgumentException("No best assumption found for spectrum " + psmKey + ".");
-                        }
-                    case 5:
-                        spectrumMatch = identification.getSpectrumMatch(psmKey, useDB && !isScrolling);
-                        if (spectrumMatch == null) {
-                            if (isScrolling()) {
-                                return null;
-                            } else if (!useDB) {
-                                dataMissingAtRow(row);
-                                return DisplayPreferences.LOADING_MESSAGE;
-                            }
-                        }
-                        Precursor precursor = SpectrumFactory.getInstance().getPrecursor(psmKey);
-                        SearchParameters searchParameters = identificationParameters.getSearchParameters();
-                        if (spectrumMatch.getBestPeptideAssumption() != null) {
-                            return Math.abs(spectrumMatch.getBestPeptideAssumption().getDeltaMass(precursor.getMz(), searchParameters.isPrecursorAccuracyTypePpm(), searchParameters.getMinIsotopicCorrection(), searchParameters.getMaxIsotopicCorrection()));
-                        } else if (spectrumMatch.getBestTagAssumption() != null) {
-                            return Math.abs(spectrumMatch.getBestTagAssumption().getDeltaMass(precursor.getMz(), searchParameters.isPrecursorAccuracyTypePpm(), searchParameters.getMinIsotopicCorrection(), searchParameters.getMaxIsotopicCorrection()));
-                        } else {
-                            throw new IllegalArgumentException("No best assumption found for spectrum " + psmKey + ".");
-                        }
-                    case 6:
-                        PSParameter psParameter = (PSParameter) identification.getSpectrumMatchParameter(psmKey, new PSParameter(), useDB && !isScrolling);
-                        if (psParameter == null) {
-                            if (isScrolling) {
-                                return null;
-                            } else if (!useDB) {
-                                dataMissingAtRow(row);
-                                return DisplayPreferences.LOADING_MESSAGE;
-                            }
-                        }
-                        if (psParameter != null) {
-                            if (showScores) {
-                                return psParameter.getPsmScore();
-                            } else {
-                                return psParameter.getPsmConfidence();
-                            }
-                        } else {
-                            return null;
-                        }
-                    case 7:
-                        psParameter = (PSParameter) identification.getSpectrumMatchParameter(psmKey, new PSParameter(), useDB && !isScrolling);
-                        if (psParameter == null) {
-                            if (isScrolling) {
-                                return null;
-                            } else if (!useDB) {
-                                dataMissingAtRow(row);
-                                return DisplayPreferences.LOADING_MESSAGE;
-                            }
-                        }
-                        if (psParameter != null) {
-                            return psParameter.getMatchValidationLevel().getIndex();
-                        } else {
-                            return null;
-                        }
-                    default:
-                        return null;
-                }
-            } else {
-                return null;
+            if (column == 0) {
+                return viewIndex + 1;
             }
-        } catch (Exception e) {
-            if (exceptionHandler != null) {
-                exceptionHandler.catchException(e);
-            } else {
-                throw new IllegalArgumentException("Table not instantiated.");
+
+//            if (isScrolling) {
+//                return null;
+//            }
+//
+//            if (!isSelfUpdating()) {
+//                dataMissingAtRow(row);
+//                return DisplayParameters.LOADING_MESSAGE;
+//            }
+            long psmKey = psmKeys[viewIndex];
+            SpectrumMatch spectrumMatch = identification.getSpectrumMatch(psmKey);
+
+            switch (column) {
+
+                case 1:
+                    ArrayList<Double> data = new ArrayList<Double>();
+                    PsmQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getPSMQuantificationDetails(spectrumMatch.getSpectrumKey());
+                    ArrayList<String> reagentsOrder = displayPreferences.getReagents();
+                    for (String tempReagent : reagentsOrder) {
+                        int sampleIndex = sampleIndexes.indexOf(tempReagent);
+                        Double ratio = quantificationDetails.getRatio(sampleIndexes.get(sampleIndex), reporterIonQuantification.getNormalizationFactors());
+                        if (ratio != null) {
+                            if (ratio != 0) {
+                                ratio = BasicMathFunctions.log(ratio, 2);
+                            }
+
+                            data.add(ratio);
+                        }
+                    }
+                    return new JSparklinesDataSeries(data, Color.BLACK, null);
+                case 2:
+                    return SpectrumIdentificationPanel.isBestPsmEqualForAllIdSoftware(spectrumMatch, identificationParameters.getSequenceMatchingParameters(), inputMap.getInputAlgorithmsSorted().size());
+                case 3:
+                    return displayFeaturesGenerator.getTaggedPeptideSequence(spectrumMatch, true, true, true);
+                case 4:
+                    if (spectrumMatch.getBestPeptideAssumption() != null) {
+
+                        return spectrumMatch.getBestPeptideAssumption().getIdentificationCharge();
+
+                    } else if (spectrumMatch.getBestTagAssumption() != null) {
+
+                        return spectrumMatch.getBestTagAssumption().getIdentificationCharge();
+
+                    } else {
+
+                        throw new IllegalArgumentException("No best assumption found for spectrum " + psmKey + ".");
+
+                    }
+                case 5:
+                    String spectrumKey = spectrumMatch.getSpectrumKey();
+                    Precursor precursor = SpectrumFactory.getInstance().getPrecursor(spectrumKey);
+                    SearchParameters searchParameters = identificationParameters.getSearchParameters();
+
+                    if (spectrumMatch.getBestPeptideAssumption() != null) {
+
+                        return Math.abs(spectrumMatch.getBestPeptideAssumption().getDeltaMass(precursor.getMz(), searchParameters.isPrecursorAccuracyTypePpm(), searchParameters.getMinIsotopicCorrection(), searchParameters.getMaxIsotopicCorrection()));
+
+                    } else if (spectrumMatch.getBestTagAssumption() != null) {
+
+                        return Math.abs(spectrumMatch.getBestTagAssumption().getDeltaMass(precursor.getMz(), searchParameters.isPrecursorAccuracyTypePpm(), searchParameters.getMinIsotopicCorrection(), searchParameters.getMaxIsotopicCorrection()));
+
+                    } else {
+
+                        throw new IllegalArgumentException("No best assumption found for spectrum " + psmKey + ".");
+
+                    }
+                case 6:
+                    PSParameter psParameter = (PSParameter) spectrumMatch.getUrParam(PSParameter.dummy);
+                    return showScores ? psParameter.getScore() : psParameter.getConfidence();
+                case 7:
+                    psParameter = (PSParameter) spectrumMatch.getUrParam(PSParameter.dummy);
+                    return psParameter.getMatchValidationLevel().getIndex();
+                default:
+                    return null;
             }
-            return "";
         }
+
+        return null;
     }
 
     /**
@@ -383,52 +324,10 @@ public class PsmTableModel extends SelfUpdatingTableModel {
 
     @Override
     protected int loadDataForRows(ArrayList<Integer> rows, WaitingHandler waitingHandler) {
-        try {
-            ArrayList<String> tempPsmKeys = new ArrayList<String>();
-            for (int i : rows) {
-                tempPsmKeys.add(psmKeys.get(i));
-            }
+        boolean canceled = rows.stream()
+                .map(i -> identification.getSpectrumMatch(psmKeys[i]))
+                .anyMatch(dummy -> waitingHandler.isRunCanceled());
 
-            ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
-            parameters.add(new PSParameter());
-            PsmIterator psmIterator = identification.getPsmIterator(tempPsmKeys, parameters, true, waitingHandler);
-            psmIterator.setBatchSize(batchSize);
-            SpectrumMatch spectrumMatch;
-
-            int i = 0;
-            
-            while ((spectrumMatch = psmIterator.next()) != null) {
-                psmIterator.next();
-                if (waitingHandler.isRunCanceled()) {
-                    return rows.get(i);
-                }
-                i++;
-            }
-            return rows.get(rows.size() - 1);
-        } catch (SQLNonTransientConnectionException e) {
-            // connection has been closed
-            return rows.get(0);
-        } catch (Exception e) {
-            catchException(e);
-            return rows.get(0);
-        }
-    }
-
-    @Override
-    protected void loadDataForColumn(int column, WaitingHandler waitingHandler) {
-        try {
-            if (column == 1
-                    || column == 6
-                    || column == 7) {
-                identification.loadSpectrumMatchParameters(psmKeys, new PSParameter(), waitingHandler, false);
-            } else if (column == 2
-                    || column == 3
-                    || column == 4
-                    || column == 5) {
-                identification.loadSpectrumMatches(psmKeys, waitingHandler, false);
-            }
-        } catch (Exception e) {
-            catchException(e);
-        }
+        return canceled ? rows.get(0) : rows.get(rows.size() - 1);
     }
 }

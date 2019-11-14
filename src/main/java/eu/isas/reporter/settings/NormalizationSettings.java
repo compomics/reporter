@@ -1,7 +1,5 @@
 package eu.isas.reporter.settings;
 
-import com.compomics.util.experiment.identification.protein_sequences.FastaIndex;
-import com.compomics.util.experiment.identification.protein_sequences.SequenceFactory;
 import eu.isas.reporter.Reporter;
 import eu.isas.reporter.calculation.normalization.NormalizationType;
 import java.io.File;
@@ -13,6 +11,7 @@ import java.util.HashSet;
  * Settings used for the normalization.
  *
  * @author Marc Vaudel
+ * @author Harald Barsnes
  */
 public class NormalizationSettings implements Serializable {
 

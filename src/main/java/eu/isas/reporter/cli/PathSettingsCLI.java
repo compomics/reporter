@@ -2,7 +2,7 @@ package eu.isas.reporter.cli;
 
 import com.compomics.software.CompomicsWrapper;
 import com.compomics.software.settings.PathKey;
-import com.compomics.software.settings.UtilitiesPathPreferences;
+import com.compomics.software.settings.UtilitiesPathParameters;
 import com.compomics.util.gui.waiting.waitinghandlers.WaitingHandlerCLIImpl;
 import com.compomics.util.waiting.WaitingHandler;
 import eu.isas.reporter.Reporter;
@@ -92,11 +92,11 @@ public class PathSettingsCLI {
                 try {
                     ReporterPathPreferences.ReporterPathKey reporterPathKey = ReporterPathPreferences.ReporterPathKey.getKeyFromId(id);
                     if (reporterPathKey == null) {
-                        UtilitiesPathPreferences.UtilitiesPathKey utilitiesPathKey = UtilitiesPathPreferences.UtilitiesPathKey.getKeyFromId(id);
+                        UtilitiesPathParameters.UtilitiesPathKey utilitiesPathKey = UtilitiesPathParameters.UtilitiesPathKey.getKeyFromId(id);
                         if (utilitiesPathKey == null) {
                             System.out.println("Path id " + id + " not recognized.");
                         } else {
-                            UtilitiesPathPreferences.setPathPreference(utilitiesPathKey, pathInput.get(id));
+                            UtilitiesPathParameters.setPathParameter(utilitiesPathKey, pathInput.get(id));
                         }
                     } else {
                         ReporterPathPreferences.setPathPreference(reporterPathKey, pathInput.get(id));
@@ -108,7 +108,7 @@ public class PathSettingsCLI {
             }
 
             // write path file preference
-            File destinationFile = new File(Reporter.getJarFilePath(), UtilitiesPathPreferences.configurationFileName);
+            File destinationFile = new File(Reporter.getJarFilePath(), UtilitiesPathParameters.configurationFileName);
             try {
                 ReporterPathPreferences.writeConfigurationToFile(destinationFile);
             } catch (Exception e) {
@@ -118,7 +118,7 @@ public class PathSettingsCLI {
 
         } else {
             try {
-                File pathConfigurationFile = new File(getJarFilePath(), UtilitiesPathPreferences.configurationFileName);
+                File pathConfigurationFile = new File(getJarFilePath(), UtilitiesPathParameters.configurationFileName);
                 if (pathConfigurationFile.exists()) {
                     ReporterPathPreferences.loadPathPreferencesFromFile(pathConfigurationFile);
                 }

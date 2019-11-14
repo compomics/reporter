@@ -1,33 +1,32 @@
 package eu.isas.reporter;
 
 import com.compomics.software.CompomicsWrapper;
-import com.compomics.software.settings.UtilitiesPathPreferences;
-import com.compomics.util.experiment.biology.Peptide;
-import com.compomics.util.experiment.biology.Protein;
-import com.compomics.util.experiment.biology.ions.ReporterIon;
+import com.compomics.software.settings.UtilitiesPathParameters;
+import com.compomics.util.experiment.biology.ions.impl.ReporterIon;
+import com.compomics.util.experiment.biology.proteins.Peptide;
+import com.compomics.util.experiment.biology.proteins.Protein;
 import com.compomics.util.experiment.identification.Identification;
-import com.compomics.util.experiment.identification.identification_parameters.SearchParameters;
+import static com.compomics.util.experiment.identification.IdentificationMatch.MatchType.Spectrum;
+import com.compomics.util.experiment.identification.features.IdentificationFeaturesGenerator;
 import com.compomics.util.experiment.identification.matches.IonMatch;
 import com.compomics.util.experiment.identification.matches.ModificationMatch;
 import com.compomics.util.experiment.identification.matches.PeptideMatch;
 import com.compomics.util.experiment.identification.matches.ProteinMatch;
 import com.compomics.util.experiment.identification.matches.SpectrumMatch;
 import com.compomics.util.experiment.identification.matches_iterators.PeptideMatchesIterator;
-import com.compomics.util.experiment.identification.matches_iterators.PsmIterator;
-import com.compomics.util.experiment.identification.protein_sequences.SequenceFactory;
+import com.compomics.util.experiment.identification.matches_iterators.SpectrumMatchesIterator;
+import com.compomics.util.experiment.identification.peptide_shaker.PSParameter;
 import com.compomics.util.experiment.identification.spectrum_annotation.SpectrumAnnotator;
-import com.compomics.util.experiment.massspectrometry.MSnSpectrum;
-import com.compomics.util.experiment.massspectrometry.Precursor;
-import com.compomics.util.experiment.massspectrometry.Spectrum;
-import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
+import com.compomics.util.experiment.mass_spectrometry.SpectrumFactory;
+import com.compomics.util.experiment.mass_spectrometry.spectra.Precursor;
+import com.compomics.util.experiment.mass_spectrometry.spectra.Spectrum;
 import com.compomics.util.experiment.personalization.UrParameter;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
 import com.compomics.util.math.BasicMathFunctions;
-import com.compomics.util.preferences.SequenceMatchingPreferences;
+import com.compomics.util.parameters.identification.advanced.SequenceMatchingParameters;
+import com.compomics.util.parameters.identification.search.SearchParameters;
 import com.compomics.util.waiting.WaitingHandler;
-import eu.isas.peptideshaker.parameters.PSParameter;
-import eu.isas.peptideshaker.utils.IdentificationFeaturesGenerator;
 import eu.isas.reporter.calculation.Deisotoper;
 import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
 import eu.isas.reporter.calculation.QuantificationFilter;
@@ -95,34 +94,22 @@ public class Reporter {
      * allowing canceling the process
      *
      * @return the quantification details of the match
-     *
-     * @throws java.sql.SQLException exception thrown whenever an error occurred
-     * while interacting with the database
-     * @throws java.io.IOException exception thrown whenever an error occurred
-     * while interacting with a file
-     * @throws java.lang.ClassNotFoundException exception thrown whenever an
-     * error occurred while deserializing an object
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown
-     * whenever an error occurred while reading an mzML file
-     * @throws java.lang.InterruptedException exception thrown whenever a
-     * threading error occurred
      */
     public static ProteinQuantificationDetails estimateProteinMatchQuantificationDetails(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator,
             QuantificationFeaturesGenerator quantificationFeaturesGenerator, RatioEstimationSettings ratioEstimationSettings,
-            ReporterIonQuantification reporterIonQuantification, SearchParameters searchParameters, ProteinMatch proteinMatch, WaitingHandler waitingHandler)
-            throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
+            ReporterIonQuantification reporterIonQuantification, SearchParameters searchParameters, ProteinMatch proteinMatch, WaitingHandler waitingHandler) {
 
         ProteinQuantificationDetails result = new ProteinQuantificationDetails();
-        HashMap<String, ArrayList<Double>> ratios = new HashMap<String, ArrayList<Double>>();
-        HashMap<String, ArrayList<Double>> uniqueRatios = new HashMap<String, ArrayList<Double>>();
-        HashMap<String, ArrayList<Double>> sharedRatios = new HashMap<String, ArrayList<Double>>();
+        HashMap<String, ArrayList<Double>> ratios = new HashMap<>();
+        HashMap<String, ArrayList<Double>> uniqueRatios = new HashMap<>();
+        HashMap<String, ArrayList<Double>> sharedRatios = new HashMap<>();
         Set<String> indexes = reporterIonQuantification.getSampleIndexes();
 
         PSParameter psParameter = new PSParameter();
-        ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
+        ArrayList<UrParameter> parameters = new ArrayList<>(1);
         parameters.add(psParameter);
 
-        PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(proteinMatch.getPeptideMatchesKeys(), parameters, false, null, waitingHandler);
+        PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(proteinMatch.getPeptideMatchesKeys(), waitingHandler);
         PeptideMatch peptideMatch;
 
         while ((peptideMatch = peptideMatchesIterator.next()) != null) {
@@ -143,7 +130,7 @@ public class Reporter {
                     }
                     if (QuantificationFilter.isRatioValid(ratioEstimationSettings, ratio)) {
                         channelRatios.add(ratio);
-                        if (identificationFeaturesGenerator.getNValidatedProteinGroups(peptideMatch.getTheoreticPeptide()) == 1) {
+                        if (identificationFeaturesGenerator.getNValidatedProteinGroups(peptideMatch.getPeptide().getId()) == 1) {
                             channelUniqueRatios.add(ratio);
                         } else {
                             channelSharedRatios.add(ratio);
@@ -181,7 +168,7 @@ public class Reporter {
      * @param ratioEstimationSettings the ratio estimation settings
      * @param reporterIonQuantification the reporter quantification settings
      * @param searchParameters the identification settings used
-     * @param sequenceMatchingPreferences the sequence matching preferences
+     * @param sequenceMatchingParameters the sequence matching preferences
      * @param ptmName the name of the PTM
      * @param matchKey the key of the match of interest
      * @param site the site of the PTM on the protein sequence
@@ -204,33 +191,31 @@ public class Reporter {
     public static ProteinPtmQuantificationDetails estimatePTMQuantificationDetails(Identification identification,
             QuantificationFeaturesGenerator quantificationFeaturesGenerator, RatioEstimationSettings ratioEstimationSettings,
             ReporterIonQuantification reporterIonQuantification, SearchParameters searchParameters,
-            SequenceMatchingPreferences sequenceMatchingPreferences, String ptmName, String matchKey, int site, WaitingHandler waitingHandler)
+            SequenceMatchingParameters sequenceMatchingParameters, String ptmName, long matchKey, int site, WaitingHandler waitingHandler)
             throws IllegalArgumentException, SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
 
         ProteinPtmQuantificationDetails result = new ProteinPtmQuantificationDetails();
-        HashMap<String, ArrayList<Double>> ratios = new HashMap<String, ArrayList<Double>>();
+        HashMap<String, ArrayList<Double>> ratios = new HashMap<>();
         ProteinMatch proteinMatch = identification.getProteinMatch(matchKey);
         Set<String> indexes = reporterIonQuantification.getSampleIndexes();
 
         PSParameter psParameter = new PSParameter();
-        ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
+        ArrayList<UrParameter> parameters = new ArrayList<>(1);
         parameters.add(psParameter);
-        PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(proteinMatch.getPeptideMatchesKeys(), parameters, false, parameters, waitingHandler);
+        PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(proteinMatch.getPeptideMatchesKeys(), waitingHandler);
         PeptideMatch peptideMatch;
         
         while ((peptideMatch = peptideMatchesIterator.next()) != null) {
 
-            Peptide peptide = peptideMatch.getTheoreticPeptide();
-            if (peptide.isModified()) {
+            Peptide peptide = peptideMatch.getPeptide();
+            if (peptide.getNVariableModifications() > 0) {
                 boolean modified = false;
-                for (ModificationMatch modificationMatch : peptide.getModificationMatches()) {
-                    if (modificationMatch.getTheoreticPtm().equals(ptmName) && modificationMatch.isConfident()) {
-                        String leadingAccession = proteinMatch.getMainMatch();
-                        Protein leadingProtein = SequenceFactory.getInstance().getProtein(leadingAccession);
-                        ArrayList<Integer> peptideIndexes = leadingProtein.getPeptideStart(peptide.getSequence(),
-                                sequenceMatchingPreferences);
-                        for (int index : peptideIndexes) {
-                            if (index + modificationMatch.getModificationSite() == site) {
+                for (ModificationMatch modificationMatch : peptide.getVariableModifications()) {
+                    if (modificationMatch.getModification().equals(ptmName) && modificationMatch.getConfident()) {
+                        String leadingAccession = proteinMatch.getLeadingAccession();
+                        int[] startIndexes = peptideMatch.getPeptide().getProteinMapping().get(leadingAccession);
+                        for (int index : startIndexes) {
+                            if (index + modificationMatch.getSite() == site) {
                                 modified = true;
                                 break;
                             }
@@ -247,7 +232,7 @@ public class Reporter {
                     double ratio = peptideQuantification.getRatio(index, reporterIonQuantification.getNormalizationFactors());
                     ArrayList<Double> channelRatios = ratios.get(index);
                     if (channelRatios == null) {
-                        channelRatios = new ArrayList<Double>(proteinMatch.getPeptideCount());
+                        channelRatios = new ArrayList<>(proteinMatch.getPeptideCount());
                         ratios.put(index, channelRatios);
                     }
                     if (QuantificationFilter.isRatioValid(ratioEstimationSettings, ratio)) {
@@ -279,22 +264,10 @@ public class Reporter {
      * allowing canceling the process
      *
      * @return the quantification details of the match
-     *
-     * @throws java.sql.SQLException exception thrown whenever an error occurred
-     * while interacting with the database
-     * @throws java.io.IOException exception thrown whenever an error occurred
-     * while interacting with a file
-     * @throws java.lang.ClassNotFoundException exception thrown whenever an
-     * error occurred while deserializing an object
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown
-     * whenever an error occurred while reading an mzML file
-     * @throws java.lang.InterruptedException exception thrown whenever a
-     * threading error occurred
      */
     public static PeptideQuantificationDetails estimatePeptideMatchQuantificationDetails(Identification identification,
             QuantificationFeaturesGenerator quantificationFeaturesGenerator, RatioEstimationSettings ratioEstimationSettings,
-            ReporterIonQuantification reporterIonQuantification, PeptideMatch peptideMatch, WaitingHandler waitingHandler)
-            throws IOException, MzMLUnmarshallerException, SQLException, ClassNotFoundException, InterruptedException {
+            ReporterIonQuantification reporterIonQuantification, PeptideMatch peptideMatch, WaitingHandler waitingHandler) {
 
         PeptideQuantificationDetails result = new PeptideQuantificationDetails();
         HashMap<String, ArrayList<Double>> ratios = new HashMap<String, ArrayList<Double>>();
@@ -304,14 +277,14 @@ public class Reporter {
         ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
         parameters.add(psParameter);
 
-        PsmIterator psmIterator = identification.getPsmIterator(peptideMatch.getSpectrumMatchesKeys(), parameters, false, waitingHandler);
+        SpectrumMatchesIterator spectrumMatchesIterator = identification.getSpectrumMatchesIterator(peptideMatch.getSpectrumMatchesKeys(), waitingHandler);
         SpectrumMatch spectrumMatch;
 
-        while ((spectrumMatch = psmIterator.next()) != null) {
+        while ((spectrumMatch = spectrumMatchesIterator.next()) != null) {
 
-            String spectrumKey = spectrumMatch.getKey();
+            String spectrumKey = spectrumMatch.getSpectrumKey();
 
-            if (QuantificationFilter.isPsmValid(ratioEstimationSettings, identification, spectrumKey)) {
+            if (QuantificationFilter.isPsmValid(ratioEstimationSettings, identification, spectrumMatch.getKey())) {
                 for (String index : indexes) {
                     PsmQuantificationDetails spectrumQuantification = quantificationFeaturesGenerator.getPSMQuantificationDetails(spectrumKey);
                     double ratio = spectrumQuantification.getRatio(index, reporterIonQuantification.getNormalizationFactors());
@@ -348,22 +321,10 @@ public class Reporter {
      * @param matchKey the key of the match of interest
      *
      * @return the quantification details of the match
-     *
-     * @throws java.sql.SQLException exception thrown whenever an error occurred
-     * while interacting with the database
-     * @throws java.io.IOException exception thrown whenever an error occurred
-     * while interacting with a file
-     * @throws java.lang.ClassNotFoundException exception thrown whenever an
-     * error occurred while deserializing an object
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown
-     * whenever an error occurred while reading an mzML file
-     * @throws java.lang.InterruptedException exception thrown whenever a
-     * threading error occurred
      */
     public static PsmQuantificationDetails estimatePSMQuantificationDetails(Identification identification,
             QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonSelectionSettings reporterIonSelectionSettings, RatioEstimationSettings ratioEstimationSettings,
-            ReporterIonQuantification reporterIonQuantification, String matchKey)
-            throws IOException, MzMLUnmarshallerException, SQLException, ClassNotFoundException, InterruptedException {
+            ReporterIonQuantification reporterIonQuantification, String matchKey) {
 
         PsmQuantificationDetails result = new PsmQuantificationDetails();
         // Find the spectra corresponding to this PSM according to the matching type selected by the user
@@ -395,15 +356,15 @@ public class Reporter {
 
         // compute spectrum level ratios
         Set<String> indexes = reporterIonQuantification.getSampleIndexes();
-        HashMap<String, ArrayList<Double>> ratios = new HashMap<String, ArrayList<Double>>();
+        HashMap<String, ArrayList<Double>> ratios = new HashMap<>();
 
         for (String spectrumKey : spectra) {
             SpectrumQuantificationDetails spectrumQuantification = quantificationFeaturesGenerator.getSpectrumQuantificationDetails(reporterIonQuantification, reporterIonSelectionSettings, spectrumKey);
             ArrayList<String> controlIndexes = reporterIonQuantification.getControlSamples();
             if (controlIndexes == null || controlIndexes.isEmpty()) {
-                controlIndexes = new ArrayList<String>(indexes);
+                controlIndexes = new ArrayList<>(indexes);
             }
-            ArrayList<Double> controlIntensities = new ArrayList<Double>(controlIndexes.size());
+            ArrayList<Double> controlIntensities = new ArrayList<>(controlIndexes.size());
             for (String index : controlIndexes) {
                 double intensity = spectrumQuantification.getDeisotopedIntensity(index);
                 if (intensity > 0) {
@@ -459,25 +420,19 @@ public class Reporter {
      * @param matchKey the key of the spectrum of interest
      *
      * @return the quantification details of the spectrum
-     *
-     * @throws java.io.IOException exception thrown whenever an error occurred
-     * while interacting with a file
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown
-     * whenever an error occurred while reading an mzML file
-     * @throws InterruptedException exception thrown if the thread is interrupted
      */
     public static SpectrumQuantificationDetails estimateSpectrumQuantificationDetails(Identification identification,
             QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification,
-            ReporterIonSelectionSettings reporterIonSelectionSettings, String matchKey) throws IOException, MzMLUnmarshallerException, InterruptedException {
+            ReporterIonSelectionSettings reporterIonSelectionSettings, String matchKey) {
 
         ReporterMethod reporterMethod = reporterIonQuantification.getReporterMethod();
-        MSnSpectrum spectrum = (MSnSpectrum) SpectrumFactory.getInstance().getSpectrum(matchKey);
+        Spectrum spectrum = (Spectrum) SpectrumFactory.getInstance().getSpectrum(matchKey);
 
         SpectrumQuantificationDetails result = new SpectrumQuantificationDetails();
 
         // get reporter intensities
         Set<String> labels = reporterIonQuantification.getSampleIndexes();
-        HashMap<String, IonMatch> matchesMap = new HashMap<String, IonMatch>(labels.size());
+        HashMap<String, IonMatch> matchesMap = new HashMap<>(labels.size());
         for (String ionName : labels) {
             ReporterIon reporterIon = reporterMethod.getReporterIon(ionName);
             IonMatch bestMatch = getBestReporterIonMatch(reporterIon, 1, spectrum, reporterIonSelectionSettings.getReporterIonsMzTolerance(), reporterIonSelectionSettings.isMostAccurate());
@@ -514,10 +469,8 @@ public class Reporter {
      * should be selected
      *
      * @return the best ion match
-     * 
-     * @throws InterruptedException exception thrown if the thread is interrupted
      */
-    public static IonMatch getBestReporterIonMatch(ReporterIon reporterIon, int charge, Spectrum spectrum, double mzTolerance, boolean mostAccurate) throws InterruptedException {
+    public static IonMatch getBestReporterIonMatch(ReporterIon reporterIon, int charge, Spectrum spectrum, double mzTolerance, boolean mostAccurate) {
         ArrayList<IonMatch> ionMatches = SpectrumAnnotator.matchReporterIon(reporterIon, 1, spectrum, mzTolerance);
         IonMatch bestMatch = null;
         double bestError = mzTolerance;
@@ -577,7 +530,7 @@ public class Reporter {
      * while reading or writing the paths configuration file
      */
     public static void setPathConfiguration() throws IOException {
-        File pathConfigurationFile = new File(getJarFilePath(), UtilitiesPathPreferences.configurationFileName);
+        File pathConfigurationFile = new File(getJarFilePath(), UtilitiesPathParameters.configurationFileName);
         if (pathConfigurationFile.exists()) {
             ReporterPathPreferences.loadPathPreferencesFromFile(pathConfigurationFile);
         }

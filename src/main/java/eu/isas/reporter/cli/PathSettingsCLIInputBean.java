@@ -1,6 +1,6 @@
 package eu.isas.reporter.cli;
 
-import com.compomics.software.settings.UtilitiesPathPreferences;
+import com.compomics.software.settings.UtilitiesPathParameters;
 import eu.isas.reporter.preferences.ReporterPathPreferences;
 import java.io.File;
 import java.util.HashMap;
@@ -10,6 +10,7 @@ import org.apache.commons.cli.CommandLine;
  * Parses the command line and retrieves the user input.
  *
  * @author Marc Vaudel
+ * @author Harald Barsnes
  */
 public class PathSettingsCLIInputBean {
 
@@ -47,7 +48,7 @@ public class PathSettingsCLIInputBean {
                 paths.put(id, aLine.getOptionValue(id));
             }
         }
-        for (UtilitiesPathPreferences.UtilitiesPathKey utilitiesPathKey : UtilitiesPathPreferences.UtilitiesPathKey.values()) {
+        for (UtilitiesPathParameters.UtilitiesPathKey utilitiesPathKey : UtilitiesPathParameters.UtilitiesPathKey.values()) {
             String id = utilitiesPathKey.getId();
             if (aLine.hasOption(id)) {
                 paths.put(id, aLine.getOptionValue(id));

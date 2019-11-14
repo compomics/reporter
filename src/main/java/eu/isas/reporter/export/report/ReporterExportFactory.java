@@ -2,15 +2,19 @@ package eu.isas.reporter.export.report;
 
 import com.compomics.util.experiment.biology.genes.GeneMaps;
 import com.compomics.util.experiment.identification.Identification;
+import com.compomics.util.experiment.identification.features.IdentificationFeaturesGenerator;
+import com.compomics.util.experiment.io.biology.protein.ProteinDetailsProvider;
+import com.compomics.util.experiment.io.biology.protein.SequenceProvider;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
-import com.compomics.util.io.SerializationUtils;
 import com.compomics.util.io.export.ExportFactory;
 import com.compomics.util.io.export.ExportFeature;
 import com.compomics.util.io.export.ExportFormat;
 import com.compomics.util.io.export.ExportScheme;
 import com.compomics.util.io.export.ExportWriter;
 import com.compomics.util.io.export.writers.ExcelWriter;
-import com.compomics.util.preferences.IdentificationParameters;
+import com.compomics.util.io.file.SerializationUtils;
+import com.compomics.util.parameters.identification.IdentificationParameters;
+import com.compomics.util.parameters.quantification.spectrum_counting.SpectrumCountingParameters;
 import com.compomics.util.waiting.WaitingHandler;
 import eu.isas.peptideshaker.export.PSExportFactory;
 import eu.isas.peptideshaker.export.PsExportStyle;
@@ -30,9 +34,7 @@ import eu.isas.peptideshaker.export.sections.PsSearchParametersSection;
 import eu.isas.peptideshaker.export.sections.PsSpectrumCountingSection;
 import eu.isas.peptideshaker.export.sections.PsValidationSection;
 import eu.isas.peptideshaker.preferences.ProjectDetails;
-import eu.isas.peptideshaker.preferences.SpectrumCountingPreferences;
 import eu.isas.peptideshaker.scoring.PSMaps;
-import eu.isas.peptideshaker.utils.IdentificationFeaturesGenerator;
 import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
 import eu.isas.reporter.export.report.export_features.ReporterPeptideFeature;
 import eu.isas.reporter.export.report.export_features.ReporterProteinFeatures;
@@ -55,6 +57,7 @@ import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
  * The reporter export factory manages the reports available from Reporter.
  *
  * @author Marc Vaudel
+ * @author Harald Barsnes
  */
 public class ReporterExportFactory implements ExportFactory {
 
@@ -201,22 +204,20 @@ public class ReporterExportFactory implements ExportFactory {
     }
 
     /**
-     * Writes the desired export in text format. If an argument is not needed,
-     * provide null (at your own risks).
+     * Writes the desired export in text format.If an argument is not needed,
+ provide null (at your own risks).
      *
      * @param exportScheme the scheme of the export
      * @param destinationFile the destination file
      * @param exportFormat the export format
      * @param experiment the experiment corresponding to this project (mandatory
      * for the Project section)
-     * @param sample the sample of the project (mandatory for the Project
-     * section)
-     * @param replicateNumber the replicate number of the project (mandatory for
-     * the Project section)
      * @param projectDetails the project details (mandatory for the Project
      * section)
      * @param identification the identification (mandatory for the Protein,
      * Peptide and PSM sections)
+     * @param sequenceProvider the sequence provider
+     * @param proteinDetailsProvider the protein details provider
      * @param identificationFeaturesGenerator the identification features
      * generator (mandatory for the Protein, Peptide and PSM sections)
      * @param geneMaps the gene maps
@@ -236,7 +237,7 @@ public class ReporterExportFactory implements ExportFactory {
      * a single protein match (optional for the Peptide sections)
      * @param nSurroundingAA the number of surrounding amino acids to export
      * (mandatory for the Peptide section)
-     * @param spectrumCountingPreferences the spectrum counting preferences
+     * @param spectrumCountingParameters the spectrum counting preferences
      * (mandatory for the spectrum counting section)
      * @param waitingHandler the waiting handler
      *
@@ -254,14 +255,14 @@ public class ReporterExportFactory implements ExportFactory {
      * an exception occurred while estimating the theoretical coverage of a
      * protein
      */
-    public static void writeExport(ExportScheme exportScheme, File destinationFile, ExportFormat exportFormat, String experiment, String sample, int replicateNumber,
-            ProjectDetails projectDetails, Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, GeneMaps geneMaps,
-            QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, ReporterSettings reporterSettings,
-            IdentificationParameters identificationParameters, ArrayList<String> proteinKeys, ArrayList<String> peptideKeys, ArrayList<String> psmKeys,
-            String proteinMatchKey, int nSurroundingAA, SpectrumCountingPreferences spectrumCountingPreferences, WaitingHandler waitingHandler)
+    public static void writeExport(ExportScheme exportScheme, File destinationFile, ExportFormat exportFormat, String experiment,
+            ProjectDetails projectDetails, Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, 
+            SequenceProvider sequenceProvider, ProteinDetailsProvider proteinDetailsProvider, GeneMaps geneMaps, QuantificationFeaturesGenerator quantificationFeaturesGenerator, 
+            ReporterIonQuantification reporterIonQuantification, ReporterSettings reporterSettings, IdentificationParameters identificationParameters, ArrayList<String> proteinKeys, 
+            long[] peptideKeys, long[] psmKeys, String proteinMatchKey, int nSurroundingAA, SpectrumCountingParameters spectrumCountingParameters, WaitingHandler waitingHandler)
             throws IOException, SQLException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException, MathException {
 
-        ExportWriter exportWriter = ExportWriter.getExportWriter(exportFormat, destinationFile, exportScheme.getSeparator(), exportScheme.getSeparationLines());
+        ExportWriter exportWriter = ExportWriter.getExportWriter(exportFormat, destinationFile, exportScheme.getSeparator(), exportScheme.getSeparationLines(), false);
         if (exportWriter instanceof ExcelWriter) {
             ExcelWriter excelWriter = (ExcelWriter) exportWriter;
             PsExportStyle exportStyle = PsExportStyle.getReportStyle(excelWriter);
@@ -278,34 +279,34 @@ public class ReporterExportFactory implements ExportFactory {
             }
             if (sectionName.equals(PsAnnotationFeature.type)) {
                 PsAnnotationSection section = new PsAnnotationSection(exportScheme.getExportFeatures(sectionName), exportScheme.isIndexes(), exportScheme.isHeader(), exportWriter);
-                section.writeSection(identificationParameters.getAnnotationPreferences(), waitingHandler);
+                section.writeSection(identificationParameters.getAnnotationParameters(), waitingHandler);
             } else if (sectionName.equals(PsInputFilterFeature.type)) {
                 PsInputFilterSection section = new PsInputFilterSection(exportScheme.getExportFeatures(sectionName), exportScheme.isIndexes(), exportScheme.isHeader(), exportWriter);
                 section.writeSection(identificationParameters.getPeptideAssumptionFilter(), waitingHandler);
             } else if (sectionName.equals(ReporterPeptideFeature.type)) {
                 ReporterPeptideSection section = new ReporterPeptideSection(exportScheme.getExportFeatures(sectionName), exportScheme.isIndexes(), exportScheme.isHeader(), exportWriter);
-                section.writeSection(identification, identificationFeaturesGenerator, quantificationFeaturesGenerator, reporterIonQuantification, reporterSettings, 
+                section.writeSection(identification, identificationFeaturesGenerator, sequenceProvider, proteinDetailsProvider, quantificationFeaturesGenerator, reporterIonQuantification, reporterSettings, 
                         identificationParameters, peptideKeys, nSurroundingAA, "", exportScheme.isValidatedOnly(), exportScheme.isIncludeDecoy(), waitingHandler);
             } else if (sectionName.equals(PsProjectFeature.type)) {
                 PsProjectSection section = new PsProjectSection(exportScheme.getExportFeatures(sectionName), exportScheme.isIndexes(), exportScheme.isHeader(), exportWriter);
-                section.writeSection(experiment, sample, replicateNumber, projectDetails, waitingHandler);
+                section.writeSection(experiment, projectDetails, waitingHandler);
             } else if (sectionName.equals(ReporterProteinFeatures.type)) {
                 ReporterProteinSection section = new ReporterProteinSection(exportScheme.getExportFeatures(sectionName), exportScheme.isIndexes(), exportScheme.isHeader(), exportWriter);
-                section.writeSection(identification, identificationFeaturesGenerator, geneMaps, quantificationFeaturesGenerator, reporterIonQuantification, reporterSettings, 
+                section.writeSection(identification, identificationFeaturesGenerator, sequenceProvider, proteinDetailsProvider, geneMaps, quantificationFeaturesGenerator, reporterIonQuantification, reporterSettings, 
                        identificationParameters, psmKeys, nSurroundingAA, exportScheme.isValidatedOnly(), exportScheme.isIncludeDecoy(), waitingHandler);
             } else if (sectionName.equals(ReporterPsmFeatures.type)) {
                 ReporterPsmSection section = new ReporterPsmSection(exportScheme.getExportFeatures(sectionName), exportScheme.isIndexes(), exportScheme.isHeader(), exportWriter);
-                section.writeSection(identification, identificationFeaturesGenerator, quantificationFeaturesGenerator, reporterIonQuantification, reporterSettings, 
+                section.writeSection(identification, identificationFeaturesGenerator, sequenceProvider, proteinDetailsProvider, quantificationFeaturesGenerator, reporterIonQuantification, reporterSettings, 
                         identificationParameters, psmKeys, "", nSurroundingAA, exportScheme.isValidatedOnly(), exportScheme.isIncludeDecoy(), waitingHandler);
             } else if (sectionName.equals(PsPtmScoringFeature.type)) {
                 PsPtmScoringSection section = new PsPtmScoringSection(exportScheme.getExportFeatures(sectionName), exportScheme.isIndexes(), exportScheme.isHeader(), exportWriter);
-                section.writeSection(identificationParameters.getPtmScoringPreferences(), waitingHandler);
+                section.writeSection(identificationParameters.getModificationLocalizationParameters(), waitingHandler);
             } else if (sectionName.equals(PsSearchFeature.type)) {
                 PsSearchParametersSection section = new PsSearchParametersSection(exportScheme.getExportFeatures(sectionName), exportScheme.isIndexes(), exportScheme.isHeader(), exportWriter);
-                section.writeSection(identificationParameters.getSearchParameters(), waitingHandler);
+                section.writeSection(identificationParameters.getSearchParameters(), projectDetails, waitingHandler);
             } else if (sectionName.equals(PsSpectrumCountingFeature.type)) {
                 PsSpectrumCountingSection section = new PsSpectrumCountingSection(exportScheme.getExportFeatures(sectionName), exportScheme.isIndexes(), exportScheme.isHeader(), exportWriter);
-                section.writeSection(spectrumCountingPreferences, waitingHandler);
+                section.writeSection(spectrumCountingParameters, waitingHandler);
             } else if (sectionName.equals(PsValidationFeature.type)) {
                 PsValidationSection section = new PsValidationSection(exportScheme.getExportFeatures(sectionName), exportScheme.isIndexes(), exportScheme.isHeader(), exportWriter);
                 PSMaps psMaps = new PSMaps();
@@ -331,7 +332,7 @@ public class ReporterExportFactory implements ExportFactory {
      */
     public static void writeDocumentation(ExportScheme exportScheme, ExportFormat exportFormat, File destinationFile) throws IOException {
 
-        ExportWriter exportWriter = ExportWriter.getExportWriter(exportFormat, destinationFile, exportScheme.getSeparator(), exportScheme.getSeparationLines());
+        ExportWriter exportWriter = ExportWriter.getExportWriter(exportFormat, destinationFile, exportScheme.getSeparator(), exportScheme.getSeparationLines(), false);
         if (exportWriter instanceof ExcelWriter) {
             ExcelWriter excelWriter = (ExcelWriter) exportWriter;
             PsExportStyle exportStyle = PsExportStyle.getReportStyle(excelWriter); //@TODO use another style?
@@ -390,16 +391,15 @@ public class ReporterExportFactory implements ExportFactory {
 
     /**
      * Returns the default file name for the export of a report based on the
-     * project details.
+     * project details
      *
      * @param experiment the experiment of the project
-     * @param sample the sample of the project
-     * @param replicate the replicate number
      * @param exportName the name of the report type
+     * 
      * @return the default file name for the export
      */
-    public static String getDefaultReportName(String experiment, String sample, int replicate, String exportName) {
-        return experiment + "_" + sample + "_" + replicate + "_" + exportName + ".txt";
+    public static String getDefaultReportName(String experiment, String exportName) {
+        return experiment + "_" + exportName + ".txt";
     }
 
     /**

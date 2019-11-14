@@ -1,18 +1,16 @@
 package eu.isas.reporter.cli;
 
 import com.compomics.util.Util;
-import com.compomics.util.db.DerbyUtil;
-import com.compomics.util.experiment.biology.EnzymeFactory;
-import com.compomics.util.experiment.biology.PTM;
-import com.compomics.util.experiment.biology.PTMFactory;
+import com.compomics.util.experiment.biology.enzymes.EnzymeFactory;
+import com.compomics.util.experiment.biology.modifications.Modification;
+import com.compomics.util.experiment.biology.modifications.ModificationFactory;
 import com.compomics.util.experiment.biology.taxonomy.SpeciesFactory;
-import com.compomics.util.experiment.identification.protein_sequences.SequenceFactory;
-import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
+import com.compomics.util.experiment.mass_spectrometry.SpectrumFactory;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
 import com.compomics.util.waiting.WaitingHandler;
 import com.compomics.util.gui.waiting.waitinghandlers.WaitingHandlerCLIImpl;
-import com.compomics.util.preferences.UtilitiesUserPreferences;
+import com.compomics.util.parameters.UtilitiesUserParameters;
 import eu.isas.peptideshaker.PeptideShaker;
 import eu.isas.peptideshaker.cmd.PeptideShakerCLI;
 import eu.isas.peptideshaker.utils.CpsParent;
@@ -53,13 +51,13 @@ public class ReportCLI extends CpsParent {
      */
     private WaitingHandler waitingHandler;
     /**
-     * The PTM factory.
+     * The modification factory.
      */
-    private PTMFactory ptmFactory;
+    private ModificationFactory modificationFactory;
     /**
      * The utilities user preferences.
      */
-    private UtilitiesUserPreferences utilitiesUserPreferences;
+    private UtilitiesUserParameters utilitiesUserParameters;
     /**
      * The mgf files loaded.
      */
@@ -86,11 +84,11 @@ public class ReportCLI extends CpsParent {
         setDbFolder(PeptideShaker.getMatchesFolder());
 
         // load user preferences
-        utilitiesUserPreferences = UtilitiesUserPreferences.loadUserPreferences();
+        utilitiesUserParameters = UtilitiesUserParameters.loadUserParameters();
 
         // instantiate factories
-        PeptideShaker.instantiateFacories(utilitiesUserPreferences);
-        ptmFactory = PTMFactory.getInstance();
+        PeptideShaker.instantiateFacories(utilitiesUserParameters);
+        modificationFactory = ModificationFactory.getInstance();
         enzymeFactory = EnzymeFactory.getInstance();
 
         // load resources files
@@ -144,7 +142,7 @@ public class ReportCLI extends CpsParent {
         HashSet<String> ignoredPtms = reporterSettings.getRatioEstimationSettings().getExcludingPtms();
         if (ignoredPtms != null) {
             for (String ptmName : ignoredPtms) {
-                PTM ptm = ptmFactory.getPTM(ptmName);
+                Modification ptm = modificationFactory.getModification(ptmName);
                 if (ptm == null) {
                     System.out.println("PTM " + ptmName + " not recognized.");
                     return 1;
@@ -153,15 +151,18 @@ public class ReportCLI extends CpsParent {
         }
         
         // create quantification features generator
-        QuantificationFeaturesGenerator quantificationFeaturesGenerator = new QuantificationFeaturesGenerator(new QuantificationFeaturesCache(), getIdentification(), getIdentificationFeaturesGenerator(), reporterSettings, reporterIonQuantification,
-                identificationParameters.getSearchParameters(), identificationParameters.getSequenceMatchingPreferences());
+        QuantificationFeaturesGenerator quantificationFeaturesGenerator = new QuantificationFeaturesGenerator(
+                new QuantificationFeaturesCache(), getIdentification(), getIdentificationFeaturesGenerator(), reporterSettings, reporterIonQuantification,
+                identificationParameters.getSearchParameters(), identificationParameters.getSequenceMatchingParameters());
 
         // export report(s)
         if (reportCLIInputBean.exportNeeded()) {
             int nSurroundingAAs = 2; //@TODO: this shall not be hard coded
             for (String reportType : reportCLIInputBean.getReportTypes()) {
                 try {
-                    CLIExportMethods.exportReport(reportCLIInputBean, reportType, experiment.getReference(), sample.getReference(), replicateNumber, projectDetails, identification, geneMaps, identificationFeaturesGenerator, quantificationFeaturesGenerator, reporterIonQuantification, reporterSettings, identificationParameters, nSurroundingAAs, spectrumCountingPreferences, waitingHandler);
+                    CLIExportMethods.exportReport(reportCLIInputBean, reportType, projectParameters.getProjectUniqueName(), projectDetails, identification, geneMaps, 
+                            identificationFeaturesGenerator, sequenceProvider, proteinDetailsProvider, quantificationFeaturesGenerator, 
+                            reporterIonQuantification, reporterSettings, identificationParameters, nSurroundingAAs, spectrumCountingParameters, waitingHandler);
                 } catch (Exception e) {
                     waitingHandler.appendReport("An error occurred while exporting the " + reportType + ".", true, true);
                     e.printStackTrace();
@@ -321,12 +322,9 @@ public class ReportCLI extends CpsParent {
     public void closePeptideShaker() throws IOException, SQLException, InterruptedException {
 
         SpectrumFactory.getInstance().closeFiles();
-        SequenceFactory.getInstance().closeFile();
         identification.close();
 
         File matchFolder = PeptideShaker.getMatchesFolder();
-
-        DerbyUtil.closeConnection();
 
         File[] tempFiles = matchFolder.listFiles();
 

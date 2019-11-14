@@ -2,24 +2,25 @@ package eu.isas.reporter.gui;
 
 import com.compomics.util.FileAndFileFilter;
 import com.compomics.util.Util;
-import com.compomics.util.db.ObjectsCache;
-import com.compomics.util.experiment.biology.PTM;
-import com.compomics.util.experiment.biology.PTMFactory;
-import com.compomics.util.experiment.biology.Peptide;
+import com.compomics.util.db.object.ObjectsCache;
+import com.compomics.util.experiment.biology.modifications.Modification;
+import com.compomics.util.experiment.biology.modifications.ModificationFactory;
+import com.compomics.util.experiment.biology.proteins.Peptide;
 import com.compomics.util.experiment.identification.Identification;
-import com.compomics.util.experiment.identification.identification_parameters.PtmSettings;
-import com.compomics.util.experiment.identification.identification_parameters.SearchParameters;
 import com.compomics.util.experiment.identification.matches.ModificationMatch;
 import com.compomics.util.experiment.identification.matches.PeptideMatch;
 import com.compomics.util.experiment.identification.matches_iterators.PeptideMatchesIterator;
-import com.compomics.util.experiment.identification.protein_sequences.SequenceFactory;
-import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
+import com.compomics.util.experiment.identification.peptide_shaker.PSParameter;
+import com.compomics.util.experiment.identification.utils.ModificationUtils;
+import com.compomics.util.experiment.io.biology.protein.SequenceProvider;
+import com.compomics.util.experiment.mass_spectrometry.SpectrumFactory;
 import com.compomics.util.experiment.personalization.UrParameter;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
-import com.compomics.util.preferences.IdentificationParameters;
-import com.compomics.util.preferences.LastSelectedFolder;
-import com.compomics.util.preferences.SequenceMatchingPreferences;
-import eu.isas.peptideshaker.parameters.PSParameter;
+import com.compomics.util.io.file.LastSelectedFolder;
+import com.compomics.util.parameters.identification.IdentificationParameters;
+import com.compomics.util.parameters.identification.advanced.SequenceMatchingParameters;
+import com.compomics.util.parameters.identification.search.ModificationParameters;
+import com.compomics.util.parameters.identification.search.SearchParameters;
 import eu.isas.peptideshaker.utils.CpsParent;
 import eu.isas.reporter.Reporter;
 import eu.isas.reporter.io.ProjectImporter;
@@ -43,6 +44,7 @@ import javax.swing.table.DefaultTableModel;
  * Labeling efficiency dialog.
  * 
  * @author Marc Vaudel
+ * @author Harald Barsnes
  */
 public class LabellingEfficiencyDialog extends javax.swing.JDialog {
 
@@ -79,9 +81,9 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
      */
     private SpectrumFactory spectrumFactory = SpectrumFactory.getInstance();
     /**
-     * The PTM factory.
+     * The modification factory.
      */
-    private PTMFactory ptmFactory = PTMFactory.getInstance();
+    private ModificationFactory modificationFactory = ModificationFactory.getInstance();
     /**
      * The cache to use for identification and quantification objects.
      */
@@ -548,7 +550,6 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
                     txtIdFileLocation.setText(cpsParent.getCpsFile().getName());
 
                     cache = new ObjectsCache();
-                    cache.setAutomatedMemoryManagement(true);
 
                     estimateLabellingEfficiency();
                     refresh();
@@ -583,18 +584,18 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
     private void estimateLabellingEfficiency() throws SQLException, IOException, ClassNotFoundException, InterruptedException {
 
         IdentificationParameters identificationParameters = cpsParent.getIdentificationParameters();
-        SequenceMatchingPreferences proteinSequenceMatchingPreferences = identificationParameters.getSequenceMatchingPreferences();
-        SequenceMatchingPreferences ptmSequenceMatchingPreferences = identificationParameters.getPtmScoringPreferences().getSequenceMatchingPreferences();
-        PtmSettings ptmSettings = identificationParameters.getSearchParameters().getPtmSettings();
-        sortedModifications = new ArrayList<String>(ptmSettings.getAllNotFixedModifications());
+        SequenceProvider sequenceProvider = cpsParent.getSequenceProvider();
+        SequenceMatchingParameters proteinSequenceMatchingPreferences = identificationParameters.getSequenceMatchingParameters();
+        ModificationParameters modificationParameters = identificationParameters.getSearchParameters().getModificationParameters();
+        sortedModifications = new ArrayList<String>(modificationParameters.getAllNotFixedModifications());
         Collections.sort(sortedModifications);
         HashMap<String, Integer> nModifiedMap = new HashMap<String, Integer>(sortedModifications.size()),
                 nPossibleMap = new HashMap<String, Integer>(sortedModifications.size());
-        ArrayList<PTM> ptms = new ArrayList<PTM>(sortedModifications.size());
+        ArrayList<Modification> modifications = new ArrayList<Modification>(sortedModifications.size());
         for (String ptmName : sortedModifications) {
             nModifiedMap.put(ptmName, 0);
             nPossibleMap.put(ptmName, 0);
-            ptms.add(ptmFactory.getPTM(ptmName));
+            modifications.add(modificationFactory.getModification(ptmName));
         }
 
         Identification identification = cpsParent.getIdentification();
@@ -603,34 +604,34 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
         ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
         parameters.add(psParameter);
 
-        PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(parameters, false, null, progressDialog);
+        PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(progressDialog);
         PeptideMatch peptideMatch;
 
         while ((peptideMatch = peptideMatchesIterator.next()) != null) {
 
-            Peptide peptide = peptideMatch.getTheoreticPeptide();
+            Peptide peptide = peptideMatch.getPeptide();
 
-            for (PTM ptm : ptms) {
+            for (Modification modification : modifications) {
 
-                String ptmName = ptm.getName();
-                int nNew = peptide.getPotentialModificationSites(ptm, proteinSequenceMatchingPreferences, ptmSequenceMatchingPreferences).size();
+                String modificationName = modification.getName();
+                int nNew = ModificationUtils.getPossibleModificationSites(peptide, modification, sequenceProvider, proteinSequenceMatchingPreferences).length;
                 if (nNew > 0) {
-                    Integer nPossible = nPossibleMap.get(ptmName);
+                    Integer nPossible = nPossibleMap.get(modificationName);
                     nPossible += nNew;
-                    nPossibleMap.put(ptmName, nPossible);
+                    nPossibleMap.put(modificationName, nPossible);
                 }
                 nNew = 0;
-                if (peptide.isModified()) {
-                    for (ModificationMatch modificationMatch : peptide.getModificationMatches()) {
-                        if (modificationMatch.isVariable() && modificationMatch.getTheoreticPtm().equals(ptmName)) {
+                if (peptide.getNVariableModifications() > 0) {
+                    for (ModificationMatch modificationMatch : peptide.getVariableModifications()) {
+                        if (modificationMatch.getModification().equals(modificationName)) {
                             nNew++;
                         }
                     }
                 }
                 if (nNew > 0) {
-                    Integer nModified = nModifiedMap.get(ptmName);
+                    Integer nModified = nModifiedMap.get(modificationName);
                     nModified += nNew;
-                    nModifiedMap.put(ptmName, nModified);
+                    nModifiedMap.put(modificationName, nModified);
                 }
             }
         }

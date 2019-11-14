@@ -1,9 +1,9 @@
 package eu.isas.reporter.calculation;
 
-import com.compomics.util.experiment.biology.Atom;
-import com.compomics.util.experiment.biology.ions.ReporterIon;
+import com.compomics.util.experiment.biology.atoms.Atom;
+import com.compomics.util.experiment.biology.ions.impl.ReporterIon;
 import com.compomics.util.experiment.identification.matches.IonMatch;
-import com.compomics.util.experiment.massspectrometry.Spectrum;
+import com.compomics.util.experiment.mass_spectrometry.spectra.Spectrum;
 import com.compomics.util.experiment.quantification.reporterion.Reagent;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
 import eu.isas.reporter.Reporter;
@@ -15,6 +15,7 @@ import org.ujmp.core.doublematrix.calculation.general.decomposition.Ginv;
  * This class takes care of the deisotoping of reporter ion intensities.
  *
  * @author Marc Vaudel
+ * @author Harald Barsnes
  */
 public class Deisotoper {
 
@@ -118,10 +119,8 @@ public class Deisotoper {
      * should be selected
      *
      * @return a map of the deisotoped intensities (ion index &gt; intensity)
-     * 
-     * @throws java.lang.InterruptedException if the thread is interrupted
      */
-    public HashMap<String, Double> deisotope(HashMap<String, IonMatch> ionMatches, Spectrum spectrum, double mzTolerance, boolean mostAccurate) throws InterruptedException {
+    public HashMap<String, Double> deisotope(HashMap<String, IonMatch> ionMatches, Spectrum spectrum, double mzTolerance, boolean mostAccurate) {
 
         HashMap<String, Double> result = new HashMap<String, Double>();
         for (String label : method.getReagentNames()) {

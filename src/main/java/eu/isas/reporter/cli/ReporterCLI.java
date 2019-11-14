@@ -3,28 +3,25 @@ package eu.isas.reporter.cli;
 import com.compomics.software.cli.CommandLineUtils;
 import com.compomics.software.cli.CommandParameter;
 import com.compomics.util.Util;
-import com.compomics.util.db.DerbyUtil;
 import com.compomics.util.exceptions.ExceptionHandler;
 import com.compomics.util.exceptions.exception_handlers.CommandLineExceptionHandler;
-import com.compomics.util.experiment.biology.PTM;
-import com.compomics.util.experiment.biology.PTMFactory;
-import com.compomics.util.experiment.biology.Sample;
+import com.compomics.util.experiment.biology.modifications.Modification;
+import com.compomics.util.experiment.biology.modifications.ModificationFactory;
 import com.compomics.util.experiment.biology.taxonomy.SpeciesFactory;
 import com.compomics.util.experiment.identification.Identification;
-import com.compomics.util.experiment.identification.protein_sequences.SequenceFactory;
-import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
+import com.compomics.util.experiment.identification.validation.MatchValidationLevel;
+import com.compomics.util.experiment.mass_spectrometry.SpectrumFactory;
 import com.compomics.util.experiment.normalization.NormalizationFactors;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethodFactory;
-import com.compomics.util.gui.filehandling.TempFilesManager;
+import com.compomics.util.gui.file_handling.TempFilesManager;
 import com.compomics.util.gui.waiting.waitinghandlers.WaitingHandlerCLIImpl;
-import com.compomics.util.preferences.IdentificationParameters;
-import com.compomics.util.preferences.ProcessingPreferences;
-import com.compomics.util.preferences.UtilitiesUserPreferences;
+import com.compomics.util.parameters.UtilitiesUserParameters;
+import com.compomics.util.parameters.identification.IdentificationParameters;
+import com.compomics.util.parameters.tools.ProcessingParameters;
 import eu.isas.peptideshaker.PeptideShaker;
 import eu.isas.peptideshaker.export.ProjectExport;
-import eu.isas.peptideshaker.scoring.MatchValidationLevel;
 import eu.isas.peptideshaker.utils.CpsParent;
 import eu.isas.reporter.Reporter;
 import eu.isas.reporter.calculation.QuantificationFeaturesCache;
@@ -68,9 +65,9 @@ public class ReporterCLI extends CpsParent implements Callable {
      */
     private ReporterCLIInputBean reporterCLIInputBean;
     /**
-     * The PTM factory.
+     * The modification factory.
      */
-    private PTMFactory ptmFactory;
+    private ModificationFactory modificationFactory;
     /**
      * The command line.
      */
@@ -80,9 +77,9 @@ public class ReporterCLI extends CpsParent implements Callable {
      */
     private ReporterMethodFactory methodsFactory = ReporterMethodFactory.getInstance();
     /**
-     * The utilities user preferences.
+     * The utilities user parameters.
      */
-    private UtilitiesUserPreferences utilitiesUserPreferences;
+    private UtilitiesUserParameters utilitiesUserParameters;
     /**
      * The mgf files loaded.
      */
@@ -338,10 +335,10 @@ public class ReporterCLI extends CpsParent implements Callable {
         reporterCLIInputBean = new ReporterCLIInputBean(line);
 
         // Load user preferences
-        utilitiesUserPreferences = UtilitiesUserPreferences.loadUserPreferences();
+        utilitiesUserParameters = utilitiesUserParameters.loadUserParameters();
 
         // Instantiate factories
-        PeptideShaker.instantiateFacories(utilitiesUserPreferences);
+        PeptideShaker.instantiateFacories(utilitiesUserParameters);
 
         // Load species
         try {
@@ -362,14 +359,14 @@ public class ReporterCLI extends CpsParent implements Callable {
         }
 
         // Load PTMs 
-        ptmFactory = PTMFactory.getInstance();
+        modificationFactory = ModificationFactory.getInstance();
 
         // Initiate the waiting handler
         WaitingHandlerCLIImpl waitingHandler = new WaitingHandlerCLIImpl();
 
         // Set processing preferences
-        ProcessingPreferences processingPreferences = new ProcessingPreferences();
-        processingPreferences.setnThreads(reporterCLIInputBean.getnThreads());
+        ProcessingParameters processingParameters = new ProcessingParameters();
+        processingParameters.setnThreads(reporterCLIInputBean.getnThreads());
 
         // Update the identification parameters if changed and save the changes
         IdentificationParameters tempIdentificationParameters = reporterCLIInputBean.getIdentificationParameters();
@@ -427,9 +424,9 @@ public class ReporterCLI extends CpsParent implements Callable {
         ArrayList<String> ignoredPtms = reporterCLIInputBean.getIgnoredPtms();
         if (ignoredPtms != null) {
             for (String ptmName : ignoredPtms) {
-                PTM ptm = ptmFactory.getPTM(ptmName);
-                if (ptm == null) {
-                    System.out.println("PTM " + ptmName + " not recognized.");
+                Modification modification = modificationFactory.getModification(ptmName);
+                if (modification == null) {
+                    System.out.println("Modification " + ptmName + " not recognized.");
                     return 1;
                 }
             }
@@ -495,8 +492,9 @@ public class ReporterCLI extends CpsParent implements Callable {
         }
 
         // Create quantification features generator
-        QuantificationFeaturesGenerator quantificationFeaturesGenerator = new QuantificationFeaturesGenerator(new QuantificationFeaturesCache(), getIdentification(), getIdentificationFeaturesGenerator(), reporterSettings, reporterIonQuantification,
-                identificationParameters.getSearchParameters(), identificationParameters.getSequenceMatchingPreferences());
+        QuantificationFeaturesGenerator quantificationFeaturesGenerator = new QuantificationFeaturesGenerator(new QuantificationFeaturesCache(), 
+                getIdentification(), getIdentificationFeaturesGenerator(), reporterSettings, reporterIonQuantification,
+                identificationParameters.getSearchParameters(), identificationParameters.getSequenceMatchingParameters());
 
         // Set Normalization factors
         NormalizationFactors normalizationFactors = reporterIonQuantification.getNormalizationFactors();
@@ -504,13 +502,19 @@ public class ReporterCLI extends CpsParent implements Callable {
             try {
                 Normalizer normalizer = new Normalizer();
                 if (!normalizationFactors.hasPsmNormalisationFactors()) {
-                    normalizer.setPsmNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(), reporterSettings.getNormalizationSettings(), getIdentificationParameters().getSequenceMatchingPreferences(), getIdentification(), quantificationFeaturesGenerator, processingPreferences, exceptionHandler, waitingHandler);
+                    normalizer.setPsmNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(), 
+                            reporterSettings.getNormalizationSettings(), getIdentificationParameters().getSequenceMatchingParameters(), 
+                            getIdentification(), quantificationFeaturesGenerator, processingParameters, exceptionHandler, waitingHandler);
                 }
                 if (!normalizationFactors.hasPeptideNormalisationFactors()) {
-                    normalizer.setPeptideNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(), reporterSettings.getNormalizationSettings(), getIdentificationParameters().getSequenceMatchingPreferences(), getIdentification(), quantificationFeaturesGenerator, processingPreferences, exceptionHandler, waitingHandler);
+                    normalizer.setPeptideNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(), 
+                            reporterSettings.getNormalizationSettings(), getIdentificationParameters().getSequenceMatchingParameters(), 
+                            getIdentification(), quantificationFeaturesGenerator, processingParameters, exceptionHandler, waitingHandler);
                 }
                 if (!normalizationFactors.hasProteinNormalisationFactors()) {
-                    normalizer.setProteinNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(), reporterSettings.getNormalizationSettings(), getIdentification(), getMetrics(), quantificationFeaturesGenerator, processingPreferences, exceptionHandler, waitingHandler);
+                    normalizer.setProteinNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(), 
+                            reporterSettings.getNormalizationSettings(), getIdentification(), getMetrics(), quantificationFeaturesGenerator, 
+                            processingParameters, exceptionHandler, waitingHandler);
                 }
             } catch (Exception e) {
                 System.out.println(System.getProperty("line.separator") + "An error occurred while estimating the ratios." + System.getProperty("line.separator"));
@@ -551,7 +555,9 @@ public class ReporterCLI extends CpsParent implements Callable {
                 int nSurroundingAAs = 2; //@TODO: this shall not be hard coded //peptideShakerGUI.getDisplayPreferences().getnAASurroundingPeptides()
                 for (String reportType : reportCLIInputBean.getReportTypes()) {
                     try {
-                        CLIExportMethods.exportReport(reportCLIInputBean, reportType, experiment.getReference(), sample.getReference(), replicateNumber, projectDetails, identification, geneMaps, identificationFeaturesGenerator, quantificationFeaturesGenerator, reporterIonQuantification, reporterSettings, identificationParameters, nSurroundingAAs, spectrumCountingPreferences, waitingHandler);
+                        CLIExportMethods.exportReport(reportCLIInputBean, reportType, projectParameters.getProjectUniqueName(), projectDetails, identification, geneMaps, 
+                                identificationFeaturesGenerator, sequenceProvider, proteinDetailsProvider, quantificationFeaturesGenerator, 
+                                reporterIonQuantification, reporterSettings, identificationParameters, nSurroundingAAs, spectrumCountingParameters, waitingHandler);
                     } catch (Exception e) {
                         waitingHandler.appendReport("An error occurred while exporting the " + reportType + ".", true, true);
                         e.printStackTrace();
@@ -589,7 +595,7 @@ public class ReporterCLI extends CpsParent implements Callable {
                 waitingHandler.setRunCanceled();
             }
 
-            File fastaFile = identificationParameters.getProteinInferencePreferences().getProteinSequenceDatabase();
+            File fastaFile = identificationParameters.getProteinInferenceParameters().getProteinSequenceDatabase();
             ArrayList<File> spectrumFiles = new ArrayList<File>();
             for (String spectrumFileName : getIdentification().getSpectrumFiles()) {
                 File spectrumFile = getProjectDetails().getSpectrumFile(spectrumFileName);
@@ -597,7 +603,7 @@ public class ReporterCLI extends CpsParent implements Callable {
             }
 
             try {
-                ProjectExport.exportProjectAsZip(zipFile, fastaFile, spectrumFiles, cpsFile, waitingHandler);
+                ProjectExport.exportProjectAsZip(zipFile, fastaFile, spectrumFiles, cpsFile, false, waitingHandler); // @TODO: 
                 final int NUMBER_OF_BYTES_PER_MEGABYTE = 1048576;
                 double sizeOfZippedFile = Util.roundDouble(((double) zipFile.length() / NUMBER_OF_BYTES_PER_MEGABYTE), 2);
                 waitingHandler.appendReport("Project zipped to \'" + zipFile.getAbsolutePath() + "\' (" + sizeOfZippedFile + " MB)", true, true);
@@ -739,22 +745,11 @@ public class ReporterCLI extends CpsParent implements Callable {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        try {
-            SequenceFactory.getInstance().closeFile();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
         try {
             if (identification != null) {
                 identification.close();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        try {
-            DerbyUtil.closeConnection();
         } catch (Exception e) {
             e.printStackTrace();
         }

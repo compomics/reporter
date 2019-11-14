@@ -1,8 +1,6 @@
 package eu.isas.reporter.utils;
 
-import com.compomics.util.experiment.massspectrometry.Charge;
-import com.compomics.util.experiment.massspectrometry.MSnSpectrum;
-import com.compomics.util.experiment.massspectrometry.Peak;
+import com.compomics.util.experiment.mass_spectrometry.spectra.Peak;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -198,10 +196,10 @@ public class SpectrumMerger {
                             peakMap.put(ms2MzValues.get(i), new Peak(ms2MzValues.get(i), ms2IntensityValues.get(i)));
                         }
 
-                        ArrayList<Charge> possibleCharges = new ArrayList<Charge>();
-                        possibleCharges.add(new Charge(Charge.PLUS, precursorCharge));
-                        MSnSpectrum mgfSpectrum = new MSnSpectrum(2,
-                                new com.compomics.util.experiment.massspectrometry.Precursor(-1, precursorMz, precursorIntensity, possibleCharges),
+                        ArrayList<Integer> possibleCharges = new ArrayList<>();
+                        possibleCharges.add(precursorCharge);
+                        com.compomics.util.experiment.mass_spectrometry.spectra.Spectrum mgfSpectrum = new com.compomics.util.experiment.mass_spectrometry.spectra.Spectrum(2,
+                                new com.compomics.util.experiment.mass_spectrometry.spectra.Precursor(-1, precursorMz, precursorIntensity, possibleCharges),
                                 precursorSpectrumRef + " (MS2) and " + tempId + " (MS3)", peakMap, mgfFileName);
 
                         bw.write(mgfSpectrum.asMgf());

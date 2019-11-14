@@ -1,20 +1,20 @@
 package eu.isas.reporter.io;
 
 import com.compomics.util.Util;
-import com.compomics.util.db.ObjectsDB;
-import com.compomics.util.experiment.biology.PTM;
-import com.compomics.util.experiment.biology.PTMFactory;
-import com.compomics.util.experiment.biology.ions.PeptideFragmentIon;
-import com.compomics.util.experiment.biology.ions.ReporterIon;
+import com.compomics.util.db.object.ObjectsDB;
+import com.compomics.util.experiment.biology.ions.impl.PeptideFragmentIon;
+import com.compomics.util.experiment.biology.ions.impl.ReporterIon;
+import com.compomics.util.experiment.biology.modifications.Modification;
+import com.compomics.util.experiment.biology.modifications.ModificationFactory;
 import com.compomics.util.experiment.identification.Identification;
-import com.compomics.util.experiment.identification.identification_parameters.PtmSettings;
-import com.compomics.util.experiment.identification.identification_parameters.SearchParameters;
 import com.compomics.util.experiment.quantification.Quantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethodFactory;
 import com.compomics.util.math.clustering.settings.KMeansClusteringSettings;
-import com.compomics.util.preferences.IdentificationParameters;
+import com.compomics.util.parameters.identification.IdentificationParameters;
+import com.compomics.util.parameters.identification.search.ModificationParameters;
+import com.compomics.util.parameters.identification.search.SearchParameters;
 import com.compomics.util.waiting.WaitingHandler;
 import eu.isas.peptideshaker.utils.CpsParent;
 import eu.isas.reporter.Reporter;
@@ -196,7 +196,7 @@ public class ProjectImporter {
         // load reporter settings
         Identification identification = cpsParent.getIdentification();
         IdentificationParameters identificationParameters = cpsParent.getIdentificationParameters();
-        ObjectsDB objectsDB = identification.getIdentificationDB().getObjectsDB();
+        ObjectsDB objectsDB = identification.getObjectsDB();
 
         if (objectsDB.hasTable(ProjectSaver.REPORTER_SETTINGS_TABLE_NAME)) {
             waitingHandler.setWaitingText("Loading Quantification Results. Please Wait...");
@@ -288,7 +288,7 @@ public class ProjectImporter {
         ReporterMethodFactory reporterMethodFactory = ReporterMethodFactory.getInstance();
 
         // try to detect the method used
-        for (String ptmName : searchParameters.getPtmSettings().getAllModifications()) {
+        for (String ptmName : searchParameters.getModificationParameters().getAllModifications()) {
             if (ptmName.contains("iTRAQ 4-plex")) {
                 selectedMethod = reporterMethodFactory.getReporterMethod("iTRAQ 4-plex");
                 break;
@@ -352,7 +352,7 @@ public class ProjectImporter {
         proteinClasses.add(proteinClusterClassKey);
         clusteringSettings.setColor(proteinClusterClassKey.toString(), Color.yellow);
 
-        PtmSettings ptmSettings = identificationParameters.getSearchParameters().getPtmSettings();
+        ModificationParameters modificationParameters = identificationParameters.getSearchParameters().getModificationParameters();
         ArrayList<PeptideClusterClassKey> peptideClasses = new ArrayList<PeptideClusterClassKey>(4);
         PeptideClusterClassKey peptidelusterClassKey = new PeptideClusterClassKey();
         peptideClasses.add(peptidelusterClassKey);
@@ -373,25 +373,25 @@ public class ProjectImporter {
         peptidelusterClassKey.setNotModified(Boolean.TRUE);
         clusteringSettings.setColor(peptidelusterClassKey.toString(), Color.LIGHT_GRAY);
         peptideClasses.add(peptidelusterClassKey);
-        PTMFactory ptmFactory = PTMFactory.getInstance();
+        ModificationFactory ptmFactory = ModificationFactory.getInstance();
         ArrayList<Double> ptmMasses = new ArrayList<Double>();
-        HashMap<Double, ArrayList<String>> ptmMap = new HashMap<Double, ArrayList<String>>();
+        HashMap<Double, ArrayList<String>> modificationsMap = new HashMap<Double, ArrayList<String>>();
         HashMap<Double, Color> ptmColorMap = new HashMap<Double, Color>();
-        for (String ptmName : ptmSettings.getAllNotFixedModifications()) {
-            PTM ptm = ptmFactory.getPTM(ptmName);
-            Double ptmMass = ptm.getMass();
-            ArrayList<String> ptms = ptmMap.get(ptmMass);
-            if (ptms == null) {
+        for (String ptmName : modificationParameters.getAllNotFixedModifications()) {
+            Modification modification = ptmFactory.getModification(ptmName);
+            Double ptmMass = modification.getMass();
+            ArrayList<String> modifications = modificationsMap.get(ptmMass);
+            if (modifications == null) {
                 ptmMasses.add(ptmMass);
-                ptms = new ArrayList<String>(2);
-                ptmMap.put(ptmMass, ptms);
-                Color ptmColor = ptmSettings.getColor(ptmName);
+                modifications = new ArrayList<String>(2);
+                modificationsMap.put(ptmMass, modifications);
+                Color ptmColor = new Color(modificationParameters.getColor(ptmName));
                 ptmColorMap.put(ptmMass, ptmColor);
             }
-            ptms.add(ptmName);
+            modifications.add(ptmName);
         }
         for (Double ptmMass : ptmMasses) {
-            ArrayList<String> ptms = ptmMap.get(ptmMass);
+            ArrayList<String> ptms = modificationsMap.get(ptmMass);
             Collections.sort(ptms);
             peptidelusterClassKey = new PeptideClusterClassKey();
             peptidelusterClassKey.setPossiblePtms(ptms);

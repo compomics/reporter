@@ -12,7 +12,6 @@ import eu.isas.reporter.gui.ReporterGUI;
 import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
@@ -445,12 +444,12 @@ public class ReportDialog extends javax.swing.JDialog {
                     try {
                         ExportScheme exportScheme = exportFactory.getExportScheme(schemeName);
                         progressDialog.setTitle("Exporting. Please Wait...");
-                        ReporterExportFactory.writeExport(exportScheme, selectedFile, exportFormat, reporterGUI.getExperiment().getReference(),
-                                reporterGUI.getSample().getReference(), reporterGUI.getReplicateNumber(),
-                                reporterGUI.getProjectDetails(), reporterGUI.getIdentification(), reporterGUI.getIdentificationFeaturesGenerator(), reporterGUI.getGeneMaps(),
+                        ReporterExportFactory.writeExport(exportScheme, selectedFile, exportFormat, reporterGUI.getProjectParameters().getProjectUniqueName(),
+                                reporterGUI.getProjectDetails(), reporterGUI.getIdentification(), reporterGUI.getIdentificationFeaturesGenerator(), 
+                                reporterGUI.getSequenceProvider(), reporterGUI.getProteinDetailsProvider(), reporterGUI.getGeneMaps(),
                                 reporterGUI.getQuantificationFeaturesGenerator(), reporterGUI.getReporterIonQuantification(), reporterGUI.getReporterSettings(),
                                 reporterGUI.getIdentificationParameters(), null, null, null, null, reporterGUI.getIdentificationDisplayPreferences().getnAASurroundingPeptides(),
-                                reporterGUI.getSpectrumCountingPreferences(), progressDialog);
+                                reporterGUI.getSpectrumCountingParameters(), progressDialog);
 
                         boolean processCancelled = progressDialog.isRunCanceled();
                         progressDialog.setRunFinished();
@@ -458,12 +457,6 @@ public class ReportDialog extends javax.swing.JDialog {
                         if (!processCancelled) {
                             JOptionPane.showMessageDialog(reporterGUI, "Data copied to file:\n" + filePath, "Data Exported.", JOptionPane.INFORMATION_MESSAGE);
                         }
-                    } catch (FileNotFoundException e) {
-                        progressDialog.setRunFinished();
-                        JOptionPane.showMessageDialog(reporterGUI,
-                                "An error occurred while generating the output. Please make sure "
-                                + "that the destination file is not opened by another application.", "Output Error.", JOptionPane.ERROR_MESSAGE);
-                        e.printStackTrace();
                     } catch (Exception e) {
                         progressDialog.setRunFinished();
                         JOptionPane.showMessageDialog(reporterGUI, "An error occurred while generating the output.", "Output Error.", JOptionPane.ERROR_MESSAGE);
