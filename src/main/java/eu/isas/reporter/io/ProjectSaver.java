@@ -47,6 +47,7 @@ public class ProjectSaver {
     public static void saveProject(ReporterSettings reporterSettings, ReporterIonQuantification reporterIonQuantification, DisplayPreferences displayPreferences, CpsParent cpsParent,
             WaitingHandler waitingHandler) throws IOException, SQLException, ClassNotFoundException, InterruptedException, ArchiveException {
 
+        // @TODO: is an updated version of the below code still needed?
 //        ObjectsDB objectsDB = cpsParent.getIdentification().getIdentificationDB().getObjectsDB();
 //        if (!objectsDB.hasTable(REPORTER_SETTINGS_TABLE_NAME)) {
 //            objectsDB.addTable(REPORTER_SETTINGS_TABLE_NAME);

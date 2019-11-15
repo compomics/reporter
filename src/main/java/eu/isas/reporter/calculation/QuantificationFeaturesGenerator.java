@@ -4,6 +4,7 @@ import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.features.IdentificationFeaturesGenerator;
 import com.compomics.util.experiment.identification.matches.PeptideMatch;
 import com.compomics.util.experiment.identification.matches.ProteinMatch;
+import com.compomics.util.experiment.identification.matches.SpectrumMatch;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
 import com.compomics.util.parameters.identification.advanced.SequenceMatchingParameters;
@@ -160,11 +161,13 @@ public class QuantificationFeaturesGenerator {
      *
      * @return the quantification details of the match
      */
-    public PsmQuantificationDetails getPSMQuantificationDetails(String matchKey) {
-        PsmQuantificationDetails result = quantificationFeaturesCache.getPSMQuantificationDetails(matchKey);
+    public PsmQuantificationDetails getPSMQuantificationDetails(Long matchKey) {
+        SpectrumMatch spectrumMatch = identification.getSpectrumMatch(matchKey);
+        String spectrumKey = spectrumMatch.getSpectrumKey();
+        PsmQuantificationDetails result = quantificationFeaturesCache.getPSMQuantificationDetails(spectrumKey);
         if (result == null) {
             result = Reporter.estimatePSMQuantificationDetails(identification, this, reporterSettings.getReporterIonSelectionSettings(), reporterSettings.getRatioEstimationSettings(), reporterIonQuantification, matchKey);
-            quantificationFeaturesCache.addPSMQuantificationDetails(matchKey, result);
+            quantificationFeaturesCache.addPSMQuantificationDetails(spectrumKey, result);
         }
         return result;
     }

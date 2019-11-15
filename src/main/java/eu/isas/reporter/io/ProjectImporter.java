@@ -33,6 +33,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Set;
+import java.util.TreeSet;
 import org.apache.commons.compress.archivers.ArchiveException;
 
 /**
@@ -127,7 +129,7 @@ public class ProjectImporter {
                 // Ignore, can be set from the GUI
             }
         } else { // CLI
-            if (!cpsParent.loadFastaFile(waitingHandler)) {
+            if (cpsParent.loadFastaFile(waitingHandler) == null) {
                 throw new IllegalArgumentException("The FASTA file was not found. Please provide its location in the command line parameters.");
             }
         }
@@ -138,11 +140,10 @@ public class ProjectImporter {
         }
 
         // load the spectrum files
-        Identification identification = cpsParent.getIdentification();
-        ArrayList<String> spectrumFiles = identification.getSpectrumFiles();
+        Set<String> spectrumFiles = cpsParent.getProjectDetails().getSpectrumFileNames();
         waitingHandler.setWaitingText("Loading Spectrum Files. Please Wait...");
         waitingHandler.setPrimaryProgressCounterIndeterminate(true);
-        int cpt = 0, total = identification.getSpectrumFiles().size();
+        int cpt = 0, total = spectrumFiles.size();
 
         for (String spectrumFileName : spectrumFiles) {
 
@@ -198,14 +199,15 @@ public class ProjectImporter {
         IdentificationParameters identificationParameters = cpsParent.getIdentificationParameters();
         ObjectsDB objectsDB = identification.getObjectsDB();
 
-        if (objectsDB.hasTable(ProjectSaver.REPORTER_SETTINGS_TABLE_NAME)) {
-            waitingHandler.setWaitingText("Loading Quantification Results. Please Wait...");
-            reporterSettings = (ReporterSettings) objectsDB.retrieveObject(ProjectSaver.REPORTER_SETTINGS_TABLE_NAME, ReporterSettings.class.getName(), true, false);
-            reporterIonQuantification = (ReporterIonQuantification) objectsDB.retrieveObject(ProjectSaver.REPORTER_SETTINGS_TABLE_NAME, ReporterIonQuantification.class.getName(), true, false);
-            displayPreferences = (DisplayPreferences) objectsDB.retrieveObject(ProjectSaver.REPORTER_SETTINGS_TABLE_NAME, DisplayPreferences.class.getName(), true, false);
-        } else {
+        // @TODO: is an updated version of the below code still needed?
+//        if (objectsDB.hasTable(ProjectSaver.REPORTER_SETTINGS_TABLE_NAME)) {
+//            waitingHandler.setWaitingText("Loading Quantification Results. Please Wait...");
+//            reporterSettings = (ReporterSettings) objectsDB.retrieveObject(ProjectSaver.REPORTER_SETTINGS_TABLE_NAME, ReporterSettings.class.getName(), true, false);
+//            reporterIonQuantification = (ReporterIonQuantification) objectsDB.retrieveObject(ProjectSaver.REPORTER_SETTINGS_TABLE_NAME, ReporterIonQuantification.class.getName(), true, false);
+//            displayPreferences = (DisplayPreferences) objectsDB.retrieveObject(ProjectSaver.REPORTER_SETTINGS_TABLE_NAME, DisplayPreferences.class.getName(), true, false);
+//        } else {
             waitingHandler.setWaitingText("Inferring Quantification Parameters. Please Wait...");
-        }
+//        }
         if (reporterIonQuantification == null) {
             reporterIonQuantification = getDefaultReporterIonQuantification(identificationParameters);
         }
@@ -400,7 +402,7 @@ public class ProjectImporter {
             clusteringSettings.setColor(peptidelusterClassKey.toString(), color);
         }
 
-        ArrayList<PsmClusterClassKey> psmClasses = new ArrayList<PsmClusterClassKey>(1);
+        ArrayList<PsmClusterClassKey> psmClasses = new ArrayList<>(1);
         PsmClusterClassKey psmClusterClassKey = new PsmClusterClassKey();
         psmClasses.add(psmClusterClassKey);
         clusteringSettings.setColor(psmClusterClassKey.toString(), Color.GRAY);
@@ -408,7 +410,7 @@ public class ProjectImporter {
         psmClusterClassKey.setStarred(Boolean.TRUE);
         psmClasses.add(psmClusterClassKey);
         clusteringSettings.setColor(psmClusterClassKey.toString(), Color.yellow);
-        ArrayList<String> spectrumFiles = identification.getOrderedSpectrumFileNames();
+        TreeSet<String> spectrumFiles = new TreeSet<>(identification.getSpectrumIdentification().keySet());
         if (spectrumFiles.size() > 1) {
             for (String spectrumFile : spectrumFiles) {
                 psmClusterClassKey = new PsmClusterClassKey();

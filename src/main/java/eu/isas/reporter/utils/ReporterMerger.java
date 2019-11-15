@@ -1,6 +1,5 @@
 package eu.isas.reporter.utils;
 
-import com.compomics.util.experiment.identification.matches.ProteinMatch;
 import com.compomics.util.math.BasicMathFunctions;
 import com.compomics.util.math.statistics.Distribution;
 import com.compomics.util.math.statistics.distributions.NonSymmetricalNormalDistribution;
@@ -47,30 +46,30 @@ public class ReporterMerger {
             int ratioIndex = 15;
 
             String[] orderedExperiments = {"Mix 1", "Mix 2", "Mix 3"};
-            HashMap<String, String> fileMap = new HashMap<String, String>(nFiles);
+            HashMap<String, String> fileMap = new HashMap<>(nFiles);
             fileMap.put(orderedExperiments[0], "Mix1.txt");
             fileMap.put(orderedExperiments[1], "Mix2.txt");
             fileMap.put(orderedExperiments[2], "Mix3.txt");
 
-            HashMap<String, ArrayList<String>> ratios = new HashMap<String, ArrayList<String>>(nFiles);
+            HashMap<String, ArrayList<String>> ratios = new HashMap<>(nFiles);
 
-            HashMap<String, String> keyToMainMatchMap = new HashMap<String, String>(nProteins);
-            HashMap<String, String> keyToOtherMatchesMap = new HashMap<String, String>(nProteins);
-            HashMap<String, String> groupClassMap = new HashMap<String, String>(nProteins);
-            HashMap<String, String> mwMap = new HashMap<String, String>(nProteins);
-            HashMap<String, String> descriptionMap = new HashMap<String, String>(nProteins);
-            HashMap<String, Integer> decoyMap = new HashMap<String, Integer>(nProteins);
+            HashMap<String, String> keyToMainMatchMap = new HashMap<>(nProteins);
+            HashMap<String, String> keyToOtherMatchesMap = new HashMap<>(nProteins);
+            HashMap<String, String> groupClassMap = new HashMap<>(nProteins);
+            HashMap<String, String> mwMap = new HashMap<>(nProteins);
+            HashMap<String, String> descriptionMap = new HashMap<>(nProteins);
+            HashMap<String, Integer> decoyMap = new HashMap<>(nProteins);
 
-            HashMap<String, ArrayList<String>> proteinKeysMap = new HashMap<String, ArrayList<String>>(nFiles);
-            HashMap<String, HashMap<String, Integer>> peptidesMap = new HashMap<String, HashMap<String, Integer>>(nFiles);
-            HashMap<String, HashMap<String, Integer>> spectraMap = new HashMap<String, HashMap<String, Integer>>(nFiles);
-            HashMap<String, HashMap<String, Integer>> validatedPeptidesMap = new HashMap<String, HashMap<String, Integer>>(nFiles);
-            HashMap<String, HashMap<String, Integer>> validatedSpectraMap = new HashMap<String, HashMap<String, Integer>>(nFiles);
-            HashMap<String, HashMap<String, Double>> pepMap = new HashMap<String, HashMap<String, Double>>(nFiles);
-            HashMap<String, HashMap<String, Double>> scoreMap = new HashMap<String, HashMap<String, Double>>(nFiles);
-            HashMap<String, HashMap<String, String>> validatedMap = new HashMap<String, HashMap<String, String>>(nFiles);
-            HashMap<String, HashMap<String, HashMap<String, Double>>> ratiosMap = new HashMap<String, HashMap<String, HashMap<String, Double>>>(nFiles);
-            HashMap<String, HashMap<String, HashMap<String, Double>>> ratiosMapNormalized = new HashMap<String, HashMap<String, HashMap<String, Double>>>(nFiles);
+            HashMap<String, ArrayList<String>> proteinKeysMap = new HashMap<>(nFiles);
+            HashMap<String, HashMap<String, Integer>> peptidesMap = new HashMap<>(nFiles);
+            HashMap<String, HashMap<String, Integer>> spectraMap = new HashMap<>(nFiles);
+            HashMap<String, HashMap<String, Integer>> validatedPeptidesMap = new HashMap<>(nFiles);
+            HashMap<String, HashMap<String, Integer>> validatedSpectraMap = new HashMap<>(nFiles);
+            HashMap<String, HashMap<String, Double>> pepMap = new HashMap<>(nFiles);
+            HashMap<String, HashMap<String, Double>> scoreMap = new HashMap<>(nFiles);
+            HashMap<String, HashMap<String, String>> validatedMap = new HashMap<>(nFiles);
+            HashMap<String, HashMap<String, HashMap<String, Double>>> ratiosMap = new HashMap<>(nFiles);
+            HashMap<String, HashMap<String, HashMap<String, Double>>> ratiosMapNormalized = new HashMap<>(nFiles);
 
             for (String experiment : orderedExperiments) {
 
@@ -380,9 +379,9 @@ public class ReporterMerger {
             }
 
             // Get a list of protein matches amendable for quantification, create list of ratios
-            ArrayList<String> quantificationMatches = new ArrayList<String>();
-            HashMap<String, HashMap<String, ArrayList<Double>>> validatedRatios = new HashMap<String, HashMap<String, ArrayList<Double>>>();
-            HashMap<String, HashMap<String, HashMap<String, HashMap<String, Double>>>> pathwaysRatios = new HashMap<String, HashMap<String, HashMap<String, HashMap<String, Double>>>>(); //Pathway > protein key > experiment > channel > ratio
+            ArrayList<String> quantificationMatches = new ArrayList<>();
+            HashMap<String, HashMap<String, ArrayList<Double>>> validatedRatios = new HashMap<>();
+            HashMap<String, HashMap<String, HashMap<String, HashMap<String, Double>>>> pathwaysRatios = new HashMap<>(); //Pathway > protein key > experiment > channel > ratio
             for (String key : keyToMainMatchMap.keySet()) {
                 int decoy = decoyMap.get(key);
                 if (decoy == 0) {
@@ -413,35 +412,38 @@ public class ReporterMerger {
                             }
                         }
                     }
-                    for (String accession : ProteinMatch.getAccessions(key)) {
-                        for (String pathway : pathways.keySet()) {
-                            if (pathways.get(pathway).contains(accession)) {
-                                for (String experiment : orderedExperiments) {
-                                    HashMap<String, HashMap<String, HashMap<String, Double>>> pathwayRatios = pathwaysRatios.get(pathway);
-                                    if (pathwayRatios == null) {
-                                        pathwayRatios = new HashMap<String, HashMap<String, HashMap<String, Double>>>();
-                                        pathwaysRatios.put(pathway, pathwayRatios);
-                                    }
-                                    HashMap<String, HashMap<String, Double>> proteinRatios = pathwayRatios.get(key);
-                                    if (proteinRatios == null) {
-                                        proteinRatios = new HashMap<String, HashMap<String, Double>>();
-                                        pathwayRatios.put(key, proteinRatios);
-                                    }
-                                    HashMap<String, Double> tempRatiosMap = proteinRatios.get(experiment);
-                                    if (tempRatiosMap == null) {
-                                        tempRatiosMap = new HashMap<String, Double>();
-                                        proteinRatios.put(experiment, tempRatiosMap);
-                                    }
-                                    for (String ratio : ratios.get(experiment)) {
-                                        Double value = ratiosMap.get(experiment).get(ratio).get(key);
-                                        if (value != null && !value.isNaN()) {
-                                            tempRatiosMap.put(ratio, value);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    
+                    throw new IOException("ProteinMatch.getAccessions(key) not yet remplemented!");
+                    
+//                    for (String accession : ProteinMatch.getAccessions(key)) { // @TODO: this requires identification.getProteinMap().get(accession) which we cannot use here
+//                        for (String pathway : pathways.keySet()) {
+//                            if (pathways.get(pathway).contains(accession)) {
+//                                for (String experiment : orderedExperiments) {
+//                                    HashMap<String, HashMap<String, HashMap<String, Double>>> pathwayRatios = pathwaysRatios.get(pathway);
+//                                    if (pathwayRatios == null) {
+//                                        pathwayRatios = new HashMap<String, HashMap<String, HashMap<String, Double>>>();
+//                                        pathwaysRatios.put(pathway, pathwayRatios);
+//                                    }
+//                                    HashMap<String, HashMap<String, Double>> proteinRatios = pathwayRatios.get(key);
+//                                    if (proteinRatios == null) {
+//                                        proteinRatios = new HashMap<String, HashMap<String, Double>>();
+//                                        pathwayRatios.put(key, proteinRatios);
+//                                    }
+//                                    HashMap<String, Double> tempRatiosMap = proteinRatios.get(experiment);
+//                                    if (tempRatiosMap == null) {
+//                                        tempRatiosMap = new HashMap<String, Double>();
+//                                        proteinRatios.put(experiment, tempRatiosMap);
+//                                    }
+//                                    for (String ratio : ratios.get(experiment)) {
+//                                        Double value = ratiosMap.get(experiment).get(ratio).get(key);
+//                                        if (value != null && !value.isNaN()) {
+//                                            tempRatiosMap.put(ratio, value);
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
                 }
             }
 

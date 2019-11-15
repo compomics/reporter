@@ -228,7 +228,7 @@ public class PsmTableModel extends SelfUpdatingTableModel {
 
                 case 1:
                     ArrayList<Double> data = new ArrayList<Double>();
-                    PsmQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getPSMQuantificationDetails(spectrumMatch.getSpectrumKey());
+                    PsmQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getPSMQuantificationDetails(spectrumMatch.getKey());
                     ArrayList<String> reagentsOrder = displayPreferences.getReagents();
                     for (String tempReagent : reagentsOrder) {
                         int sampleIndex = sampleIndexes.indexOf(tempReagent);

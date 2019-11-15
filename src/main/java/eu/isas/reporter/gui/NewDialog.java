@@ -11,6 +11,7 @@ import com.compomics.util.experiment.quantification.Quantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethodFactory;
+import static com.compomics.util.gui.parameters.identification.search.SequenceDbDetailsDialog.lastFolderKey;
 import com.compomics.util.gui.parameters.tools.ProcessingParametersDialog;
 import com.compomics.util.gui.renderers.AlignedListCellRenderer;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
@@ -33,6 +34,7 @@ import java.awt.event.MouseEvent;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.TreeSet;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
@@ -73,6 +75,10 @@ public class NewDialog extends javax.swing.JDialog {
      * The mgf files loaded.
      */
     private ArrayList<File> mgfFiles = new ArrayList<File>();
+    /**
+     * The FASTA file.
+     */
+    private File fastaFile;
     /**
      * The reporter settings.
      */
@@ -133,6 +139,10 @@ public class NewDialog extends javax.swing.JDialog {
      * The sample assignment table column header tooltips.
      */
     private ArrayList<String> sampleAssignmentTableToolTips;
+    /**
+     * The project details.
+     */
+    private ProjectDetails projectDetails = new ProjectDetails();
 
     /**
      * Constructor.
@@ -223,7 +233,7 @@ public class NewDialog extends javax.swing.JDialog {
      * Set up the GUI.
      */
     private void setUpGui() {
-        
+
         // table header tooltips
         sampleAssignmentTableToolTips = new ArrayList<String>();
         sampleAssignmentTableToolTips.add(null);
@@ -882,76 +892,50 @@ public class NewDialog extends javax.swing.JDialog {
      */
     private void addDbButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addDbButtonActionPerformed
 
-//        if (searchParameters != null && searchParameters.getFastaFile() != null && searchParameters.getFastaFile().exists()) {
-//            fileChooser = new JFileChooser(searchParameters.getFastaFile());
-//        } else {
-//            fileChooser = new JFileChooser(peptideShakerGUI.getLastSelectedFolder());
-//        }
-        final JFileChooser fileChooser = new JFileChooser(reporterGUI.getLastSelectedFolder().getLastSelectedFolder());
+        File startLocation = fastaFile;
 
-        fileChooser.setDialogTitle("Select FASTA File(s)");
-        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        fileChooser.setMultiSelectionEnabled(false);
+        if (startLocation == null && reporterGUI.getUtilitiesUserParameters().getDbFolder() != null && reporterGUI.getUtilitiesUserParameters().getDbFolder().exists()) {
+            startLocation = reporterGUI.getUtilitiesUserParameters().getDbFolder();
+        }
+
+        if (startLocation == null) {
+            startLocation = new File(reporterGUI.getLastSelectedFolder().getLastSelectedFolder());
+        }
+
+        JFileChooser fc = new JFileChooser(startLocation);
 
         FileFilter filter = new FileFilter() {
+
             @Override
             public boolean accept(File myFile) {
+
                 return myFile.getName().toLowerCase().endsWith("fasta")
-                        || myFile.getName().toLowerCase().endsWith("fast")
-                        || myFile.getName().toLowerCase().endsWith("fas")
                         || myFile.isDirectory();
             }
 
             @Override
             public String getDescription() {
-                return "Supported formats: FASTA (.fasta)";
+                return "FASTA (.fasta)";
             }
+
         };
 
-        fileChooser.setFileFilter(filter);
-        int returnVal = fileChooser.showDialog(this.getParent(), "Open");
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-            if (welcomeDialog != null) {
-                progressDialog = new ProgressDialogX(welcomeDialog, reporterGUI,
-                        Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
-                        Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
-            } else {
-                progressDialog = new ProgressDialogX(this, reporterGUI,
-                        Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
-                        Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
+        fc.setFileFilter(filter);
+        int result = fc.showOpenDialog(this);
+
+        if (result == JFileChooser.APPROVE_OPTION) {
+
+            fastaFile = fc.getSelectedFile();
+            File folder = fastaFile.getParentFile();
+            reporterGUI.getUtilitiesUserParameters().setDbFolder(folder);
+            reporterGUI.getLastSelectedFolder().setLastSelectedFolder(lastFolderKey, folder.getAbsolutePath());
+
+            fastaTxt.setText(fastaFile.getName());
+
+            if (fastaFile.getName().contains(" ")) {
+                JOptionPane.showMessageDialog(this, "Your FASTA file name contains white space and ougth to be renamed.", "File Name Warning", JOptionPane.WARNING_MESSAGE);
             }
 
-            progressDialog.setPrimaryProgressCounterIndeterminate(true);
-            progressDialog.setWaitingText("Loading Fasta File. Please Wait...");
-
-            new Thread(new Runnable() {
-                public void run() {
-                    try {
-                        progressDialog.setVisible(true);
-                    } catch (IndexOutOfBoundsException e) {
-                        // ignore
-                    }
-                }
-            }, "ProgressDialog").start();
-
-            new Thread("ImportThread") {
-                @Override
-                public void run() {
-                    File fastaFile = fileChooser.getSelectedFile();
-                    reporterGUI.getLastSelectedFolder().setLastSelectedFolder(fastaFile.getAbsolutePath());
-                    try {
-                        SequenceFactory.getInstance().loadFastaFile(fastaFile, progressDialog);
-
-                        progressDialog.setRunFinished();
-
-                    } catch (Exception e) {
-                        progressDialog.setRunFinished();
-                        e.printStackTrace();
-                        JOptionPane.showMessageDialog(NewDialog.this, "An error occurred while reading the mgf file.", "Mgf Error", JOptionPane.WARNING_MESSAGE);
-                    }
-                    verifyFastaFile();
-                }
-            }.start();
         }
     }//GEN-LAST:event_addDbButtonActionPerformed
 
@@ -1081,9 +1065,11 @@ public class NewDialog extends javax.swing.JDialog {
             if (welcomeDialog != null) {
                 welcomeDialog.setVisible(false);
             }
-            
+
             // set the user defined reagents order
             displayPreferences.setReagents(reagents);
+
+            reporterGUI.getProjectDetails().setFastaFile(fastaFile);
 
             reporterGUI.createNewProject(cpsParent, reporterSettings, reporterIonQuantification, processingParameters, displayPreferences);
             dispose();
@@ -1105,8 +1091,8 @@ public class NewDialog extends javax.swing.JDialog {
 
     /**
      * Move the selected row up.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void moveUpButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveUpButtonActionPerformed
         int[] selectedRows = sampleAssignmentTable.getSelectedRows();
@@ -1115,7 +1101,7 @@ public class NewDialog extends javax.swing.JDialog {
             String toMove = reagents.get(selectedRows[0]);
             String toReplace = reagents.get(selectedRows[0] - 1);
             reagents.set(selectedRows[0] - 1, toMove);
-            reagents.set(selectedRows[0], toReplace); 
+            reagents.set(selectedRows[0], toReplace);
             sampleAssignmentTable.setRowSelectionInterval(selectedRows[0] - 1, selectedRows[0] - 1 + selectedRows.length - 1);
             resetTableIndexes();
             sampleAssignmentTableMouseReleased(null);
@@ -1124,8 +1110,8 @@ public class NewDialog extends javax.swing.JDialog {
 
     /**
      * Move the selected row to the top.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void moveTopButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveTopButtonActionPerformed
         int[] selectedRows = sampleAssignmentTable.getSelectedRows();
@@ -1142,8 +1128,8 @@ public class NewDialog extends javax.swing.JDialog {
 
     /**
      * Move the selected row down.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void moveDownButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveDownButtonActionPerformed
         int[] selectedRows = sampleAssignmentTable.getSelectedRows();
@@ -1152,7 +1138,7 @@ public class NewDialog extends javax.swing.JDialog {
             String toMove = reagents.get(selectedRows[0]);
             String toReplace = reagents.get(selectedRows[0] + 1);
             reagents.set(selectedRows[0] + 1, toMove);
-            reagents.set(selectedRows[0], toReplace); 
+            reagents.set(selectedRows[0], toReplace);
             sampleAssignmentTable.setRowSelectionInterval(selectedRows[0] + 1, selectedRows[0] + selectedRows.length);
             resetTableIndexes();
             sampleAssignmentTableMouseReleased(null);
@@ -1161,8 +1147,8 @@ public class NewDialog extends javax.swing.JDialog {
 
     /**
      * Move the selected row to the bottom.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void moveBottomButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveBottomButtonActionPerformed
         int[] selectedRows = sampleAssignmentTable.getSelectedRows();
@@ -1240,17 +1226,21 @@ public class NewDialog extends javax.swing.JDialog {
      * @return a boolean indicating that the FASTA file is loaded
      */
     private boolean verifyFastaFile() {
-        SequenceFactory sequenceFactory = SequenceFactory.getInstance();
-        File fastaFile = sequenceFactory.getCurrentFastaFile();
-        if (fastaFile != null) {
-            fastaTxt.setText(fastaFile.getName());
+
+        String fastaFilePath = cpsParent.getProjectDetails().getFastaFile();
+
+        if (fastaFilePath != null) {
+            fastaTxt.setText(fastaFilePath);
             return true;
         }
-        String errorText = "FASTA file not found or incorrectly loaded:\n" + getSearchParameters().getFastaFile().getName()
+
+        String errorText = "FASTA file not found or incorrectly loaded:\n" + cpsParent.getProjectDetails().getFastaFile()
                 + "\nPlease locate it manually.";
+
         JOptionPane.showMessageDialog(this,
                 errorText,
-                "Spectrum File(s) Not Found", JOptionPane.WARNING_MESSAGE);
+                "FASTA File(s) Not Found", JOptionPane.WARNING_MESSAGE);
+
         return false;
     }
 
@@ -1263,7 +1253,10 @@ public class NewDialog extends javax.swing.JDialog {
     private boolean verifySpectrumFiles() {
         String missing = "";
         int nMissing = 0;
-        for (String spectrumFileName : cpsParent.getIdentification().getSpectrumFiles()) { // @TODO: check alternative locations as for ps
+        
+        TreeSet<String> msFiles = new TreeSet<>(cpsParent.getIdentification().getSpectrumIdentification().keySet());
+        
+        for (String spectrumFileName : msFiles) { // @TODO: check alternative locations as for ps
             boolean found = false;
             for (File spectrumFile : mgfFiles) {
                 if (spectrumFile.getName().equals(spectrumFileName)) {
@@ -1516,6 +1509,13 @@ public class NewDialog extends javax.swing.JDialog {
      */
     private boolean validateInput() {
         // @TODO: validate that the project has been loaded
+
+        if (fastaTxt.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "FASTA file not selected.",
+                    "FASTA File Missing", JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
 
         // warning for tmt data with low mass accuracy
         if (selectedMethod.getName().contains("TMT")) {
@@ -1808,7 +1808,7 @@ public class NewDialog extends javax.swing.JDialog {
         sampleAssignmentTable.revalidate();
         sampleAssignmentTable.repaint();
     }
-    
+
     /**
      * Resets the table indexes.
      */

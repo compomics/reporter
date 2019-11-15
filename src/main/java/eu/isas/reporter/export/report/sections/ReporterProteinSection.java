@@ -47,11 +47,11 @@ public class ReporterProteinSection {
     /**
      * The protein identification features to export.
      */
-    private ArrayList<ExportFeature> identificationFeatures = new ArrayList<ExportFeature>();
+    private ArrayList<ExportFeature> identificationFeatures = new ArrayList<>();
     /**
      * The protein quantification features to export.
      */
-    private ArrayList<ReporterExportFeature> quantificationFeatures = new ArrayList<ReporterExportFeature>();
+    private ArrayList<ReporterExportFeature> quantificationFeatures = new ArrayList<>();
     /**
      * The peptide subsection if any.
      */
@@ -84,8 +84,11 @@ public class ReporterProteinSection {
      * @param writer the writer which will write to the file
      */
     public ReporterProteinSection(ArrayList<ExportFeature> exportFeatures, boolean indexes, boolean header, ExportWriter writer) {
-        ArrayList<ExportFeature> peptideFeatures = new ArrayList<ExportFeature>();
+
+        ArrayList<ExportFeature> peptideFeatures = new ArrayList<>();
+
         for (ExportFeature exportFeature : exportFeatures) {
+
             if (exportFeature instanceof ReporterProteinFeatures) {
                 quantificationFeatures.add((ReporterExportFeature) exportFeature);
             } else if (exportFeature instanceof ReporterPeptideFeature
@@ -101,12 +104,15 @@ public class ReporterProteinSection {
                 throw new IllegalArgumentException("Export feature of type " + exportFeature.getClass() + " not recognized.");
             }
         }
+
         if (!peptideFeatures.isEmpty()) {
             peptideSection = new ReporterPeptideSection(peptideFeatures, indexes, header, writer);
         }
+
         this.indexes = indexes;
         this.header = header;
         this.writer = writer;
+
         if (writer instanceof ExcelWriter) {
             reporterStyle = ReporterReportStyle.getReportStyle((ExcelWriter) writer);
         }
@@ -148,7 +154,7 @@ public class ReporterProteinSection {
      * @throws org.apache.commons.math.MathException exception thrown whenever
      * an error occurred while transforming the ratios
      */
-    public void writeSection(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, SequenceProvider sequenceProvider, ProteinDetailsProvider proteinDetailsProvider, 
+    public void writeSection(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, SequenceProvider sequenceProvider, ProteinDetailsProvider proteinDetailsProvider,
             GeneMaps geneMaps, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, ReporterSettings reporterSettings,
             IdentificationParameters identificationParameters, long[] keys, int nSurroundingAas, boolean validatedOnly, boolean decoys, WaitingHandler waitingHandler)
             throws IOException, IllegalArgumentException, SQLException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException, MathException {
@@ -162,11 +168,13 @@ public class ReporterProteinSection {
         }
 
         if (keys == null) {
-            keys = identification.getProteinIdentification().toArray(long[]::new);
+            keys = identification.getProteinIdentification().stream()
+                    .mapToLong(Long::longValue)
+                    .toArray();
         }
         int line = 1;
         PSParameter psParameter = new PSParameter();
-        ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
+        ArrayList<UrParameter> parameters = new ArrayList<>(1);
         parameters.add(psParameter);
 
         if (waitingHandler != null) {
@@ -209,12 +217,12 @@ public class ReporterProteinSection {
                             first = false;
                         }
                         PsProteinFeature tempProteinFeatures = (PsProteinFeature) exportFeature;
-                        
-                        writer.write(PsProteinSection.getFeature(identificationFeaturesGenerator, sequenceProvider, proteinDetailsProvider, geneMaps, 
+
+                        writer.write(PsProteinSection.getFeature(identificationFeaturesGenerator, sequenceProvider, proteinDetailsProvider, geneMaps,
                                 identificationParameters, nSurroundingAas, proteinKey, proteinMatch, psParameter, tempProteinFeatures, waitingHandler));
                     }
 
-                    ArrayList<String> sampleIndexes = new ArrayList<String>(reporterIonQuantification.getSampleIndexes());
+                    ArrayList<String> sampleIndexes = new ArrayList<>(reporterIonQuantification.getSampleIndexes());
                     Collections.sort(sampleIndexes);
 
                     for (ExportFeature exportFeature : quantificationFeatures) {
@@ -318,7 +326,7 @@ public class ReporterProteinSection {
     public void writeHeader(ReporterIonQuantification reporterIonQuantification) throws IOException {
 
         boolean needSecondLine = false;
-        ArrayList<String> sampleIndexes = new ArrayList<String>(reporterIonQuantification.getSampleIndexes());
+        ArrayList<String> sampleIndexes = new ArrayList<>(reporterIonQuantification.getSampleIndexes());
         Collections.sort(sampleIndexes);
 
         boolean firstColumn = true;

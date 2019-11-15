@@ -187,7 +187,7 @@ public class ReporterPsmSection {
 
             String spectrumKey = spectrumMatch.getSpectrumKey();
 
-            psParameter = (PSParameter) identification.getSpectrumMatch(spectrumMatch.getKey()).getUrParam(psParameter);
+            psParameter = (PSParameter) spectrumMatch.getUrParam(psParameter);
 
             if (!validatedOnly || psParameter.getMatchValidationLevel().isValidated()) {
 
@@ -246,7 +246,7 @@ public class ReporterPsmSection {
                                 } else {
                                     first = false;
                                 }
-                                writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, reporterSettings, spectrumKey, psmFeature, sampleIndex), reporterStyle);
+                                writer.write(getFeature(identification, quantificationFeaturesGenerator, reporterIonQuantification, reporterSettings, spectrumMatch.getKey(), psmFeature, sampleIndex), reporterStyle);
                             }
                         } else {
                             if (!first) {
@@ -254,7 +254,7 @@ public class ReporterPsmSection {
                             } else {
                                 first = false;
                             }
-                            writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, reporterSettings, spectrumKey, psmFeature, ""), reporterStyle);
+                            writer.write(getFeature(identification, quantificationFeaturesGenerator, reporterIonQuantification, reporterSettings, spectrumMatch.getKey(), psmFeature, ""), reporterStyle);
                         }
                     }
                     writer.newLine();
@@ -280,12 +280,13 @@ public class ReporterPsmSection {
      * Returns the report component corresponding to a feature at a given
      * channel.
      *
+     * @param identification the identification of the project
      * @param quantificationFeaturesGenerator the quantification features
      * generator
      * @param reporterIonQuantification the reporter ion quantification object
      * containing the quantification configuration
      * @param reporterSettings the reporter settings
-     * @param spectrumKey the spectrum key
+     * @param matchKey the match key
      * @param psmFeatures the PSM feature to export
      * @param sampleIndex the index of the sample in case the feature is channel
      * dependent, ignored otherwise
@@ -304,13 +305,17 @@ public class ReporterPsmSection {
      * @throws java.lang.InterruptedException exception thrown whenever a
      * threading error occurred
      */
-    public static String getFeature(QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, ReporterSettings reporterSettings, String spectrumKey, ReporterPsmFeatures psmFeatures, String sampleIndex) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
+    public static String getFeature(Identification identification, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, ReporterSettings reporterSettings, long matchKey, ReporterPsmFeatures psmFeatures, String sampleIndex) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
+        
+        SpectrumMatch spectrumMatch = identification.getSpectrumMatch(matchKey);
+        String spectrumKey = spectrumMatch.getSpectrumKey();
+        
         switch (psmFeatures) {
             case raw_ratio:
-                PsmQuantificationDetails psmDetails = quantificationFeaturesGenerator.getPSMQuantificationDetails(spectrumKey);
+                PsmQuantificationDetails psmDetails = quantificationFeaturesGenerator.getPSMQuantificationDetails(matchKey);
                 return psmDetails.getRawRatio(sampleIndex).toString();
             case ratio:
-                psmDetails = quantificationFeaturesGenerator.getPSMQuantificationDetails(spectrumKey);
+                psmDetails = quantificationFeaturesGenerator.getPSMQuantificationDetails(matchKey);
                 return psmDetails.getRatio(sampleIndex, reporterIonQuantification.getNormalizationFactors()).toString();
             case reporter_intensity:
                 SpectrumQuantificationDetails spectrumDetails = quantificationFeaturesGenerator.getSpectrumQuantificationDetails(reporterIonQuantification, reporterSettings.getReporterIonSelectionSettings(), spectrumKey);

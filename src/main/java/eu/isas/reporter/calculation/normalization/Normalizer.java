@@ -12,11 +12,14 @@ import com.compomics.util.experiment.identification.matches_iterators.SpectrumMa
 import com.compomics.util.experiment.identification.peptide_shaker.Metrics;
 import com.compomics.util.experiment.identification.peptide_shaker.PSParameter;
 import com.compomics.util.experiment.identification.spectrum_assumptions.PeptideAssumption;
+import com.compomics.util.experiment.io.biology.protein.FastaParameters;
 import com.compomics.util.experiment.normalization.NormalizationFactors;
 import com.compomics.util.experiment.personalization.UrParameter;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.math.BasicMathFunctions;
+import com.compomics.util.parameters.identification.advanced.PeptideVariantsParameters;
 import com.compomics.util.parameters.identification.advanced.SequenceMatchingParameters;
+import com.compomics.util.parameters.identification.search.SearchParameters;
 import com.compomics.util.parameters.tools.ProcessingParameters;
 import com.compomics.util.waiting.WaitingHandler;
 import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
@@ -29,8 +32,8 @@ import eu.isas.reporter.quantificationdetails.PsmQuantificationDetails;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -58,6 +61,10 @@ public class Normalizer {
      * @param quantificationFeaturesGenerator the quantification features
      * generator
      * @param processingParameters the processing preferences
+     * @param searchParameters the search parameters
+     * @param peptideVariantsPreferences the peptide variants parameters
+     * @param fastaParameters the FASTA parameters
+
      * @param exceptionHandler handler in case exception occur
      * @param waitingHandler waiting handler displaying progress to the user
      *
@@ -75,18 +82,19 @@ public class Normalizer {
     public void setPsmNormalizationFactors(ReporterIonQuantification reporterIonQuantification, RatioEstimationSettings ratioEstimationSettings,
             NormalizationSettings normalizationSettings, SequenceMatchingParameters sequenceMatchingParameters, Identification identification,
             QuantificationFeaturesGenerator quantificationFeaturesGenerator, ProcessingParameters processingParameters,
+            SearchParameters searchParameters, FastaParameters fastaParameters, PeptideVariantsParameters peptideVariantsPreferences, 
             ExceptionHandler exceptionHandler, WaitingHandler waitingHandler)
             throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
 
-        HashMap<String, ArrayList<Double>> allRawRatios = new HashMap<String, ArrayList<Double>>();
-        HashMap<String, ArrayList<Double>> seedRawRatios = new HashMap<String, ArrayList<Double>>();
+        HashMap<String, ArrayList<Double>> allRawRatios = new HashMap<>();
+        HashMap<String, ArrayList<Double>> seedRawRatios = new HashMap<>();
         for (String sampleIndex : reporterIonQuantification.getSampleIndexes()) {
             allRawRatios.put(sampleIndex, new ArrayList<Double>());
             seedRawRatios.put(sampleIndex, new ArrayList<Double>());
         }
 
         PSParameter psParameter = new PSParameter();
-        ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
+        ArrayList<UrParameter> parameters = new ArrayList<>(1);
         parameters.add(psParameter);
 
         if (normalizationSettings.getPsmNormalization() != NormalizationType.none) {
@@ -99,14 +107,14 @@ public class Normalizer {
                 waitingHandler.increasePrimaryProgressCounter();
             }
 
-            HashSet<String> seeds = normalizationSettings.getStableProteins();
-            HashSet<String> exclusion = normalizationSettings.getContaminants();
+            Collection<String> seeds = normalizationSettings.getStableProteins(searchParameters, fastaParameters, peptideVariantsPreferences, waitingHandler);
+            Collection<String> exclusion = normalizationSettings.getContaminants(searchParameters, fastaParameters, peptideVariantsPreferences, waitingHandler);
 
             int nThreads = processingParameters.getnThreads();
 
             SpectrumMatchesIterator spectrumMatchesIterator = identification.getSpectrumMatchesIterator(waitingHandler);
             ExecutorService pool = Executors.newFixedThreadPool(nThreads);
-            ArrayList<PsmNormalizerRunnable> runnables = new ArrayList<PsmNormalizerRunnable>(nThreads);
+            ArrayList<PsmNormalizerRunnable> runnables = new ArrayList<>(nThreads);
 
             for (int i = 1; i <= nThreads && waitingHandler != null && !waitingHandler.isRunCanceled(); i++) {
                 PsmNormalizerRunnable runnable = new PsmNormalizerRunnable(
@@ -191,7 +199,10 @@ public class Normalizer {
      * @param quantificationFeaturesGenerator the quantification features
      * generator
      * @param processingParameters the processing preferences
+     * @param searchParameters the search parameters
+     * @param fastaParameters the FASTA parameters
      * @param exceptionHandler handler in case exception occur
+     * @param peptideVariantsPreferences the peptide variants parameters
      * @param waitingHandler waiting handler displaying progress to the user
      *
      * @throws java.sql.SQLException exception thrown whenever an error occurred
@@ -206,18 +217,19 @@ public class Normalizer {
      * threading error occurred
      */
     public void setPeptideNormalizationFactors(ReporterIonQuantification reporterIonQuantification, RatioEstimationSettings ratioEstimationSettings, NormalizationSettings normalizationSettings, SequenceMatchingParameters sequenceMatchingParameters,
-            Identification identification, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ProcessingParameters processingParameters, ExceptionHandler exceptionHandler, WaitingHandler waitingHandler)
+            Identification identification, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ProcessingParameters processingParameters,
+            SearchParameters searchParameters, FastaParameters fastaParameters, PeptideVariantsParameters peptideVariantsPreferences, ExceptionHandler exceptionHandler, WaitingHandler waitingHandler)
             throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
 
-        HashMap<String, ArrayList<Double>> allRawRatios = new HashMap<String, ArrayList<Double>>();
-        HashMap<String, ArrayList<Double>> seedRawRatios = new HashMap<String, ArrayList<Double>>();
+        HashMap<String, ArrayList<Double>> allRawRatios = new HashMap<>();
+        HashMap<String, ArrayList<Double>> seedRawRatios = new HashMap<>();
         for (String sampleIndex : reporterIonQuantification.getSampleIndexes()) {
             allRawRatios.put(sampleIndex, new ArrayList<Double>());
             seedRawRatios.put(sampleIndex, new ArrayList<Double>());
         }
 
         PSParameter psParameter = new PSParameter();
-        ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
+        ArrayList<UrParameter> parameters = new ArrayList<>(1);
         parameters.add(psParameter);
 
         if (normalizationSettings.getPeptideNormalization() != NormalizationType.none) {
@@ -232,8 +244,8 @@ public class Normalizer {
 
             PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(waitingHandler);
 
-            HashSet<String> seeds = normalizationSettings.getStableProteins();
-            HashSet<String> exclusion = normalizationSettings.getContaminants();
+            Collection<String> seeds = normalizationSettings.getStableProteins(searchParameters, fastaParameters, peptideVariantsPreferences, waitingHandler);
+            Collection<String> exclusion = normalizationSettings.getContaminants(searchParameters, fastaParameters, peptideVariantsPreferences, waitingHandler);
 
             int nThreads = processingParameters.getnThreads();
             ExecutorService pool = Executors.newFixedThreadPool(nThreads);
@@ -321,6 +333,10 @@ public class Normalizer {
      * @param quantificationFeaturesGenerator the quantification features
      * generator
      * @param processingParameters the processing parameters
+     * @param searchParameters the search parameters
+     * @param fastaParameters the FASTA parameters
+     * @param peptideVariantsPreferences the peptide variants parameters
+
      * @param exceptionHandler handler in case exception occur
      * @param waitingHandler waiting handler displaying progress to the user
      *
@@ -336,19 +352,20 @@ public class Normalizer {
      * threading error occurred
      */
     public void setProteinNormalizationFactors(ReporterIonQuantification reporterIonQuantification, RatioEstimationSettings ratioEstimationSettings, NormalizationSettings normalizationSettings,
-            Identification identification, Metrics metrics, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ProcessingParameters processingParameters, ExceptionHandler exceptionHandler, WaitingHandler waitingHandler)
+            Identification identification, Metrics metrics, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ProcessingParameters processingParameters, 
+            SearchParameters searchParameters, FastaParameters fastaParameters, PeptideVariantsParameters peptideVariantsPreferences, ExceptionHandler exceptionHandler, WaitingHandler waitingHandler)
             throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
 
         Set<String> sampleIndexes = reporterIonQuantification.getSampleIndexes();
-        HashMap<String, ArrayList<Double>> allRawRatios = new HashMap<String, ArrayList<Double>>(sampleIndexes.size());
-        HashMap<String, ArrayList<Double>> seedRawRatios = new HashMap<String, ArrayList<Double>>(sampleIndexes.size());
+        HashMap<String, ArrayList<Double>> allRawRatios = new HashMap<>(sampleIndexes.size());
+        HashMap<String, ArrayList<Double>> seedRawRatios = new HashMap<>(sampleIndexes.size());
         for (String sampleIndex : sampleIndexes) {
             allRawRatios.put(sampleIndex, new ArrayList<Double>(metrics.getnValidatedProteins()));
             seedRawRatios.put(sampleIndex, new ArrayList<Double>(metrics.getnValidatedProteins()));
         }
 
         PSParameter psParameter = new PSParameter();
-        ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
+        ArrayList<UrParameter> parameters = new ArrayList<>(1);
         parameters.add(psParameter);
 
         if (normalizationSettings.getProteinNormalization() != NormalizationType.none) {
@@ -363,8 +380,8 @@ public class Normalizer {
 
             ProteinMatchesIterator proteinMatchesIterator = identification.getProteinMatchesIterator(waitingHandler);
 
-            HashSet<String> seeds = normalizationSettings.getStableProteins();
-            HashSet<String> exclusion = normalizationSettings.getContaminants();
+            Collection<String> seeds = normalizationSettings.getStableProteins(searchParameters, fastaParameters, peptideVariantsPreferences, waitingHandler);
+            Collection<String> exclusion = normalizationSettings.getContaminants(searchParameters, fastaParameters, peptideVariantsPreferences, waitingHandler);
 
             int nThreads = processingParameters.getnThreads();
             ExecutorService pool = Executors.newFixedThreadPool(nThreads);
@@ -449,7 +466,7 @@ public class Normalizer {
      * @return a boolean indicating whether all the given accessions are seed
      * proteins
      */
-    private static boolean isSeed(HashSet<String> seeds, String[] accessions) {
+    private static boolean isSeed(Collection<String> seeds, String[] accessions) {
         for (String accession : accessions) {
             if (!seeds.contains(accession)) {
                 return false;
@@ -467,7 +484,7 @@ public class Normalizer {
      * @return a boolean indicating whether all the given accessions are seed
      * proteins
      */
-    private static boolean isContaminant(HashSet<String> contaminants, String[] accessions) {
+    private static boolean isContaminant(Collection<String> contaminants, String[] accessions) {
         for (String accession : accessions) {
             if (contaminants.contains(accession)) {
                 return true;
@@ -502,11 +519,11 @@ public class Normalizer {
         /**
          * The seed proteins.
          */
-        private HashSet<String> seeds;
+        private Collection<String> seeds;
         /**
          * The excluded proteins.
          */
-        private HashSet<String> exclusion;
+        private Collection<String> exclusion;
         /**
          * The ratio estimation settings.
          */
@@ -559,7 +576,9 @@ public class Normalizer {
          * @param waitingHandler a waiting handler
          * @param exceptionHandler an exception handler
          */
-        public ProteinNormalizerRunnable(ReporterIonQuantification reporterIonQuantification, QuantificationFeaturesGenerator quantificationFeaturesGenerator, Identification identification, ProteinMatchesIterator proteinMatchesIterator, HashSet<String> seeds, HashSet<String> exclusion, RatioEstimationSettings ratioEstimationSettings, WaitingHandler waitingHandler, ExceptionHandler exceptionHandler) {
+        public ProteinNormalizerRunnable(ReporterIonQuantification reporterIonQuantification, QuantificationFeaturesGenerator quantificationFeaturesGenerator,
+                Identification identification, ProteinMatchesIterator proteinMatchesIterator, Collection<String> seeds, Collection<String> exclusion, 
+                RatioEstimationSettings ratioEstimationSettings, WaitingHandler waitingHandler, ExceptionHandler exceptionHandler) {
             this.reporterIonQuantification = reporterIonQuantification;
             this.quantificationFeaturesGenerator = quantificationFeaturesGenerator;
             this.proteinMatchesIterator = proteinMatchesIterator;
@@ -743,11 +762,11 @@ public class Normalizer {
         /**
          * The seed proteins.
          */
-        private HashSet<String> seeds;
+        private Collection<String> seeds;
         /**
          * The excluded proteins.
          */
-        private HashSet<String> exclusion;
+        private Collection<String> exclusion;
         /**
          * The peptide to protein sequence matching parameters.
          */
@@ -790,7 +809,7 @@ public class Normalizer {
          * @param exceptionHandler an exception handler
          */
         public PeptideNormalizerRunnable(ReporterIonQuantification reporterIonQuantification, QuantificationFeaturesGenerator quantificationFeaturesGenerator,
-                Identification identification, PeptideMatchesIterator peptideMatchesIterator, HashSet<String> seeds, HashSet<String> exclusion,
+                Identification identification, PeptideMatchesIterator peptideMatchesIterator, Collection<String> seeds, Collection<String> exclusion,
                 RatioEstimationSettings ratioEstimationSettings, SequenceMatchingParameters sequenceMatchingParameters, WaitingHandler waitingHandler, ExceptionHandler exceptionHandler) {
             this.reporterIonQuantification = reporterIonQuantification;
             this.quantificationFeaturesGenerator = quantificationFeaturesGenerator;
@@ -909,11 +928,11 @@ public class Normalizer {
         /**
          * The seed proteins.
          */
-        private HashSet<String> seeds;
+        private Collection<String> seeds;
         /**
          * The excluded proteins.
          */
-        private HashSet<String> exclusion;
+        private Collection<String> exclusion;
         /**
          * The peptide to protein sequence matching parameters.
          */
@@ -956,7 +975,7 @@ public class Normalizer {
          * @param exceptionHandler an exception handler
          */
         public PsmNormalizerRunnable(ReporterIonQuantification reporterIonQuantification, QuantificationFeaturesGenerator quantificationFeaturesGenerator,
-                Identification identification, SpectrumMatchesIterator spectrumMatchesIterator, HashSet<String> seeds, HashSet<String> exclusion, RatioEstimationSettings ratioEstimationSettings,
+                Identification identification, SpectrumMatchesIterator spectrumMatchesIterator, Collection<String> seeds, Collection<String> exclusion, RatioEstimationSettings ratioEstimationSettings,
                 SequenceMatchingParameters sequenceMatchingParameters, WaitingHandler waitingHandler, ExceptionHandler exceptionHandler) {
             this.reporterIonQuantification = reporterIonQuantification;
             this.quantificationFeaturesGenerator = quantificationFeaturesGenerator;
@@ -996,7 +1015,7 @@ public class Normalizer {
 
                                 if (psParameter.getMatchValidationLevel().getIndex() >= ratioEstimationSettings.getPsmValidationLevel().getIndex()) {
 
-                                    PsmQuantificationDetails matchQuantificationDetails = quantificationFeaturesGenerator.getPSMQuantificationDetails(spectrumKey);
+                                    PsmQuantificationDetails matchQuantificationDetails = quantificationFeaturesGenerator.getPSMQuantificationDetails(spectrumMatch.getKey());
 
                                     for (String sampleIndex : reporterIonQuantification.getSampleIndexes()) {
                                         Double ratio = matchQuantificationDetails.getRawRatio(sampleIndex);

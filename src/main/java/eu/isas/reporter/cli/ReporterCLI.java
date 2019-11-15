@@ -473,7 +473,7 @@ public class ReporterCLI extends CpsParent implements Callable {
         // Name samples according to their reagent
         ArrayList<String> reagents = selectedMethod.getReagentsSortedByMass();
         for (String reagent : reagents) {
-            reporterIonQuantification.assignSample(reagent, new Sample(reagent));
+            reporterIonQuantification.assignSample(reagent, reagent);
         }
 
         // Set reference samples
@@ -504,17 +504,22 @@ public class ReporterCLI extends CpsParent implements Callable {
                 if (!normalizationFactors.hasPsmNormalisationFactors()) {
                     normalizer.setPsmNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(), 
                             reporterSettings.getNormalizationSettings(), getIdentificationParameters().getSequenceMatchingParameters(), 
-                            getIdentification(), quantificationFeaturesGenerator, processingParameters, exceptionHandler, waitingHandler);
+                            getIdentification(), quantificationFeaturesGenerator, processingParameters, 
+                            getIdentificationParameters().getSearchParameters(), getIdentificationParameters().getFastaParameters(), 
+                            getIdentificationParameters().getPeptideVariantsParameters(), exceptionHandler, waitingHandler);
                 }
                 if (!normalizationFactors.hasPeptideNormalisationFactors()) {
                     normalizer.setPeptideNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(), 
                             reporterSettings.getNormalizationSettings(), getIdentificationParameters().getSequenceMatchingParameters(), 
-                            getIdentification(), quantificationFeaturesGenerator, processingParameters, exceptionHandler, waitingHandler);
+                            getIdentification(), quantificationFeaturesGenerator, processingParameters, 
+                            getIdentificationParameters().getSearchParameters(), getIdentificationParameters().getFastaParameters(), 
+                            getIdentificationParameters().getPeptideVariantsParameters(), exceptionHandler, waitingHandler);
                 }
                 if (!normalizationFactors.hasProteinNormalisationFactors()) {
                     normalizer.setProteinNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(), 
                             reporterSettings.getNormalizationSettings(), getIdentification(), getMetrics(), quantificationFeaturesGenerator, 
-                            processingParameters, exceptionHandler, waitingHandler);
+                            processingParameters,  getIdentificationParameters().getSearchParameters(), getIdentificationParameters().getFastaParameters(), 
+                            getIdentificationParameters().getPeptideVariantsParameters(), exceptionHandler, waitingHandler);
                 }
             } catch (Exception e) {
                 System.out.println(System.getProperty("line.separator") + "An error occurred while estimating the ratios." + System.getProperty("line.separator"));
@@ -595,9 +600,10 @@ public class ReporterCLI extends CpsParent implements Callable {
                 waitingHandler.setRunCanceled();
             }
 
-            File fastaFile = identificationParameters.getProteinInferenceParameters().getProteinSequenceDatabase();
-            ArrayList<File> spectrumFiles = new ArrayList<File>();
-            for (String spectrumFileName : getIdentification().getSpectrumFiles()) {
+            File fastaFile = new File(projectDetails.getFastaFile());
+            ArrayList<File> spectrumFiles = new ArrayList<>();
+            
+            for (String spectrumFileName : getProjectDetails().getSpectrumFileNames()) {
                 File spectrumFile = getProjectDetails().getSpectrumFile(spectrumFileName);
                 spectrumFiles.add(spectrumFile);
             }

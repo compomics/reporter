@@ -45,11 +45,11 @@ public class ReporterPeptideSection {
     /**
      * The peptide identification features to export.
      */
-    private ArrayList<ExportFeature> identificationFeatures = new ArrayList<ExportFeature>();
+    private ArrayList<ExportFeature> identificationFeatures = new ArrayList<>();
     /**
      * The peptide quantification features to export.
      */
-    private ArrayList<ReporterExportFeature> quantificationFeatures = new ArrayList<ReporterExportFeature>();
+    private ArrayList<ReporterExportFeature> quantificationFeatures = new ArrayList<>();
     /**
      * The PSM subsection if needed.
      */
@@ -80,7 +80,7 @@ public class ReporterPeptideSection {
      * @param writer the writer which will write to the file
      */
     public ReporterPeptideSection(ArrayList<ExportFeature> exportFeatures, boolean indexes, boolean header, ExportWriter writer) {
-        ArrayList<ExportFeature> psmFeatures = new ArrayList<ExportFeature>();
+        ArrayList<ExportFeature> psmFeatures = new ArrayList<>();
         for (ExportFeature exportFeature : exportFeatures) {
             if (exportFeature instanceof PsPeptideFeature) {
                 identificationFeatures.add(exportFeature);
@@ -155,7 +155,9 @@ public class ReporterPeptideSection {
         }
 
         if (keys == null) {
-            keys = identification.getPeptideIdentification().toArray(long[]::new);
+            keys = identification.getPeptideIdentification().stream()
+                    .mapToLong(Long::longValue)
+                    .toArray();
         }
 
         int line = 1;
@@ -212,7 +214,7 @@ public class ReporterPeptideSection {
                                 identificationParameters, nSurroundingAA, linePrefix, peptideMatch, psParameter, peptideFeature, validatedOnly, decoys, waitingHandler));
                     }
 
-                    ArrayList<String> sampleIndexes = new ArrayList<String>(reporterIonQuantification.getSampleIndexes());
+                    ArrayList<String> sampleIndexes = new ArrayList<>(reporterIonQuantification.getSampleIndexes());
                     Collections.sort(sampleIndexes);
                     for (ExportFeature exportFeature : quantificationFeatures) {
                         ReporterPeptideFeature peptideFeature = (ReporterPeptideFeature) exportFeature;
@@ -308,7 +310,7 @@ public class ReporterPeptideSection {
     public void writeHeader(ReporterIonQuantification reporterIonQuantification) throws IOException {
 
         boolean needSecondLine = false;
-        ArrayList<String> sampleIndexes = new ArrayList<String>(reporterIonQuantification.getSampleIndexes());
+        ArrayList<String> sampleIndexes = new ArrayList<>(reporterIonQuantification.getSampleIndexes());
         Collections.sort(sampleIndexes);
 
         boolean firstColumn = true;

@@ -393,17 +393,22 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
             if (!normalizationFactors.hasPsmNormalisationFactors()) {
                 normalizer.setPsmNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(), 
                         reporterSettings.getNormalizationSettings(), getIdentificationParameters().getSequenceMatchingParameters(), 
-                        getIdentification(), quantificationFeaturesGenerator, processingParameters, exceptionHandler, progressDialog);
+                        getIdentification(), quantificationFeaturesGenerator, processingParameters, 
+                        cpsParent.getIdentificationParameters().getSearchParameters(), cpsParent.getIdentificationParameters().getFastaParameters(), 
+                        cpsParent.getIdentificationParameters().getPeptideVariantsParameters(), exceptionHandler, progressDialog);
             }
             if (!normalizationFactors.hasPeptideNormalisationFactors()) {
                 normalizer.setPeptideNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(), 
                         reporterSettings.getNormalizationSettings(), getIdentificationParameters().getSequenceMatchingParameters(), 
-                        getIdentification(), quantificationFeaturesGenerator, processingParameters, exceptionHandler, progressDialog);
+                        getIdentification(), quantificationFeaturesGenerator, processingParameters, 
+                        cpsParent.getIdentificationParameters().getSearchParameters(), cpsParent.getIdentificationParameters().getFastaParameters(), 
+                        cpsParent.getIdentificationParameters().getPeptideVariantsParameters(), exceptionHandler, progressDialog);
             }
             if (!normalizationFactors.hasProteinNormalisationFactors()) {
                 normalizer.setProteinNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(), 
                         reporterSettings.getNormalizationSettings(), getIdentification(), getMetrics(), quantificationFeaturesGenerator, 
-                        processingParameters, exceptionHandler, progressDialog);
+                        processingParameters, cpsParent.getIdentificationParameters().getSearchParameters(), cpsParent.getIdentificationParameters().getFastaParameters(), 
+                        cpsParent.getIdentificationParameters().getPeptideVariantsParameters(), exceptionHandler, progressDialog);
             }
         }
 
@@ -424,7 +429,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
 
         jumpToPanel.setEnabled(true);
         jumpToPanel.setType(JumpToPanel.JumpType.proteinAndPeptides);
-        ArrayList<Long> filteredProteinKeysArray = new ArrayList<Long>(clusterBuilder.getFilteredProteins());
+        ArrayList<Long> filteredProteinKeysArray = new ArrayList<>(clusterBuilder.getFilteredProteins());
         jumpToPanel.setProteinKeys(filteredProteinKeysArray);
     }
 

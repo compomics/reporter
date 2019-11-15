@@ -275,18 +275,18 @@ public class QuantificationFeaturesCache {
     /**
      * Adds PSM quantification details ratio to the cache.
      *
-     * @param matchKey the key of spectrum
+     * @param spectrumKey the key of spectrum
      * @param matchQuantificationDetails the protein quantification details
      */
-    public synchronized void addPSMQuantificationDetails(String matchKey, PsmQuantificationDetails matchQuantificationDetails) {
+    public synchronized void addPSMQuantificationDetails(String spectrumKey, PsmQuantificationDetails matchQuantificationDetails) {
         editing = true;
-        String spectrumFile = Spectrum.getSpectrumFile(matchKey);
+        String spectrumFile = Spectrum.getSpectrumFile(spectrumKey);
         HashMap<String, PsmQuantificationDetails> submap = psmRatios.get(spectrumFile);
         if (submap == null) {
             submap = new HashMap<String, PsmQuantificationDetails>();
             psmRatios.put(spectrumFile, submap);
         }
-        submap.put(matchKey, matchQuantificationDetails);
+        submap.put(spectrumKey, matchQuantificationDetails);
         editing = false;
         adaptCacheSize();
     }
@@ -294,16 +294,16 @@ public class QuantificationFeaturesCache {
     /**
      * Returns PSM quantification details, null if not in cache.
      *
-     * @param matchKey the key of the spectrum
+     * @param spectrumKey the key of the spectrum
      *
      * @return the PSM quantification details
      */
-    public PsmQuantificationDetails getPSMQuantificationDetails(String matchKey) {
-        String spectrumFile = Spectrum.getSpectrumFile(matchKey);
+    public PsmQuantificationDetails getPSMQuantificationDetails(String spectrumKey) {
+        String spectrumFile = Spectrum.getSpectrumFile(spectrumKey);
         PsmQuantificationDetails result = null;
         HashMap<String, PsmQuantificationDetails> submap = psmRatios.get(spectrumFile);
         if (submap != null) {
-            result = submap.get(matchKey);
+            result = submap.get(spectrumKey);
         }
         adaptCacheSize();
         return result;
@@ -312,18 +312,18 @@ public class QuantificationFeaturesCache {
     /**
      * Adds spectrum quantification details ratio to the cache.
      *
-     * @param matchKey the key of spectrum
-     * @param matchQuantificationDetails The protein quantification details
+     * @param spectrumKey the key of spectrum
+     * @param matchQuantificationDetails the spectrum quantification details
      */
-    public synchronized void addSpectrumQuantificationDetails(String matchKey, SpectrumQuantificationDetails matchQuantificationDetails) {
+    public synchronized void addSpectrumQuantificationDetails(String spectrumKey, SpectrumQuantificationDetails matchQuantificationDetails) {
         editing = true;
-        String spectrumFile = Spectrum.getSpectrumFile(matchKey);
+        String spectrumFile = Spectrum.getSpectrumFile(spectrumKey);
         HashMap<String, SpectrumQuantificationDetails> submap = spectrumRatios.get(spectrumFile);
         if (submap == null) {
             submap = new HashMap<String, SpectrumQuantificationDetails>();
             spectrumRatios.put(spectrumFile, submap);
         }
-        submap.put(matchKey, matchQuantificationDetails);
+        submap.put(spectrumKey, matchQuantificationDetails);
         editing = false;
         adaptCacheSize();
     }
@@ -331,16 +331,16 @@ public class QuantificationFeaturesCache {
     /**
      * Returns spectrum quantification details, null if not in cache.
      *
-     * @param matchKey the key of the spectrum
+     * @param spectrumKey the key of the spectrum
      *
-     * @return The spectrum quantification details
+     * @return the spectrum quantification details
      */
-    public SpectrumQuantificationDetails getSpectrumQuantificationDetails(String matchKey) {
-        String spectrumFile = Spectrum.getSpectrumFile(matchKey);
+    public SpectrumQuantificationDetails getSpectrumQuantificationDetails(String spectrumKey) {
+        String spectrumFile = Spectrum.getSpectrumFile(spectrumKey);
         SpectrumQuantificationDetails result = null;
         HashMap<String, SpectrumQuantificationDetails> submap = spectrumRatios.get(spectrumFile);
         if (submap != null) {
-            result = submap.get(matchKey);
+            result = submap.get(spectrumKey);
         }
         adaptCacheSize();
         return result;

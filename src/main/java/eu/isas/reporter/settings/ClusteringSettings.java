@@ -43,20 +43,20 @@ public class ClusteringSettings implements Serializable {
     /**
      * The selected protein classes.
      */
-    private ArrayList<String> selectedProteinClasses = new ArrayList<String>();
+    private ArrayList<String> selectedProteinClasses = new ArrayList<>();
     /**
      * The selected peptide classes.
      */
-    private ArrayList<String> selectedPeptideClasses = new ArrayList<String>();
+    private ArrayList<String> selectedPeptideClasses = new ArrayList<>();
     /**
      * The selected PSM classes.
      */
-    private ArrayList<String> selectedPsmClasses = new ArrayList<String>();
+    private ArrayList<String> selectedPsmClasses = new ArrayList<>();
     /**
      * The classes color coding in a map where the key is the toString()
      * representation of the key.
      */
-    private HashMap<String, Color> classesColors = new HashMap<String, Color>();
+    private HashMap<String, Color> classesColors = new HashMap<>();
     /**
      * The k-means clustering settings.
      */

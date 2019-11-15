@@ -20,14 +20,12 @@ import com.compomics.util.io.file.LastSelectedFolder;
 import com.compomics.util.parameters.identification.IdentificationParameters;
 import com.compomics.util.parameters.identification.advanced.SequenceMatchingParameters;
 import com.compomics.util.parameters.identification.search.ModificationParameters;
-import com.compomics.util.parameters.identification.search.SearchParameters;
 import eu.isas.peptideshaker.utils.CpsParent;
 import eu.isas.reporter.Reporter;
 import eu.isas.reporter.io.ProjectImporter;
 import java.awt.Dialog;
 import java.awt.Image;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -42,7 +40,7 @@ import javax.swing.table.DefaultTableModel;
 
 /**
  * Labeling efficiency dialog.
- * 
+ *
  * @author Marc Vaudel
  * @author Harald Barsnes
  */
@@ -156,7 +154,7 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
         fastaTxt2 = new javax.swing.JTextField();
         addDbButton2 = new javax.swing.JButton();
         efficiencyPanel = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
+        efficiencyTableScrollPane = new javax.swing.JScrollPane();
         efficiencyTable = new javax.swing.JTable();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -267,7 +265,7 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
-        jScrollPane1.setViewportView(efficiencyTable);
+        efficiencyTableScrollPane.setViewportView(efficiencyTable);
 
         javax.swing.GroupLayout efficiencyPanelLayout = new javax.swing.GroupLayout(efficiencyPanel);
         efficiencyPanel.setLayout(efficiencyPanelLayout);
@@ -275,14 +273,14 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
             efficiencyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(efficiencyPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1)
+                .addComponent(efficiencyTableScrollPane)
                 .addContainerGap())
         );
         efficiencyPanelLayout.setVerticalGroup(
             efficiencyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(efficiencyPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 138, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(efficiencyTableScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 138, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -326,6 +324,11 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    /**
+     * Add the identification files.
+     * 
+     * @param evt 
+     */
     private void addIdFilesButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addIdFilesButton2ActionPerformed
 
         String cpsFileFilterDescription = "PeptideShaker (.cpsx)";
@@ -353,6 +356,11 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_addIdFilesButton2ActionPerformed
 
+    /**
+     * Add the spectrum files.
+     * 
+     * @param evt 
+     */
     private void addSpectraFilesJButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addSpectraFilesJButton2ActionPerformed
 
         // @TODO: add mgf validation etc like for PeptideShaker
@@ -400,7 +408,7 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
                     lastSelectedFolder.setLastSelectedFolder(newFile.getPath());
                 }
 
-                txtSpectraFileLocation.setText(mgfFiles.size() + " file(s) selected");
+                txtSpectraFileLocation2.setText(mgfFiles.size() + " file(s) selected");
             }
         } catch (IOException e) {
             progressDialog.setRunFinished();
@@ -409,6 +417,11 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_addSpectraFilesJButton2ActionPerformed
 
+    /**
+     * Set the FASTA file.
+     * 
+     * @param evt 
+     */
     private void addDbButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addDbButton2ActionPerformed
         JFileChooser fileChooser;
 
@@ -443,64 +456,36 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File fastaFile = fileChooser.getSelectedFile();
             lastSelectedFolder.setLastSelectedFolder(fastaFile.getAbsolutePath());
-            try {
-                SequenceFactory.getInstance().loadFastaFile(fastaFile, null); // @TODO: use waiting handler
-                getSearchParameters().setFastaFile(fastaFile);
-                fastaTxt.setText(fastaFile.getName());
-            } catch (FileNotFoundException ex) {
-                ex.printStackTrace();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            } catch (ClassNotFoundException ex) {
-                ex.printStackTrace();
-            } catch (StringIndexOutOfBoundsException ex) {
-                ex.printStackTrace();
-            } catch (IllegalArgumentException ex) {
-                ex.printStackTrace();
-            }
+            fastaTxt2.setText(fastaFile.getName());
+            cpsParent.getProjectDetails().setFastaFile(fastaFile);
         }
     }//GEN-LAST:event_addDbButton2ActionPerformed
 
+    /**
+     * Close the dialog.
+     * 
+     * @param evt 
+     */
     private void closeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeButtonActionPerformed
         dispose();
     }//GEN-LAST:event_closeButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton addDbButton;
-    private javax.swing.JButton addDbButton1;
     private javax.swing.JButton addDbButton2;
-    private javax.swing.JButton addIdFilesButton;
-    private javax.swing.JButton addIdFilesButton1;
     private javax.swing.JButton addIdFilesButton2;
-    private javax.swing.JButton addSpectraFilesJButton;
-    private javax.swing.JButton addSpectraFilesJButton1;
     private javax.swing.JButton addSpectraFilesJButton2;
     private javax.swing.JPanel backgroundPanel;
     private javax.swing.JButton closeButton;
-    private javax.swing.JLabel databaseFileLabel;
-    private javax.swing.JLabel databaseFileLabel1;
     private javax.swing.JLabel databaseFileLabel2;
     private javax.swing.JPanel efficiencyPanel;
     private javax.swing.JTable efficiencyTable;
-    private javax.swing.JTextField fastaTxt;
-    private javax.swing.JTextField fastaTxt1;
+    private javax.swing.JScrollPane efficiencyTableScrollPane;
     private javax.swing.JTextField fastaTxt2;
-    private javax.swing.JPanel fileSelectiontPanel;
-    private javax.swing.JPanel fileSelectiontPanel1;
     private javax.swing.JPanel fileSelectiontPanel2;
-    private javax.swing.JLabel idFilesLabel;
-    private javax.swing.JLabel idFilesLabel1;
     private javax.swing.JLabel idFilesLabel2;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JLabel spectrumFilesLabel;
-    private javax.swing.JLabel spectrumFilesLabel1;
     private javax.swing.JLabel spectrumFilesLabel2;
-    private javax.swing.JTextField txtIdFileLocation;
-    private javax.swing.JTextField txtIdFileLocation1;
     private javax.swing.JTextField txtIdFileLocation2;
-    private javax.swing.JTextField txtSpectraFileLocation;
-    private javax.swing.JTextField txtSpectraFileLocation1;
     private javax.swing.JTextField txtSpectraFileLocation2;
     // End of variables declaration//GEN-END:variables
 
@@ -545,9 +530,9 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
                         return;
                     }
 
-                    txtSpectraFileLocation.setText(cpsParent.getIdentification().getSpectrumFiles().size() + " files loaded"); //@TODO: allow editing
-                    fastaTxt.setText(cpsParent.getIdentificationParameters().getSearchParameters().getFastaFile().getName());
-                    txtIdFileLocation.setText(cpsParent.getCpsFile().getName());
+                    txtSpectraFileLocation2.setText(cpsParent.getProjectDetails().getSpectrumFileNames().size() + " files loaded"); //@TODO: allow editing
+                    fastaTxt2.setText(cpsParent.getProjectDetails().getFastaFile());
+                    txtIdFileLocation2.setText(cpsParent.getCpsFile().getName());
 
                     cache = new ObjectsCache();
 
@@ -722,14 +707,5 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
         public boolean isCellEditable(int row, int column) {
             return false;
         }
-    }
-
-    /**
-     * Returns the search parameters.
-     *
-     * @return the search parameters
-     */
-    public SearchParameters getSearchParameters() {
-        return cpsParent.getIdentificationParameters().getSearchParameters();
     }
 }

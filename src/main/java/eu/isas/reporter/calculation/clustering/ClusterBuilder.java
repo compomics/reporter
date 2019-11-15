@@ -36,6 +36,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
 
 /**
@@ -53,11 +54,11 @@ public class ClusterBuilder {
     /**
      * The clusters corresponding to every protein.
      */
-    private HashMap<Long, ArrayList<String>> proteinClusters;
+    private HashMap<String, ArrayList<String>> proteinClusters;
     /**
      * The index of the protein keys in clusterKeys.
      */
-    private HashMap<Long, Integer> proteinKeysIndexes;
+    private HashMap<String, Integer> proteinKeysIndexes;
     /**
      * The filtered peptide keys indexed by cluster class key.
      */
@@ -65,15 +66,15 @@ public class ClusterBuilder {
     /**
      * The clusters corresponding to every peptide.
      */
-    private HashMap<Long, ArrayList<String>> peptideClusters;
+    private HashMap<String, ArrayList<String>> peptideClusters;
     /**
      * The index of the peptide keys in clusterKeys.
      */
-    private HashMap<Long, Integer> peptideKeysIndexes;
+    private HashMap<String, Integer> peptideKeysIndexes;
     /**
      * The filtered PSM keys indexed by cluster class key.
      */
-    private HashMap<String, ArrayList<String>> filteredPsmKeys;
+    private HashMap<String, ArrayList<Long>> filteredPsmKeys;
     /**
      * The clusters corresponding to every PSM.
      */
@@ -226,8 +227,8 @@ public class ClusterBuilder {
         clusterKeys = new ArrayList<String>(metrics.getnValidatedProteins());
         ArrayList<double[]> ratiosList = new ArrayList<double[]>(metrics.getnValidatedProteins());
 
-        proteinClusters = new HashMap<Long, ArrayList<String>>(nProteinClusters);
-        proteinKeysIndexes = new HashMap<Long, Integer>(metrics.getnValidatedProteins());
+        proteinClusters = new HashMap<String, ArrayList<String>>(nProteinClusters);
+        proteinKeysIndexes = new HashMap<String, Integer>(metrics.getnValidatedProteins());
         filteredProteinKeys = new HashMap<String, ArrayList<Long>>(metrics.getnValidatedProteins());
 
         if (nProteinClusters > 0) {
@@ -250,6 +251,7 @@ public class ClusterBuilder {
             while ((proteinMatch = proteinMatchesIterator.next()) != null) {
 
                 long proteinKey = proteinMatch.getKey();
+                String proteinKeyAsString = Long.toString(proteinKey);
                 psParameter = (PSParameter) identification.getProteinMatch(proteinKey).getUrParam(psParameter);
 
                 if (psParameter.getMatchValidationLevel().isValidated()) {
@@ -267,10 +269,10 @@ public class ClusterBuilder {
                                 filteredProteinKeys.put(keyName, tempClusterKeys);
                             }
                             tempClusterKeys.add(proteinKey);
-                            ArrayList<String> clusters = proteinClusters.get(proteinKey);
+                            ArrayList<String> clusters = proteinClusters.get(proteinKeyAsString);
                             if (clusters == null) {
                                 clusters = new ArrayList<String>(nProteinClusters);
-                                proteinClusters.put(proteinKey, clusters);
+                                proteinClusters.put(proteinKeyAsString, clusters);
                             }
                             clusters.add(keyName);
                             found = true;
@@ -310,8 +312,8 @@ public class ClusterBuilder {
                             }
                         }
 
-                        clusterKeys.add(proteinKey);
-                        proteinKeysIndexes.put(proteinKey, clusteringIndex);
+                        clusterKeys.add(proteinKeyAsString);
+                        proteinKeysIndexes.put(proteinKeyAsString, clusteringIndex);
                         ratiosList.add(proteinRatios);
                         clusteringIndex++;
                     }
@@ -321,8 +323,8 @@ public class ClusterBuilder {
         }
 
         filteredPeptideKeys = new HashMap<String, ArrayList<Long>>(metrics.getnValidatedProteins());
-        peptideKeysIndexes = new HashMap<Long, Integer>(metrics.getnValidatedProteins());
-        peptideClusters = new HashMap<Long, ArrayList<String>>(nPeptideClusters);
+        peptideKeysIndexes = new HashMap<String, Integer>(metrics.getnValidatedProteins());
+        peptideClusters = new HashMap<String, ArrayList<String>>(nPeptideClusters);
 
         if (nPeptideClusters > 0) {
 
@@ -334,6 +336,8 @@ public class ClusterBuilder {
 
                 Peptide peptide = peptideMatch.getPeptide();
                 long peptideKey = peptideMatch.getKey();
+                String peptideKeyAsString = Long.toString(peptideKey);
+                
                 psParameter = (PSParameter) identification.getPeptideMatch(peptideKey).getUrParam(psParameter);
 
                 if (psParameter.getMatchValidationLevel().isValidated()) {
@@ -391,10 +395,10 @@ public class ClusterBuilder {
                                 filteredPeptideKeys.put(keyName, tempClusterKeys);
                             }
                             tempClusterKeys.add(peptideKey);
-                            ArrayList<String> clusters = peptideClusters.get(peptideKey);
+                            ArrayList<String> clusters = peptideClusters.get(peptideKeyAsString);
                             if (clusters == null) {
                                 clusters = new ArrayList<String>(nPeptideClusters);
-                                peptideClusters.put(peptideKey, clusters);
+                                peptideClusters.put(peptideKeyAsString, clusters);
                             }
                             clusters.add(keyName);
                             found = true;
@@ -420,8 +424,8 @@ public class ClusterBuilder {
                             }
                         }
 
-                        clusterKeys.add(peptideKey);
-                        peptideKeysIndexes.put(peptideKey, clusteringIndex);
+                        clusterKeys.add(peptideKeyAsString);
+                        peptideKeysIndexes.put(peptideKeyAsString, clusteringIndex);
                         ratiosList.add(peptideRatios);
                         clusteringIndex++;
                     }
@@ -430,17 +434,19 @@ public class ClusterBuilder {
             }
         }
 
-        filteredPsmKeys = new HashMap<String, ArrayList<String>>(metrics.getnValidatedProteins());
+        filteredPsmKeys = new HashMap<String, ArrayList<Long>>(metrics.getnValidatedProteins());
         psmKeysIndexes = new HashMap<String, Integer>(metrics.getnValidatedProteins());
         psmClusters = new HashMap<String, ArrayList<String>>(nPsmClusters);
 
         if (nPsmClusters > 0) {
 
-            HashSet<String> neededFiles = new HashSet<String>();
+            TreeSet<String> allMsFiles = new TreeSet<>(identification.getSpectrumIdentification().keySet());
+            HashSet<String> neededFiles = new HashSet<>();
+            
             for (String keyName : clusteringSettings.getSelectedPsmClasses()) {
                 PsmClusterClassKey psmClusterClassKey = clusteringSettings.getPsmClassKey(keyName);
                 if (psmClusterClassKey.getFile() == null) {
-                    neededFiles.addAll(identification.getOrderedSpectrumFileNames());
+                    neededFiles.addAll(allMsFiles);
                     break;
                 }
                 neededFiles.add(psmClusterClassKey.getFile());
@@ -453,7 +459,8 @@ public class ClusterBuilder {
 
                 while ((spectrumMatch = spectrumMatchesIterator.next()) != null) {
 
-                    String spectrumKey = spectrumMatch.getSpectrumKey();
+                    long spectrumKey = spectrumMatch.getKey();
+                    String spectrumKeyAsString = spectrumMatch.getSpectrumKey();
                     psParameter = (PSParameter) identification.getSpectrumMatch(spectrumMatch.getKey()).getUrParam(psParameter);
 
                     if (psParameter.getMatchValidationLevel().isValidated()) {
@@ -468,16 +475,16 @@ public class ClusterBuilder {
                                 inCluster = false;
                             }
                             if (inCluster) {
-                                ArrayList<String> tempClusterKeys = filteredPsmKeys.get(keyName);
+                                ArrayList<Long> tempClusterKeys = filteredPsmKeys.get(keyName);
                                 if (tempClusterKeys == null) {
-                                    tempClusterKeys = new ArrayList<String>();
+                                    tempClusterKeys = new ArrayList<Long>();
                                     filteredPsmKeys.put(keyName, tempClusterKeys);
                                 }
                                 tempClusterKeys.add(spectrumKey);
-                                ArrayList<String> clusters = psmClusters.get(spectrumKey);
+                                ArrayList<String> clusters = psmClusters.get(spectrumKeyAsString);
                                 if (clusters == null) {
                                     clusters = new ArrayList<String>(nPsmClusters);
-                                    psmClusters.put(spectrumKey, clusters);
+                                    psmClusters.put(spectrumKeyAsString, clusters);
                                 }
                                 clusters.add(keyName);
                                 found = true;
@@ -503,8 +510,8 @@ public class ClusterBuilder {
                                 }
                             }
 
-                            clusterKeys.add(spectrumKey);
-                            psmKeysIndexes.put(spectrumKey, clusteringIndex);
+                            clusterKeys.add(spectrumKeyAsString);
+                            psmKeysIndexes.put(spectrumKeyAsString, clusteringIndex);
                             ratiosList.add(psmRatios);
                             clusteringIndex++;
                         }
@@ -522,7 +529,14 @@ public class ClusterBuilder {
      * @return the protein keys retained after filtering
      */
     public Set<Long> getFilteredProteins() {
-        return proteinClusters.keySet();
+        
+        Set<Long> proteinKeys = new HashSet(proteinClusters.keySet().size());
+        
+        for (String proteinKeysAsString : proteinClusters.keySet()) {
+            proteinKeys.add(Long.parseLong(proteinKeysAsString));
+        }
+        
+        return proteinKeys;
     }
 
     /**
@@ -531,7 +545,14 @@ public class ClusterBuilder {
      * @return the peptide keys retained after filtering
      */
     public Set<Long> getFilteredPeptides() {
-        return peptideClusters.keySet();
+        
+        Set<Long> peptideKeys = new HashSet(peptideClusters.keySet().size());
+        
+        for (String peptideKeysAsString : peptideClusters.keySet()) {
+            peptideKeys.add(Long.parseLong(peptideKeysAsString));
+        }
+        
+        return peptideKeys;
     }
 
     /**
@@ -540,7 +561,14 @@ public class ClusterBuilder {
      * @return the PSM keys retained after filtering
      */
     public Set<Long> getFilteredPsms() {
-        return psmClusters.keySet();
+        
+        Set<Long> psmKeys = new HashSet(psmClusters.keySet().size());
+        
+        for (String psmKeysAsString : psmClusters.keySet()) {
+            psmKeys.add(Long.parseLong(psmKeysAsString));
+        }
+        
+        return psmKeys;
     }
 
     /**
