@@ -15,6 +15,7 @@ import static com.compomics.util.gui.parameters.identification.search.SequenceDb
 import com.compomics.util.gui.parameters.tools.ProcessingParametersDialog;
 import com.compomics.util.gui.renderers.AlignedListCellRenderer;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
+import com.compomics.util.io.file.LastSelectedFolder;
 import com.compomics.util.parameters.identification.IdentificationParameters;
 import com.compomics.util.parameters.identification.search.SearchParameters;
 import com.compomics.util.parameters.tools.ProcessingParameters;
@@ -106,15 +107,15 @@ public class NewDialog extends javax.swing.JDialog {
     /**
      * List of all sample names.
      */
-    private HashMap<String, String> sampleNames = new HashMap<String, String>();
+    private HashMap<String, String> sampleNames = new HashMap<>();
     /**
      * List of reagents used in this reporter method
      */
-    private ArrayList<String> reagents = new ArrayList<String>();
+    private ArrayList<String> reagents = new ArrayList<>();
     /**
      * List of control samples.
      */
-    private ArrayList<String> controlSamples = new ArrayList<String>();
+    private ArrayList<String> controlSamples = new ArrayList<>();
     /**
      * The cache to use for identification and quantification objects.
      */
@@ -744,27 +745,30 @@ public class NewDialog extends javax.swing.JDialog {
      */
     private void addIdFilesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addIdFilesButtonActionPerformed
 
-        String cpsFileFilterDescription = "PeptideShaker (.cpsx)";
-        //String zipFileFilterDescription = "Zipped PeptideShaker (.zip)"; // @TODO: support zip files
+        String cpsFileFilterDescription = "PeptideShaker Database (.psdb)";
+        String zipFileFilterDescription = "Zipped PeptideShaker (.zip)";
         String lastSelectedFolderPath = reporterGUI.getLastSelectedFolder().getLastSelectedFolder();
-//        FileAndFileFilter selectedFileAndFilter = Util.getUserSelectedFile(this, new String[]{".cpsx", ".zip"}, 
-//                new String[]{cpsFileFilterDescription, zipFileFilterDescription}, "Select Identification File(s)", lastSelectedFolderPath, null, true, false, false, 0);
-        FileAndFileFilter selectedFileAndFilter = Util.getUserSelectedFile(this, new String[]{".cpsx"},
-                new String[]{cpsFileFilterDescription}, "Select Identification File(s)", lastSelectedFolderPath, null, true, false, false, 0);
+        FileAndFileFilter selectedFileAndFilter = Util.getUserSelectedFile(this, new String[]{".psdb", ".zip"},
+                new String[]{cpsFileFilterDescription, zipFileFilterDescription}, "Open PeptideShaker Project", lastSelectedFolderPath, null, true, false, false, 0);
 
         if (selectedFileAndFilter != null) {
 
             File selectedFile = selectedFileAndFilter.getFile();
             reporterGUI.getLastSelectedFolder().setLastSelectedFolder(selectedFile.getParent());
 
-            if (selectedFile.getName().endsWith(".zip")) {
-                //importPeptideShakerZipFile(selectedFile); // @TODO: support zip files
-            } else if (selectedFile.getName().endsWith(".cpsx")) {
+            if (selectedFile.getName().toLowerCase().endsWith(".zip")) {
+//                setVisible(false); // @TODO: support zip files
+//                reporterGUI.setVisible(true);
+//                reporterGUI.importPeptideShakerZipFile(selectedFile);
+//                dispose();
+            } else if (selectedFile.getName().toLowerCase().endsWith(".psdb")) {
                 importPeptideShakerFile(selectedFile);
-//                reporterGui.getUserPreferences().addRecentProject(selectedFile); // @TOOD: implement me?
-//                reporterGui.updateRecentProjectsList();
+//                reporterGUI.getUserParameters().addRecentProject(selectedFile); // @TOOD: implement me?
+//                reporterGUI.updateRecentProjectsList();
+                LastSelectedFolder lastSelectedFolder = reporterGUI.getLastSelectedFolder();
+                lastSelectedFolder.setLastSelectedFolder(selectedFile.getAbsolutePath());
             } else {
-                JOptionPane.showMessageDialog(this, "Not a PeptideShaker file (.cpsx).", "Unsupported File.", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Not a PeptideShaker file (.psdb).", "Unsupported File.", JOptionPane.WARNING_MESSAGE);
             }
         }
     }//GEN-LAST:event_addIdFilesButtonActionPerformed
@@ -931,6 +935,7 @@ public class NewDialog extends javax.swing.JDialog {
             reporterGUI.getLastSelectedFolder().setLastSelectedFolder(lastFolderKey, folder.getAbsolutePath());
 
             fastaTxt.setText(fastaFile.getName());
+            cpsParent.getProjectDetails().setFastaFile(fastaFile);
 
             if (fastaFile.getName().contains(" ")) {
                 JOptionPane.showMessageDialog(this, "Your FASTA file name contains white space and ougth to be renamed.", "File Name Warning", JOptionPane.WARNING_MESSAGE);
@@ -1068,8 +1073,6 @@ public class NewDialog extends javax.swing.JDialog {
 
             // set the user defined reagents order
             displayPreferences.setReagents(reagents);
-
-            reporterGUI.getProjectDetails().setFastaFile(fastaFile);
 
             reporterGUI.createNewProject(cpsParent, reporterSettings, reporterIonQuantification, processingParameters, displayPreferences);
             dispose();
@@ -1583,7 +1586,7 @@ public class NewDialog extends javax.swing.JDialog {
      * @return a list of files which could not be processed
      */
     private ArrayList<File> processSpectrumFiles(ArrayList<File> spectrumFiles, ProgressDialogX progressDialog) {
-        ArrayList<File> error = new ArrayList<File>();
+        ArrayList<File> error = new ArrayList<>();
         int cpt = 1;
         for (File mgfFile : spectrumFiles) {
 
@@ -1709,7 +1712,7 @@ public class NewDialog extends javax.swing.JDialog {
                     ReporterIon reporterIon = selectedMethod.getReporterIon(reagentName);
                     return reporterIon.getName();
                 case 2:
-                    String projectName = reporterGUI.getProjectParameters().getProjectUniqueName();
+                    String projectName = cpsParent.getProjectParameters().getProjectUniqueName();
                     if (sampleNames.get(reagentName) == null) {
                         if (projectName != null) {
                             sampleNames.put(reagentName, projectName + " " + reagentName);

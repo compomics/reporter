@@ -129,7 +129,7 @@ public class Reporter {
 
                     if (QuantificationFilter.isRatioValid(ratioEstimationSettings, ratio)) {
                         channelRatios.add(ratio);
-                        if (identificationFeaturesGenerator.getNValidatedProteinGroups(peptideMatch.getPeptide().getId()) == 1) {
+                        if (identificationFeaturesGenerator.getNValidatedProteinGroups(peptideMatch.getKey()) == 1) {
                             channelUniqueRatios.add(ratio);
                         } else {
                             channelSharedRatios.add(ratio);
@@ -271,17 +271,10 @@ public class Reporter {
         HashMap<String, ArrayList<Double>> ratios = new HashMap<>();
         Set<String> indexes = reporterIonQuantification.getSampleIndexes();
 
-        PSParameter psParameter = new PSParameter();
-        ArrayList<UrParameter> parameters = new ArrayList<>(1);
-        parameters.add(psParameter);
-
         SpectrumMatchesIterator spectrumMatchesIterator = identification.getSpectrumMatchesIterator(peptideMatch.getSpectrumMatchesKeys(), waitingHandler);
         SpectrumMatch spectrumMatch;
 
         while ((spectrumMatch = spectrumMatchesIterator.next()) != null) {
-
-            String spectrumKey = spectrumMatch.getSpectrumKey();
-
             if (QuantificationFilter.isPsmValid(ratioEstimationSettings, identification, spectrumMatch.getKey())) {
                 for (String index : indexes) {
                     PsmQuantificationDetails spectrumQuantification = quantificationFeaturesGenerator.getPSMQuantificationDetails(spectrumMatch.getKey());
