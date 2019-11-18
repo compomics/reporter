@@ -202,7 +202,7 @@ public class ClusteringSettings implements Serializable {
      */
     public Color getNonSelectedColor(String clusterClass) {
         Color refColor = getColor(clusterClass);
-        refColor = refColor.brighter().brighter();
+        refColor = refColor.brighter();
         Color unselectedColor = new Color(refColor.getRed(), refColor.getGreen(), refColor.getBlue(), refColor.getAlpha()/10);
         return unselectedColor;
     }

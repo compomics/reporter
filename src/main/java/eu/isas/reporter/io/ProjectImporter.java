@@ -344,7 +344,8 @@ public class ProjectImporter {
 
         ClusteringSettings clusteringSettings = new ClusteringSettings();
 
-        ArrayList<ProteinClusterClassKey> proteinClasses = new ArrayList<ProteinClusterClassKey>(1);
+        // protein colors
+        ArrayList<ProteinClusterClassKey> proteinClasses = new ArrayList<>(1);
         ProteinClusterClassKey proteinClusterClassKey = new ProteinClusterClassKey();
         proteinClasses.add(proteinClusterClassKey);
         clusteringSettings.setColor(proteinClusterClassKey.toString(), Color.BLACK);
@@ -354,8 +355,9 @@ public class ProjectImporter {
         proteinClasses.add(proteinClusterClassKey);
         clusteringSettings.setColor(proteinClusterClassKey.toString(), Color.yellow);
 
+        // peptide colors
         ModificationParameters modificationParameters = identificationParameters.getSearchParameters().getModificationParameters();
-        ArrayList<PeptideClusterClassKey> peptideClasses = new ArrayList<PeptideClusterClassKey>(4);
+        ArrayList<PeptideClusterClassKey> peptideClasses = new ArrayList<>(4);
         PeptideClusterClassKey peptidelusterClassKey = new PeptideClusterClassKey();
         peptideClasses.add(peptidelusterClassKey);
         clusteringSettings.setColor(peptidelusterClassKey.toString(), Color.DARK_GRAY);
@@ -376,9 +378,9 @@ public class ProjectImporter {
         clusteringSettings.setColor(peptidelusterClassKey.toString(), Color.LIGHT_GRAY);
         peptideClasses.add(peptidelusterClassKey);
         ModificationFactory ptmFactory = ModificationFactory.getInstance();
-        ArrayList<Double> ptmMasses = new ArrayList<Double>();
-        HashMap<Double, ArrayList<String>> modificationsMap = new HashMap<Double, ArrayList<String>>();
-        HashMap<Double, Color> ptmColorMap = new HashMap<Double, Color>();
+        ArrayList<Double> ptmMasses = new ArrayList<>();
+        HashMap<Double, ArrayList<String>> modificationsMap = new HashMap<>();
+        HashMap<Double, Color> ptmColorMap = new HashMap<>();
         for (String ptmName : modificationParameters.getAllNotFixedModifications()) {
             Modification modification = ptmFactory.getModification(ptmName);
             Double ptmMass = modification.getMass();
@@ -402,6 +404,7 @@ public class ProjectImporter {
             clusteringSettings.setColor(peptidelusterClassKey.toString(), color);
         }
 
+        // psm colors
         ArrayList<PsmClusterClassKey> psmClasses = new ArrayList<>(1);
         PsmClusterClassKey psmClusterClassKey = new PsmClusterClassKey();
         psmClasses.add(psmClusterClassKey);
@@ -416,7 +419,7 @@ public class ProjectImporter {
                 psmClusterClassKey = new PsmClusterClassKey();
                 psmClusterClassKey.setFile(spectrumFile);
                 psmClasses.add(psmClusterClassKey);
-                clusteringSettings.setColor(peptidelusterClassKey.toString(), Color.LIGHT_GRAY);
+                clusteringSettings.setColor(psmClusterClassKey.toString(), Color.LIGHT_GRAY);
             }
         }
 

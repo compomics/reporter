@@ -260,16 +260,17 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
                     PSParameter psParameter = (PSParameter) peptideMatch.getUrParam(PSParameter.dummy);
                     return psParameter.getProteinInferenceGroupClass();
                 case 3:
-                    return peptideMatch.getPeptide().getProteinMapping().get(0); // @TODO: find a better way!
+                    return null; //peptideMatch.getPeptide().getProteinMapping().get(0); // @TODO: reimplement!
                 case 4:
                     return displayFeaturesGenerator.getTaggedPeptideSequence(peptideMatch, true, true, true);
                 case 5:
-                    int[] startIndexes = peptideMatch.getPeptide().getProteinMapping().get(proteinAccession);
-
-                    return new StartIndexes(Arrays.stream(startIndexes)
-                            .map(site -> site + 1)
-                            .boxed()
-                            .collect(Collectors.toCollection(ArrayList::new)));
+                    return null;
+//                    int[] startIndexes = peptideMatch.getPeptide().getProteinMapping().get(proteinAccession);  // @TODO: reimplement!
+//
+//                    return new StartIndexes(Arrays.stream(startIndexes)
+//                            .map(site -> site + 1)
+//                            .boxed()
+//                            .collect(Collectors.toCollection(ArrayList::new)));
                 case 6:
                     double nConfidentSpectra = identificationFeaturesGenerator.getNConfidentSpectraForPeptide(peptideKey);
                     double nDoubtfulSpectra = identificationFeaturesGenerator.getNValidatedSpectraForPeptide(peptideKey) - nConfidentSpectra;

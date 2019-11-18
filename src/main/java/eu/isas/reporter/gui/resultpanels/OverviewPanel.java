@@ -411,7 +411,7 @@ public class OverviewPanel extends javax.swing.JPanel {
         ClusteringSettings clusteringSettings = reporterGUI.getDisplayParameters().getClusteringSettings();
         CategoryItemRenderer renderer = new LineAndShapeRenderer(true, false);
         for (int i = 0; i < dataset.getRowCount(); i++) {
-            Long key = (Long) dataset.getRowKey(i);
+            Long key = Long.valueOf((String) dataset.getRowKey(i));
             boolean isProtein = clusterBuilder.getProteinIndex(key) != null;
             boolean isPeptide = clusterBuilder.getPeptideIndex(key) != null;
             boolean isPsm = clusterBuilder.getPsmIndex(key) != null;
@@ -536,7 +536,7 @@ public class OverviewPanel extends javax.swing.JPanel {
                 ClusteringSettings clusteringSettings = reporterGUI.getDisplayParameters().getClusteringSettings();
 
                 for (int i = 0; i < dataset.getRowCount(); i++) {
-                    Long key = (Long) dataset.getRowKey(i);
+                    Long key = Long.valueOf((String) dataset.getRowKey(i));
                     boolean isProtein = clusterBuilder.getProteinIndex(key) != null;
                     boolean isPeptide = clusterBuilder.getPeptideIndex(key) != null;
                     boolean isPsm = clusterBuilder.getPsmIndex(key) != null;
@@ -572,25 +572,28 @@ public class OverviewPanel extends javax.swing.JPanel {
         if (resetSelection) {
             // get the keys of the matches in the selected cluster
             DefaultCategoryDataset dataset = (DefaultCategoryDataset) chartPanel.getChart().getCategoryPlot().getDataset();
-            List<Long> rowKeys = dataset.getRowKeys();
+            List<String> rowKeys = dataset.getRowKeys();
             int size = Math.max(32, rowKeys.size() / 3);
             HashMap<Integer, Long> psmKeysMap = new HashMap<>(size);
             HashMap<Integer, Long> peptideKeysMap = new HashMap<>(size);
             HashMap<Integer, Long> proteinKeysMap = new HashMap<>(size);
             ClusterBuilder clusterBuilder = reporterGUI.getClusterBuilder();
 
-            for (Long rowKey : rowKeys) {
-                Integer proteinIndex = clusterBuilder.getProteinIndex(rowKey);
+            for (String rowKey : rowKeys) {
+
+                long rowKeyAsLong = Long.valueOf(rowKey);
+
+                Integer proteinIndex = clusterBuilder.getProteinIndex(rowKeyAsLong);
                 if (proteinIndex != null) {
-                    proteinKeysMap.put(proteinIndex, rowKey);
+                    proteinKeysMap.put(proteinIndex, rowKeyAsLong);
                 }
-                Integer peptideIndex = clusterBuilder.getPeptideIndex(rowKey);
+                Integer peptideIndex = clusterBuilder.getPeptideIndex(rowKeyAsLong);
                 if (peptideIndex != null) {
-                    peptideKeysMap.put(peptideIndex, rowKey);
+                    peptideKeysMap.put(peptideIndex, rowKeyAsLong);
                 }
-                Integer psmIndex = clusterBuilder.getPsmIndex(rowKey);
+                Integer psmIndex = clusterBuilder.getPsmIndex(rowKeyAsLong);
                 if (psmIndex != null) {
-                    psmKeysMap.put(psmIndex, rowKey);
+                    psmKeysMap.put(psmIndex, rowKeyAsLong);
                 }
                 if (proteinIndex == null && peptideIndex == null && psmIndex == null) {
                     throw new IllegalArgumentException("Key " + rowKey + " not found.");
@@ -601,23 +604,23 @@ public class OverviewPanel extends javax.swing.JPanel {
             ArrayList<Integer> indexes = new ArrayList<>(proteinKeysMap.keySet());
             Collections.sort(indexes);
             proteinKeys = new long[proteinKeysMap.size()];
-            for (Integer index : indexes) {
-                long accession = proteinKeysMap.get(index);
-                proteinKeys[index] = accession;
+            for (int i = 0; i < indexes.size(); i++) {
+                long accession = proteinKeysMap.get(indexes.get(i));
+                proteinKeys[i] = accession;
             }
             indexes = new ArrayList<Integer>(peptideKeysMap.keySet());
             Collections.sort(indexes);
             peptideKeys = new long[peptideKeysMap.size()];
-            for (Integer index : indexes) {
-                long accession = peptideKeysMap.get(index);
-                peptideKeys[index] = accession;
+            for (int i = 0; i < indexes.size(); i++) {
+                long accession = peptideKeysMap.get(indexes.get(i));
+                peptideKeys[i] = accession;
             }
             indexes = new ArrayList<Integer>(psmKeysMap.keySet());
             Collections.sort(indexes);
             psmKeys = new long[psmKeysMap.size()];
-            for (Integer index : indexes) {
-                long accession = psmKeysMap.get(index);
-                psmKeys[index] = accession;
+            for (int i = 0; i < indexes.size(); i++) {
+                long accession = psmKeysMap.get(indexes.get(i));
+                psmKeys[i] = accession;
             }
 
             // update the tables and panels
@@ -1446,19 +1449,21 @@ public class OverviewPanel extends javax.swing.JPanel {
             DefaultCategoryDataset newDataset = new DefaultCategoryDataset();
 
             for (int i = 0; i < oldDataset.getRowCount(); i++) {
-                Long proteinKey = (Long) oldDataset.getRowKey(i);
-                if (!selectedProteins.contains(proteinKey)) {
+                String proteinKey = (String) oldDataset.getRowKey(i);
+                Long proteinKeyAsLong = Long.valueOf(proteinKey);
+                if (!selectedProteins.contains(proteinKeyAsLong)) {
                     for (int j = 0; j < oldDataset.getColumnKeys().size(); j++) {
-                        newDataset.addValue(oldDataset.getValue(i, j), proteinKey, (Long) oldDataset.getColumnKeys().get(j));
+                        newDataset.addValue(oldDataset.getValue(i, j), proteinKey, (String) oldDataset.getColumnKeys().get(j));
                     }
                 }
             }
 
             for (int i = 0; i < oldDataset.getRowCount(); i++) {
-                Long proteinKey = (Long) oldDataset.getRowKey(i);
-                if (selectedProteins.contains(proteinKey)) {
+                String proteinKey = (String) oldDataset.getRowKey(i);
+                Long proteinKeyAsLong = Long.valueOf(proteinKey);
+                if (selectedProteins.contains(proteinKeyAsLong)) {
                     for (int j = 0; j < oldDataset.getColumnKeys().size(); j++) {
-                        newDataset.addValue(oldDataset.getValue(i, j), proteinKey, (Long) oldDataset.getColumnKeys().get(j));
+                        newDataset.addValue(oldDataset.getValue(i, j), proteinKey, (String) oldDataset.getColumnKeys().get(j));
                     }
                 }
             }
@@ -1472,7 +1477,7 @@ public class OverviewPanel extends javax.swing.JPanel {
             ClusteringSettings clusteringSettings = reporterGUI.getDisplayParameters().getClusteringSettings();
 
             for (int i = 0; i < newDataset.getRowCount(); i++) {
-                Long key = (Long) newDataset.getRowKey(i);
+                Long key = Long.valueOf((String) newDataset.getRowKey(i));
                 boolean isProtein = clusterBuilder.getProteinIndex(key) != null;
                 boolean isPeptide = clusterBuilder.getPeptideIndex(key) != null;
                 boolean isPsm = clusterBuilder.getPsmIndex(key) != null;
@@ -2051,19 +2056,21 @@ public class OverviewPanel extends javax.swing.JPanel {
             DefaultCategoryDataset newDataset = new DefaultCategoryDataset();
 
             for (int i = 0; i < oldDataset.getRowCount(); i++) {
-                Long peptideKey = (Long) oldDataset.getRowKey(i);
-                if (!selectedPeptides.contains(peptideKey)) {
+                String peptideKey = (String) oldDataset.getRowKey(i);
+                Long peptideKeyAsLong = Long.valueOf(peptideKey);
+                if (!selectedPeptides.contains(peptideKeyAsLong)) {
                     for (int j = 0; j < oldDataset.getColumnKeys().size(); j++) {
-                        newDataset.addValue(oldDataset.getValue(i, j), peptideKey, (Long) oldDataset.getColumnKeys().get(j));
+                        newDataset.addValue(oldDataset.getValue(i, j), peptideKey, (String) oldDataset.getColumnKeys().get(j));
                     }
                 }
             }
 
             for (int i = 0; i < oldDataset.getRowCount(); i++) {
-                Long peptideKey = (Long) oldDataset.getRowKey(i);
-                if (selectedPeptides.contains(peptideKey)) {
+                String peptideKey = (String) oldDataset.getRowKey(i);
+                Long peptideKeyAsLong = Long.valueOf(peptideKey);
+                if (selectedPeptides.contains(peptideKeyAsLong)) {
                     for (int j = 0; j < oldDataset.getColumnKeys().size(); j++) {
-                        newDataset.addValue(oldDataset.getValue(i, j), peptideKey, (Long) oldDataset.getColumnKeys().get(j));
+                        newDataset.addValue(oldDataset.getValue(i, j), peptideKey, (String) oldDataset.getColumnKeys().get(j));
                     }
                 }
             }
@@ -2077,7 +2084,7 @@ public class OverviewPanel extends javax.swing.JPanel {
             ClusteringSettings clusteringSettings = reporterGUI.getDisplayParameters().getClusteringSettings();
 
             for (int i = 0; i < newDataset.getRowCount(); i++) {
-                Long key = (Long) newDataset.getRowKey(i);
+                Long key = Long.valueOf((String) newDataset.getRowKey(i));
                 boolean isProtein = clusterBuilder.getProteinIndex(key) != null;
                 boolean isPeptide = clusterBuilder.getPeptideIndex(key) != null;
                 boolean isPsm = clusterBuilder.getPsmIndex(key) != null;
@@ -2159,19 +2166,21 @@ public class OverviewPanel extends javax.swing.JPanel {
             DefaultCategoryDataset newDataset = new DefaultCategoryDataset();
 
             for (int i = 0; i < oldDataset.getRowCount(); i++) {
-                Long psmKey = (Long) oldDataset.getRowKey(i);
-                if (!selectedPsms.contains(psmKey)) {
+                String psmKey = (String) oldDataset.getRowKey(i);
+                Long psmKeyLong = Long.valueOf(psmKey);
+                if (!selectedPsms.contains(psmKeyLong)) {
                     for (int j = 0; j < oldDataset.getColumnKeys().size(); j++) {
-                        newDataset.addValue(oldDataset.getValue(i, j), psmKey, (Long) oldDataset.getColumnKeys().get(j));
+                        newDataset.addValue(oldDataset.getValue(i, j), psmKey, (String) oldDataset.getColumnKeys().get(j));
                     }
                 }
             }
 
             for (int i = 0; i < oldDataset.getRowCount(); i++) {
-                Long psmKey = (Long) oldDataset.getRowKey(i);
-                if (selectedPsms.contains(psmKey)) {
+                String psmKey = (String) oldDataset.getRowKey(i);
+                Long psmKeyLong = Long.valueOf(psmKey);
+                if (selectedPsms.contains(psmKeyLong)) {
                     for (int j = 0; j < oldDataset.getColumnKeys().size(); j++) {
-                        newDataset.addValue(oldDataset.getValue(i, j), psmKey, (Long) oldDataset.getColumnKeys().get(j));
+                        newDataset.addValue(oldDataset.getValue(i, j), psmKey, (String) oldDataset.getColumnKeys().get(j));
                     }
                 }
             }
@@ -2185,7 +2194,7 @@ public class OverviewPanel extends javax.swing.JPanel {
             ClusteringSettings clusteringSettings = reporterGUI.getDisplayParameters().getClusteringSettings();
 
             for (int i = 0; i < newDataset.getRowCount(); i++) {
-                Long key = (Long) newDataset.getRowKey(i);
+                Long key = Long.valueOf((String) newDataset.getRowKey(i));
                 boolean isProtein = clusterBuilder.getProteinIndex(key) != null;
                 boolean isPeptide = clusterBuilder.getPeptideIndex(key) != null;
                 boolean isPsm = clusterBuilder.getPsmIndex(key) != null;
