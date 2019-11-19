@@ -1082,7 +1082,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * file
      */
     public void saveProjectAs(boolean closeWhenDone, boolean aExportToZipWhenDone) {
-        File selectedFile = getUserSelectedFile(cpsParent.getProjectParameters().getProjectUniqueName(), ".cpsx", "Compomics Peptide Shaker format (*.cpsx)", "Save As...", false);
+        File selectedFile = getUserSelectedFile(cpsParent.getProjectParameters().getProjectUniqueName(), ".psdb", "Peptide Shaker Database format (*.psdb)", "Save As...", false);
         cpsParent.setCpsFile(selectedFile);
         if (selectedFile != null) {
             saveProject(closeWhenDone, aExportToZipWhenDone);
