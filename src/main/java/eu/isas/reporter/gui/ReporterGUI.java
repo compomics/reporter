@@ -55,7 +55,7 @@ import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Toolkit;
 import java.io.*;
-import java.net.URISyntaxException;
+import java.net.ConnectException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.sql.SQLException;
@@ -1493,14 +1493,12 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
             // no internet connection
             System.out.println("Checking for new version failed. No internet connection.");
             return false;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
+        } catch (ConnectException ex) {
+            // connection refused
+            System.out.println("Checking for new version failed. Connection refused.");
             return false;
         } catch (Exception e) {
-            System.out.println("Checking for new version failed. Unknown error.");
+            e.printStackTrace();
             return false;
         }
     }
