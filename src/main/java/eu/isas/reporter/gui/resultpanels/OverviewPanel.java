@@ -290,8 +290,10 @@ public class OverviewPanel extends javax.swing.JPanel {
                     displayClusters(progressDialog);
 
                     // clear the tables
-                    ArrayList<Long> proteinSelection = new ArrayList<>();
-                    reporterGUI.setSelectedProteins(proteinSelection, false, false); // @TODO: what about peptides and psms..?
+                    ArrayList<Long> emptySelection = new ArrayList<>();
+                    reporterGUI.setSelectedProteins(emptySelection, false, false);
+                    reporterGUI.setSelectedPeptides(emptySelection, false, false);
+                    reporterGUI.setSelectedPsms(emptySelection, false, false);
                     proteinTable.clearSelection();
                     peptideTable.clearSelection();
                     psmTable.clearSelection();
