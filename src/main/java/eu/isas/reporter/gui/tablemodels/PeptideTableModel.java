@@ -16,12 +16,11 @@ import eu.isas.reporter.preferences.DisplayPreferences;
 import eu.isas.reporter.quantificationdetails.PeptideQuantificationDetails;
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 import no.uib.jsparklines.data.ArrrayListDataPoints;
 import no.uib.jsparklines.data.JSparklinesDataSeries;
-import no.uib.jsparklines.data.StartIndexes;
 import no.uib.jsparklines.renderers.JSparklinesArrayListBarChartTableCellRenderer;
 
 /**
@@ -183,7 +182,7 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
 
     @Override
     public int getColumnCount() {
-        return 9;
+        return 8;
     }
 
     @Override
@@ -200,16 +199,14 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
             case 4:
                 return "Sequence";
             case 5:
-                return "Start";
-            case 6:
                 return "#Spectra";
-            case 7:
+            case 6:
                 if (showScores) {
                     return "Score";
                 } else {
                     return "Confidence";
                 }
-            case 8:
+            case 7:
                 return "";
             default:
                 return "";
@@ -241,7 +238,7 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
 
             switch (column) {
                 case 1:
-                    ArrayList<Double> data = new ArrayList<Double>();
+                    ArrayList<Double> data = new ArrayList<>();
                     PeptideQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideMatch, null);
                     ArrayList<String> reagentsOrder = displayPreferences.getReagents();
                     for (String tempReagent : reagentsOrder) {
@@ -260,18 +257,11 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
                     PSParameter psParameter = (PSParameter) peptideMatch.getUrParam(PSParameter.dummy);
                     return psParameter.getProteinInferenceGroupClass();
                 case 3:
-                    return null; //peptideMatch.getPeptide().getProteinMapping().get(0); // @TODO: reimplement!
+                    TreeMap<String, int[]> proteinMapping = peptideMatch.getPeptide().getProteinMapping();
+                    return proteinMapping.navigableKeySet().stream().collect(Collectors.joining(","));
                 case 4:
                     return displayFeaturesGenerator.getTaggedPeptideSequence(peptideMatch, true, true, true);
                 case 5:
-                    return null;
-//                    int[] startIndexes = peptideMatch.getPeptide().getProteinMapping().get(proteinAccession);  // @TODO: reimplement!
-//
-//                    return new StartIndexes(Arrays.stream(startIndexes)
-//                            .map(site -> site + 1)
-//                            .boxed()
-//                            .collect(Collectors.toCollection(ArrayList::new)));
-                case 6:
                     double nConfidentSpectra = identificationFeaturesGenerator.getNConfidentSpectraForPeptide(peptideKey);
                     double nDoubtfulSpectra = identificationFeaturesGenerator.getNValidatedSpectraForPeptide(peptideKey) - nConfidentSpectra;
                     int nSpectra = peptideMatch.getSpectrumMatchesKeys().length;
@@ -282,10 +272,10 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
                     doubleValues.add(nSpectra - nConfidentSpectra - nDoubtfulSpectra);
                     ArrrayListDataPoints arrrayListDataPoints = new ArrrayListDataPoints(doubleValues, JSparklinesArrayListBarChartTableCellRenderer.ValueDisplayType.sumOfNumbers);
                     return arrrayListDataPoints;
-                case 7:
+                case 6:
                     psParameter = (PSParameter) peptideMatch.getUrParam(PSParameter.dummy);
                     return showScores ? psParameter.getScore() : psParameter.getConfidence();
-                case 8:
+                case 7:
                     psParameter = (PSParameter) peptideMatch.getUrParam(PSParameter.dummy);
                     return psParameter.getMatchValidationLevel().getIndex();
                 default:

@@ -758,7 +758,6 @@ public class OverviewPanel extends javax.swing.JPanel {
         // the index column
         peptideTable.getColumn(" ").setMaxWidth(50);
         peptideTable.getColumn(" ").setMinWidth(50);
-        peptideTable.getColumn("Start").setMinWidth(50);
 
         try {
             peptideTable.getColumn("Confidence").setMaxWidth(90);
@@ -2329,7 +2328,6 @@ public class OverviewPanel extends javax.swing.JPanel {
             peptideInferenceTooltipMap.put(PSParameter.UNRELATED, "Belongs to unrelated proteins");
 
             peptideTable.getColumn("PI").setCellRenderer(new JSparklinesIntegerColorTableCellRenderer(reporterGUI.getSparklineColor(), peptideInferenceColorMap, peptideInferenceTooltipMap));
-            peptideTable.getColumn("Start").setCellRenderer(new JSparklinesMultiIntervalChartTableCellRenderer(PlotOrientation.HORIZONTAL, 100d, 100d, reporterGUI.getSparklineColor()));
 
             // use a gray color for no decoy searches
             Color nonValidatedColor = reporterGUI.getSparklineColorNonValidated();
