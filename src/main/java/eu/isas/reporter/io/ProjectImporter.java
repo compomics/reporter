@@ -317,6 +317,9 @@ public class ProjectImporter {
             } else if (ptmName.contains("iodoTMT")) {
                 selectedMethod = reporterMethodFactory.getReporterMethod("iodoTMT 6-plex (HCD)");
                 break;
+            } else if (ptmName.contains("TMTpro")) {
+                selectedMethod = reporterMethodFactory.getReporterMethod("TMTpro");
+                break;
             }
         }
 
