@@ -280,7 +280,7 @@ public class PsmTableModel extends SelfUpdatingTableModel {
                     }
                 case 6:
                     PSParameter psParameter = (PSParameter) spectrumMatch.getUrParam(PSParameter.dummy);
-                    return showScores ? psParameter.getScore() : psParameter.getConfidence();
+                    return showScores ? psParameter.getTransformedScore() : psParameter.getConfidence();
                 case 7:
                     psParameter = (PSParameter) spectrumMatch.getUrParam(PSParameter.dummy);
                     return psParameter.getMatchValidationLevel().getIndex();
