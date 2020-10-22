@@ -1199,7 +1199,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         if (getIdentification() != null) {
 
             try {
-                getIdentification().close();
+                getIdentification().close(false);
                 cpsParent.setIdentification(null);
             } catch (Exception e) {
                 databaseClosed = false;
