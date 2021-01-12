@@ -1,7 +1,6 @@
 package eu.isas.reporter.gui;
 
 import com.compomics.util.Util;
-import com.compomics.util.db.object.ObjectsCache;
 import com.compomics.util.experiment.biology.modifications.Modification;
 import com.compomics.util.experiment.biology.modifications.ModificationFactory;
 import com.compomics.util.experiment.biology.proteins.Peptide;
@@ -78,10 +77,6 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
      * The modification factory.
      */
     private ModificationFactory modificationFactory = ModificationFactory.getInstance();
-    /**
-     * The cache to use for identification and quantification objects.
-     */
-    private ObjectsCache cache;
     /**
      * List of the sorted modifications.
      */
@@ -532,8 +527,6 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
                     txtSpectraFileLocation2.setText(psdbParent.getProjectDetails().getSpectrumFileNames().size() + " files loaded"); //@TODO: allow editing
                     fastaTxt2.setText(psdbParent.getProjectDetails().getFastaFile());
                     txtIdFileLocation2.setText(psdbParent.getPsdbFile().getName());
-
-                    cache = new ObjectsCache();
 
                     estimateLabellingEfficiency();
                     refresh();

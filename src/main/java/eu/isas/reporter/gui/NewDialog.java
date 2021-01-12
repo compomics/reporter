@@ -112,10 +112,6 @@ public class NewDialog extends javax.swing.JDialog {
      */
     private ArrayList<String> controlSamples = new ArrayList<>();
     /**
-     * The cache to use for identification and quantification objects.
-     */
-    private ObjectsCache cache;
-    /**
      * Boolean indicating whether the user canceled the project creation
      */
     private boolean cancelled = false;
@@ -1419,9 +1415,6 @@ public class NewDialog extends javax.swing.JDialog {
                             "PTM Definition Changed", JOptionPane.WARNING_MESSAGE);
                 }
 
-                // set up cache
-                cache = new ObjectsCache();
-
                 // set up quantification settings
                 reporterSettings = projectImporter.getReporterSettings();
                 reporterIonQuantification = projectImporter.getReporterIonQuantification();
@@ -1780,15 +1773,6 @@ public class NewDialog extends javax.swing.JDialog {
      */
     public ReporterSettings getReporterSettings() {
         return reporterSettings;
-    }
-
-    /**
-     * Returns the identification objects cache.
-     *
-     * @return the identification objects cache
-     */
-    public ObjectsCache getCache() {
-        return cache;
     }
 
     /**

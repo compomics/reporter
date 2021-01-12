@@ -372,7 +372,15 @@ public class ReporterPsmSection {
      * @throws java.lang.InterruptedException exception thrown whenever a
      * threading error occurred
      */
-    public static String getFeature(Identification identification, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, ReporterSettings reporterSettings, long matchKey, ReporterPsmFeatures psmFeatures, String sampleIndex) throws SQLException, IOException, ClassNotFoundException, InterruptedException {
+    public static String getFeature(
+            Identification identification, 
+            QuantificationFeaturesGenerator quantificationFeaturesGenerator, 
+            ReporterIonQuantification reporterIonQuantification, 
+            ReporterSettings reporterSettings, 
+            long matchKey, 
+            ReporterPsmFeatures psmFeatures, 
+            String sampleIndex
+    ) throws SQLException, IOException, ClassNotFoundException, InterruptedException {
 
         SpectrumMatch spectrumMatch = identification.getSpectrumMatch(matchKey);
         String spectrumKey = spectrumMatch.getSpectrumKey();
