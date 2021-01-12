@@ -11,6 +11,7 @@ import com.compomics.util.experiment.identification.spectrum_assumptions.TagAssu
 import com.compomics.util.experiment.identification.utils.PeptideUtils;
 import com.compomics.util.experiment.io.biology.protein.ProteinDetailsProvider;
 import com.compomics.util.experiment.io.biology.protein.SequenceProvider;
+import com.compomics.util.experiment.mass_spectrometry.SpectrumProvider;
 import com.compomics.util.experiment.personalization.UrParameter;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.io.export.ExportFeature;
@@ -36,7 +37,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import org.apache.commons.math.MathException;
-import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
 
 /**
  * This class outputs the PSM level quantification export features.
@@ -88,8 +88,11 @@ public class ReporterPsmSection {
      * @param writer the writer which will write to the file
      */
     public ReporterPsmSection(ArrayList<ExportFeature> exportFeatures, boolean indexes, boolean header, ExportWriter writer) {
+
         ArrayList<ExportFeature> fragmentFeatures = new ArrayList<ExportFeature>();
+
         for (ExportFeature exportFeature : exportFeatures) {
+
             if (exportFeature instanceof ReporterPsmFeatures) {
                 quantificationFeatures.add((ReporterExportFeature) exportFeature);
             } else if (exportFeature instanceof PsPsmFeature) {
@@ -101,13 +104,17 @@ public class ReporterPsmSection {
             } else {
                 throw new IllegalArgumentException("Export feature of type " + exportFeature.getClass() + " not recognized.");
             }
+
         }
+
         if (!fragmentFeatures.isEmpty()) {
             fragmentSection = new PsFragmentSection(fragmentFeatures, indexes, header, writer);
         }
+
         this.indexes = indexes;
         this.header = header;
         this.writer = writer;
+
         if (writer instanceof ExcelWriter) {
             reporterStyle = ReporterReportStyle.getReportStyle((ExcelWriter) writer);
         }
@@ -120,6 +127,7 @@ public class ReporterPsmSection {
      * @param identificationFeaturesGenerator the identification features
      * generator of the project
      * @param sequenceProvider the sequence provider
+     * @param spectrumProvider the spectrum provider
      * @param proteinDetailsProvider the protein details provider
      * @param quantificationFeaturesGenerator the quantification features
      * generator containing the quantification information
@@ -140,18 +148,29 @@ public class ReporterPsmSection {
      * while interacting with a file
      * @throws java.lang.ClassNotFoundException exception thrown whenever an
      * error occurred while deserializing an object
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown
-     * whenever an error occurred while reading an mzML file
      * @throws java.lang.InterruptedException exception thrown whenever a
      * threading error occurred
      * @throws org.apache.commons.math.MathException exception thrown whenever
      * an error occurred while transforming the ratios
      */
-    public void writeSection(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, SequenceProvider sequenceProvider, 
-            ProteinDetailsProvider proteinDetailsProvider, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, 
-            ReporterSettings reporterSettings, IdentificationParameters identificationParameters, long[] keys, String linePrefix, int nSurroundingAA, boolean validatedOnly, 
-            boolean decoys, WaitingHandler waitingHandler) throws IOException, IllegalArgumentException, SQLException,
-            ClassNotFoundException, InterruptedException, MzMLUnmarshallerException, MathException {
+    public void writeSection(
+            Identification identification,
+            IdentificationFeaturesGenerator identificationFeaturesGenerator,
+            SequenceProvider sequenceProvider,
+            SpectrumProvider spectrumProvider,
+            ProteinDetailsProvider proteinDetailsProvider,
+            QuantificationFeaturesGenerator quantificationFeaturesGenerator,
+            ReporterIonQuantification reporterIonQuantification,
+            ReporterSettings reporterSettings,
+            IdentificationParameters identificationParameters,
+            long[] keys,
+            String linePrefix,
+            int nSurroundingAA,
+            boolean validatedOnly,
+            boolean decoys,
+            WaitingHandler waitingHandler
+    ) throws IOException, IllegalArgumentException, SQLException,
+            ClassNotFoundException, InterruptedException, MathException {
 
         if (waitingHandler != null) {
             waitingHandler.setSecondaryProgressCounterIndeterminate(true);
@@ -162,7 +181,7 @@ public class ReporterPsmSection {
         }
 
         int line = 1;
-        
+
         if (waitingHandler != null) {
             waitingHandler.setWaitingText("Exporting. Please Wait...");
             waitingHandler.resetSecondaryProgressCounter();
@@ -170,7 +189,7 @@ public class ReporterPsmSection {
         }
 
         PSParameter psParameter = new PSParameter();
-        ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
+        ArrayList<UrParameter> parameters = new ArrayList<>(1);
         parameters.add(psParameter);
 
         SpectrumMatchesIterator spectrumMatchesIterator = identification.getSpectrumMatchesIterator(keys, waitingHandler);
@@ -185,8 +204,7 @@ public class ReporterPsmSection {
                 waitingHandler.increaseSecondaryProgressCounter();
             }
 
-            String spectrumKey = spectrumMatch.getSpectrumKey();
-
+            //String spectrumKey = spectrumMatch.getSpectrumKey();
             psParameter = (PSParameter) spectrumMatch.getUrParam(psParameter);
 
             if (!validatedOnly || psParameter.getMatchValidationLevel().isValidated()) {
@@ -212,17 +230,50 @@ public class ReporterPsmSection {
                         }
                         String feature;
                         if (peptideAssumption != null) {
+
                             peptideAssumption = spectrumMatch.getBestPeptideAssumption();
-                            
-                            feature = PsIdentificationAlgorithmMatchesSection.getPeptideAssumptionFeature(identification, identificationFeaturesGenerator, sequenceProvider, 
-                                    proteinDetailsProvider, identificationParameters, linePrefix, nSurroundingAA, peptideAssumption, spectrumKey, psParameter, 
-                                    identificationAlgorithmMatchesFeature, waitingHandler);
+
+                            feature = PsIdentificationAlgorithmMatchesSection.getPeptideAssumptionFeature(
+                                    identification,
+                                    identificationFeaturesGenerator,
+                                    sequenceProvider,
+                                    proteinDetailsProvider,
+                                    spectrumProvider,
+                                    identificationParameters,
+                                    linePrefix,
+                                    nSurroundingAA,
+                                    peptideAssumption,
+                                    spectrumMatch.getSpectrumFile(),
+                                    spectrumMatch.getSpectrumTitle(),
+                                    psParameter,
+                                    identificationAlgorithmMatchesFeature,
+                                    waitingHandler
+                            );
+
                         } else if (spectrumMatch.getBestTagAssumption() != null) {
+
                             TagAssumption tagAssumption = spectrumMatch.getBestTagAssumption();
-                            feature = PsIdentificationAlgorithmMatchesSection.getTagAssumptionFeature(identification, identificationFeaturesGenerator, identificationParameters, linePrefix, 
-                                    tagAssumption, spectrumKey, psParameter, identificationAlgorithmMatchesFeature, waitingHandler);
+
+                            feature = PsIdentificationAlgorithmMatchesSection.getTagAssumptionFeature(
+                                    identification,
+                                    identificationFeaturesGenerator,
+                                    spectrumProvider,
+                                    identificationParameters,
+                                    linePrefix,
+                                    tagAssumption,
+                                    spectrumMatch.getSpectrumFile(),
+                                    spectrumMatch.getSpectrumTitle(),
+                                    psParameter,
+                                    identificationAlgorithmMatchesFeature,
+                                    waitingHandler
+                            );
+
                         } else {
-                            throw new IllegalArgumentException("No best match found for spectrum " + spectrumMatch.getKey() + ".");
+                            throw new IllegalArgumentException(
+                                    "No best match found for spectrum "
+                                    + spectrumMatch.getKey()
+                                    + "."
+                            );
                         }
                         writer.write(feature);
                     }
@@ -235,7 +286,7 @@ public class ReporterPsmSection {
                         writer.write(PsPsmSection.getFeature(identification, identificationFeaturesGenerator,
                                 identificationParameters, linePrefix, spectrumMatch, psParameter, psmFeature, validatedOnly, decoys, waitingHandler));
                     }
-                    ArrayList<String> sampleIndexes = new ArrayList<String>(reporterIonQuantification.getSampleIndexes());
+                    ArrayList<String> sampleIndexes = new ArrayList<>(reporterIonQuantification.getSampleIndexes());
                     Collections.sort(sampleIndexes);
                     for (ExportFeature exportFeature : quantificationFeatures) {
                         ReporterPsmFeatures psmFeature = (ReporterPsmFeatures) exportFeature;
@@ -265,9 +316,27 @@ public class ReporterPsmSection {
                         }
                         fractionPrefix += line + ".";
                         if (spectrumMatch.getBestPeptideAssumption() != null) {
-                            fragmentSection.writeSection(spectrumKey, spectrumMatch.getBestPeptideAssumption(), sequenceProvider, identificationParameters, fractionPrefix, null);
+                            fragmentSection.writeSection(
+                                    spectrumMatch.getSpectrumFile(),
+                                    spectrumMatch.getSpectrumTitle(),
+                                    spectrumMatch.getBestPeptideAssumption(),
+                                    sequenceProvider,
+                                    spectrumProvider,
+                                    identificationParameters,
+                                    fractionPrefix,
+                                    null
+                            );
                         } else if (spectrumMatch.getBestTagAssumption() != null) {
-                            fragmentSection.writeSection(spectrumKey, spectrumMatch.getBestTagAssumption(), sequenceProvider, identificationParameters, fractionPrefix, null);
+                            fragmentSection.writeSection(
+                                    spectrumMatch.getSpectrumFile(),
+                                    spectrumMatch.getSpectrumTitle(),
+                                    spectrumMatch.getBestTagAssumption(),
+                                    sequenceProvider,
+                                    spectrumProvider,
+                                    identificationParameters,
+                                    fractionPrefix,
+                                    null
+                            );
                         }
                     }
                     line++;
@@ -300,40 +369,44 @@ public class ReporterPsmSection {
      * while interacting with a file
      * @throws java.lang.ClassNotFoundException exception thrown whenever an
      * error occurred while deserializing an object
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown
-     * whenever an error occurred while reading an mzML file
      * @throws java.lang.InterruptedException exception thrown whenever a
      * threading error occurred
      */
-    public static String getFeature(Identification identification, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, ReporterSettings reporterSettings, long matchKey, ReporterPsmFeatures psmFeatures, String sampleIndex) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
-        
+    public static String getFeature(Identification identification, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, ReporterSettings reporterSettings, long matchKey, ReporterPsmFeatures psmFeatures, String sampleIndex) throws SQLException, IOException, ClassNotFoundException, InterruptedException {
+
         SpectrumMatch spectrumMatch = identification.getSpectrumMatch(matchKey);
         String spectrumKey = spectrumMatch.getSpectrumKey();
-        
+
         switch (psmFeatures) {
+
             case raw_ratio:
                 PsmQuantificationDetails psmDetails = quantificationFeaturesGenerator.getPSMQuantificationDetails(matchKey);
                 return psmDetails.getRawRatio(sampleIndex).toString();
+
             case ratio:
                 psmDetails = quantificationFeaturesGenerator.getPSMQuantificationDetails(matchKey);
                 return psmDetails.getRatio(sampleIndex, reporterIonQuantification.getNormalizationFactors()).toString();
+
             case reporter_intensity:
                 SpectrumQuantificationDetails spectrumDetails = quantificationFeaturesGenerator.getSpectrumQuantificationDetails(reporterIonQuantification, reporterSettings.getReporterIonSelectionSettings(), spectrumKey);
                 IonMatch ionMatch = spectrumDetails.getRepoterMatch(sampleIndex);
                 if (ionMatch == null) {
                     return "";
                 }
-                return ionMatch.peak.intensity + "";
+                return ionMatch.peakIntensity + "";
+
             case reporter_mz:
                 spectrumDetails = quantificationFeaturesGenerator.getSpectrumQuantificationDetails(reporterIonQuantification, reporterSettings.getReporterIonSelectionSettings(), spectrumKey);
                 ionMatch = spectrumDetails.getRepoterMatch(sampleIndex);
                 if (ionMatch == null) {
                     return "";
                 }
-                return ionMatch.peak.mz + "";
+                return ionMatch.peakMz + "";
+
             case deisotoped_intensity:
                 spectrumDetails = quantificationFeaturesGenerator.getSpectrumQuantificationDetails(reporterIonQuantification, reporterSettings.getReporterIonSelectionSettings(), spectrumKey);
                 return spectrumDetails.getDeisotopedIntensity(sampleIndex).toString();
+
             default:
                 return "Not implemented";
         }
@@ -351,7 +424,7 @@ public class ReporterPsmSection {
     public void writeHeader(ReporterIonQuantification reporterIonQuantification) throws IOException {
 
         boolean needSecondLine = false;
-        ArrayList<String> sampleIndexes = new ArrayList<String>(reporterIonQuantification.getSampleIndexes());
+        ArrayList<String> sampleIndexes = new ArrayList<>(reporterIonQuantification.getSampleIndexes());
         Collections.sort(sampleIndexes);
 
         boolean firstColumn = true;

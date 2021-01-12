@@ -8,10 +8,10 @@ import com.compomics.software.autoupdater.MavenJarFile;
 import com.compomics.software.autoupdater.WebDAO;
 import com.compomics.software.dialogs.JavaParametersDialog;
 import com.compomics.util.examples.BareBonesBrowserLaunch;
-import com.compomics.util.FileAndFileFilter;
-import com.compomics.util.Util;
 import com.compomics.util.gui.error_handlers.BugReport;
 import com.compomics.util.gui.error_handlers.HelpDialog;
+import com.compomics.util.gui.file_handling.FileAndFileFilter;
+import com.compomics.util.gui.file_handling.FileChooserUtil;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
 import com.compomics.util.parameters.UtilitiesUserParameters;
 import eu.isas.reporter.Reporter;
@@ -477,11 +477,11 @@ public class WelcomeDialog extends javax.swing.JDialog {
     private void openJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openJButtonActionPerformed
 
         // @TODO: implement me!
-        String cpsFileFilterDescription = "PeptideShaker (.cpsx)";
+        String psdbFileFilterDescription = "PeptideShaker (.psdb)";
         String zipFileFilterDescription = "Zipped PeptideShaker (.zip)";
         String lastSelectedFolderPath = reporterGUI.getLastSelectedFolder().getLastSelectedFolder();
-        FileAndFileFilter selectedFileAndFilter = Util.getUserSelectedFile(this, new String[]{".cpsx", ".zip"}, 
-                new String[]{cpsFileFilterDescription, zipFileFilterDescription}, "Open PeptideShaker Project", lastSelectedFolderPath, null, true, false, false, 0);
+        FileAndFileFilter selectedFileAndFilter = FileChooserUtil.getUserSelectedFile(this, new String[]{".psdb", ".zip"}, 
+                new String[]{psdbFileFilterDescription, zipFileFilterDescription}, "Open PeptideShaker Project", lastSelectedFolderPath, null, true, false, false, 0);
 
         if (selectedFileAndFilter != null) {
 
@@ -493,7 +493,7 @@ public class WelcomeDialog extends javax.swing.JDialog {
 //                reporterGUI.setVisible(true);
 //                reporterGUI.importPeptideShakerZipFile(selectedFile);
 //                dispose();
-//            } else if (selectedFile.getName().endsWith(".cpsx")) {
+//            } else if (selectedFile.getName().endsWith(".psdb")) {
 //                setVisible(false);
 //                reporterGUI.setVisible(true);
 //                reporterGUI.importPeptideShakerFile(selectedFile);
@@ -503,7 +503,7 @@ public class WelcomeDialog extends javax.swing.JDialog {
 //                lastSelectedFolder.setLastSelectedFolder(selectedFile.getAbsolutePath());
 //                dispose();
 //            } else {
-//                JOptionPane.showMessageDialog(this, "Not a PeptideShaker file (.cpsx).", "Unsupported File.", JOptionPane.WARNING_MESSAGE);
+//                JOptionPane.showMessageDialog(this, "Not a PeptideShaker file (.psdb).", "Unsupported File.", JOptionPane.WARNING_MESSAGE);
 //            }
         }
     }//GEN-LAST:event_openJButtonActionPerformed
@@ -918,7 +918,7 @@ public class WelcomeDialog extends javax.swing.JDialog {
 
         if (installPath == null) {
             installPath = "user.home";
-            downloadFolder = Util.getUserSelectedFolder(this, "Select SearchGUI Folder", installPath, "SearchGUI Folder", "Select", false);
+            downloadFolder = FileChooserUtil.getUserSelectedFolder(this, "Select SearchGUI Folder", installPath, "SearchGUI Folder", "Select", false);
         } else {
             firstTimeInstall = false;
             downloadFolder = new File(installPath);

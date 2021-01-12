@@ -197,7 +197,7 @@ public class NormalizationSettings implements Serializable {
      */
     public Collection<String> getStableProteins(SearchParameters searchParameters, FastaParameters fastaParameters, PeptideVariantsParameters peptideVariantsPreferences, WaitingHandler waitingHandler) throws IOException {
         if (stableProteinsFastaFile != null) {
-            FMIndex fmIndex = new FMIndex(stableProteinsFastaFile, fastaParameters, waitingHandler, true, searchParameters.getModificationParameters(), peptideVariantsPreferences);
+            FMIndex fmIndex = new FMIndex(stableProteinsFastaFile, fastaParameters, waitingHandler, true, peptideVariantsPreferences, searchParameters);
             return fmIndex.getAccessions();
         }
         return null;
@@ -218,7 +218,7 @@ public class NormalizationSettings implements Serializable {
      */
     public Collection<String> getContaminants(SearchParameters searchParameters, FastaParameters fastaParameters, PeptideVariantsParameters peptideVariantsPreferences, WaitingHandler waitingHandler) throws IOException {
         if (contaminantsFastaFile != null) {
-            FMIndex fmIndex = new FMIndex(contaminantsFastaFile, fastaParameters, waitingHandler, true, searchParameters.getModificationParameters(), peptideVariantsPreferences);
+            FMIndex fmIndex = new FMIndex(contaminantsFastaFile, fastaParameters, waitingHandler, true, peptideVariantsPreferences, searchParameters);
             return fmIndex.getAccessions();
         }
         return null;

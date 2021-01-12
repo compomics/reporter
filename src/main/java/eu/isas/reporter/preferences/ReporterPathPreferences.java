@@ -136,7 +136,7 @@ public class ReporterPathPreferences {
         }
         ReporterPathKey reporterPathKey = ReporterPathKey.getKeyFromId(id);
         if (reporterPathKey == null) {
-            PeptideShakerPathParameters.loadPathPreferenceFromLine(line);
+            PeptideShakerPathParameters.loadPathParametersFromLine(line);
         } else {
             String path = UtilitiesPathParameters.getPath(line);
             if (!path.equals(UtilitiesPathParameters.defaultPath)) {
@@ -200,7 +200,7 @@ public class ReporterPathPreferences {
     public static void writeConfigurationToFile(File file) throws IOException {
         BufferedWriter bw = new BufferedWriter(new FileWriter(file));
         try {
-            writeConfigurationToFile(bw);
+            writeConfigurationToFile(file, bw);
         } finally {
             bw.close();
         }
@@ -209,15 +209,16 @@ public class ReporterPathPreferences {
     /**
      * Writes the configurations file using the provided buffered writer.
      *
-     * @param bw the writer to use for writing.
+     * @param file the condig file
+     * @param bw the writer to use for writing
      *
      * @throws IOException thrown if an IOException occurs
      */
-    public static void writeConfigurationToFile(BufferedWriter bw) throws IOException {
+    public static void writeConfigurationToFile(File file, BufferedWriter bw) throws IOException {
         for (ReporterPathKey pathKey : ReporterPathKey.values()) {
             writePathToFile(bw, pathKey);
         }
-        PeptideShakerPathParameters.writeConfigurationToFile(bw);
+        PeptideShakerPathParameters.writeConfigurationToFile(file);
     }
 
     /**
@@ -274,14 +275,20 @@ public class ReporterPathPreferences {
      * loading the path configuration
      */
     public static ArrayList<PathKey> getErrorKeys(String jarFilePath) throws IOException {
-        ArrayList<PathKey> result = new ArrayList<PathKey>();
+
+        ArrayList<PathKey> result = new ArrayList<>();
+
         for (ReporterPathKey pathKey : ReporterPathKey.values()) {
+
             String folder = ReporterPathPreferences.getPathPreference(pathKey, jarFilePath);
+
             if (folder != null && !UtilitiesPathParameters.testPath(folder)) {
                 result.add(pathKey);
             }
         }
+
         result.addAll(UtilitiesPathParameters.getErrorKeys());
+
         return result;
     }
 }

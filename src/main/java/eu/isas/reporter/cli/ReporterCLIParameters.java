@@ -17,7 +17,7 @@ public enum ReporterCLIParameters {
     // (once the wiki exists)
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
-    ID("id", "The PeptideShaker project (.cpsx or .zip).", true),
+    ID("id", "The PeptideShaker project (.psdb or .zip).", true),
     OUT("out", "Output file to save the project.", false),
     ISOTOPES("isotopes", "The isotope correction factors file (.xml file). Default values used if not provided. It is strongly advised to provide the values corresponding to the labelling kit used during the experiment.", false),
     METHOD("method", "The reporter ion quantification method to use from the isotopic methods file in case multiple methods are listed in the file. Inferred from the identification parameters if not provided.", false),

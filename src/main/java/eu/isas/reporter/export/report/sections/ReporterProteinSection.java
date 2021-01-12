@@ -8,6 +8,7 @@ import com.compomics.util.experiment.identification.matches_iterators.ProteinMat
 import com.compomics.util.experiment.identification.peptide_shaker.PSParameter;
 import com.compomics.util.experiment.io.biology.protein.ProteinDetailsProvider;
 import com.compomics.util.experiment.io.biology.protein.SequenceProvider;
+import com.compomics.util.experiment.mass_spectrometry.SpectrumProvider;
 import com.compomics.util.experiment.personalization.UrParameter;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.io.export.ExportFeature;
@@ -34,7 +35,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import org.apache.commons.math.MathException;
-import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
 
 /**
  * This class outputs the protein related export features.
@@ -101,7 +101,11 @@ public class ReporterProteinSection {
             } else if (exportFeature instanceof PsProteinFeature) {
                 identificationFeatures.add(exportFeature);
             } else {
-                throw new IllegalArgumentException("Export feature of type " + exportFeature.getClass() + " not recognized.");
+                throw new IllegalArgumentException(
+                        "Export feature of type "
+                        + exportFeature.getClass()
+                        + " not recognized."
+                );
             }
         }
 
@@ -125,6 +129,7 @@ public class ReporterProteinSection {
      * @param identificationFeaturesGenerator the identification features
      * generator of the project
      * @param sequenceProvider the sequence provider
+     * @param spectrumProvider the spectrum provider
      * @param proteinDetailsProvider the protein details provider
      * @param geneMaps the gene maps
      * @param quantificationFeaturesGenerator the quantification features
@@ -147,17 +152,30 @@ public class ReporterProteinSection {
      * while interacting with a file
      * @throws java.lang.ClassNotFoundException exception thrown whenever an
      * error occurred while deserializing an object
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown
-     * whenever an error occurred while reading an mzML file
      * @throws java.lang.InterruptedException exception thrown whenever a
      * threading error occurred
      * @throws org.apache.commons.math.MathException exception thrown whenever
      * an error occurred while transforming the ratios
      */
-    public void writeSection(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, SequenceProvider sequenceProvider, ProteinDetailsProvider proteinDetailsProvider,
-            GeneMaps geneMaps, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, ReporterSettings reporterSettings,
-            IdentificationParameters identificationParameters, long[] keys, int nSurroundingAas, boolean validatedOnly, boolean decoys, WaitingHandler waitingHandler)
-            throws IOException, IllegalArgumentException, SQLException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException, MathException {
+    public void writeSection(
+            Identification identification, 
+            IdentificationFeaturesGenerator identificationFeaturesGenerator, 
+            SequenceProvider sequenceProvider, 
+            SpectrumProvider spectrumProvider,
+            ProteinDetailsProvider proteinDetailsProvider,
+            GeneMaps geneMaps, 
+            QuantificationFeaturesGenerator quantificationFeaturesGenerator, 
+            ReporterIonQuantification reporterIonQuantification, 
+            ReporterSettings reporterSettings,
+            IdentificationParameters identificationParameters, 
+            long[] keys, 
+            int nSurroundingAas, 
+            boolean validatedOnly, 
+            boolean decoys, 
+            WaitingHandler waitingHandler
+    )
+            throws IOException, IllegalArgumentException, SQLException, 
+            ClassNotFoundException, InterruptedException, MathException {
 
         if (waitingHandler != null) {
             waitingHandler.setSecondaryProgressCounterIndeterminate(true);
@@ -249,9 +267,23 @@ public class ReporterProteinSection {
                     writer.newLine();
                     if (peptideSection != null) {
                         writer.increaseDepth();
-                        peptideSection.writeSection(identification, identificationFeaturesGenerator, sequenceProvider, proteinDetailsProvider, quantificationFeaturesGenerator, reporterIonQuantification, reporterSettings,
-                                identificationParameters, proteinMatch.getPeptideMatchesKeys(), nSurroundingAas,
-                                line + ".", validatedOnly, decoys, null);
+                        peptideSection.writeSection(
+                                identification, 
+                                identificationFeaturesGenerator, 
+                                sequenceProvider,
+                                spectrumProvider,
+                                proteinDetailsProvider, 
+                                quantificationFeaturesGenerator, 
+                                reporterIonQuantification, 
+                                reporterSettings,
+                                identificationParameters, 
+                                proteinMatch.getPeptideMatchesKeys(), 
+                                nSurroundingAas,
+                                line + ".", 
+                                validatedOnly, 
+                                decoys, 
+                                null
+                        );
                         writer.decreseDepth();
                     }
                     line++;
@@ -283,32 +315,44 @@ public class ReporterProteinSection {
      * while interacting with a file
      * @throws java.lang.ClassNotFoundException exception thrown whenever an
      * error occurred while deserializing an object
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown
-     * whenever an error occurred while reading an mzML file
      * @throws java.lang.InterruptedException exception thrown whenever a
      * threading error occurred
      */
-    public static String getFeature(QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, long proteinKey,
-            ReporterProteinFeatures proteinFeatures, String sampleIndex, WaitingHandler waitingHandler) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
+    public static String getFeature(
+            QuantificationFeaturesGenerator quantificationFeaturesGenerator,
+            ReporterIonQuantification reporterIonQuantification,
+            long proteinKey,
+            ReporterProteinFeatures proteinFeatures,
+            String sampleIndex,
+            WaitingHandler waitingHandler
+    ) throws SQLException, IOException, ClassNotFoundException, InterruptedException {
+
         switch (proteinFeatures) {
+
             case raw_ratio:
                 ProteinQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(proteinKey, waitingHandler);
                 return quantificationDetails.getRawRatio(sampleIndex).toString();
+
             case ratio:
                 quantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(proteinKey, waitingHandler);
                 return quantificationDetails.getRatio(sampleIndex, reporterIonQuantification.getNormalizationFactors()).toString();
+
             case raw_unique_ratio:
                 quantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(proteinKey, waitingHandler);
                 return quantificationDetails.getUniqueRawRatio(sampleIndex).toString();
+
             case unique_ratio:
                 quantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(proteinKey, waitingHandler);
                 return quantificationDetails.getUniqueRatio(sampleIndex, reporterIonQuantification.getNormalizationFactors()).toString();
+
             case raw_shared_ratio:
                 quantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(proteinKey, waitingHandler);
                 return quantificationDetails.getSharedRawRatio(sampleIndex).toString();
+
             case shared_ratio:
                 quantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(proteinKey, waitingHandler);
                 return quantificationDetails.getSharedRatio(sampleIndex, reporterIonQuantification.getNormalizationFactors()).toString();
+
             default:
                 return "Not implemented";
         }

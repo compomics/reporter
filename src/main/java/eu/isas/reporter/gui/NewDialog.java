@@ -1,16 +1,15 @@
 package eu.isas.reporter.gui;
 
-import com.compomics.util.FileAndFileFilter;
-import com.compomics.util.Util;
 import com.compomics.util.db.object.ObjectsCache;
 import com.compomics.util.examples.BareBonesBrowserLaunch;
 import com.compomics.util.experiment.biology.ions.impl.ReporterIon;
 import com.compomics.util.experiment.identification.Identification;
-import com.compomics.util.experiment.mass_spectrometry.SpectrumFactory;
 import com.compomics.util.experiment.quantification.Quantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethodFactory;
+import com.compomics.util.gui.file_handling.FileAndFileFilter;
+import com.compomics.util.gui.file_handling.FileChooserUtil;
 import static com.compomics.util.gui.parameters.identification.search.SequenceDbDetailsDialog.lastFolderKey;
 import com.compomics.util.gui.parameters.tools.ProcessingParametersDialog;
 import com.compomics.util.gui.renderers.AlignedListCellRenderer;
@@ -21,7 +20,7 @@ import com.compomics.util.parameters.identification.search.SearchParameters;
 import com.compomics.util.parameters.tools.ProcessingParameters;
 import eu.isas.peptideshaker.PeptideShaker;
 import eu.isas.peptideshaker.preferences.ProjectDetails;
-import eu.isas.peptideshaker.utils.CpsParent;
+import eu.isas.peptideshaker.utils.PsdbParent;
 import eu.isas.reporter.Reporter;
 import eu.isas.reporter.gui.settings.ReporterSettingsDialog;
 import eu.isas.reporter.io.ProjectImporter;
@@ -69,9 +68,9 @@ public class NewDialog extends javax.swing.JDialog {
      */
     private ReporterMethod selectedMethod = null;
     /**
-     * The cps parent used to manage the data.
+     * The psdb parent used to manage the data.
      */
-    private CpsParent cpsParent;
+    private PsdbParent psdbParent;
     /**
      * The mgf files loaded.
      */
@@ -100,10 +99,6 @@ public class NewDialog extends javax.swing.JDialog {
      * The welcome dialog parent, can be null.
      */
     private WelcomeDialog welcomeDialog;
-    /**
-     * The spectrum factory.
-     */
-    private SpectrumFactory spectrumFactory = SpectrumFactory.getInstance();
     /**
      * List of all sample names.
      */
@@ -745,11 +740,11 @@ public class NewDialog extends javax.swing.JDialog {
      */
     private void addIdFilesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addIdFilesButtonActionPerformed
 
-        String cpsFileFilterDescription = "PeptideShaker Database (.psdb)";
+        String psdbFileFilterDescription = "PeptideShaker Database (.psdb)";
         String zipFileFilterDescription = "Zipped PeptideShaker (.zip)";
         String lastSelectedFolderPath = reporterGUI.getLastSelectedFolder().getLastSelectedFolder();
-        FileAndFileFilter selectedFileAndFilter = Util.getUserSelectedFile(this, new String[]{".psdb", ".zip"},
-                new String[]{cpsFileFilterDescription, zipFileFilterDescription}, "Open PeptideShaker Project", lastSelectedFolderPath, null, true, false, false, 0);
+        FileAndFileFilter selectedFileAndFilter = FileChooserUtil.getUserSelectedFile(this, new String[]{".psdb", ".zip"},
+                new String[]{psdbFileFilterDescription, zipFileFilterDescription}, "Open PeptideShaker Project", lastSelectedFolderPath, null, true, false, false, 0);
 
         if (selectedFileAndFilter != null) {
 
@@ -851,18 +846,29 @@ public class NewDialog extends javax.swing.JDialog {
 
                         int cpt = 0;
                         for (File newFile : newFiles) {
-                            progressDialog.setWaitingText("Loading Spectrum Files (" + ++cpt + " of " + newFiles.size() + "). Please Wait...");
+                            progressDialog.setWaitingText(
+                                    "Loading Spectrum Files ("
+                                    + ++cpt
+                                    + " of "
+                                    + newFiles.size()
+                                    + "). Please Wait..."
+                            );
                             mgfFiles.add(newFile);
-                            cpsParent.getProjectDetails().addSpectrumFile(newFile);
+                            psdbParent.getProjectDetails().addSpectrumFile(newFile);
                             spectrumFactory.addSpectra(newFile, progressDialog);
                         }
 
                         progressDialog.setRunFinished();
 
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                         progressDialog.setRunFinished();
                         e.printStackTrace();
-                        JOptionPane.showMessageDialog(NewDialog.this, "An error occurred while reading the mgf file.", "Mgf Error", JOptionPane.WARNING_MESSAGE);
+                        JOptionPane.showMessageDialog(
+                                NewDialog.this,
+                                "An error occurred while reading the mgf file.",
+                                "Mgf Error",
+                                JOptionPane.WARNING_MESSAGE
+                        );
                     }
                     verifySpectrumFiles();
                 }
@@ -876,13 +882,13 @@ public class NewDialog extends javax.swing.JDialog {
      * @param evt
      */
     private void reporterMethodComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reporterMethodComboBoxActionPerformed
-        sampleNames = new HashMap<String, String>();
+        sampleNames = new HashMap<>();
         selectedMethod = methodsFactory.getReporterMethod((String) reporterMethodComboBox.getSelectedItem());
         reagents = selectedMethod.getReagentsSortedByMass();
 
-        if (cpsParent != null) {
+        if (psdbParent != null) {
             // update the reporter settings
-            IdentificationParameters identificationParameters = cpsParent.getIdentificationParameters();
+            IdentificationParameters identificationParameters = psdbParent.getIdentificationParameters();
             ProjectImporter.getDefaultReporterSettings(selectedMethod, identificationParameters, reporterSettings);
         }
 
@@ -935,7 +941,7 @@ public class NewDialog extends javax.swing.JDialog {
             reporterGUI.getLastSelectedFolder().setLastSelectedFolder(lastFolderKey, folder.getAbsolutePath());
 
             fastaTxt.setText(fastaFile.getName());
-            cpsParent.getProjectDetails().setFastaFile(fastaFile);
+            psdbParent.getProjectDetails().setFastaFile(fastaFile);
 
             if (fastaFile.getName().contains(" ")) {
                 JOptionPane.showMessageDialog(this, "Your FASTA file name contains white space and ougth to be renamed.", "File Name Warning", JOptionPane.WARNING_MESSAGE);
@@ -987,7 +993,7 @@ public class NewDialog extends javax.swing.JDialog {
      * @param evt
      */
     private void editQuantPrefsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editQuantPrefsButtonActionPerformed
-        ReporterSettingsDialog reporterSettingsDialog = new ReporterSettingsDialog(this, reporterSettings, cpsParent.getIdentificationParameters().getSearchParameters().getModificationParameters(), getSelectedMethod(), true);
+        ReporterSettingsDialog reporterSettingsDialog = new ReporterSettingsDialog(this, reporterSettings, psdbParent.getIdentificationParameters().getSearchParameters().getModificationParameters(), getSelectedMethod(), true);
         ReporterSettings newSettings = reporterSettingsDialog.getReporterSettings();
         if (!reporterSettingsDialog.isCanceled()) {
             reporterSettings = newSettings;
@@ -1074,7 +1080,7 @@ public class NewDialog extends javax.swing.JDialog {
             // set the user defined reagents order
             displayPreferences.setReagents(reagents);
 
-            reporterGUI.createNewProject(cpsParent, reporterSettings, reporterIonQuantification, processingParameters, displayPreferences);
+            reporterGUI.createNewProject(psdbParent, reporterSettings, reporterIonQuantification, processingParameters, displayPreferences);
             dispose();
         }
     }//GEN-LAST:event_loadButtonActionPerformed
@@ -1230,14 +1236,14 @@ public class NewDialog extends javax.swing.JDialog {
      */
     private boolean verifyFastaFile() {
 
-        String fastaFilePath = cpsParent.getProjectDetails().getFastaFile();
+        String fastaFilePath = psdbParent.getProjectDetails().getFastaFile();
 
         if (fastaFilePath != null) {
             fastaTxt.setText(fastaFilePath);
             return true;
         }
 
-        String errorText = "FASTA file not found or incorrectly loaded:\n" + cpsParent.getProjectDetails().getFastaFile()
+        String errorText = "FASTA file not found or incorrectly loaded:\n" + psdbParent.getProjectDetails().getFastaFile()
                 + "\nPlease locate it manually.";
 
         JOptionPane.showMessageDialog(this,
@@ -1256,9 +1262,9 @@ public class NewDialog extends javax.swing.JDialog {
     private boolean verifySpectrumFiles() {
         String missing = "";
         int nMissing = 0;
-        
-        TreeSet<String> msFiles = new TreeSet<>(cpsParent.getIdentification().getSpectrumIdentification().keySet());
-        
+
+        TreeSet<String> msFiles = new TreeSet<>(psdbParent.getIdentification().getSpectrumIdentification().keySet());
+
         for (String spectrumFileName : msFiles) { // @TODO: check alternative locations as for ps
             boolean found = false;
             for (File spectrumFile : mgfFiles) {
@@ -1333,9 +1339,9 @@ public class NewDialog extends javax.swing.JDialog {
     }
 
     /**
-     * Method used to import a cps file.
+     * Method used to import a psdb file.
      *
-     * @param psFile a cps file
+     * @param psFile a psdb file
      */
     private void importPeptideShakerFile(final File psFile) {
 
@@ -1366,12 +1372,12 @@ public class NewDialog extends javax.swing.JDialog {
             @Override
             public void run() {
 
-                cpsParent = new CpsParent(Reporter.getMatchesFolder());
-                cpsParent.setCpsFile(psFile);
+                psdbParent = new PsdbParent(Reporter.getMatchesFolder());
+                psdbParent.setPsdbFile(psFile);
                 ProjectImporter projectImporter = new ProjectImporter(NewDialog.this);
                 try {
-                    projectImporter.importPeptideShakerProject(cpsParent, mgfFiles, progressDialog);
-                    projectImporter.importReporterProject(cpsParent, progressDialog);
+                    projectImporter.importPeptideShakerProject(psdbParent, mgfFiles, progressDialog);
+                    projectImporter.importReporterProject(psdbParent, progressDialog);
                 } catch (OutOfMemoryError error) {
                     System.out.println("Ran out of memory! (runtime.maxMemory(): " + Runtime.getRuntime().maxMemory() + ")");
                     error.printStackTrace();
@@ -1382,14 +1388,6 @@ public class NewDialog extends javax.swing.JDialog {
                     JOptionPane.showMessageDialog(NewDialog.this,
                             errorText,
                             "Out of Memory", JOptionPane.ERROR_MESSAGE);
-                    return;
-                } catch (EOFException e) {
-                    e.printStackTrace();
-                    String errorText = "An error occurred while reading:\n" + psFile + ".\n\n"
-                            + "The file is corrupted and cannot be opened anymore.";
-                    JOptionPane.showMessageDialog(NewDialog.this,
-                            errorText,
-                            "Incomplete file", JOptionPane.ERROR_MESSAGE);
                     return;
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -1411,7 +1409,7 @@ public class NewDialog extends javax.swing.JDialog {
                 editQuantPrefsButton.setEnabled(true);
                 verifySpectrumFiles();
                 verifyFastaFile();
-                txtIdFileLocation.setText(cpsParent.getCpsFile().getName());
+                txtIdFileLocation.setText(psdbParent.getPsdbFile().getName());
 
                 // load project specific ptms
                 String error = PeptideShaker.loadModifications(getSearchParameters());
@@ -1451,7 +1449,7 @@ public class NewDialog extends javax.swing.JDialog {
      * @return the project details
      */
     public ProjectDetails getProjectDetails() {
-        return cpsParent.getProjectDetails();
+        return psdbParent.getProjectDetails();
     }
 
     /**
@@ -1460,7 +1458,7 @@ public class NewDialog extends javax.swing.JDialog {
      * @return the search parameters
      */
     public SearchParameters getSearchParameters() {
-        return cpsParent.getIdentificationParameters().getSearchParameters();
+        return psdbParent.getIdentificationParameters().getSearchParameters();
     }
 
     /**
@@ -1469,7 +1467,7 @@ public class NewDialog extends javax.swing.JDialog {
      * @return the identification displayed
      */
     public Identification getIdentification() {
-        return cpsParent.getIdentification();
+        return psdbParent.getIdentification();
     }
 
     /**
@@ -1675,7 +1673,7 @@ public class NewDialog extends javax.swing.JDialog {
 
         @Override
         public int getRowCount() {
-            if (selectedMethod == null || cpsParent == null) {
+            if (selectedMethod == null || psdbParent == null) {
                 return 0;
             }
             return reagents.size();
@@ -1712,7 +1710,7 @@ public class NewDialog extends javax.swing.JDialog {
                     ReporterIon reporterIon = selectedMethod.getReporterIon(reagentName);
                     return reporterIon.getName();
                 case 2:
-                    String projectName = cpsParent.getProjectParameters().getProjectUniqueName();
+                    String projectName = psdbParent.getProjectParameters().getProjectUniqueName();
                     if (sampleNames.get(reagentName) == null) {
                         if (projectName != null) {
                             sampleNames.put(reagentName, projectName + " " + reagentName);
@@ -1765,14 +1763,14 @@ public class NewDialog extends javax.swing.JDialog {
     }
 
     /**
-     * Returns the cps parent object providing all informations contained in the
-     * cps file
+     * Returns the psdb parent object providing all information contained in the
+     * psdb file
      *
-     * @return the cps parent object providing all informations contained in the
-     * cps file
+     * @return the psdb parent object providing all information contained in the
+     * psdb file
      */
-    public CpsParent getCpsBean() {
-        return cpsParent;
+    public PsdbParent getPsdbBean() {
+        return psdbParent;
     }
 
     /**

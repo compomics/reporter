@@ -38,7 +38,6 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
 
 /**
  * Normalizes the ratios according to the NormalizationSettings.
@@ -74,8 +73,6 @@ public class Normalizer {
      * while interacting with a file
      * @throws java.lang.ClassNotFoundException exception thrown whenever an
      * error occurred while deserializing an object
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown
-     * whenever an error occurred while reading an mzML file
      * @throws java.lang.InterruptedException exception thrown whenever a
      * threading error occurred
      */
@@ -84,13 +81,13 @@ public class Normalizer {
             QuantificationFeaturesGenerator quantificationFeaturesGenerator, ProcessingParameters processingParameters,
             SearchParameters searchParameters, FastaParameters fastaParameters, PeptideVariantsParameters peptideVariantsPreferences, 
             ExceptionHandler exceptionHandler, WaitingHandler waitingHandler)
-            throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
+            throws SQLException, IOException, ClassNotFoundException, InterruptedException {
 
         HashMap<String, ArrayList<Double>> allRawRatios = new HashMap<>();
         HashMap<String, ArrayList<Double>> seedRawRatios = new HashMap<>();
         for (String sampleIndex : reporterIonQuantification.getSampleIndexes()) {
-            allRawRatios.put(sampleIndex, new ArrayList<Double>());
-            seedRawRatios.put(sampleIndex, new ArrayList<Double>());
+            allRawRatios.put(sampleIndex, new ArrayList<>());
+            seedRawRatios.put(sampleIndex, new ArrayList<>());
         }
 
         PSParameter psParameter = new PSParameter();
@@ -135,7 +132,7 @@ public class Normalizer {
                 for (String reagent : runnable.getAllRawRatios().keySet()) {
                     ArrayList<Double> ratios = allRawRatios.get(reagent);
                     if (ratios == null) {
-                        ratios = new ArrayList<Double>();
+                        ratios = new ArrayList<>();
                         allRawRatios.put(reagent, ratios);
                     }
                     ratios.addAll(runnable.getAllRawRatios().get(reagent));
@@ -211,15 +208,13 @@ public class Normalizer {
      * while interacting with a file
      * @throws java.lang.ClassNotFoundException exception thrown whenever an
      * error occurred while deserializing an object
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown
-     * whenever an error occurred while reading an mzML file
      * @throws java.lang.InterruptedException exception thrown whenever a
      * threading error occurred
      */
     public void setPeptideNormalizationFactors(ReporterIonQuantification reporterIonQuantification, RatioEstimationSettings ratioEstimationSettings, NormalizationSettings normalizationSettings, SequenceMatchingParameters sequenceMatchingParameters,
             Identification identification, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ProcessingParameters processingParameters,
             SearchParameters searchParameters, FastaParameters fastaParameters, PeptideVariantsParameters peptideVariantsPreferences, ExceptionHandler exceptionHandler, WaitingHandler waitingHandler)
-            throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
+            throws SQLException, IOException, ClassNotFoundException, InterruptedException {
 
         HashMap<String, ArrayList<Double>> allRawRatios = new HashMap<>();
         HashMap<String, ArrayList<Double>> seedRawRatios = new HashMap<>();
@@ -346,15 +341,13 @@ public class Normalizer {
      * while interacting with a file
      * @throws java.lang.ClassNotFoundException exception thrown whenever an
      * error occurred while deserializing an object
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown
-     * whenever an error occurred while reading an mzML file
      * @throws java.lang.InterruptedException exception thrown whenever a
      * threading error occurred
      */
     public void setProteinNormalizationFactors(ReporterIonQuantification reporterIonQuantification, RatioEstimationSettings ratioEstimationSettings, NormalizationSettings normalizationSettings,
             Identification identification, Metrics metrics, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ProcessingParameters processingParameters, 
             SearchParameters searchParameters, FastaParameters fastaParameters, PeptideVariantsParameters peptideVariantsPreferences, ExceptionHandler exceptionHandler, WaitingHandler waitingHandler)
-            throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
+            throws SQLException, IOException, ClassNotFoundException, InterruptedException {
 
         Set<String> sampleIndexes = reporterIonQuantification.getSampleIndexes();
         HashMap<String, ArrayList<Double>> allRawRatios = new HashMap<>(sampleIndexes.size());

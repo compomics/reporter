@@ -4,7 +4,6 @@ import com.compomics.util.exceptions.ExceptionHandler;
 import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.matches.SpectrumMatch;
 import com.compomics.util.experiment.identification.peptide_shaker.PSParameter;
-import com.compomics.util.experiment.mass_spectrometry.SpectrumFactory;
 import com.compomics.util.experiment.mass_spectrometry.spectra.Precursor;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.gui.tablemodels.SelfUpdatingTableModel;
@@ -267,11 +266,11 @@ public class PsmTableModel extends SelfUpdatingTableModel {
 
                     if (spectrumMatch.getBestPeptideAssumption() != null) {
 
-                        return Math.abs(spectrumMatch.getBestPeptideAssumption().getDeltaMass(precursor.getMz(), searchParameters.isPrecursorAccuracyTypePpm(), searchParameters.getMinIsotopicCorrection(), searchParameters.getMaxIsotopicCorrection()));
+                        return Math.abs(spectrumMatch.getBestPeptideAssumption().getDeltaMass(precursor.mz, searchParameters.isPrecursorAccuracyTypePpm(), searchParameters.getMinIsotopicCorrection(), searchParameters.getMaxIsotopicCorrection()));
 
                     } else if (spectrumMatch.getBestTagAssumption() != null) {
 
-                        return Math.abs(spectrumMatch.getBestTagAssumption().getDeltaMass(precursor.getMz(), searchParameters.isPrecursorAccuracyTypePpm(), searchParameters.getMinIsotopicCorrection(), searchParameters.getMaxIsotopicCorrection()));
+                        return Math.abs(spectrumMatch.getBestTagAssumption().getDeltaMass(precursor.mz, searchParameters.isPrecursorAccuracyTypePpm(), searchParameters.getMinIsotopicCorrection(), searchParameters.getMaxIsotopicCorrection()));
 
                     } else {
 

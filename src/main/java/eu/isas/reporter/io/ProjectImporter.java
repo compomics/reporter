@@ -1,6 +1,5 @@
 package eu.isas.reporter.io;
 
-import com.compomics.util.Util;
 import com.compomics.util.db.object.ObjectsDB;
 import com.compomics.util.experiment.biology.ions.impl.PeptideFragmentIon;
 import com.compomics.util.experiment.biology.ions.impl.ReporterIon;
@@ -11,12 +10,13 @@ import com.compomics.util.experiment.quantification.Quantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethodFactory;
+import com.compomics.util.io.IoUtil;
 import com.compomics.util.math.clustering.settings.KMeansClusteringSettings;
 import com.compomics.util.parameters.identification.IdentificationParameters;
 import com.compomics.util.parameters.identification.search.ModificationParameters;
 import com.compomics.util.parameters.identification.search.SearchParameters;
 import com.compomics.util.waiting.WaitingHandler;
-import eu.isas.peptideshaker.utils.CpsParent;
+import eu.isas.peptideshaker.utils.PsdbParent;
 import eu.isas.reporter.Reporter;
 import eu.isas.reporter.calculation.clustering.keys.PeptideClusterClassKey;
 import eu.isas.reporter.calculation.clustering.keys.ProteinClusterClassKey;
@@ -38,7 +38,7 @@ import java.util.TreeSet;
 import org.apache.commons.compress.archivers.ArchiveException;
 
 /**
- * Imports a project from a cps file.
+ * Imports a project from a psdb file.
  *
  * @author Marc Vaudel
  * @author Harald Barsnes
@@ -89,7 +89,7 @@ public class ProjectImporter {
     /**
      * Imports the identification results from a PeptideShaker file.
      *
-     * @param cpsParent the cps parent object where the cps file is loaded
+     * @param psdbParent the psdb parent object where the psdb file is loaded
      * @param mgfFiles the arraylist to add the detected mgf files to
      * @param waitingHandler a waiting handler to display the progress to the
      * user and allow interrupting the process
@@ -105,13 +105,13 @@ public class ProjectImporter {
      * @throws org.apache.commons.compress.archivers.ArchiveException exception
      * thrown whenever an error occurs while untaring the file
      */
-    public void importPeptideShakerProject(CpsParent cpsParent, ArrayList<File> mgfFiles, WaitingHandler waitingHandler) throws IOException, ClassNotFoundException, SQLException, InterruptedException, ArchiveException {
+    public void importPeptideShakerProject(PsdbParent psdbParent, ArrayList<File> mgfFiles, WaitingHandler waitingHandler) throws IOException, ClassNotFoundException, SQLException, InterruptedException, ArchiveException {
 
-        File cpsFile = cpsParent.getCpsFile();
-        if (Util.getExtension(cpsFile).equalsIgnoreCase("zip")) {
-            cpsParent.loadCpsFromZipFile(cpsFile, Reporter.getMatchesFolder(), waitingHandler);
+        File psdbFile = psdbParent.getPsdbFile();
+        if (IoUtil.getExtension(psdbFile).equalsIgnoreCase("zip")) {
+            psdbParent.loadPsdbFromZipFile(psdbFile, Reporter.getMatchesFolder(), waitingHandler);
         } else {
-            cpsParent.loadCpsFile(Reporter.getMatchesFolder(), waitingHandler);
+            psdbParent.loadPsdbFile(Reporter.getMatchesFolder(), waitingHandler, false);
         }
 
         if (waitingHandler.isRunCanceled()) {
@@ -124,12 +124,12 @@ public class ProjectImporter {
         // load fasta file
         if (owner != null) { // GUI
             try {
-                cpsParent.loadFastaFile(waitingHandler);
+                psdbParent.loadFastaFile(waitingHandler);
             } catch (Exception e) {
                 // Ignore, can be set from the GUI
             }
         } else { // CLI
-            if (cpsParent.loadFastaFile(waitingHandler) == null) {
+            if (psdbParent.loadFastaFile(waitingHandler) == null) {
                 throw new IllegalArgumentException("The FASTA file was not found. Please provide its location in the command line parameters.");
             }
         }
@@ -140,7 +140,7 @@ public class ProjectImporter {
         }
 
         // load the spectrum files
-        Set<String> spectrumFiles = cpsParent.getProjectDetails().getSpectrumFileNames();
+        Set<String> spectrumFiles = psdbParent.getProjectDetails().getSpectrumFileNames();
         waitingHandler.setWaitingText("Loading Spectrum Files. Please Wait...");
         waitingHandler.setPrimaryProgressCounterIndeterminate(true);
         int cpt = 0, total = spectrumFiles.size();
@@ -151,7 +151,7 @@ public class ProjectImporter {
 
             if (owner != null) { // GUI
                 try {
-                    cpsParent.loadSpectrumFile(spectrumFileName, mgfFiles, waitingHandler);
+                    psdbParent.loadSpectrumFile(spectrumFileName, mgfFiles, waitingHandler);
                 } catch (Exception e) {
                     // Ignore, can be set from the GUI
                 }
@@ -162,7 +162,7 @@ public class ProjectImporter {
                 }
 
             } else { // CLI
-                if (!cpsParent.loadSpectrumFile(spectrumFileName, mgfFiles, waitingHandler)) {
+                if (!psdbParent.loadSpectrumFile(spectrumFileName, mgfFiles, waitingHandler)) {
                     throw new IllegalArgumentException(spectrumFileName + " was not found. Please provide its location in the command line parameters.");
                 }
             }
@@ -179,7 +179,7 @@ public class ProjectImporter {
     /**
      * Loads the Reporter project.
      *
-     * @param cpsParent the cps parent object where the cps file is loaded
+     * @param psdbParent the psdb parent object where the psdb file is loaded
      * @param waitingHandler a waiting handler to display the progress to the
      * user and allow interrupting the process
      *
@@ -192,11 +192,11 @@ public class ProjectImporter {
      * @throws InterruptedException exception thrown if a threading error occurs
      * while interacting with the database
      */
-    public void importReporterProject(CpsParent cpsParent, WaitingHandler waitingHandler) throws SQLException, IOException, ClassNotFoundException, InterruptedException {
+    public void importReporterProject(PsdbParent psdbParent, WaitingHandler waitingHandler) throws SQLException, IOException, ClassNotFoundException, InterruptedException {
 
         // load reporter settings
-        Identification identification = cpsParent.getIdentification();
-        IdentificationParameters identificationParameters = cpsParent.getIdentificationParameters();
+        Identification identification = psdbParent.getIdentification();
+        IdentificationParameters identificationParameters = psdbParent.getIdentificationParameters();
         ObjectsDB objectsDB = identification.getObjectsDB();
 
         // @TODO: is an updated version of the below code still needed?

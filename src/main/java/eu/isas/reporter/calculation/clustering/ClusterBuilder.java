@@ -37,7 +37,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
-import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
 
 /**
  * Methods for building clusters based on a reporter project.
@@ -127,12 +126,11 @@ public class ClusterBuilder {
      * @throws IOException if an IOException occurs
      * @throws ClassNotFoundException if a ClassNotFoundException occurs
      * @throws InterruptedException if an InterruptedException occurs
-     * @throws MzMLUnmarshallerException if an MzMLUnmarshallerException occurs
      */
     public KMeansClustering clusterProfiles(Identification identification, IdentificationParameters identificationParameters, SequenceProvider sequenceProvider, Metrics metrics,
             ReporterIonQuantification reporterIonQuantification, QuantificationFeaturesGenerator quantificationFeaturesGenerator,
             DisplayPreferences displayPreferences, boolean loadData, WaitingHandler waitingHandler)
-            throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
+            throws SQLException, IOException, ClassNotFoundException, InterruptedException {
 
         waitingHandler.setSecondaryProgressCounterIndeterminate(true);
 
@@ -184,13 +182,11 @@ public class ClusterBuilder {
      * @throws ClassNotFoundException if a exception occurs while deserializing
      * an object
      * @throws InterruptedException if an threading exception occurs
-     * @throws MzMLUnmarshallerException if an exception occurs while reading an
-     * mzML file
      */
     public void loadData(Identification identification, IdentificationParameters identificationParameters, SequenceProvider sequenceProvider, Metrics metrics,
             DisplayPreferences displayPreferences, ReporterIonQuantification reporterIonQuantification,
             QuantificationFeaturesGenerator quantificationFeaturesGenerator, WaitingHandler waitingHandler)
-            throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
+            throws SQLException, IOException, ClassNotFoundException, InterruptedException {
 
         ClusteringSettings clusteringSettings = displayPreferences.getClusteringSettings();
 
@@ -217,15 +213,15 @@ public class ClusterBuilder {
         waitingHandler.increasePrimaryProgressCounter();
 
         PSParameter psParameter = new PSParameter();
-        ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
+        ArrayList<UrParameter> parameters = new ArrayList<>(1);
         parameters.add(psParameter);
 
-        ArrayList<String> sampleIndexes = new ArrayList<String>(reporterIonQuantification.getSampleIndexes());
+        ArrayList<String> sampleIndexes = new ArrayList<>(reporterIonQuantification.getSampleIndexes());
         Collections.sort(sampleIndexes);
 
         Integer clusteringIndex = 0;
-        clusterKeys = new ArrayList<String>(metrics.getnValidatedProteins());
-        ArrayList<double[]> ratiosList = new ArrayList<double[]>(metrics.getnValidatedProteins());
+        clusterKeys = new ArrayList<>(metrics.getnValidatedProteins());
+        ArrayList<double[]> ratiosList = new ArrayList<>(metrics.getnValidatedProteins());
 
         proteinClusters = new HashMap<Long, ArrayList<String>>(nProteinClusters);
         proteinKeysIndexes = new HashMap<Long, Integer>(metrics.getnValidatedProteins());

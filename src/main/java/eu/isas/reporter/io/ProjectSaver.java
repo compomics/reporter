@@ -2,7 +2,7 @@ package eu.isas.reporter.io;
 
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.waiting.WaitingHandler;
-import eu.isas.peptideshaker.utils.CpsParent;
+import eu.isas.peptideshaker.utils.PsdbParent;
 import eu.isas.reporter.preferences.DisplayPreferences;
 import eu.isas.reporter.settings.ReporterSettings;
 import java.io.IOException;
@@ -10,7 +10,7 @@ import java.sql.SQLException;
 import org.apache.commons.compress.archivers.ArchiveException;
 
 /**
- * This class can be used to save the Reporter projects in a cps file.
+ * This class can be used to save the Reporter projects in a psdb file.
  *
  * @author Marc Vaudel
  * @author Harald Barsnes
@@ -28,7 +28,7 @@ public class ProjectSaver {
      * @param reporterSettings the reporter settings
      * @param reporterIonQuantification the reporter ion quantification
      * @param displayPreferences the display preferences
-     * @param cpsParent the cps parent
+     * @param psdbParent the psdb parent
      * @param waitingHandler waiting handler displaying feedback to the user.
      * can be null.
      *
@@ -44,11 +44,16 @@ public class ProjectSaver {
      * @throws ArchiveException thrown of ArchiveException occurs exception
      * thrown whenever an error occurred while taring the project
      */
-    public static void saveProject(ReporterSettings reporterSettings, ReporterIonQuantification reporterIonQuantification, DisplayPreferences displayPreferences, CpsParent cpsParent,
-            WaitingHandler waitingHandler) throws IOException, SQLException, ClassNotFoundException, InterruptedException, ArchiveException {
+    public static void saveProject(
+            ReporterSettings reporterSettings, 
+            ReporterIonQuantification reporterIonQuantification, 
+            DisplayPreferences displayPreferences, 
+            PsdbParent psdbParent,
+            WaitingHandler waitingHandler
+    ) throws IOException, SQLException, ClassNotFoundException, InterruptedException, ArchiveException {
 
         // @TODO: is an updated version of the below code still needed?
-//        ObjectsDB objectsDB = cpsParent.getIdentification().getIdentificationDB().getObjectsDB();
+//        ObjectsDB objectsDB = psdbParent.getIdentification().getIdentificationDB().getObjectsDB();
 //        if (!objectsDB.hasTable(REPORTER_SETTINGS_TABLE_NAME)) {
 //            objectsDB.addTable(REPORTER_SETTINGS_TABLE_NAME);
 //        }
@@ -68,6 +73,6 @@ public class ProjectSaver {
 //            objectsDB.insertObject(REPORTER_SETTINGS_TABLE_NAME, DisplayPreferences.class.getName(), displayPreferences, false);
 //        }
 
-        cpsParent.saveProject(waitingHandler, false);
+        psdbParent.saveProject(waitingHandler, false);
     }
 }

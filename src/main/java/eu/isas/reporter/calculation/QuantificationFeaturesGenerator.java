@@ -20,7 +20,6 @@ import eu.isas.reporter.quantificationdetails.ProteinPtmQuantificationDetails;
 import eu.isas.reporter.quantificationdetails.SpectrumQuantificationDetails;
 import java.io.IOException;
 import java.sql.SQLException;
-import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
 
 /**
  * The quantification features generator provides various quantification
@@ -122,11 +121,9 @@ public class QuantificationFeaturesGenerator {
      * @throws IOException thrown if an IOException
      * @throws ClassNotFoundException thrown if a ClassNotFoundException
      * @throws InterruptedException thrown if an InterruptedException
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException thrown if an
-     * MzMLUnmarshallerException occurs
      */
     public ProteinPtmQuantificationDetails getPTMQuantificationDetails(String ptmName, long matchKey, int site, WaitingHandler waitingHandler)
-            throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
+            throws SQLException, IOException, ClassNotFoundException, InterruptedException {
         ProteinPtmQuantificationDetails result = quantificationFeaturesCache.getPtmQuantificationDetails(ptmName, matchKey, site);
         if (result == null) {
             result = Reporter.estimatePTMQuantificationDetails(identification, this, reporterSettings.getRatioEstimationSettings(), reporterIonQuantification, searchParameters, sequenceMatchingParameters, ptmName, matchKey, site, waitingHandler);
