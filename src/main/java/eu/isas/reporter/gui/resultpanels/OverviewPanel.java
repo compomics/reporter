@@ -50,7 +50,6 @@ import no.uib.jsparklines.renderers.JSparklinesBarChartTableCellRenderer;
 import no.uib.jsparklines.renderers.JSparklinesHeatMapTableCellRenderer;
 import no.uib.jsparklines.renderers.JSparklinesIntegerColorTableCellRenderer;
 import no.uib.jsparklines.renderers.JSparklinesIntegerIconTableCellRenderer;
-import no.uib.jsparklines.renderers.JSparklinesMultiIntervalChartTableCellRenderer;
 import no.uib.jsparklines.renderers.util.GradientColorCoding;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartMouseEvent;
@@ -646,14 +645,38 @@ public class OverviewPanel extends javax.swing.JPanel {
     private void updateProteinTable() {
 
         if (proteinTable.getModel() instanceof ProteinTableModel && ((ProteinTableModel) proteinTable.getModel()).isInstantiated()) {
-            ((ProteinTableModel) proteinTable.getModel()).updateDataModel(identification, identificationFeaturesGenerator, reporterGUI.getProteinDetailsProvider(), reporterGUI.getSequenceProvider(), geneMaps,
-                    reporterGUI.getReporterIonQuantification(), reporterGUI.getQuantificationFeaturesGenerator(),
-                    reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getDisplayParameters(), proteinKeys);
+
+            ((ProteinTableModel) proteinTable.getModel()).updateDataModel(
+                    identification,
+                    identificationFeaturesGenerator,
+                    reporterGUI.getProteinDetailsProvider(),
+                    reporterGUI.getSequenceProvider(),
+                    reporterGUI.getSpectrumProvider(),
+                    geneMaps,
+                    reporterGUI.getReporterIonQuantification(),
+                    reporterGUI.getQuantificationFeaturesGenerator(),
+                    reporterGUI.getDisplayFeaturesGenerator(),
+                    reporterGUI.getDisplayParameters(), proteinKeys
+            );
+
         } else {
-            ProteinTableModel proteinTableModel = new ProteinTableModel(identification, identificationFeaturesGenerator, reporterGUI.getProteinDetailsProvider(), reporterGUI.getSequenceProvider(), geneMaps,
-                    reporterGUI.getReporterIonQuantification(), reporterGUI.getQuantificationFeaturesGenerator(),
-                    reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getDisplayParameters(), reporterGUI.getExceptionHandler(), proteinKeys);
+
+            ProteinTableModel proteinTableModel = new ProteinTableModel(
+                    identification,
+                    identificationFeaturesGenerator,
+                    reporterGUI.getProteinDetailsProvider(),
+                    reporterGUI.getSequenceProvider(),
+                    geneMaps,
+                    reporterGUI.getReporterIonQuantification(),
+                    reporterGUI.getQuantificationFeaturesGenerator(),
+                    reporterGUI.getDisplayFeaturesGenerator(),
+                    reporterGUI.getDisplayParameters(),
+                    reporterGUI.getExceptionHandler(),
+                    proteinKeys
+            );
+
             proteinTable.setModel(proteinTableModel);
+
         }
 
         setProteinTableProperties();
@@ -671,7 +694,7 @@ public class OverviewPanel extends javax.swing.JPanel {
                     reporterGUI.getReporterIonQuantification(), reporterGUI.getQuantificationFeaturesGenerator(),
                     reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getDisplayParameters(), reporterGUI.getIdentificationParameters(), null, peptideKeys, false);;
         } else {
-            PeptideTableModel peptideTableModel = new PeptideTableModel(identification, identificationFeaturesGenerator,
+            PeptideTableModel peptideTableModel = new PeptideTableModel(identification, reporterGUI.getSpectrumProvider(), identificationFeaturesGenerator,
                     reporterGUI.getReporterIonQuantification(), reporterGUI.getQuantificationFeaturesGenerator(),
                     reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getDisplayParameters(), reporterGUI.getIdentificationParameters(), null,
                     peptideKeys, false, reporterGUI.getExceptionHandler());
@@ -688,15 +711,36 @@ public class OverviewPanel extends javax.swing.JPanel {
      * Updates the PSM table.
      */
     private void updatePsmTable() {
+
         if (psmTable.getModel() instanceof PsmTableModel && ((PsmTableModel) psmTable.getModel()).isInstantiated()) {
-            ((PsmTableModel) psmTable.getModel()).updateDataModel(identification, reporterGUI.getDisplayFeaturesGenerator(),
-                    reporterGUI.getDisplayParameters(), reporterGUI.getIdentificationParameters(), reporterGUI.getReporterIonQuantification(),
-                    reporterGUI.getQuantificationFeaturesGenerator(), psmKeys, false);
+
+            ((PsmTableModel) psmTable.getModel()).updateDataModel(
+                    identification,
+                    reporterGUI.getSpectrumProvider(),
+                    reporterGUI.getDisplayFeaturesGenerator(),
+                    reporterGUI.getDisplayParameters(),
+                    reporterGUI.getIdentificationParameters(),
+                    reporterGUI.getReporterIonQuantification(),
+                    reporterGUI.getQuantificationFeaturesGenerator(),
+                    psmKeys,
+                    false
+            );
+
         } else {
-            PsmTableModel psmTableModel = new PsmTableModel(identification, reporterGUI.getDisplayFeaturesGenerator(),
-                    reporterGUI.getDisplayParameters(), reporterGUI.getIdentificationParameters(),
-                    reporterGUI.getReporterIonQuantification(), reporterGUI.getQuantificationFeaturesGenerator(),
-                    psmKeys, false, reporterGUI.getExceptionHandler());
+
+            PsmTableModel psmTableModel = new PsmTableModel(
+                    identification,
+                    reporterGUI.getSpectrumProvider(),
+                    reporterGUI.getDisplayFeaturesGenerator(),
+                    reporterGUI.getDisplayParameters(),
+                    reporterGUI.getIdentificationParameters(),
+                    reporterGUI.getReporterIonQuantification(),
+                    reporterGUI.getQuantificationFeaturesGenerator(),
+                    psmKeys,
+                    false,
+                    reporterGUI.getExceptionHandler()
+            );
+
             psmTable.setModel(psmTableModel);
         }
 

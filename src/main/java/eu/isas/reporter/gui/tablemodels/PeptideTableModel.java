@@ -5,6 +5,7 @@ import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.features.IdentificationFeaturesGenerator;
 import com.compomics.util.experiment.identification.matches.PeptideMatch;
 import com.compomics.util.experiment.identification.peptide_shaker.PSParameter;
+import com.compomics.util.experiment.mass_spectrometry.SpectrumProvider;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.gui.tablemodels.SelfUpdatingTableModel;
 import com.compomics.util.math.BasicMathFunctions;
@@ -35,6 +36,10 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
      * The identification.
      */
     private Identification identification;
+    /**
+     * The spectrum provider.
+     */
+    private SpectrumProvider spectrumProvider;
     /**
      * The identification features generator.
      */
@@ -90,6 +95,7 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
      * Constructor which sets a new table.
      *
      * @param identification the identification object containing the matches
+     * @param spectrumProvider the spectrum provider
      * @param identificationFeaturesGenerator the identification features
      * generator
      * @param reporterIonQuantification the reporter quantification information
@@ -104,11 +110,12 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
      * displayed instead of the confidence
      * @param exceptionHandler handler for the exceptions
      */
-    public PeptideTableModel(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator,
+    public PeptideTableModel(Identification identification, SpectrumProvider spectrumProvider, IdentificationFeaturesGenerator identificationFeaturesGenerator,
             ReporterIonQuantification reporterIonQuantification, QuantificationFeaturesGenerator quantificationFeaturesGenerator,
             DisplayFeaturesGenerator displayFeaturesGenerator, DisplayPreferences displayPreferences, IdentificationParameters identificationParameters, String proteinAccession,
             long[] peptideKeys, boolean displayScores, ExceptionHandler exceptionHandler) {
         this.identification = identification;
+        this.spectrumProvider = spectrumProvider;
         this.identificationFeaturesGenerator = identificationFeaturesGenerator;
         this.reporterIonQuantification = reporterIonQuantification;
         this.quantificationFeaturesGenerator = quantificationFeaturesGenerator;
@@ -239,7 +246,7 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
             switch (column) {
                 case 1:
                     ArrayList<Double> data = new ArrayList<>();
-                    PeptideQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideMatch, null);
+                    PeptideQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(spectrumProvider, peptideMatch, null);
                     ArrayList<String> reagentsOrder = displayPreferences.getReagents();
                     for (String tempReagent : reagentsOrder) {
                         int sampleIndex = sampleIndexes.indexOf(tempReagent);

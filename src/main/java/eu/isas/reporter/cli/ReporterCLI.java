@@ -11,6 +11,7 @@ import com.compomics.util.experiment.biology.taxonomy.SpeciesFactory;
 import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.validation.MatchValidationLevel;
 import com.compomics.util.experiment.io.temp.TempFilesManager;
+import com.compomics.util.experiment.mass_spectrometry.SpectrumProvider;
 import com.compomics.util.experiment.normalization.NormalizationFactors;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
@@ -41,6 +42,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.Field;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -80,9 +82,9 @@ public class ReporterCLI extends PsdbParent implements Callable {
      */
     private UtilitiesUserParameters utilitiesUserParameters;
     /**
-     * The mgf files loaded.
+     * The spectrum files loaded.
      */
-    private ArrayList<File> mgfFiles = new ArrayList<File>();
+    private ArrayList<File> spectrumFiles = new ArrayList<File>();
     /**
      * Handler for the exceptions.
      */
@@ -330,6 +332,22 @@ public class ReporterCLI extends PsdbParent implements Callable {
     @Override
     public Object call() throws IOException, ClassNotFoundException {
 
+        // turn off illegal access log messages
+        try {
+            Class loggerClass = Class.forName("jdk.internal.module.IllegalAccessLogger");
+            Field loggerField = loggerClass.getDeclaredField("logger");
+            Class unsafeClass = Class.forName("sun.misc.Unsafe");
+            Field unsafeField = unsafeClass.getDeclaredField("theUnsafe");
+            unsafeField.setAccessible(true);
+            Object unsafe = unsafeField.get(null);
+            Long offset = (Long) unsafeClass.getMethod("staticFieldOffset", Field.class).invoke(unsafe, loggerField);
+            unsafeClass.getMethod("putObjectVolatile", Object.class, long.class, Object.class) //
+                    .invoke(unsafe, loggerClass, offset, null);
+        } catch (Throwable ex) {
+            // ignore, i.e. simply show the warnings...
+            //ex.printStackTrace();
+        }
+
         // Parse command line
         reporterCLIInputBean = new ReporterCLIInputBean(line);
 
@@ -386,7 +404,7 @@ public class ReporterCLI extends PsdbParent implements Callable {
         psdbFile = reporterCLIInputBean.getPeptideShakerFile();
         setDbFolder(Reporter.getMatchesFolder());
         try {
-            projectImporter.importPeptideShakerProject(this, mgfFiles, waitingHandler);
+            projectImporter.importPeptideShakerProject(this, spectrumFiles, waitingHandler);
             projectImporter.importReporterProject(this, waitingHandler);
         } catch (OutOfMemoryError error) {
             System.out.println("Ran out of memory! (runtime.maxMemory(): " + Runtime.getRuntime().maxMemory() + ")");
@@ -412,6 +430,7 @@ public class ReporterCLI extends PsdbParent implements Callable {
             return 1;
         }
         DisplayPreferences displayPreferences = projectImporter.getDisplayPreferences();
+        SpectrumProvider spectrumProvider = projectImporter.getSpectrumProvider();
 
         // Load project specific PTMs
         String error = PeptideShaker.loadModifications(getIdentificationParameters().getSearchParameters());
@@ -503,20 +522,20 @@ public class ReporterCLI extends PsdbParent implements Callable {
                 if (!normalizationFactors.hasPsmNormalisationFactors()) {
                     normalizer.setPsmNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(),
                             reporterSettings.getNormalizationSettings(), getIdentificationParameters().getSequenceMatchingParameters(),
-                            getIdentification(), quantificationFeaturesGenerator, processingParameters,
+                            getIdentification(), spectrumProvider, quantificationFeaturesGenerator, processingParameters,
                             getIdentificationParameters().getSearchParameters(), getIdentificationParameters().getFastaParameters(),
                             getIdentificationParameters().getPeptideVariantsParameters(), exceptionHandler, waitingHandler);
                 }
                 if (!normalizationFactors.hasPeptideNormalisationFactors()) {
                     normalizer.setPeptideNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(),
                             reporterSettings.getNormalizationSettings(), getIdentificationParameters().getSequenceMatchingParameters(),
-                            getIdentification(), quantificationFeaturesGenerator, processingParameters,
+                            getIdentification(), spectrumProvider, quantificationFeaturesGenerator, processingParameters,
                             getIdentificationParameters().getSearchParameters(), getIdentificationParameters().getFastaParameters(),
                             getIdentificationParameters().getPeptideVariantsParameters(), exceptionHandler, waitingHandler);
                 }
                 if (!normalizationFactors.hasProteinNormalisationFactors()) {
                     normalizer.setProteinNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(),
-                            reporterSettings.getNormalizationSettings(), getIdentification(), getMetrics(), quantificationFeaturesGenerator,
+                            reporterSettings.getNormalizationSettings(), getIdentification(), spectrumProvider, getMetrics(), quantificationFeaturesGenerator,
                             processingParameters, getIdentificationParameters().getSearchParameters(), getIdentificationParameters().getFastaParameters(),
                             getIdentificationParameters().getPeptideVariantsParameters(), exceptionHandler, waitingHandler);
                 }

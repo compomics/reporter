@@ -297,7 +297,18 @@ public class ReporterPsmSection {
                                 } else {
                                     first = false;
                                 }
-                                writer.write(getFeature(identification, quantificationFeaturesGenerator, reporterIonQuantification, reporterSettings, spectrumMatch.getKey(), psmFeature, sampleIndex), reporterStyle);
+                                writer.write(
+                                        getFeature(
+                                                identification,
+                                                spectrumProvider,
+                                                quantificationFeaturesGenerator,
+                                                reporterIonQuantification,
+                                                reporterSettings,
+                                                spectrumMatch.getKey(),
+                                                psmFeature,
+                                                sampleIndex),
+                                        reporterStyle
+                                );
                             }
                         } else {
                             if (!first) {
@@ -305,7 +316,18 @@ public class ReporterPsmSection {
                             } else {
                                 first = false;
                             }
-                            writer.write(getFeature(identification, quantificationFeaturesGenerator, reporterIonQuantification, reporterSettings, spectrumMatch.getKey(), psmFeature, ""), reporterStyle);
+                            writer.write(
+                                    getFeature(
+                                            identification,
+                                            spectrumProvider,
+                                            quantificationFeaturesGenerator,
+                                            reporterIonQuantification,
+                                            reporterSettings,
+                                            spectrumMatch.getKey(),
+                                            psmFeature,
+                                            ""),
+                                    reporterStyle
+                            );
                         }
                     }
                     writer.newLine();
@@ -350,6 +372,7 @@ public class ReporterPsmSection {
      * channel.
      *
      * @param identification the identification of the project
+     * @param spectrumProvider the spectrum provider
      * @param quantificationFeaturesGenerator the quantification features
      * generator
      * @param reporterIonQuantification the reporter ion quantification object
@@ -373,30 +396,37 @@ public class ReporterPsmSection {
      * threading error occurred
      */
     public static String getFeature(
-            Identification identification, 
-            QuantificationFeaturesGenerator quantificationFeaturesGenerator, 
-            ReporterIonQuantification reporterIonQuantification, 
-            ReporterSettings reporterSettings, 
-            long matchKey, 
-            ReporterPsmFeatures psmFeatures, 
+            Identification identification,
+            SpectrumProvider spectrumProvider,
+            QuantificationFeaturesGenerator quantificationFeaturesGenerator,
+            ReporterIonQuantification reporterIonQuantification,
+            ReporterSettings reporterSettings,
+            long matchKey,
+            ReporterPsmFeatures psmFeatures,
             String sampleIndex
     ) throws SQLException, IOException, ClassNotFoundException, InterruptedException {
 
         SpectrumMatch spectrumMatch = identification.getSpectrumMatch(matchKey);
-        String spectrumKey = spectrumMatch.getSpectrumKey();
+        long spectrumKey = spectrumMatch.getKey();
 
         switch (psmFeatures) {
 
             case raw_ratio:
-                PsmQuantificationDetails psmDetails = quantificationFeaturesGenerator.getPSMQuantificationDetails(matchKey);
+                PsmQuantificationDetails psmDetails = quantificationFeaturesGenerator.getPSMQuantificationDetails(spectrumProvider, matchKey);
                 return psmDetails.getRawRatio(sampleIndex).toString();
 
             case ratio:
-                psmDetails = quantificationFeaturesGenerator.getPSMQuantificationDetails(matchKey);
+                psmDetails = quantificationFeaturesGenerator.getPSMQuantificationDetails(spectrumProvider, matchKey);
                 return psmDetails.getRatio(sampleIndex, reporterIonQuantification.getNormalizationFactors()).toString();
 
             case reporter_intensity:
-                SpectrumQuantificationDetails spectrumDetails = quantificationFeaturesGenerator.getSpectrumQuantificationDetails(reporterIonQuantification, reporterSettings.getReporterIonSelectionSettings(), spectrumKey);
+                SpectrumQuantificationDetails spectrumDetails
+                        = quantificationFeaturesGenerator.getSpectrumQuantificationDetails(
+                                spectrumProvider,
+                                reporterIonQuantification,
+                                reporterSettings.getReporterIonSelectionSettings(),
+                                spectrumKey
+                        );
                 IonMatch ionMatch = spectrumDetails.getRepoterMatch(sampleIndex);
                 if (ionMatch == null) {
                     return "";
@@ -404,7 +434,13 @@ public class ReporterPsmSection {
                 return ionMatch.peakIntensity + "";
 
             case reporter_mz:
-                spectrumDetails = quantificationFeaturesGenerator.getSpectrumQuantificationDetails(reporterIonQuantification, reporterSettings.getReporterIonSelectionSettings(), spectrumKey);
+                spectrumDetails
+                        = quantificationFeaturesGenerator.getSpectrumQuantificationDetails(
+                                spectrumProvider,
+                                reporterIonQuantification,
+                                reporterSettings.getReporterIonSelectionSettings(),
+                                spectrumKey
+                        );
                 ionMatch = spectrumDetails.getRepoterMatch(sampleIndex);
                 if (ionMatch == null) {
                     return "";
@@ -412,7 +448,13 @@ public class ReporterPsmSection {
                 return ionMatch.peakMz + "";
 
             case deisotoped_intensity:
-                spectrumDetails = quantificationFeaturesGenerator.getSpectrumQuantificationDetails(reporterIonQuantification, reporterSettings.getReporterIonSelectionSettings(), spectrumKey);
+                spectrumDetails
+                        = quantificationFeaturesGenerator.getSpectrumQuantificationDetails(
+                                spectrumProvider,
+                                reporterIonQuantification,
+                                reporterSettings.getReporterIonSelectionSettings(),
+                                spectrumKey
+                        );
                 return spectrumDetails.getDeisotopedIntensity(sampleIndex).toString();
 
             default:

@@ -252,7 +252,17 @@ public class ReporterProteinSection {
                                 } else {
                                     first = false;
                                 }
-                                writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, proteinKey, tempProteinFeatures, sampleIndex, waitingHandler), reporterStyle);
+                                writer.write(
+                                        getFeature(
+                                                spectrumProvider,
+                                                quantificationFeaturesGenerator, 
+                                                reporterIonQuantification, 
+                                                proteinKey, 
+                                                tempProteinFeatures, 
+                                                sampleIndex, 
+                                                waitingHandler
+                                        ),
+                                        reporterStyle);
                             }
                         } else {
                             if (!first) {
@@ -260,7 +270,17 @@ public class ReporterProteinSection {
                             } else {
                                 first = false;
                             }
-                            writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, proteinKey, tempProteinFeatures, "", waitingHandler), reporterStyle);
+                            writer.write(
+                                    getFeature(
+                                            spectrumProvider,
+                                            quantificationFeaturesGenerator, 
+                                            reporterIonQuantification, 
+                                            proteinKey, 
+                                            tempProteinFeatures, 
+                                            "", 
+                                            waitingHandler
+                                    ), 
+                                    reporterStyle);
                         }
                     }
 
@@ -296,6 +316,7 @@ public class ReporterProteinSection {
      * Returns the report component corresponding to a feature at a given
      * channel.
      *
+     * @param spectrumProvider the spectrum provider
      * @param quantificationFeaturesGenerator the quantification features
      * generator
      * @param reporterIonQuantification the reporter ion quantification object
@@ -319,6 +340,7 @@ public class ReporterProteinSection {
      * threading error occurred
      */
     public static String getFeature(
+            SpectrumProvider spectrumProvider,
             QuantificationFeaturesGenerator quantificationFeaturesGenerator,
             ReporterIonQuantification reporterIonQuantification,
             long proteinKey,
@@ -330,27 +352,27 @@ public class ReporterProteinSection {
         switch (proteinFeatures) {
 
             case raw_ratio:
-                ProteinQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(proteinKey, waitingHandler);
+                ProteinQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(spectrumProvider, proteinKey, waitingHandler);
                 return quantificationDetails.getRawRatio(sampleIndex).toString();
 
             case ratio:
-                quantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(proteinKey, waitingHandler);
+                quantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(spectrumProvider, proteinKey, waitingHandler);
                 return quantificationDetails.getRatio(sampleIndex, reporterIonQuantification.getNormalizationFactors()).toString();
 
             case raw_unique_ratio:
-                quantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(proteinKey, waitingHandler);
+                quantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(spectrumProvider, proteinKey, waitingHandler);
                 return quantificationDetails.getUniqueRawRatio(sampleIndex).toString();
 
             case unique_ratio:
-                quantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(proteinKey, waitingHandler);
+                quantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(spectrumProvider, proteinKey, waitingHandler);
                 return quantificationDetails.getUniqueRatio(sampleIndex, reporterIonQuantification.getNormalizationFactors()).toString();
 
             case raw_shared_ratio:
-                quantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(proteinKey, waitingHandler);
+                quantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(spectrumProvider, proteinKey, waitingHandler);
                 return quantificationDetails.getSharedRawRatio(sampleIndex).toString();
 
             case shared_ratio:
-                quantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(proteinKey, waitingHandler);
+                quantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(spectrumProvider, proteinKey, waitingHandler);
                 return quantificationDetails.getSharedRatio(sampleIndex, reporterIonQuantification.getNormalizationFactors()).toString();
 
             default:

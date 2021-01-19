@@ -13,6 +13,7 @@ import com.compomics.util.experiment.identification.peptide_shaker.Metrics;
 import com.compomics.util.experiment.identification.peptide_shaker.PSParameter;
 import com.compomics.util.experiment.identification.spectrum_assumptions.PeptideAssumption;
 import com.compomics.util.experiment.io.biology.protein.FastaParameters;
+import com.compomics.util.experiment.mass_spectrometry.SpectrumProvider;
 import com.compomics.util.experiment.normalization.NormalizationFactors;
 import com.compomics.util.experiment.personalization.UrParameter;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
@@ -57,6 +58,7 @@ public class Normalizer {
      * @param sequenceMatchingParameters the peptide to protein sequence
      * matching preferences
      * @param identification the identification
+     * @param spectrumProvider the spectrum provider
      * @param quantificationFeaturesGenerator the quantification features
      * generator
      * @param processingParameters the processing preferences
@@ -76,12 +78,21 @@ public class Normalizer {
      * @throws java.lang.InterruptedException exception thrown whenever a
      * threading error occurred
      */
-    public void setPsmNormalizationFactors(ReporterIonQuantification reporterIonQuantification, RatioEstimationSettings ratioEstimationSettings,
-            NormalizationSettings normalizationSettings, SequenceMatchingParameters sequenceMatchingParameters, Identification identification,
-            QuantificationFeaturesGenerator quantificationFeaturesGenerator, ProcessingParameters processingParameters,
-            SearchParameters searchParameters, FastaParameters fastaParameters, PeptideVariantsParameters peptideVariantsPreferences, 
-            ExceptionHandler exceptionHandler, WaitingHandler waitingHandler)
-            throws SQLException, IOException, ClassNotFoundException, InterruptedException {
+    public void setPsmNormalizationFactors(
+            ReporterIonQuantification reporterIonQuantification, 
+            RatioEstimationSettings ratioEstimationSettings,
+            NormalizationSettings normalizationSettings, 
+            SequenceMatchingParameters sequenceMatchingParameters, 
+            Identification identification,
+            SpectrumProvider spectrumProvider,
+            QuantificationFeaturesGenerator quantificationFeaturesGenerator, 
+            ProcessingParameters processingParameters,
+            SearchParameters searchParameters, 
+            FastaParameters fastaParameters, 
+            PeptideVariantsParameters peptideVariantsPreferences, 
+            ExceptionHandler exceptionHandler, 
+            WaitingHandler waitingHandler
+    ) throws SQLException, IOException, ClassNotFoundException, InterruptedException {
 
         HashMap<String, ArrayList<Double>> allRawRatios = new HashMap<>();
         HashMap<String, ArrayList<Double>> seedRawRatios = new HashMap<>();
@@ -115,7 +126,7 @@ public class Normalizer {
 
             for (int i = 1; i <= nThreads && waitingHandler != null && !waitingHandler.isRunCanceled(); i++) {
                 PsmNormalizerRunnable runnable = new PsmNormalizerRunnable(
-                        reporterIonQuantification, quantificationFeaturesGenerator, identification, spectrumMatchesIterator, seeds,
+                        reporterIonQuantification, quantificationFeaturesGenerator, identification, spectrumProvider, spectrumMatchesIterator, seeds,
                         exclusion, ratioEstimationSettings, sequenceMatchingParameters, waitingHandler, exceptionHandler);
                 pool.submit(runnable);
                 runnables.add(runnable);
@@ -193,6 +204,7 @@ public class Normalizer {
      * @param sequenceMatchingParameters the peptide to protein sequence
      * matching preferences
      * @param identification the identification
+     * @param spectrumProvider the spectrum provider
      * @param quantificationFeaturesGenerator the quantification features
      * generator
      * @param processingParameters the processing preferences
@@ -211,10 +223,21 @@ public class Normalizer {
      * @throws java.lang.InterruptedException exception thrown whenever a
      * threading error occurred
      */
-    public void setPeptideNormalizationFactors(ReporterIonQuantification reporterIonQuantification, RatioEstimationSettings ratioEstimationSettings, NormalizationSettings normalizationSettings, SequenceMatchingParameters sequenceMatchingParameters,
-            Identification identification, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ProcessingParameters processingParameters,
-            SearchParameters searchParameters, FastaParameters fastaParameters, PeptideVariantsParameters peptideVariantsPreferences, ExceptionHandler exceptionHandler, WaitingHandler waitingHandler)
-            throws SQLException, IOException, ClassNotFoundException, InterruptedException {
+    public void setPeptideNormalizationFactors(
+            ReporterIonQuantification reporterIonQuantification, 
+            RatioEstimationSettings ratioEstimationSettings, 
+            NormalizationSettings normalizationSettings, 
+            SequenceMatchingParameters sequenceMatchingParameters,
+            Identification identification, 
+            SpectrumProvider spectrumProvider,
+            QuantificationFeaturesGenerator quantificationFeaturesGenerator, 
+            ProcessingParameters processingParameters,
+            SearchParameters searchParameters, 
+            FastaParameters fastaParameters, 
+            PeptideVariantsParameters peptideVariantsPreferences, 
+            ExceptionHandler exceptionHandler, 
+            WaitingHandler waitingHandler
+    ) throws SQLException, IOException, ClassNotFoundException, InterruptedException {
 
         HashMap<String, ArrayList<Double>> allRawRatios = new HashMap<>();
         HashMap<String, ArrayList<Double>> seedRawRatios = new HashMap<>();
@@ -248,7 +271,7 @@ public class Normalizer {
 
             for (int i = 1; i <= nThreads && waitingHandler != null && !waitingHandler.isRunCanceled(); i++) {
                 PeptideNormalizerRunnable runnable = new PeptideNormalizerRunnable(
-                        reporterIonQuantification, quantificationFeaturesGenerator, identification, peptideMatchesIterator,
+                        reporterIonQuantification, quantificationFeaturesGenerator, identification, spectrumProvider, peptideMatchesIterator,
                         seeds, exclusion, ratioEstimationSettings, sequenceMatchingParameters, waitingHandler, exceptionHandler);
                 pool.submit(runnable);
                 runnables.add(runnable);
@@ -324,6 +347,7 @@ public class Normalizer {
      * @param ratioEstimationSettings the ratio estimation settings
      * @param normalizationSettings the normalization settings
      * @param identification the identification
+     * @param spectrumProvider the spectrum provider
      * @param metrics the identification metrics
      * @param quantificationFeaturesGenerator the quantification features
      * generator
@@ -344,10 +368,21 @@ public class Normalizer {
      * @throws java.lang.InterruptedException exception thrown whenever a
      * threading error occurred
      */
-    public void setProteinNormalizationFactors(ReporterIonQuantification reporterIonQuantification, RatioEstimationSettings ratioEstimationSettings, NormalizationSettings normalizationSettings,
-            Identification identification, Metrics metrics, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ProcessingParameters processingParameters, 
-            SearchParameters searchParameters, FastaParameters fastaParameters, PeptideVariantsParameters peptideVariantsPreferences, ExceptionHandler exceptionHandler, WaitingHandler waitingHandler)
-            throws SQLException, IOException, ClassNotFoundException, InterruptedException {
+    public void setProteinNormalizationFactors(
+            ReporterIonQuantification reporterIonQuantification, 
+            RatioEstimationSettings ratioEstimationSettings, 
+            NormalizationSettings normalizationSettings,
+            Identification identification, 
+            SpectrumProvider spectrumProvider,
+            Metrics metrics, 
+            QuantificationFeaturesGenerator quantificationFeaturesGenerator, 
+            ProcessingParameters processingParameters, 
+            SearchParameters searchParameters, 
+            FastaParameters fastaParameters, 
+            PeptideVariantsParameters peptideVariantsPreferences, 
+            ExceptionHandler exceptionHandler, 
+            WaitingHandler waitingHandler
+    ) throws SQLException, IOException, ClassNotFoundException, InterruptedException {
 
         Set<String> sampleIndexes = reporterIonQuantification.getSampleIndexes();
         HashMap<String, ArrayList<Double>> allRawRatios = new HashMap<>(sampleIndexes.size());
@@ -382,8 +417,8 @@ public class Normalizer {
 
             for (int i = 1; i <= nThreads && waitingHandler != null && !waitingHandler.isRunCanceled(); i++) {
                 ProteinNormalizerRunnable runnable = new ProteinNormalizerRunnable(
-                        reporterIonQuantification, quantificationFeaturesGenerator, identification, proteinMatchesIterator,
-                        seeds, exclusion, ratioEstimationSettings, waitingHandler, exceptionHandler);
+                        reporterIonQuantification, quantificationFeaturesGenerator, identification, spectrumProvider, 
+                        proteinMatchesIterator, seeds, exclusion, ratioEstimationSettings, waitingHandler, exceptionHandler);
                 pool.submit(runnable);
                 runnables.add(runnable);
             }
@@ -506,6 +541,10 @@ public class Normalizer {
          */
         private Identification identification;
         /**
+         * The spectrum provider.
+         */
+        private SpectrumProvider spectrumProvider;
+        /**
          * The quantification features generator.
          */
         private QuantificationFeaturesGenerator quantificationFeaturesGenerator;
@@ -562,6 +601,7 @@ public class Normalizer {
          * @param quantificationFeaturesGenerator the quantification features
          * generator
          * @param identification the identification object
+         * @param spectrumProvider the spectrum provider
          * @param proteinMatchesIterator the iterator of the matches
          * @param seeds the seed proteins
          * @param exclusion the exclusion proteins
@@ -569,13 +609,24 @@ public class Normalizer {
          * @param waitingHandler a waiting handler
          * @param exceptionHandler an exception handler
          */
-        public ProteinNormalizerRunnable(ReporterIonQuantification reporterIonQuantification, QuantificationFeaturesGenerator quantificationFeaturesGenerator,
-                Identification identification, ProteinMatchesIterator proteinMatchesIterator, Collection<String> seeds, Collection<String> exclusion, 
-                RatioEstimationSettings ratioEstimationSettings, WaitingHandler waitingHandler, ExceptionHandler exceptionHandler) {
+        public ProteinNormalizerRunnable(
+                ReporterIonQuantification reporterIonQuantification, 
+                QuantificationFeaturesGenerator quantificationFeaturesGenerator,
+                Identification identification, 
+                SpectrumProvider spectrumProvider,
+                ProteinMatchesIterator proteinMatchesIterator, 
+                Collection<String> seeds, 
+                Collection<String> exclusion, 
+                RatioEstimationSettings ratioEstimationSettings, 
+                WaitingHandler waitingHandler, 
+                ExceptionHandler exceptionHandler
+        ) {
+            
             this.reporterIonQuantification = reporterIonQuantification;
             this.quantificationFeaturesGenerator = quantificationFeaturesGenerator;
             this.proteinMatchesIterator = proteinMatchesIterator;
             this.identification = identification;
+            this.spectrumProvider = spectrumProvider;
             this.seeds = seeds;
             this.exclusion = exclusion;
             this.ratioEstimationSettings = ratioEstimationSettings;
@@ -601,7 +652,7 @@ public class Normalizer {
 
                             if (psParameter.getMatchValidationLevel().getIndex() >= ratioEstimationSettings.getProteinValidationLevel().getIndex()) {
 
-                                ProteinQuantificationDetails matchQuantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(proteinMatchKey, waitingHandler);
+                                ProteinQuantificationDetails matchQuantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(spectrumProvider, proteinMatchKey, waitingHandler);
 
                                 for (String sampleIndex : reporterIonQuantification.getSampleIndexes()) {
                                     Double ratio = matchQuantificationDetails.getRawRatio(sampleIndex);
@@ -749,6 +800,10 @@ public class Normalizer {
          */
         private Identification identification;
         /**
+         * The spectrum provider.
+         */
+        private SpectrumProvider spectrumProvider;
+        /**
          * The quantification features generator.
          */
         private QuantificationFeaturesGenerator quantificationFeaturesGenerator;
@@ -793,6 +848,7 @@ public class Normalizer {
          * @param quantificationFeaturesGenerator the quantification features
          * generator
          * @param identification the identification object
+         * @param spectrumProvider the spectrum provider
          * @param peptideMatchesIterator the iterator of the peptide matches
          * @param seeds the seed proteins
          * @param exclusion the exclusion proteins
@@ -801,13 +857,25 @@ public class Normalizer {
          * @param waitingHandler a waiting handler
          * @param exceptionHandler an exception handler
          */
-        public PeptideNormalizerRunnable(ReporterIonQuantification reporterIonQuantification, QuantificationFeaturesGenerator quantificationFeaturesGenerator,
-                Identification identification, PeptideMatchesIterator peptideMatchesIterator, Collection<String> seeds, Collection<String> exclusion,
-                RatioEstimationSettings ratioEstimationSettings, SequenceMatchingParameters sequenceMatchingParameters, WaitingHandler waitingHandler, ExceptionHandler exceptionHandler) {
+        public PeptideNormalizerRunnable(
+                ReporterIonQuantification reporterIonQuantification, 
+                QuantificationFeaturesGenerator quantificationFeaturesGenerator,
+                Identification identification, 
+                SpectrumProvider spectrumProvider,
+                PeptideMatchesIterator peptideMatchesIterator, 
+                Collection<String> seeds, 
+                Collection<String> exclusion,
+                RatioEstimationSettings ratioEstimationSettings, 
+                SequenceMatchingParameters sequenceMatchingParameters, 
+                WaitingHandler waitingHandler, 
+                ExceptionHandler exceptionHandler
+        ) {
+            
             this.reporterIonQuantification = reporterIonQuantification;
             this.quantificationFeaturesGenerator = quantificationFeaturesGenerator;
             this.peptideMatchesIterator = peptideMatchesIterator;
             this.identification = identification;
+            this.spectrumProvider = spectrumProvider;
             this.seeds = seeds;
             this.exclusion = exclusion;
             this.sequenceMatchingParameters = sequenceMatchingParameters;
@@ -837,7 +905,7 @@ public class Normalizer {
 
                             if (psParameter.getMatchValidationLevel().getIndex() >= ratioEstimationSettings.getPeptideValidationLevel().getIndex()) {
 
-                                PeptideQuantificationDetails matchQuantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideMatch, waitingHandler);
+                                PeptideQuantificationDetails matchQuantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(spectrumProvider, peptideMatch, waitingHandler);
 
                                 for (String sampleIndex : reporterIonQuantification.getSampleIndexes()) {
                                     Double ratio = matchQuantificationDetails.getRawRatio(sampleIndex);
@@ -915,6 +983,10 @@ public class Normalizer {
          */
         private Identification identification;
         /**
+         * The spectrum provider.
+         */
+        private SpectrumProvider spectrumProvider;
+        /**
          * The quantification features generator.
          */
         private QuantificationFeaturesGenerator quantificationFeaturesGenerator;
@@ -959,6 +1031,7 @@ public class Normalizer {
          * @param quantificationFeaturesGenerator the quantification features
          * generator
          * @param identification the identification object
+         * @param spectrumProvider the spectrum provider
          * @param spectrumMatchesIterator the iterator of the matches
          * @param seeds the seed proteins
          * @param exclusion the exclusion proteins
@@ -967,13 +1040,25 @@ public class Normalizer {
          * @param waitingHandler a waiting handler
          * @param exceptionHandler an exception handler
          */
-        public PsmNormalizerRunnable(ReporterIonQuantification reporterIonQuantification, QuantificationFeaturesGenerator quantificationFeaturesGenerator,
-                Identification identification, SpectrumMatchesIterator spectrumMatchesIterator, Collection<String> seeds, Collection<String> exclusion, RatioEstimationSettings ratioEstimationSettings,
-                SequenceMatchingParameters sequenceMatchingParameters, WaitingHandler waitingHandler, ExceptionHandler exceptionHandler) {
+        public PsmNormalizerRunnable(
+                ReporterIonQuantification reporterIonQuantification, 
+                QuantificationFeaturesGenerator quantificationFeaturesGenerator,
+                Identification identification,
+                SpectrumProvider spectrumProvider,
+                SpectrumMatchesIterator spectrumMatchesIterator, 
+                Collection<String> seeds, 
+                Collection<String> exclusion, 
+                RatioEstimationSettings ratioEstimationSettings,
+                SequenceMatchingParameters sequenceMatchingParameters, 
+                WaitingHandler waitingHandler, 
+                ExceptionHandler exceptionHandler
+        ) {
+            
             this.reporterIonQuantification = reporterIonQuantification;
             this.quantificationFeaturesGenerator = quantificationFeaturesGenerator;
             this.spectrumMatchesIterator = spectrumMatchesIterator;
             this.identification = identification;
+            this.spectrumProvider = spectrumProvider;
             this.seeds = seeds;
             this.exclusion = exclusion;
             this.sequenceMatchingParameters = sequenceMatchingParameters;
@@ -1003,12 +1088,11 @@ public class Normalizer {
 
                             if (exclusion == null || !isContaminant(exclusion, parentProteins)) {
 
-                                String spectrumKey = spectrumMatch.getSpectrumKey();
                                 psParameter = (PSParameter) identification.getSpectrumMatch(spectrumMatch.getKey()).getUrParam(psParameter);
 
                                 if (psParameter.getMatchValidationLevel().getIndex() >= ratioEstimationSettings.getPsmValidationLevel().getIndex()) {
 
-                                    PsmQuantificationDetails matchQuantificationDetails = quantificationFeaturesGenerator.getPSMQuantificationDetails(spectrumMatch.getKey());
+                                    PsmQuantificationDetails matchQuantificationDetails = quantificationFeaturesGenerator.getPSMQuantificationDetails(spectrumProvider, spectrumMatch.getKey());
 
                                     for (String sampleIndex : reporterIonQuantification.getSampleIndexes()) {
                                         Double ratio = matchQuantificationDetails.getRawRatio(sampleIndex);

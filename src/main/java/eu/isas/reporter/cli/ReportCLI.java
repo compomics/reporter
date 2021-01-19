@@ -57,9 +57,9 @@ public class ReportCLI extends PsdbParent {
      */
     private UtilitiesUserParameters utilitiesUserParameters;
     /**
-     * The mgf files loaded.
+     * The spectrum files loaded.
      */
-    private ArrayList<File> mgfFiles = new ArrayList<>();
+    private ArrayList<File> spectrumfFiles = new ArrayList<>();
 
     /**
      * Construct a new ReportCLI runnable from a ReportCLI Bean. When
@@ -99,7 +99,7 @@ public class ReportCLI extends PsdbParent {
         ProjectImporter projectImporter = new ProjectImporter();
         File selectedFile = reportCLIInputBean.getPsdbFile();
         try {
-            projectImporter.importPeptideShakerProject(this, mgfFiles, waitingHandler);
+            projectImporter.importPeptideShakerProject(this, spectrumfFiles, waitingHandler);
             projectImporter.importReporterProject(this, waitingHandler);
         } catch (OutOfMemoryError error) {
             System.out.println("Ran out of memory! (runtime.maxMemory(): " + Runtime.getRuntime().maxMemory() + ")");

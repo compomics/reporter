@@ -13,6 +13,7 @@ import com.compomics.util.experiment.identification.peptide_shaker.Metrics;
 import com.compomics.util.experiment.identification.peptide_shaker.PSParameter;
 import com.compomics.util.experiment.identification.utils.PeptideUtils;
 import com.compomics.util.experiment.io.biology.protein.SequenceProvider;
+import com.compomics.util.experiment.mass_spectrometry.SpectrumProvider;
 import com.compomics.util.experiment.personalization.UrParameter;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.math.BasicMathFunctions;
@@ -112,6 +113,7 @@ public class ClusterBuilder {
      * @param identification the identification
      * @param identificationParameters the identification parameters
      * @param sequenceProvider the sequence provider
+     * @param spectrumProvider the spectrum provider
      * @param metrics the PeptideShaker metrics
      * @param reporterIonQuantification the reporter ion quantification
      * @param quantificationFeaturesGenerator the quantification features
@@ -127,34 +129,65 @@ public class ClusterBuilder {
      * @throws ClassNotFoundException if a ClassNotFoundException occurs
      * @throws InterruptedException if an InterruptedException occurs
      */
-    public KMeansClustering clusterProfiles(Identification identification, IdentificationParameters identificationParameters, SequenceProvider sequenceProvider, Metrics metrics,
-            ReporterIonQuantification reporterIonQuantification, QuantificationFeaturesGenerator quantificationFeaturesGenerator,
-            DisplayPreferences displayPreferences, boolean loadData, WaitingHandler waitingHandler)
-            throws SQLException, IOException, ClassNotFoundException, InterruptedException {
+    public KMeansClustering clusterProfiles(
+            Identification identification,
+            IdentificationParameters identificationParameters,
+            SequenceProvider sequenceProvider,
+            SpectrumProvider spectrumProvider,
+            Metrics metrics,
+            ReporterIonQuantification reporterIonQuantification,
+            QuantificationFeaturesGenerator quantificationFeaturesGenerator,
+            DisplayPreferences displayPreferences,
+            boolean loadData,
+            WaitingHandler waitingHandler
+    ) throws SQLException, IOException, ClassNotFoundException, InterruptedException {
 
         waitingHandler.setSecondaryProgressCounterIndeterminate(true);
 
         // Load data if needed
         if (loadData) {
+
             waitingHandler.setWaitingText("Loading data (1/2). Please Wait...");
-            loadData(identification, identificationParameters, sequenceProvider, metrics, displayPreferences, reporterIonQuantification, quantificationFeaturesGenerator, waitingHandler);
+
+            loadData(
+                    identification,
+                    identificationParameters,
+                    sequenceProvider,
+                    spectrumProvider,
+                    metrics,
+                    displayPreferences,
+                    reporterIonQuantification,
+                    quantificationFeaturesGenerator,
+                    waitingHandler
+            );
+
             waitingHandler.setSecondaryProgressCounterIndeterminate(true);
             waitingHandler.setWaitingText("Clustering Data (2/2). Please Wait...");
+
         } else {
+
             waitingHandler.setWaitingText("Clustering Data. Please Wait...");
+
         }
 
         // Perform the clustering
         KMeansClustering kMeansClutering = null;
 
         if (ratios.length > 0) {
+
             String[] keysArray = clusterKeys.toArray(new String[clusterKeys.size()]);
             int numClusters = displayPreferences.getClusteringSettings().getKMeansClusteringSettings().getnClusters();
+
             if (ratios.length < numClusters) {
                 displayPreferences.getClusteringSettings().getKMeansClusteringSettings().setnClusters(ratios.length);
             }
 
-            kMeansClutering = new KMeansClustering(ratios, keysArray, displayPreferences.getClusteringSettings().getKMeansClusteringSettings().getnClusters());
+            kMeansClutering = new KMeansClustering(
+                    ratios,
+                    keysArray,
+                    displayPreferences.getClusteringSettings().getKMeansClusteringSettings().getnClusters()
+            );
+
             kMeansClutering.kMeanCluster(waitingHandler);
         }
 
@@ -168,6 +201,7 @@ public class ClusterBuilder {
      * @param identification the identification
      * @param identificationParameters the identification parameters
      * @param sequenceProvider the sequence provider
+     * @param spectrumProvider the spectrum provider
      * @param metrics the PeptideShaker metrics
      * @param displayPreferences the display preferences
      * @param reporterIonQuantification the reporter ion quantification
@@ -183,13 +217,19 @@ public class ClusterBuilder {
      * an object
      * @throws InterruptedException if an threading exception occurs
      */
-    public void loadData(Identification identification, IdentificationParameters identificationParameters, SequenceProvider sequenceProvider, Metrics metrics,
-            DisplayPreferences displayPreferences, ReporterIonQuantification reporterIonQuantification,
-            QuantificationFeaturesGenerator quantificationFeaturesGenerator, WaitingHandler waitingHandler)
-            throws SQLException, IOException, ClassNotFoundException, InterruptedException {
+    public void loadData(
+            Identification identification,
+            IdentificationParameters identificationParameters,
+            SequenceProvider sequenceProvider,
+            SpectrumProvider spectrumProvider,
+            Metrics metrics,
+            DisplayPreferences displayPreferences,
+            ReporterIonQuantification reporterIonQuantification,
+            QuantificationFeaturesGenerator quantificationFeaturesGenerator,
+            WaitingHandler waitingHandler
+    ) throws SQLException, IOException, ClassNotFoundException, InterruptedException {
 
         ClusteringSettings clusteringSettings = displayPreferences.getClusteringSettings();
-
         HashSet<Long> proteinKeys = identification.getProteinIdentification();
         HashSet<Long> peptideKeys = identification.getPeptideIdentification();
 
@@ -197,12 +237,15 @@ public class ClusterBuilder {
         int nPeptideClusters = clusteringSettings.getSelectedPeptideClasses().size();
         int nPsmClusters = clusteringSettings.getSelectedPsmClasses().size();
         int progressTotal = 1;
+
         if (nProteinClusters > 0) {
             progressTotal += proteinKeys.size();
         }
+
         if (nPeptideClusters > 0) {
             progressTotal += peptideKeys.size();
         }
+
         if (nPsmClusters > 0) {
             progressTotal += identification.getSpectrumIdentificationSize();
         }
@@ -231,11 +274,13 @@ public class ClusterBuilder {
 
             int selectedRatioType = displayPreferences.getProteinRatioType();
             ProteinRatioType proteinRatioType = ProteinRatioType.getProteinRatioType(selectedRatioType);
+            
             if (proteinRatioType == null) {
                 throw new IllegalArgumentException("Ratio type of index " + selectedRatioType + " not recognized.");
             }
 
             ProteinMatchesIterator proteinMatchesIterator;
+            
             if (quantificationFeaturesGenerator.getQuantificationFeaturesCache().memoryCheck()) {
                 proteinMatchesIterator = identification.getProteinMatchesIterator(metrics.getProteinKeys(), waitingHandler);
             } else {
@@ -251,60 +296,98 @@ public class ClusterBuilder {
                 psParameter = (PSParameter) identification.getProteinMatch(proteinKey).getUrParam(psParameter);
 
                 if (psParameter.getMatchValidationLevel().isValidated()) {
+                    
                     boolean found = false;
+                    
                     for (String keyName : clusteringSettings.getSelectedProteinClasses()) {
+                        
                         boolean inCluster = true;
                         ProteinClusterClassKey proteinClusterClassKey = clusteringSettings.getProteinClassKey(keyName);
+                        
                         if (proteinClusterClassKey.isStarred() && !psParameter.getStarred()) {
                             inCluster = false;
                         }
+                        
                         if (inCluster) {
+                            
                             ArrayList<Long> tempClusterKeys = filteredProteinKeys.get(keyName);
+                            
                             if (tempClusterKeys == null) {
                                 tempClusterKeys = new ArrayList<Long>();
                                 filteredProteinKeys.put(keyName, tempClusterKeys);
                             }
+                            
                             tempClusterKeys.add(proteinKey);
                             ArrayList<String> clusters = proteinClusters.get(proteinKey);
+                            
                             if (clusters == null) {
                                 clusters = new ArrayList<String>(nProteinClusters);
                                 proteinClusters.put(proteinKey, clusters);
                             }
+                            
                             clusters.add(keyName);
                             found = true;
+                        
                         }
                     }
+                    
                     if (found) {
-                        ProteinQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(proteinKey, waitingHandler);
+                        
+                        ProteinQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(spectrumProvider, proteinKey, waitingHandler);
                         double[] proteinRatios = new double[sampleIndexes.size()];
 
                         for (int sampleIndex = 0; sampleIndex < sampleIndexes.size(); sampleIndex++) {
+
                             Double ratio;
+
                             switch (proteinRatioType) {
+
                                 case all:
-                                    ratio = quantificationDetails.getRatio(sampleIndexes.get(sampleIndex), reporterIonQuantification.getNormalizationFactors());
+                                    ratio = quantificationDetails.getRatio(
+                                            sampleIndexes.get(sampleIndex),
+                                            reporterIonQuantification.getNormalizationFactors()
+                                    );
                                     break;
+
                                 case shared:
-                                    ratio = quantificationDetails.getSharedRatio(sampleIndexes.get(sampleIndex), reporterIonQuantification.getNormalizationFactors());
+                                    ratio = quantificationDetails.getSharedRatio(
+                                            sampleIndexes.get(sampleIndex),
+                                            reporterIonQuantification.getNormalizationFactors()
+                                    );
                                     break;
+
                                 case unique:
-                                    ratio = quantificationDetails.getUniqueRatio(sampleIndexes.get(sampleIndex), reporterIonQuantification.getNormalizationFactors());
+                                    ratio = quantificationDetails.getUniqueRatio(
+                                            sampleIndexes.get(sampleIndex),
+                                            reporterIonQuantification.getNormalizationFactors()
+                                    );
                                     break;
+
                                 default:
-                                    throw new IllegalArgumentException("Ratio type " + proteinRatioType + " not supported.");
+                                    throw new IllegalArgumentException(
+                                            "Ratio type "
+                                            + proteinRatioType
+                                            + " not supported."
+                                    );
                             }
 
                             if (ratio != null) {
+
                                 if (ratio != 0) {
+
                                     double logRatio = BasicMathFunctions.log(ratio, 2);
                                     proteinRatios[sampleIndex] = logRatio;
+
                                     if (maxRatio == null || logRatio > maxRatio) {
                                         maxRatio = logRatio;
                                     }
+
                                     if (minRatio == null || logRatio < minRatio) {
                                         minRatio = logRatio;
                                     }
+
                                 }
+
                             }
                         }
 
@@ -314,6 +397,7 @@ public class ClusterBuilder {
                         clusteringIndex++;
                     }
                 }
+
                 waitingHandler.increasePrimaryProgressCounter();
             }
         }
@@ -325,7 +409,6 @@ public class ClusterBuilder {
         if (nPeptideClusters > 0) {
 
             PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(waitingHandler);
-
             PeptideMatch peptideMatch;
 
             while ((peptideMatch = peptideMatchesIterator.next()) != null) {
@@ -333,86 +416,125 @@ public class ClusterBuilder {
                 Peptide peptide = peptideMatch.getPeptide();
                 long peptideKey = peptideMatch.getKey();
                 String peptideKeyAsString = Long.toString(peptideKey);
-                
+
                 psParameter = (PSParameter) identification.getPeptideMatch(peptideKey).getUrParam(psParameter);
 
                 if (psParameter.getMatchValidationLevel().isValidated()) {
+
                     boolean found = false;
+
                     for (String keyName : clusteringSettings.getSelectedPeptideClasses()) {
+
                         boolean inCluster = true;
                         PeptideClusterClassKey peptideClusterClassKey = clusteringSettings.getPeptideClassKey(keyName);
+
                         if (peptideClusterClassKey.isStarred() && !psParameter.getStarred()) {
                             inCluster = false;
                         }
+
                         if (inCluster && peptideClusterClassKey.isNotModified()) {
+
                             if (peptide.getNVariableModifications() > 0) {
                                 inCluster = false;
                                 break;
+
                             }
                         }
+
                         if (inCluster && peptideClusterClassKey.getPossiblePtms() != null) {
+
                             boolean possiblePtms = false;
+
                             if (peptide.getNVariableModifications() > 0) {
+
                                 for (ModificationMatch modificationMatch : peptide.getVariableModifications()) {
+
                                     if (peptideClusterClassKey.getPossiblePtmsAsSet().contains(modificationMatch.getModification())) {
                                         possiblePtms = true;
                                         break;
                                     }
+
                                 }
+
                             }
+
                             if (!possiblePtms) {
                                 inCluster = false;
                             }
                         }
+
                         if (inCluster && peptideClusterClassKey.getForbiddenPtms() != null) {
+
                             boolean forbiddenPtms = false;
+
                             if (peptide.getNVariableModifications() > 0) {
+
                                 for (ModificationMatch modificationMatch : peptide.getVariableModifications()) {
+
                                     if (peptideClusterClassKey.getForbiddenPtmsAsSet().contains(modificationMatch.getModification())) {
                                         forbiddenPtms = true;
                                         break;
                                     }
+
                                 }
+
                             }
+
                             if (forbiddenPtms) {
                                 inCluster = false;
                             }
                         }
+
                         if (inCluster && peptideClusterClassKey.isNTerm() && PeptideUtils.isNterm(peptide, sequenceProvider)) {
                             inCluster = false;
                         }
+
                         if (inCluster && peptideClusterClassKey.isCTerm() && PeptideUtils.isCterm(peptide, sequenceProvider)) {
                             inCluster = false;
                         }
+
                         if (inCluster) {
+
                             ArrayList<Long> tempClusterKeys = filteredPeptideKeys.get(keyName);
+
                             if (tempClusterKeys == null) {
                                 tempClusterKeys = new ArrayList<Long>();
                                 filteredPeptideKeys.put(keyName, tempClusterKeys);
                             }
+
                             tempClusterKeys.add(peptideKey);
                             ArrayList<String> clusters = peptideClusters.get(peptideKey);
+
                             if (clusters == null) {
                                 clusters = new ArrayList<String>(nPeptideClusters);
                                 peptideClusters.put(peptideKey, clusters);
                             }
+
                             clusters.add(keyName);
                             found = true;
                         }
                     }
+
                     if (found) {
-                        PeptideQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideMatch, waitingHandler);
+
+                        PeptideQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(spectrumProvider, peptideMatch, waitingHandler);
                         double[] peptideRatios = new double[sampleIndexes.size()];
 
                         for (int sampleIndex = 0; sampleIndex < sampleIndexes.size(); sampleIndex++) {
+
                             Double ratio = quantificationDetails.getRatio(sampleIndexes.get(sampleIndex), reporterIonQuantification.getNormalizationFactors());
+
                             if (ratio != null) {
+
                                 if (ratio != 0) {
+
                                     double logRatio = BasicMathFunctions.log(ratio, 2);
                                     peptideRatios[sampleIndex] = logRatio;
+
                                     if (maxRatio == null || logRatio > maxRatio) {
                                         maxRatio = logRatio;
                                     }
+
                                     if (minRatio == null || logRatio < minRatio) {
                                         minRatio = logRatio;
                                     }
@@ -426,6 +548,7 @@ public class ClusterBuilder {
                         clusteringIndex++;
                     }
                 }
+
                 waitingHandler.increasePrimaryProgressCounter();
             }
         }
@@ -438,13 +561,16 @@ public class ClusterBuilder {
 
             TreeSet<String> allMsFiles = new TreeSet<>(identification.getSpectrumIdentification().keySet());
             HashSet<String> neededFiles = new HashSet<>();
-            
+
             for (String keyName : clusteringSettings.getSelectedPsmClasses()) {
+
                 PsmClusterClassKey psmClusterClassKey = clusteringSettings.getPsmClassKey(keyName);
+
                 if (psmClusterClassKey.getFile() == null) {
                     neededFiles.addAll(allMsFiles);
                     break;
                 }
+
                 neededFiles.add(psmClusterClassKey.getFile());
             }
 
@@ -460,45 +586,63 @@ public class ClusterBuilder {
                     psParameter = (PSParameter) identification.getSpectrumMatch(spectrumMatch.getKey()).getUrParam(psParameter);
 
                     if (psParameter.getMatchValidationLevel().isValidated()) {
+
                         boolean found = false;
+
                         for (String keyName : clusteringSettings.getSelectedPsmClasses()) {
+
                             boolean inCluster = true;
                             PsmClusterClassKey psmClusterClassKey = clusteringSettings.getPsmClassKey(keyName);
+
                             if (psmClusterClassKey.getFile() != null && !spectrumFile.equals(psmClusterClassKey.getFile())) {
                                 inCluster = false;
                             }
+
                             if (inCluster && psmClusterClassKey.isStarred() && !psParameter.getStarred()) {
                                 inCluster = false;
                             }
+
                             if (inCluster) {
+
                                 ArrayList<Long> tempClusterKeys = filteredPsmKeys.get(keyName);
+
                                 if (tempClusterKeys == null) {
                                     tempClusterKeys = new ArrayList<Long>();
                                     filteredPsmKeys.put(keyName, tempClusterKeys);
                                 }
+
                                 tempClusterKeys.add(spectrumKey);
                                 ArrayList<String> clusters = psmClusters.get(spectrumKey);
+
                                 if (clusters == null) {
                                     clusters = new ArrayList<String>(nPsmClusters);
                                     psmClusters.put(spectrumKey, clusters);
                                 }
+
                                 clusters.add(keyName);
                                 found = true;
                             }
                         }
                         if (found) {
-                            PsmQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getPSMQuantificationDetails(spectrumKey);
+
+                            PsmQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getPSMQuantificationDetails(spectrumProvider, spectrumKey);
                             double[] psmRatios = new double[sampleIndexes.size()];
 
                             for (int sampleIndex = 0; sampleIndex < sampleIndexes.size(); sampleIndex++) {
+
                                 Double ratio = quantificationDetails.getRatio(sampleIndexes.get(sampleIndex), reporterIonQuantification.getNormalizationFactors());
+
                                 if (ratio != null) {
+
                                     if (ratio != 0) {
+
                                         double logRatio = BasicMathFunctions.log(ratio, 2);
                                         psmRatios[sampleIndex] = logRatio;
+
                                         if (maxRatio == null || logRatio > maxRatio) {
                                             maxRatio = logRatio;
                                         }
+
                                         if (minRatio == null || logRatio < minRatio) {
                                             minRatio = logRatio;
                                         }
@@ -525,13 +669,13 @@ public class ClusterBuilder {
      * @return the protein keys retained after filtering
      */
     public Set<Long> getFilteredProteins() {
-        
+
         Set<Long> proteinKeys = new HashSet(proteinClusters.keySet().size());
-        
+
         for (Long proteinKey : proteinClusters.keySet()) {
             proteinKeys.add(proteinKey);
         }
-        
+
         return proteinKeys;
     }
 
@@ -541,13 +685,13 @@ public class ClusterBuilder {
      * @return the peptide keys retained after filtering
      */
     public Set<Long> getFilteredPeptides() {
-        
+
         Set<Long> peptideKeys = new HashSet(peptideClusters.keySet().size());
-        
+
         for (Long peptideKey : peptideClusters.keySet()) {
             peptideKeys.add(peptideKey);
         }
-        
+
         return peptideKeys;
     }
 
@@ -557,13 +701,13 @@ public class ClusterBuilder {
      * @return the PSM keys retained after filtering
      */
     public Set<Long> getFilteredPsms() {
-        
+
         Set<Long> psmKeys = new HashSet(psmClusters.keySet().size());
-        
+
         for (Long psmKey : psmClusters.keySet()) {
             psmKeys.add(psmKey);
         }
-        
+
         return psmKeys;
     }
 
@@ -597,8 +741,8 @@ public class ClusterBuilder {
     }
 
     /**
-     * Returns the index of the cluster of the given PSM key. Null if not
-     * found or not a PSM.
+     * Returns the index of the cluster of the given PSM key. Null if not found
+     * or not a PSM.
      *
      * @param key the PSM key
      *
@@ -609,8 +753,8 @@ public class ClusterBuilder {
     }
 
     /**
-     * Returns the index of the cluster of the given peptide key. Null if
-     * not found or not a peptide.
+     * Returns the index of the cluster of the given peptide key. Null if not
+     * found or not a peptide.
      *
      * @param key the peptide key
      *
@@ -621,8 +765,8 @@ public class ClusterBuilder {
     }
 
     /**
-     * Returns the index of the cluster of the given protein key. Null if
-     * not found or not a protein.
+     * Returns the index of the cluster of the given protein key. Null if not
+     * found or not a protein.
      *
      * @param key the protein key
      *

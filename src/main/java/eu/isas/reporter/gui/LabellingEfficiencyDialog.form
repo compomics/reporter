@@ -51,7 +51,7 @@
                           <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                           <Component id="closeButton" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <Component id="fileSelectiontPanel2" alignment="1" max="32767" attributes="0"/>
+                      <Component id="fileSelectiontPanel" alignment="1" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -61,7 +61,7 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="1" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="fileSelectiontPanel2" min="-2" max="-2" attributes="0"/>
+                  <Component id="fileSelectiontPanel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace type="separate" max="-2" attributes="0"/>
                   <Component id="efficiencyPanel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace type="separate" max="-2" attributes="0"/>
@@ -80,7 +80,7 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="closeButtonActionPerformed"/>
           </Events>
         </Component>
-        <Container class="javax.swing.JPanel" name="fileSelectiontPanel2">
+        <Container class="javax.swing.JPanel" name="fileSelectiontPanel">
           <Properties>
             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
               <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
@@ -96,21 +96,21 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="spectrumFilesLabel2" alignment="0" min="-2" pref="120" max="-2" attributes="0"/>
-                          <Component id="databaseFileLabel2" alignment="0" min="-2" pref="120" max="-2" attributes="0"/>
-                          <Component id="idFilesLabel2" alignment="0" min="-2" pref="120" max="-2" attributes="0"/>
+                          <Component id="spectrumFilesLabel" alignment="0" min="-2" pref="120" max="-2" attributes="0"/>
+                          <Component id="databaseFileLabel" alignment="0" min="-2" pref="120" max="-2" attributes="0"/>
+                          <Component id="idFilesLabel" alignment="0" min="-2" pref="120" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="txtIdFileLocation2" alignment="0" max="32767" attributes="0"/>
-                          <Component id="txtSpectraFileLocation2" alignment="0" pref="504" max="32767" attributes="0"/>
-                          <Component id="fastaTxt2" alignment="0" max="32767" attributes="0"/>
+                          <Component id="txtIdFileLocation" alignment="0" max="32767" attributes="0"/>
+                          <Component id="txtSpectraFileLocation" alignment="0" pref="504" max="32767" attributes="0"/>
+                          <Component id="fastaTxt" alignment="0" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="addSpectraFilesJButton2" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="addIdFilesButton2" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="addDbButton2" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="addSpectraFilesJButton" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="addIdFilesButton" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="addDbButton" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -121,21 +121,21 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="idFilesLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="txtIdFileLocation2" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="addIdFilesButton2" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="idFilesLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="txtIdFileLocation" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="addIdFilesButton" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="spectrumFilesLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="txtSpectraFileLocation2" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="addSpectraFilesJButton2" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="spectrumFilesLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="txtSpectraFileLocation" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="addSpectraFilesJButton" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="databaseFileLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="fastaTxt2" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="addDbButton2" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="databaseFileLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="fastaTxt" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="addDbButton" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="32767" attributes="0"/>
                   </Group>
@@ -143,62 +143,62 @@
             </DimensionLayout>
           </Layout>
           <SubComponents>
-            <Component class="javax.swing.JLabel" name="spectrumFilesLabel2">
+            <Component class="javax.swing.JLabel" name="spectrumFilesLabel">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Spectrum File(s)"/>
               </Properties>
             </Component>
-            <Component class="javax.swing.JTextField" name="txtSpectraFileLocation2">
+            <Component class="javax.swing.JTextField" name="txtSpectraFileLocation">
               <Properties>
                 <Property name="editable" type="boolean" value="false"/>
                 <Property name="horizontalAlignment" type="int" value="0"/>
               </Properties>
             </Component>
-            <Component class="javax.swing.JLabel" name="idFilesLabel2">
+            <Component class="javax.swing.JLabel" name="idFilesLabel">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Project File"/>
               </Properties>
             </Component>
-            <Component class="javax.swing.JTextField" name="txtIdFileLocation2">
+            <Component class="javax.swing.JTextField" name="txtIdFileLocation">
               <Properties>
                 <Property name="editable" type="boolean" value="false"/>
                 <Property name="horizontalAlignment" type="int" value="0"/>
                 <Property name="text" type="java.lang.String" value="Please import a project"/>
               </Properties>
             </Component>
-            <Component class="javax.swing.JButton" name="addIdFilesButton2">
+            <Component class="javax.swing.JButton" name="addIdFilesButton">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Browse"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addIdFilesButton2ActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addIdFilesButtonActionPerformed"/>
               </Events>
             </Component>
-            <Component class="javax.swing.JButton" name="addSpectraFilesJButton2">
+            <Component class="javax.swing.JButton" name="addSpectraFilesJButton">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Browse"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addSpectraFilesJButton2ActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addSpectraFilesJButtonActionPerformed"/>
               </Events>
             </Component>
-            <Component class="javax.swing.JLabel" name="databaseFileLabel2">
+            <Component class="javax.swing.JLabel" name="databaseFileLabel">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Database File"/>
               </Properties>
             </Component>
-            <Component class="javax.swing.JTextField" name="fastaTxt2">
+            <Component class="javax.swing.JTextField" name="fastaTxt">
               <Properties>
                 <Property name="editable" type="boolean" value="false"/>
                 <Property name="horizontalAlignment" type="int" value="0"/>
               </Properties>
             </Component>
-            <Component class="javax.swing.JButton" name="addDbButton2">
+            <Component class="javax.swing.JButton" name="addDbButton">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Browse"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addDbButton2ActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addDbButtonActionPerformed"/>
               </Events>
             </Component>
           </SubComponents>

@@ -6,6 +6,7 @@ import com.compomics.util.experiment.biology.ions.impl.ReporterIon;
 import com.compomics.util.experiment.biology.modifications.Modification;
 import com.compomics.util.experiment.biology.modifications.ModificationFactory;
 import com.compomics.util.experiment.identification.Identification;
+import com.compomics.util.experiment.mass_spectrometry.SpectrumProvider;
 import com.compomics.util.experiment.quantification.Quantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
@@ -61,6 +62,10 @@ public class ProjectImporter {
      * The display preferences.
      */
     private DisplayPreferences displayPreferences;
+    /**
+     * The sequence provider.
+     */
+    private SpectrumProvider spectrumProvider;
     /**
      * The default reporter ion tolerance for TMT data.
      */
@@ -196,6 +201,7 @@ public class ProjectImporter {
 
         // load reporter settings
         Identification identification = psdbParent.getIdentification();
+        spectrumProvider = psdbParent.getSpectrumProvider();
         IdentificationParameters identificationParameters = psdbParent.getIdentificationParameters();
         ObjectsDB objectsDB = identification.getObjectsDB();
 
@@ -458,5 +464,9 @@ public class ProjectImporter {
      */
     public DisplayPreferences getDisplayPreferences() {
         return displayPreferences;
+    }
+    
+    public SpectrumProvider getSpectrumProvider() {
+        return spectrumProvider;
     }
 }

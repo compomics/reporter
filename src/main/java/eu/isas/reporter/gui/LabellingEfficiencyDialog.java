@@ -11,6 +11,8 @@ import com.compomics.util.experiment.identification.matches_iterators.PeptideMat
 import com.compomics.util.experiment.identification.peptide_shaker.PSParameter;
 import com.compomics.util.experiment.identification.utils.ModificationUtils;
 import com.compomics.util.experiment.io.biology.protein.SequenceProvider;
+import com.compomics.util.experiment.io.mass_spectrometry.MsFileHandler;
+import com.compomics.util.experiment.io.mass_spectrometry.cms.CmsFolder;
 import com.compomics.util.experiment.personalization.UrParameter;
 import com.compomics.util.gui.file_handling.FileAndFileFilter;
 import com.compomics.util.gui.file_handling.FileChooserUtil;
@@ -24,6 +26,7 @@ import eu.isas.reporter.Reporter;
 import eu.isas.reporter.io.ProjectImporter;
 import java.awt.Dialog;
 import java.awt.Image;
+import java.awt.Toolkit;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -70,9 +73,9 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
      */
     private PsdbParent psdbParent;
     /**
-     * The mgf files loaded.
+     * The spectrum files loaded.
      */
-    private ArrayList<File> mgfFiles = new ArrayList<File>();
+    private ArrayList<File> spectrumFiles = new ArrayList<File>();
     /**
      * The modification factory.
      */
@@ -82,9 +85,13 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
      */
     private ArrayList<String> sortedModifications;
     /**
-     * Map of the labeling efficiency: PTM name | efficiency
+     * Map of the labeling efficiency: PTM name | efficiency.
      */
     private HashMap<String, Double> labellingEfficiency;
+    /**
+     * The handler for mass spectrometry files.
+     */
+    private MsFileHandler msFileHandler = new MsFileHandler();
 
     /**
      * Constructor with a dialog as owner.
@@ -134,16 +141,16 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
 
         backgroundPanel = new javax.swing.JPanel();
         closeButton = new javax.swing.JButton();
-        fileSelectiontPanel2 = new javax.swing.JPanel();
-        spectrumFilesLabel2 = new javax.swing.JLabel();
-        txtSpectraFileLocation2 = new javax.swing.JTextField();
-        idFilesLabel2 = new javax.swing.JLabel();
-        txtIdFileLocation2 = new javax.swing.JTextField();
-        addIdFilesButton2 = new javax.swing.JButton();
-        addSpectraFilesJButton2 = new javax.swing.JButton();
-        databaseFileLabel2 = new javax.swing.JLabel();
-        fastaTxt2 = new javax.swing.JTextField();
-        addDbButton2 = new javax.swing.JButton();
+        fileSelectiontPanel = new javax.swing.JPanel();
+        spectrumFilesLabel = new javax.swing.JLabel();
+        txtSpectraFileLocation = new javax.swing.JTextField();
+        idFilesLabel = new javax.swing.JLabel();
+        txtIdFileLocation = new javax.swing.JTextField();
+        addIdFilesButton = new javax.swing.JButton();
+        addSpectraFilesJButton = new javax.swing.JButton();
+        databaseFileLabel = new javax.swing.JLabel();
+        fastaTxt = new javax.swing.JTextField();
+        addDbButton = new javax.swing.JButton();
         efficiencyPanel = new javax.swing.JPanel();
         efficiencyTableScrollPane = new javax.swing.JScrollPane();
         efficiencyTable = new javax.swing.JTable();
@@ -159,86 +166,86 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
             }
         });
 
-        fileSelectiontPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Files Selection"));
-        fileSelectiontPanel2.setOpaque(false);
+        fileSelectiontPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Files Selection"));
+        fileSelectiontPanel.setOpaque(false);
 
-        spectrumFilesLabel2.setText("Spectrum File(s)");
+        spectrumFilesLabel.setText("Spectrum File(s)");
 
-        txtSpectraFileLocation2.setEditable(false);
-        txtSpectraFileLocation2.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        txtSpectraFileLocation.setEditable(false);
+        txtSpectraFileLocation.setHorizontalAlignment(javax.swing.JTextField.CENTER);
 
-        idFilesLabel2.setText("Project File");
+        idFilesLabel.setText("Project File");
 
-        txtIdFileLocation2.setEditable(false);
-        txtIdFileLocation2.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        txtIdFileLocation2.setText("Please import a project");
+        txtIdFileLocation.setEditable(false);
+        txtIdFileLocation.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        txtIdFileLocation.setText("Please import a project");
 
-        addIdFilesButton2.setText("Browse");
-        addIdFilesButton2.addActionListener(new java.awt.event.ActionListener() {
+        addIdFilesButton.setText("Browse");
+        addIdFilesButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addIdFilesButton2ActionPerformed(evt);
+                addIdFilesButtonActionPerformed(evt);
             }
         });
 
-        addSpectraFilesJButton2.setText("Browse");
-        addSpectraFilesJButton2.addActionListener(new java.awt.event.ActionListener() {
+        addSpectraFilesJButton.setText("Browse");
+        addSpectraFilesJButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addSpectraFilesJButton2ActionPerformed(evt);
+                addSpectraFilesJButtonActionPerformed(evt);
             }
         });
 
-        databaseFileLabel2.setText("Database File");
+        databaseFileLabel.setText("Database File");
 
-        fastaTxt2.setEditable(false);
-        fastaTxt2.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        fastaTxt.setEditable(false);
+        fastaTxt.setHorizontalAlignment(javax.swing.JTextField.CENTER);
 
-        addDbButton2.setText("Browse");
-        addDbButton2.addActionListener(new java.awt.event.ActionListener() {
+        addDbButton.setText("Browse");
+        addDbButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addDbButton2ActionPerformed(evt);
+                addDbButtonActionPerformed(evt);
             }
         });
 
-        javax.swing.GroupLayout fileSelectiontPanel2Layout = new javax.swing.GroupLayout(fileSelectiontPanel2);
-        fileSelectiontPanel2.setLayout(fileSelectiontPanel2Layout);
-        fileSelectiontPanel2Layout.setHorizontalGroup(
-            fileSelectiontPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(fileSelectiontPanel2Layout.createSequentialGroup()
+        javax.swing.GroupLayout fileSelectiontPanelLayout = new javax.swing.GroupLayout(fileSelectiontPanel);
+        fileSelectiontPanel.setLayout(fileSelectiontPanelLayout);
+        fileSelectiontPanelLayout.setHorizontalGroup(
+            fileSelectiontPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(fileSelectiontPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(fileSelectiontPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(spectrumFilesLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(databaseFileLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(idFilesLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(fileSelectiontPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(spectrumFilesLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(databaseFileLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(idFilesLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(10, 10, 10)
-                .addGroup(fileSelectiontPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(txtIdFileLocation2)
-                    .addComponent(txtSpectraFileLocation2, javax.swing.GroupLayout.DEFAULT_SIZE, 504, Short.MAX_VALUE)
-                    .addComponent(fastaTxt2))
+                .addGroup(fileSelectiontPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(txtIdFileLocation)
+                    .addComponent(txtSpectraFileLocation, javax.swing.GroupLayout.DEFAULT_SIZE, 504, Short.MAX_VALUE)
+                    .addComponent(fastaTxt))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(fileSelectiontPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(addSpectraFilesJButton2, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(addIdFilesButton2, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(addDbButton2))
+                .addGroup(fileSelectiontPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(addSpectraFilesJButton, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(addIdFilesButton, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(addDbButton))
                 .addContainerGap())
         );
-        fileSelectiontPanel2Layout.setVerticalGroup(
-            fileSelectiontPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(fileSelectiontPanel2Layout.createSequentialGroup()
+        fileSelectiontPanelLayout.setVerticalGroup(
+            fileSelectiontPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(fileSelectiontPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(fileSelectiontPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(idFilesLabel2)
-                    .addComponent(txtIdFileLocation2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(addIdFilesButton2))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(fileSelectiontPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(spectrumFilesLabel2)
-                    .addComponent(txtSpectraFileLocation2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(addSpectraFilesJButton2))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(fileSelectiontPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(databaseFileLabel2)
-                    .addComponent(fastaTxt2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(addDbButton2))
+                .addGroup(fileSelectiontPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(idFilesLabel)
+                    .addComponent(txtIdFileLocation, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(addIdFilesButton))
+                .addGap(0, 0, 0)
+                .addGroup(fileSelectiontPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(spectrumFilesLabel)
+                    .addComponent(txtSpectraFileLocation, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(addSpectraFilesJButton))
+                .addGap(0, 0, 0)
+                .addGroup(fileSelectiontPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(databaseFileLabel)
+                    .addComponent(fastaTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(addDbButton))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -286,14 +293,14 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, backgroundPanelLayout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(closeButton))
-                    .addComponent(fileSelectiontPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(fileSelectiontPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         backgroundPanelLayout.setVerticalGroup(
             backgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, backgroundPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(fileSelectiontPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(fileSelectiontPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(efficiencyPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
@@ -320,7 +327,7 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
      * 
      * @param evt 
      */
-    private void addIdFilesButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addIdFilesButton2ActionPerformed
+    private void addIdFilesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addIdFilesButtonActionPerformed
 
         String psdbFileFilterDescription = "PeptideShaker (.psdb)";
         //String zipFileFilterDescription = "Zipped PeptideShaker (.zip)"; // @TODO: support zip files
@@ -345,18 +352,17 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
                 JOptionPane.showMessageDialog(this, "Not a PeptideShaker file (.psdb).", "Unsupported File.", JOptionPane.WARNING_MESSAGE);
             }
         }
-    }//GEN-LAST:event_addIdFilesButton2ActionPerformed
+    }//GEN-LAST:event_addIdFilesButtonActionPerformed
 
     /**
      * Add the spectrum files.
      * 
      * @param evt 
      */
-    private void addSpectraFilesJButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addSpectraFilesJButton2ActionPerformed
+    private void addSpectraFilesJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addSpectraFilesJButtonActionPerformed
 
-        // @TODO: add mgf validation etc like for PeptideShaker
         JFileChooser fileChooser = new JFileChooser(lastSelectedFolder.getLastSelectedFolder());
-        fileChooser.setDialogTitle("Select Spectra File(s)");
+        fileChooser.setDialogTitle("Select Spectrum File(s)");
         fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         fileChooser.setMultiSelectionEnabled(true);
 
@@ -364,58 +370,124 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
             @Override
             public boolean accept(File myFile) {
                 return myFile.getName().toLowerCase().endsWith(".mgf")
+                        || myFile.getName().toLowerCase().endsWith(".mgf.gz")
+                        || myFile.getName().toLowerCase().endsWith(".mzml")
+                        || myFile.getName().toLowerCase().endsWith(".mzml.gz")
                         || myFile.isDirectory();
             }
 
             @Override
             public String getDescription() {
-                return "Supported formats: .mgf";
+                return "mgf or mzML (.mgf, .mg.gz, .mzml, .mzml.gz)";
             }
         };
 
         fileChooser.setFileFilter(filter);
+        int returnVal = fileChooser.showDialog(this, "Add");
 
-        int returnVal = fileChooser.showDialog(this.getParent(), "Add");
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
 
-        try {
-            if (returnVal == JFileChooser.APPROVE_OPTION) {
-                for (File newFile : fileChooser.getSelectedFiles()) {
-                    if (newFile.isDirectory()) {
-                        File[] tempFiles = newFile.listFiles();
-                        for (File file : tempFiles) {
-                            if (file.getName().toLowerCase().endsWith(".mgf")) {
-                                if (!mgfFiles.contains(file)) {
-                                    mgfFiles.add(file);
-                                    psdbParent.getProjectDetails().addSpectrumFile(file);
-                                }
-                            }
+            // get the files
+            ArrayList<File> selectedFiles = new ArrayList<>();
+
+            for (File newFile : fileChooser.getSelectedFiles()) {
+
+                if (newFile.isDirectory()) {
+
+                    File[] tempFiles = newFile.listFiles();
+
+                    for (File file : tempFiles) {
+
+                        if (file.getName().toLowerCase().endsWith(".mgf")
+                                || file.getName().toLowerCase().endsWith(".mgf.gz")
+                                || file.getName().toLowerCase().endsWith(".mzml")
+                                || file.getName().toLowerCase().endsWith(".mzml.gz")) {
+
+                            selectedFiles.add(file);
+
                         }
-                    } else if (newFile.getName().toLowerCase().endsWith(".mgf")) {
-                        if (!mgfFiles.contains(newFile)) {
-                            mgfFiles.add(newFile);
-                            psdbParent.getProjectDetails().addSpectrumFile(newFile);
-                            spectrumFactory.addSpectra(newFile, null); // @TODO: add progress dialog!!
+                    }
+                } else {
+
+                    selectedFiles.add(newFile);
+
+                }
+            }
+
+            // Load the files
+            progressDialog = new ProgressDialogX(
+                    this, 
+                    parentFrame,
+                    Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/peptide-shaker.gif")),
+                    Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/peptide-shaker-orange.gif")),
+                    true
+            );
+            progressDialog.setPrimaryProgressCounterIndeterminate(true);
+            progressDialog.setTitle("Loading Files. Please Wait...");
+
+            new Thread(new Runnable() {
+                public void run() {
+                    try {
+                        progressDialog.setVisible(true);
+                    } catch (IndexOutOfBoundsException e) {
+                        // ignore
+                    }
+                }
+            }, "ProgressDialog").start();
+
+            new Thread("loadingThread") {
+                public void run() {
+
+                    boolean allLoaded = true;
+
+                    for (File file : selectedFiles) {
+
+                        try {
+
+                            File folder = CmsFolder.getParentFolder() == null ? file.getParentFile() : new File(CmsFolder.getParentFolder());
+
+                            msFileHandler.register(file, folder, progressDialog);
+
+                        } catch (Exception e) {
+
+                            progressDialog.setRunCanceled();
+
+                            allLoaded = false;
+
+                            JOptionPane.showMessageDialog(
+                                    null,
+                                    "An error occurred while reading the following file.\n"
+                                    + file.getAbsolutePath() + "\n\nError:\n" + e.getLocalizedMessage(),
+                                    "File error",
+                                    JOptionPane.ERROR_MESSAGE
+                            );
+
+                            e.printStackTrace();
                         }
                     }
 
-                    lastSelectedFolder.setLastSelectedFolder(newFile.getPath());
-                }
+                    progressDialog.setRunFinished();
 
-                txtSpectraFileLocation2.setText(mgfFiles.size() + " file(s) selected");
-            }
-        } catch (Exception e) {
-            progressDialog.setRunFinished();
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "An error occurred while reading the mgf file.", "Mgf Error", JOptionPane.WARNING_MESSAGE);
+                    if (allLoaded) {
+
+                        spectrumFiles.addAll(selectedFiles);
+                        txtSpectraFileLocation.setText(spectrumFiles.size() + " file(s) selected");
+                        //validateInput(); // @TODO: add validation
+
+                    }
+
+                }
+            }.start();
         }
-    }//GEN-LAST:event_addSpectraFilesJButton2ActionPerformed
+        
+    }//GEN-LAST:event_addSpectraFilesJButtonActionPerformed
 
     /**
      * Set the FASTA file.
      * 
      * @param evt 
      */
-    private void addDbButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addDbButton2ActionPerformed
+    private void addDbButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addDbButtonActionPerformed
         JFileChooser fileChooser;
 
         //        if (searchParameters != null && searchParameters.getFastaFile() != null && searchParameters.getFastaFile().exists()) {
@@ -449,10 +521,10 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File fastaFile = fileChooser.getSelectedFile();
             lastSelectedFolder.setLastSelectedFolder(fastaFile.getAbsolutePath());
-            fastaTxt2.setText(fastaFile.getName());
+            fastaTxt.setText(fastaFile.getName());
             psdbParent.getProjectDetails().setFastaFile(fastaFile);
         }
-    }//GEN-LAST:event_addDbButton2ActionPerformed
+    }//GEN-LAST:event_addDbButtonActionPerformed
 
     /**
      * Close the dialog.
@@ -465,21 +537,21 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton addDbButton2;
-    private javax.swing.JButton addIdFilesButton2;
-    private javax.swing.JButton addSpectraFilesJButton2;
+    private javax.swing.JButton addDbButton;
+    private javax.swing.JButton addIdFilesButton;
+    private javax.swing.JButton addSpectraFilesJButton;
     private javax.swing.JPanel backgroundPanel;
     private javax.swing.JButton closeButton;
-    private javax.swing.JLabel databaseFileLabel2;
+    private javax.swing.JLabel databaseFileLabel;
     private javax.swing.JPanel efficiencyPanel;
     private javax.swing.JTable efficiencyTable;
     private javax.swing.JScrollPane efficiencyTableScrollPane;
-    private javax.swing.JTextField fastaTxt2;
-    private javax.swing.JPanel fileSelectiontPanel2;
-    private javax.swing.JLabel idFilesLabel2;
-    private javax.swing.JLabel spectrumFilesLabel2;
-    private javax.swing.JTextField txtIdFileLocation2;
-    private javax.swing.JTextField txtSpectraFileLocation2;
+    private javax.swing.JTextField fastaTxt;
+    private javax.swing.JPanel fileSelectiontPanel;
+    private javax.swing.JLabel idFilesLabel;
+    private javax.swing.JLabel spectrumFilesLabel;
+    private javax.swing.JTextField txtIdFileLocation;
+    private javax.swing.JTextField txtSpectraFileLocation;
     // End of variables declaration//GEN-END:variables
 
     /**
@@ -515,7 +587,7 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
                     psdbParent = new PsdbParent(Reporter.getMatchesFolder());
                     psdbParent.setPsdbFile(psFile);
                     ProjectImporter projectImporter = new ProjectImporter(LabellingEfficiencyDialog.this);
-                    projectImporter.importPeptideShakerProject(psdbParent, mgfFiles, progressDialog);
+                    projectImporter.importPeptideShakerProject(psdbParent, spectrumFiles, progressDialog);
                     projectImporter.importReporterProject(psdbParent, progressDialog);
 
                     if (progressDialog.isRunCanceled()) {
@@ -524,9 +596,9 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
                         return;
                     }
 
-                    txtSpectraFileLocation2.setText(psdbParent.getProjectDetails().getSpectrumFileNames().size() + " files loaded"); //@TODO: allow editing
-                    fastaTxt2.setText(psdbParent.getProjectDetails().getFastaFile());
-                    txtIdFileLocation2.setText(psdbParent.getPsdbFile().getName());
+                    txtSpectraFileLocation.setText(psdbParent.getProjectDetails().getSpectrumFileNames().size() + " files loaded"); //@TODO: allow editing
+                    fastaTxt.setText(psdbParent.getProjectDetails().getFastaFile());
+                    txtIdFileLocation.setText(psdbParent.getPsdbFile().getName());
 
                     estimateLabellingEfficiency();
                     refresh();

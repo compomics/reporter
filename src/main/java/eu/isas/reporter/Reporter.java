@@ -14,6 +14,7 @@ import com.compomics.util.experiment.identification.matches.SpectrumMatch;
 import com.compomics.util.experiment.identification.matches_iterators.PeptideMatchesIterator;
 import com.compomics.util.experiment.identification.matches_iterators.SpectrumMatchesIterator;
 import com.compomics.util.experiment.identification.spectrum_annotation.SpectrumAnnotator;
+import com.compomics.util.experiment.mass_spectrometry.SpectrumProvider;
 import com.compomics.util.experiment.mass_spectrometry.spectra.Precursor;
 import com.compomics.util.experiment.mass_spectrometry.spectra.Spectrum;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
@@ -76,6 +77,7 @@ public class Reporter {
      *
      * @param identification the identification containing identification
      * details
+     * @param spectrumProvider the spectrum provider
      * @param identificationFeaturesGenerator the identification features
      * generator used to store and retrieve identification details
      * @param quantificationFeaturesGenerator the quantification features
@@ -89,9 +91,17 @@ public class Reporter {
      *
      * @return the quantification details of the match
      */
-    public static ProteinQuantificationDetails estimateProteinMatchQuantificationDetails(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator,
-            QuantificationFeaturesGenerator quantificationFeaturesGenerator, RatioEstimationSettings ratioEstimationSettings,
-            ReporterIonQuantification reporterIonQuantification, SearchParameters searchParameters, ProteinMatch proteinMatch, WaitingHandler waitingHandler) {
+    public static ProteinQuantificationDetails estimateProteinMatchQuantificationDetails(
+            Identification identification,
+            SpectrumProvider spectrumProvider,
+            IdentificationFeaturesGenerator identificationFeaturesGenerator,
+            QuantificationFeaturesGenerator quantificationFeaturesGenerator,
+            RatioEstimationSettings ratioEstimationSettings,
+            ReporterIonQuantification reporterIonQuantification,
+            SearchParameters searchParameters,
+            ProteinMatch proteinMatch,
+            WaitingHandler waitingHandler
+    ) {
 
         ProteinQuantificationDetails result = new ProteinQuantificationDetails();
         HashMap<String, ArrayList<Double>> ratios = new HashMap<>();
@@ -108,7 +118,7 @@ public class Reporter {
 
                 for (String index : indexes) {
 
-                    PeptideQuantificationDetails peptideQuantification = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideMatch, waitingHandler);
+                    PeptideQuantificationDetails peptideQuantification = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(spectrumProvider, peptideMatch, waitingHandler);
                     double ratio = peptideQuantification.getRatio(index, reporterIonQuantification.getNormalizationFactors());
                     ArrayList<Double> channelRatios = ratios.get(index);
                     ArrayList<Double> channelUniqueRatios = uniqueRatios.get(index);
@@ -155,11 +165,12 @@ public class Reporter {
     }
 
     /**
-     * Returns the quantification details of a PTM on a protein. //@TODO:
+     * Returns the quantification details of a PTM on a protein.//@TODO:
      * discriminate peptides according to the neighboring sites?
      *
      * @param identification the identification containing identification
      * details
+     * @param spectrumProvider the spectrum provider
      * @param quantificationFeaturesGenerator the quantification features
      * generator used to store and retrieve quantification details
      * @param ratioEstimationSettings the ratio estimation settings
@@ -183,11 +194,19 @@ public class Reporter {
      * @throws java.lang.InterruptedException exception thrown whenever a
      * threading error occurred
      */
-    public static ProteinPtmQuantificationDetails estimatePTMQuantificationDetails(Identification identification,
-            QuantificationFeaturesGenerator quantificationFeaturesGenerator, RatioEstimationSettings ratioEstimationSettings,
-            ReporterIonQuantification reporterIonQuantification, SearchParameters searchParameters,
-            SequenceMatchingParameters sequenceMatchingParameters, String ptmName, long matchKey, int site, WaitingHandler waitingHandler)
-            throws IllegalArgumentException, SQLException, IOException, ClassNotFoundException, InterruptedException {
+    public static ProteinPtmQuantificationDetails estimatePTMQuantificationDetails(
+            Identification identification,
+            SpectrumProvider spectrumProvider,
+            QuantificationFeaturesGenerator quantificationFeaturesGenerator,
+            RatioEstimationSettings ratioEstimationSettings,
+            ReporterIonQuantification reporterIonQuantification,
+            SearchParameters searchParameters,
+            SequenceMatchingParameters sequenceMatchingParameters,
+            String ptmName,
+            long matchKey,
+            int site,
+            WaitingHandler waitingHandler
+    ) throws IllegalArgumentException, SQLException, IOException, ClassNotFoundException, InterruptedException {
 
         ProteinPtmQuantificationDetails result = new ProteinPtmQuantificationDetails();
         HashMap<String, ArrayList<Double>> ratios = new HashMap<>();
@@ -220,7 +239,7 @@ public class Reporter {
             }
             if (QuantificationFilter.isPeptideValid(ratioEstimationSettings, identification, searchParameters, peptideMatch)) {
                 for (String index : indexes) {
-                    PeptideQuantificationDetails peptideQuantification = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideMatch, waitingHandler);
+                    PeptideQuantificationDetails peptideQuantification = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(spectrumProvider, peptideMatch, waitingHandler);
                     double ratio = peptideQuantification.getRatio(index, reporterIonQuantification.getNormalizationFactors());
                     ArrayList<Double> channelRatios = ratios.get(index);
                     if (channelRatios == null) {
@@ -247,6 +266,7 @@ public class Reporter {
      *
      * @param identification the identification containing identification
      * details
+     * @param spectrumProvider the spectrum provider
      * @param quantificationFeaturesGenerator the quantification features
      * generator used to store and retrieve quantification details
      * @param ratioEstimationSettings the ratio estimation settings
@@ -257,9 +277,15 @@ public class Reporter {
      *
      * @return the quantification details of the match
      */
-    public static PeptideQuantificationDetails estimatePeptideMatchQuantificationDetails(Identification identification,
-            QuantificationFeaturesGenerator quantificationFeaturesGenerator, RatioEstimationSettings ratioEstimationSettings,
-            ReporterIonQuantification reporterIonQuantification, PeptideMatch peptideMatch, WaitingHandler waitingHandler) {
+    public static PeptideQuantificationDetails estimatePeptideMatchQuantificationDetails(
+            Identification identification,
+            SpectrumProvider spectrumProvider,
+            QuantificationFeaturesGenerator quantificationFeaturesGenerator,
+            RatioEstimationSettings ratioEstimationSettings,
+            ReporterIonQuantification reporterIonQuantification,
+            PeptideMatch peptideMatch,
+            WaitingHandler waitingHandler
+    ) {
 
         PeptideQuantificationDetails result = new PeptideQuantificationDetails();
         HashMap<String, ArrayList<Double>> ratios = new HashMap<>();
@@ -271,7 +297,7 @@ public class Reporter {
         while ((spectrumMatch = spectrumMatchesIterator.next()) != null) {
             if (QuantificationFilter.isPsmValid(ratioEstimationSettings, identification, spectrumMatch.getKey())) {
                 for (String index : indexes) {
-                    PsmQuantificationDetails spectrumQuantification = quantificationFeaturesGenerator.getPSMQuantificationDetails(spectrumMatch.getKey());
+                    PsmQuantificationDetails spectrumQuantification = quantificationFeaturesGenerator.getPSMQuantificationDetails(spectrumProvider, spectrumMatch.getKey());
                     double ratio = spectrumQuantification.getRatio(index, reporterIonQuantification.getNormalizationFactors());
                     ArrayList<Double> channelRatios = ratios.get(index);
                     if (channelRatios == null) {
@@ -298,6 +324,7 @@ public class Reporter {
      *
      * @param identification the identification containing identification
      * details
+     * @param spectrumProvider the spectrum provider
      * @param quantificationFeaturesGenerator the quantification features
      * generator used to store and retrieve quantification details
      * @param reporterIonSelectionSettings the reporter ion selection settings
@@ -309,6 +336,7 @@ public class Reporter {
      */
     public static PsmQuantificationDetails estimatePSMQuantificationDetails(
             Identification identification,
+            SpectrumProvider spectrumProvider,
             QuantificationFeaturesGenerator quantificationFeaturesGenerator,
             ReporterIonSelectionSettings reporterIonSelectionSettings,
             RatioEstimationSettings ratioEstimationSettings,
@@ -319,9 +347,9 @@ public class Reporter {
         PsmQuantificationDetails result = new PsmQuantificationDetails();
 
         // find the spectra corresponding to this PSM according to the matching type selected by the user
-        ArrayList<String> spectra = new ArrayList<>(1);
+        ArrayList<Long> spectra = new ArrayList<>(1);
         SpectrumMatch spectrumMatch = identification.getSpectrumMatch(matchKey);
-        String spectrumKey = spectrumMatch.getSpectrumKey();
+        Long spectrumKey = spectrumMatch.getKey();
 
         if (reporterIonSelectionSettings.isSameSpectra()) {
 
@@ -329,27 +357,32 @@ public class Reporter {
 
         } else {
 
-            String refFile = Spectrum.getSpectrumFile(spectrumKey);
-            Precursor refPrecursor = spectrumFactory.getPrecursor(spectrumKey, true);
+            String refFile = spectrumMatch.getSpectrumFile();
+            Precursor refPrecursor = spectrumProvider.getPrecursor(
+                    spectrumMatch.getSpectrumFile(),
+                    spectrumMatch.getSpectrumTitle()
+            );
 
             // match spectra by mass and retention time
-            for (String spectrumTitle : spectrumFactory.getSpectrumTitles(refFile)) {
+            for (String spectrumTitle : spectrumProvider.getSpectrumTitles(refFile)) {
 
-                Precursor precursor = spectrumFactory.getPrecursor(refFile, spectrumTitle);
+                Precursor precursor = spectrumProvider.getPrecursor(refFile, spectrumTitle);
 
-                if (Math.abs(precursor.rt - refPrecursor.rt) <= reporterIonSelectionSettings.getPrecursorRTTolerance()) {
+                if (Math.abs(precursor.rt - refPrecursor.rt)
+                        <= reporterIonSelectionSettings.getPrecursorRTTolerance()) {
 
                     if (reporterIonSelectionSettings.isPrecursorMzPpm()) {
 
                         double error = (precursor.mz - refPrecursor.mz) / refPrecursor.mz * 1000000;
 
                         if (Math.abs(error) <= reporterIonSelectionSettings.getPrecursorMzTolerance()) {
-                            String key = Spectrum.getSpectrumKey(refFile, spectrumTitle);
+                            Long key = SpectrumMatch.getKey(refFile, spectrumTitle);
                             spectra.add(key);
                         }
 
-                    } else if (Math.abs(precursor.mz - refPrecursor.mz) <= reporterIonSelectionSettings.getPrecursorMzTolerance()) {
-                        String key = Spectrum.getSpectrumKey(refFile, spectrumTitle);
+                    } else if (Math.abs(precursor.mz - refPrecursor.mz)
+                            <= reporterIonSelectionSettings.getPrecursorMzTolerance()) {
+                        Long key = SpectrumMatch.getKey(refFile, spectrumTitle);
                         spectra.add(key);
                     }
                 }
@@ -360,9 +393,15 @@ public class Reporter {
         Set<String> indexes = reporterIonQuantification.getSampleIndexes();
         HashMap<String, ArrayList<Double>> ratios = new HashMap<>();
 
-        for (String tempSpectrumKey : spectra) {
+        for (Long tempSpectrumKey : spectra) {
 
-            SpectrumQuantificationDetails spectrumQuantification = quantificationFeaturesGenerator.getSpectrumQuantificationDetails(reporterIonQuantification, reporterIonSelectionSettings, tempSpectrumKey);
+            SpectrumQuantificationDetails spectrumQuantification
+                    = quantificationFeaturesGenerator.getSpectrumQuantificationDetails(
+                            spectrumProvider,
+                            reporterIonQuantification,
+                            reporterIonSelectionSettings,
+                            tempSpectrumKey
+                    );
 
             ArrayList<String> controlIndexes = reporterIonQuantification.getControlSamples();
 
@@ -434,6 +473,7 @@ public class Reporter {
      *
      * @param identification the identification containing identification
      * details
+     * @param spectrumProvider the spectrum provider
      * @param quantificationFeaturesGenerator the quantification features
      * generator used to store and retrieve quantification details
      * @param reporterIonQuantification the reporter ion quantification details
@@ -444,23 +484,35 @@ public class Reporter {
      */
     public static SpectrumQuantificationDetails estimateSpectrumQuantificationDetails(
             Identification identification,
+            SpectrumProvider spectrumProvider,
             QuantificationFeaturesGenerator quantificationFeaturesGenerator,
             ReporterIonQuantification reporterIonQuantification,
             ReporterIonSelectionSettings reporterIonSelectionSettings,
-            String matchKey
+            Long matchKey
     ) {
 
         ReporterMethod reporterMethod = reporterIonQuantification.getReporterMethod();
-        Spectrum spectrum = (Spectrum) SpectrumFactory.getInstance().getSpectrum(matchKey);
 
+        SpectrumMatch tempSpectrumMatch = identification.getSpectrumMatch(matchKey);
+        Spectrum spectrum = spectrumProvider.getSpectrum(tempSpectrumMatch.getSpectrumFile(), tempSpectrumMatch.getSpectrumTitle());
         SpectrumQuantificationDetails result = new SpectrumQuantificationDetails();
 
         // get reporter intensities
         Set<String> labels = reporterIonQuantification.getSampleIndexes();
         HashMap<String, IonMatch> matchesMap = new HashMap<>(labels.size());
+
         for (String ionName : labels) {
+
             ReporterIon reporterIon = reporterMethod.getReporterIon(ionName);
-            IonMatch bestMatch = getBestReporterIonMatch(reporterIon, 1, spectrum, reporterIonSelectionSettings.getReporterIonsMzTolerance(), reporterIonSelectionSettings.isMostAccurate());
+
+            IonMatch bestMatch = getBestReporterIonMatch(
+                    reporterIon,
+                    1,
+                    spectrum,
+                    reporterIonSelectionSettings.getReporterIonsMzTolerance(),
+                    reporterIonSelectionSettings.isMostAccurate()
+            );
+
             if (bestMatch != null) {
                 result.setReporterMatch(ionName, bestMatch);
                 matchesMap.put(ionName, bestMatch);
@@ -468,13 +520,26 @@ public class Reporter {
         }
 
         // get deisotoped intensities
-        Deisotoper deisotoper = quantificationFeaturesGenerator.getDeisotoper(reporterMethod, reporterIonSelectionSettings.getReporterIonsMzTolerance());
-        HashMap<String, Double> deisotoped = deisotoper.deisotope(matchesMap, spectrum, reporterIonSelectionSettings.getReporterIonsMzTolerance(), reporterIonSelectionSettings.isMostAccurate());
+        Deisotoper deisotoper = quantificationFeaturesGenerator.getDeisotoper(
+                reporterMethod,
+                reporterIonSelectionSettings.getReporterIonsMzTolerance()
+        );
+
+        HashMap<String, Double> deisotoped = deisotoper.deisotope(
+                matchesMap,
+                spectrum,
+                reporterIonSelectionSettings.getReporterIonsMzTolerance(),
+                reporterIonSelectionSettings.isMostAccurate()
+        );
+
         for (String index : reporterIonQuantification.getSampleIndexes()) {
+
             Double intensity = deisotoped.get(index);
+
             if (intensity == null || intensity < 0) {
                 intensity = 0.0;
             }
+
             result.setDeisotopedIntensity(index, intensity);
         }
 
@@ -495,7 +560,13 @@ public class Reporter {
      *
      * @return the best ion match
      */
-    public static IonMatch getBestReporterIonMatch(ReporterIon reporterIon, int charge, Spectrum spectrum, double mzTolerance, boolean mostAccurate) {
+    public static IonMatch getBestReporterIonMatch(
+            ReporterIon reporterIon,
+            int charge,
+            Spectrum spectrum,
+            double mzTolerance,
+            boolean mostAccurate
+    ) {
 
         ArrayList<IonMatch> ionMatches = SpectrumAnnotator.matchReporterIon(reporterIon, 1, spectrum, mzTolerance);
         IonMatch bestMatch = null;
@@ -507,25 +578,38 @@ public class Reporter {
             boolean bestIon = false;
 
             if (bestMatch == null) {
+
                 bestIon = true;
             } else if (mostAccurate) {
+
                 double ionError = Math.abs(ionMatch.getAbsoluteError());
+
                 if (ionError < bestError) {
+
                     bestIon = true;
                     bestError = ionError;
+
                 } else if (ionError == bestError) {
+
                     double intensity = ionMatch.peakIntensity;
+
                     if (intensity > bestIntensity) {
                         bestIon = true;
                         bestIntensity = intensity;
                     }
+
                 }
+
             } else {
+
                 double intensity = ionMatch.peakIntensity;
+
                 if (intensity > bestIntensity) {
+
                     bestIon = true;
                     bestIntensity = intensity;
                 }
+
             }
 
             if (bestIon) {
@@ -542,7 +626,10 @@ public class Reporter {
      * @return the path to the jar file
      */
     public static String getJarFilePath() {
-        return CompomicsWrapper.getJarFilePath((new Reporter()).getClass().getResource("Reporter.class").getPath(), "Reporter");
+        return CompomicsWrapper.getJarFilePath(
+                (new Reporter()).getClass().getResource("Reporter.class").getPath(),
+                "Reporter"
+        );
     }
 
     /**

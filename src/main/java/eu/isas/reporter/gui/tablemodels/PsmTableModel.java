@@ -4,6 +4,7 @@ import com.compomics.util.exceptions.ExceptionHandler;
 import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.matches.SpectrumMatch;
 import com.compomics.util.experiment.identification.peptide_shaker.PSParameter;
+import com.compomics.util.experiment.mass_spectrometry.SpectrumProvider;
 import com.compomics.util.experiment.mass_spectrometry.spectra.Precursor;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.gui.tablemodels.SelfUpdatingTableModel;
@@ -35,6 +36,10 @@ public class PsmTableModel extends SelfUpdatingTableModel {
      * The identification of this project.
      */
     private Identification identification;
+    /**
+     * The spectrum provider.
+     */
+    private SpectrumProvider spectrumProvider;
     /**
      * The display features generator.
      */
@@ -82,9 +87,16 @@ public class PsmTableModel extends SelfUpdatingTableModel {
     private DisplayPreferences displayPreferences;
 
     /**
+     * Constructor which sets a new empty table.
+     */
+    public PsmTableModel() {
+    }
+    
+    /**
      * Constructor which sets a new table.
      *
      * @param identification the identification object containing the matches
+     * @param spectrumProvider the spectrum provider
      * @param displayFeaturesGenerator the display features generator
      * @param displayPreferences the display preferences
      * @param reporterIonQuantification the reporter quantification information
@@ -95,10 +107,21 @@ public class PsmTableModel extends SelfUpdatingTableModel {
      * displayed instead of the confidence
      * @param exceptionHandler handler for the exceptions
      */
-    public PsmTableModel(Identification identification, DisplayFeaturesGenerator displayFeaturesGenerator, DisplayPreferences displayPreferences, IdentificationParameters identificationParameters,
-            ReporterIonQuantification reporterIonQuantification, QuantificationFeaturesGenerator quantificationFeaturesGenerator,
-            long[] psmKeys, boolean displayScores, ExceptionHandler exceptionHandler) {
+    public PsmTableModel(
+            Identification identification,
+            SpectrumProvider spectrumProvider,
+            DisplayFeaturesGenerator displayFeaturesGenerator,
+            DisplayPreferences displayPreferences,
+            IdentificationParameters identificationParameters,
+            ReporterIonQuantification reporterIonQuantification,
+            QuantificationFeaturesGenerator quantificationFeaturesGenerator,
+            long[] psmKeys,
+            boolean displayScores,
+            ExceptionHandler exceptionHandler
+    ) {
+        
         this.identification = identification;
+        this.spectrumProvider = spectrumProvider;
         this.displayFeaturesGenerator = displayFeaturesGenerator;
         this.displayPreferences = displayPreferences;
         this.reporterIonQuantification = reporterIonQuantification;
@@ -121,6 +144,7 @@ public class PsmTableModel extends SelfUpdatingTableModel {
      * table model. This keeps the sorting order of the table.
      *
      * @param identification the identification object containing the matches
+     * @param spectrumProvider the spectrum provider
      * @param displayFeaturesGenerator the display features generator
      * @param displayPreferences the display preferences
      * @param reporterIonQuantification the reporter quantification information
@@ -130,9 +154,18 @@ public class PsmTableModel extends SelfUpdatingTableModel {
      * @param displayScores boolean indicating whether the scores should be
      * displayed instead of the confidence
      */
-    public void updateDataModel(Identification identification, DisplayFeaturesGenerator displayFeaturesGenerator, DisplayPreferences displayPreferences, IdentificationParameters identificationParameters,
-            ReporterIonQuantification reporterIonQuantification, QuantificationFeaturesGenerator quantificationFeaturesGenerator,
-            long[] psmKeys, boolean displayScores) {
+    public void updateDataModel(
+            Identification identification,
+            SpectrumProvider spectrumProvider,
+            DisplayFeaturesGenerator displayFeaturesGenerator,
+            DisplayPreferences displayPreferences,
+            IdentificationParameters identificationParameters,
+            ReporterIonQuantification reporterIonQuantification,
+            QuantificationFeaturesGenerator quantificationFeaturesGenerator,
+            long[] psmKeys,
+            boolean displayScores
+    ) {
+
         this.identification = identification;
         this.displayFeaturesGenerator = displayFeaturesGenerator;
         this.displayPreferences = displayPreferences;
@@ -157,12 +190,6 @@ public class PsmTableModel extends SelfUpdatingTableModel {
         psmKeys = null;
     }
 
-    /**
-     * Constructor which sets a new empty table.
-     */
-    public PsmTableModel() {
-    }
-
     @Override
     public int getRowCount() {
         return psmKeys == null ? 0 : psmKeys.length;
@@ -175,6 +202,7 @@ public class PsmTableModel extends SelfUpdatingTableModel {
 
     @Override
     public String getColumnName(int column) {
+        
         switch (column) {
             case 0:
                 return " ";
@@ -226,12 +254,18 @@ public class PsmTableModel extends SelfUpdatingTableModel {
             switch (column) {
 
                 case 1:
-                    ArrayList<Double> data = new ArrayList<Double>();
-                    PsmQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getPSMQuantificationDetails(spectrumMatch.getKey());
+                    ArrayList<Double> data = new ArrayList<>();
+                    PsmQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getPSMQuantificationDetails(spectrumProvider, spectrumMatch.getKey());
                     ArrayList<String> reagentsOrder = displayPreferences.getReagents();
+
                     for (String tempReagent : reagentsOrder) {
+
                         int sampleIndex = sampleIndexes.indexOf(tempReagent);
-                        Double ratio = quantificationDetails.getRatio(sampleIndexes.get(sampleIndex), reporterIonQuantification.getNormalizationFactors());
+                        Double ratio = quantificationDetails.getRatio(
+                                sampleIndexes.get(sampleIndex),
+                                reporterIonQuantification.getNormalizationFactors()
+                        );
+
                         if (ratio != null) {
                             if (ratio != 0) {
                                 ratio = BasicMathFunctions.log(ratio, 2);
@@ -240,49 +274,62 @@ public class PsmTableModel extends SelfUpdatingTableModel {
                             data.add(ratio);
                         }
                     }
+
                     return new JSparklinesDataSeries(data, Color.BLACK, null);
+
                 case 2:
                     return SpectrumIdentificationPanel.isBestPsmEqualForAllIdSoftware(spectrumMatch, identificationParameters.getSequenceMatchingParameters(), inputMap.getInputAlgorithmsSorted().size());
+
                 case 3:
                     return displayFeaturesGenerator.getTaggedPeptideSequence(spectrumMatch, true, true, true);
+
                 case 4:
                     if (spectrumMatch.getBestPeptideAssumption() != null) {
-
                         return spectrumMatch.getBestPeptideAssumption().getIdentificationCharge();
-
                     } else if (spectrumMatch.getBestTagAssumption() != null) {
-
                         return spectrumMatch.getBestTagAssumption().getIdentificationCharge();
-
                     } else {
-
                         throw new IllegalArgumentException("No best assumption found for spectrum " + psmKey + ".");
-
                     }
+
                 case 5:
-                    String spectrumKey = spectrumMatch.getSpectrumKey();
-                    Precursor precursor = SpectrumFactory.getInstance().getPrecursor(spectrumKey);
+                    Precursor precursor = spectrumProvider.getPrecursor(spectrumMatch.getSpectrumFile(), spectrumMatch.getSpectrumTitle());
                     SearchParameters searchParameters = identificationParameters.getSearchParameters();
 
                     if (spectrumMatch.getBestPeptideAssumption() != null) {
 
-                        return Math.abs(spectrumMatch.getBestPeptideAssumption().getDeltaMass(precursor.mz, searchParameters.isPrecursorAccuracyTypePpm(), searchParameters.getMinIsotopicCorrection(), searchParameters.getMaxIsotopicCorrection()));
+                        return Math.abs(
+                                spectrumMatch.getBestPeptideAssumption().getDeltaMass(
+                                        precursor.mz,
+                                        searchParameters.isPrecursorAccuracyTypePpm(),
+                                        searchParameters.getMinIsotopicCorrection(),
+                                        searchParameters.getMaxIsotopicCorrection()
+                                )
+                        );
 
                     } else if (spectrumMatch.getBestTagAssumption() != null) {
 
-                        return Math.abs(spectrumMatch.getBestTagAssumption().getDeltaMass(precursor.mz, searchParameters.isPrecursorAccuracyTypePpm(), searchParameters.getMinIsotopicCorrection(), searchParameters.getMaxIsotopicCorrection()));
+                        return Math.abs(
+                                spectrumMatch.getBestTagAssumption().getDeltaMass(
+                                        precursor.mz,
+                                        searchParameters.isPrecursorAccuracyTypePpm(),
+                                        searchParameters.getMinIsotopicCorrection(),
+                                        searchParameters.getMaxIsotopicCorrection()
+                                )
+                        );
 
                     } else {
-
                         throw new IllegalArgumentException("No best assumption found for spectrum " + psmKey + ".");
-
                     }
+
                 case 6:
                     PSParameter psParameter = (PSParameter) spectrumMatch.getUrParam(PSParameter.dummy);
                     return showScores ? psParameter.getTransformedScore() : psParameter.getConfidence();
+
                 case 7:
                     psParameter = (PSParameter) spectrumMatch.getUrParam(PSParameter.dummy);
                     return psParameter.getMatchValidationLevel().getIndex();
+
                 default:
                     return null;
             }
@@ -302,11 +349,13 @@ public class PsmTableModel extends SelfUpdatingTableModel {
 
     @Override
     public Class getColumnClass(int columnIndex) {
+        
         for (int i = 0; i < getRowCount(); i++) {
             if (getValueAt(i, columnIndex) != null) {
                 return getValueAt(i, columnIndex).getClass();
             }
         }
+        
         return String.class;
     }
 

@@ -56,6 +56,7 @@ import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Toolkit;
 import java.io.*;
+import java.lang.reflect.Field;
 import java.net.ConnectException;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -181,6 +182,22 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      */
     public ReporterGUI() {
 
+        // turn off illegal access log messages
+        try {
+            Class loggerClass = Class.forName("jdk.internal.module.IllegalAccessLogger");
+            Field loggerField = loggerClass.getDeclaredField("logger");
+            Class unsafeClass = Class.forName("sun.misc.Unsafe");
+            Field unsafeField = unsafeClass.getDeclaredField("theUnsafe");
+            unsafeField.setAccessible(true);
+            Object unsafe = unsafeField.get(null);
+            Long offset = (Long) unsafeClass.getMethod("staticFieldOffset", Field.class).invoke(unsafe, loggerField);
+            unsafeClass.getMethod("putObjectVolatile", Object.class, long.class, Object.class) //
+                    .invoke(unsafe, loggerClass, offset, null);
+        } catch (Throwable ex) {
+            // ignore, i.e. simply show the warnings...
+            //ex.printStackTrace();
+        }
+        
         // set up the ErrorLog
         setUpLogFile();
 
@@ -399,20 +416,20 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
             if (!normalizationFactors.hasPsmNormalisationFactors()) {
                 normalizer.setPsmNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(),
                         reporterSettings.getNormalizationSettings(), getIdentificationParameters().getSequenceMatchingParameters(),
-                        getIdentification(), quantificationFeaturesGenerator, processingParameters,
+                        getIdentification(), getSpectrumProvider(), quantificationFeaturesGenerator, processingParameters,
                         psdbParent.getIdentificationParameters().getSearchParameters(), psdbParent.getIdentificationParameters().getFastaParameters(),
                         psdbParent.getIdentificationParameters().getPeptideVariantsParameters(), exceptionHandler, progressDialog);
             }
             if (!normalizationFactors.hasPeptideNormalisationFactors()) {
                 normalizer.setPeptideNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(),
                         reporterSettings.getNormalizationSettings(), getIdentificationParameters().getSequenceMatchingParameters(),
-                        getIdentification(), quantificationFeaturesGenerator, processingParameters,
+                        getIdentification(), getSpectrumProvider(), quantificationFeaturesGenerator, processingParameters,
                         psdbParent.getIdentificationParameters().getSearchParameters(), psdbParent.getIdentificationParameters().getFastaParameters(),
                         psdbParent.getIdentificationParameters().getPeptideVariantsParameters(), exceptionHandler, progressDialog);
             }
             if (!normalizationFactors.hasProteinNormalisationFactors()) {
                 normalizer.setProteinNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(),
-                        reporterSettings.getNormalizationSettings(), getIdentification(), getMetrics(), quantificationFeaturesGenerator,
+                        reporterSettings.getNormalizationSettings(), getIdentification(), getSpectrumProvider(), getMetrics(), quantificationFeaturesGenerator,
                         processingParameters, psdbParent.getIdentificationParameters().getSearchParameters(), psdbParent.getIdentificationParameters().getFastaParameters(),
                         psdbParent.getIdentificationParameters().getPeptideVariantsParameters(), exceptionHandler, progressDialog);
             }
@@ -421,7 +438,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         // cluster the profiles of the selected entities
         clusterBuilder = new ClusterBuilder();
         kMeansClutering = clusterBuilder.clusterProfiles(getIdentification(), getIdentificationParameters(), getSequenceProvider(),
-                getMetrics(), reporterIonQuantification, quantificationFeaturesGenerator, displayPreferences, true, progressDialog);
+                getSpectrumProvider(), getMetrics(), reporterIonQuantification, quantificationFeaturesGenerator, displayPreferences, true, progressDialog);
 
         if (waitingHandler.isRunCanceled()) {
             return;
@@ -1556,7 +1573,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
             public void run() {
                 try {
                     kMeansClutering = clusterBuilder.clusterProfiles(getIdentification(), getIdentificationParameters(),
-                            getSequenceProvider(), getMetrics(), reporterIonQuantification, quantificationFeaturesGenerator,
+                            getSequenceProvider(), getSpectrumProvider(), getMetrics(), reporterIonQuantification, quantificationFeaturesGenerator,
                             displayPreferences, loadData, progressDialog);
 
                     if (!progressDialog.isRunCanceled()) {

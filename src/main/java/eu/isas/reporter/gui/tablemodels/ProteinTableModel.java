@@ -10,6 +10,7 @@ import com.compomics.util.experiment.identification.utils.ProteinUtils;
 import com.compomics.util.experiment.identification.validation.MatchValidationLevel;
 import com.compomics.util.experiment.io.biology.protein.ProteinDetailsProvider;
 import com.compomics.util.experiment.io.biology.protein.SequenceProvider;
+import com.compomics.util.experiment.mass_spectrometry.SpectrumProvider;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.gui.TableProperties;
 import com.compomics.util.gui.tablemodels.SelfUpdatingTableModel;
@@ -63,6 +64,10 @@ public class ProteinTableModel extends SelfUpdatingTableModel {
      * The protein details provider.
      */
     private ProteinDetailsProvider proteinDetailsProvider;
+    /**
+     * The spectrum provider.
+     */
+    private SpectrumProvider spectrumProvider;
     /**
      * The protein sequences provider.
      */
@@ -154,7 +159,7 @@ public class ProteinTableModel extends SelfUpdatingTableModel {
 
     /**
      * Update the data in the table model without having to reset the whole
-     * table model. This keeps the sorting order of the table.
+     * table model.This keeps the sorting order of the table.
      *
      * @param identification the identification containing the protein
      * information
@@ -162,6 +167,7 @@ public class ProteinTableModel extends SelfUpdatingTableModel {
      * generator generating the features of the identification
      * @param geneMaps the gene maps
      * @param proteinDetailsProvider the protein details provider
+     * @param spectrumProvider the spectrum provider
      * @param sequenceProvider the protein sequences provider
      * @param reporterIonQuantification the reporter quantification information
      * @param quantificationFeaturesGenerator the quantification feature
@@ -172,13 +178,14 @@ public class ProteinTableModel extends SelfUpdatingTableModel {
      * @param proteinKeys the keys of the protein matches to display
      */
     public void updateDataModel(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, 
-            ProteinDetailsProvider proteinDetailsProvider, SequenceProvider sequenceProvider, GeneMaps geneMaps,
+            ProteinDetailsProvider proteinDetailsProvider, SequenceProvider sequenceProvider, SpectrumProvider spectrumProvider, GeneMaps geneMaps,
             ReporterIonQuantification reporterIonQuantification, QuantificationFeaturesGenerator quantificationFeaturesGenerator,
             DisplayFeaturesGenerator displayFeaturesGenerator, DisplayPreferences displayPreferences, long[] proteinKeys) {
         this.identification = identification;
         this.identificationFeaturesGenerator = identificationFeaturesGenerator;
         this.proteinDetailsProvider = proteinDetailsProvider;
         this.sequenceProvider = sequenceProvider;
+        this.spectrumProvider = spectrumProvider;
         this.geneMaps = geneMaps;
         this.reporterIonQuantification = reporterIonQuantification;
         this.quantificationFeaturesGenerator = quantificationFeaturesGenerator;
@@ -279,7 +286,7 @@ public class ProteinTableModel extends SelfUpdatingTableModel {
             switch (column) {
                 case 1:
                     ArrayList<Double> data = new ArrayList<Double>();
-                    ProteinQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(proteinKey, null);
+                    ProteinQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(spectrumProvider, proteinKey, null);
                     ArrayList<String> reagentsOrder = displayPreferences.getReagents();
                     for (String tempReagent : reagentsOrder) {
                         int sampleIndex = sampleIndexes.indexOf(tempReagent);

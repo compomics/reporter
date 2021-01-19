@@ -1,9 +1,10 @@
 package eu.isas.reporter.gui;
 
-import com.compomics.util.db.object.ObjectsCache;
 import com.compomics.util.examples.BareBonesBrowserLaunch;
 import com.compomics.util.experiment.biology.ions.impl.ReporterIon;
 import com.compomics.util.experiment.identification.Identification;
+import com.compomics.util.experiment.io.mass_spectrometry.MsFileHandler;
+import com.compomics.util.experiment.io.mass_spectrometry.cms.CmsFolder;
 import com.compomics.util.experiment.quantification.Quantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
@@ -72,9 +73,9 @@ public class NewDialog extends javax.swing.JDialog {
      */
     private PsdbParent psdbParent;
     /**
-     * The mgf files loaded.
+     * The spectrum files loaded.
      */
-    private ArrayList<File> mgfFiles = new ArrayList<File>();
+    private ArrayList<File> spectrumFiles = new ArrayList<File>();
     /**
      * The FASTA file.
      */
@@ -135,6 +136,10 @@ public class NewDialog extends javax.swing.JDialog {
      * The project details.
      */
     private ProjectDetails projectDetails = new ProjectDetails();
+    /**
+     * The handler for mass spectrometry files.
+     */
+    private MsFileHandler msFileHandler = new MsFileHandler();
 
     /**
      * Constructor.
@@ -771,40 +776,69 @@ public class NewDialog extends javax.swing.JDialog {
      */
     private void addSpectraFilesJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addSpectraFilesJButtonActionPerformed
 
-        // @TODO: add mgf validation etc like for PeptideShaker
-        final JFileChooser fileChooser = new JFileChooser(reporterGUI.getLastSelectedFolder().getLastSelectedFolder());
+        JFileChooser fileChooser = new JFileChooser(reporterGUI.getLastSelectedFolder().getLastSelectedFolder());
         fileChooser.setDialogTitle("Select Spectrum File(s)");
         fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         fileChooser.setMultiSelectionEnabled(true);
 
         FileFilter filter = new FileFilter() {
+            @Override
             public boolean accept(File myFile) {
                 return myFile.getName().toLowerCase().endsWith(".mgf")
+                        || myFile.getName().toLowerCase().endsWith(".mgf.gz")
+                        || myFile.getName().toLowerCase().endsWith(".mzml")
+                        || myFile.getName().toLowerCase().endsWith(".mzml.gz")
                         || myFile.isDirectory();
             }
 
+            @Override
             public String getDescription() {
-                return "Supported formats: .mgf";
+                return "mgf or mzML (.mgf, .mg.gz, .mzml, .mzml.gz)";
             }
         };
 
         fileChooser.setFileFilter(filter);
-
-        int returnVal = fileChooser.showDialog(this.getParent(), "Add");
+        int returnVal = fileChooser.showDialog(this, "Add");
 
         if (returnVal == JFileChooser.APPROVE_OPTION) {
-            if (welcomeDialog != null) {
-                progressDialog = new ProgressDialogX(welcomeDialog, reporterGUI,
-                        Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
-                        Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
-            } else {
-                progressDialog = new ProgressDialogX(this, reporterGUI,
-                        Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
-                        Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
+
+            // get the files
+            ArrayList<File> selectedFiles = new ArrayList<>();
+
+            for (File newFile : fileChooser.getSelectedFiles()) {
+
+                if (newFile.isDirectory()) {
+
+                    File[] tempFiles = newFile.listFiles();
+
+                    for (File file : tempFiles) {
+
+                        if (file.getName().toLowerCase().endsWith(".mgf")
+                                || file.getName().toLowerCase().endsWith(".mgf.gz")
+                                || file.getName().toLowerCase().endsWith(".mzml")
+                                || file.getName().toLowerCase().endsWith(".mzml.gz")) {
+
+                            selectedFiles.add(file);
+
+                        }
+                    }
+                } else {
+
+                    selectedFiles.add(newFile);
+
+                }
             }
 
+            // Load the files
+            progressDialog = new ProgressDialogX(
+                    this,
+                    reporterGUI,
+                    Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/peptide-shaker.gif")),
+                    Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/peptide-shaker-orange.gif")),
+                    true
+            );
             progressDialog.setPrimaryProgressCounterIndeterminate(true);
-            progressDialog.setWaitingText("Loading Spectrum Files. Please Wait...");
+            progressDialog.setTitle("Loading Files. Please Wait...");
 
             new Thread(new Runnable() {
                 public void run() {
@@ -816,57 +850,47 @@ public class NewDialog extends javax.swing.JDialog {
                 }
             }, "ProgressDialog").start();
 
-            new Thread("ImportThread") {
-                @Override
+            new Thread("loadingThread") {
                 public void run() {
-                    try {
-                        ArrayList<File> newFiles = new ArrayList<File>();
-                        for (File newFile : fileChooser.getSelectedFiles()) {
-                            if (newFile.isDirectory()) {
-                                File[] tempFiles = newFile.listFiles();
-                                for (File file : tempFiles) {
-                                    if (file.getName().toLowerCase().endsWith(".mgf")) {
-                                        if (!mgfFiles.contains(file) && !newFiles.contains(file)) {
-                                            newFiles.add(file);
-                                        }
-                                    }
-                                }
-                            } else if (newFile.getName().toLowerCase().endsWith(".mgf")) {
-                                if (!mgfFiles.contains(newFile) && !newFiles.contains(newFile)) {
-                                    newFiles.add(newFile);
-                                }
-                            }
 
-                            reporterGUI.getLastSelectedFolder().setLastSelectedFolder(newFile.getPath());
-                        }
+                    boolean allLoaded = true;
 
-                        int cpt = 0;
-                        for (File newFile : newFiles) {
-                            progressDialog.setWaitingText(
-                                    "Loading Spectrum Files ("
-                                    + ++cpt
-                                    + " of "
-                                    + newFiles.size()
-                                    + "). Please Wait..."
+                    for (File file : selectedFiles) {
+
+                        try {
+
+                            File folder = CmsFolder.getParentFolder() == null ? file.getParentFile() : new File(CmsFolder.getParentFolder());
+
+                            msFileHandler.register(file, folder, progressDialog);
+
+                        } catch (Exception e) {
+
+                            progressDialog.setRunCanceled();
+
+                            allLoaded = false;
+
+                            JOptionPane.showMessageDialog(
+                                    null,
+                                    "An error occurred while reading the following file.\n"
+                                    + file.getAbsolutePath() + "\n\nError:\n" + e.getLocalizedMessage(),
+                                    "File error",
+                                    JOptionPane.ERROR_MESSAGE
                             );
-                            mgfFiles.add(newFile);
-                            psdbParent.getProjectDetails().addSpectrumFile(newFile);
-                            spectrumFactory.addSpectra(newFile, progressDialog);
+
+                            e.printStackTrace();
                         }
-
-                        progressDialog.setRunFinished();
-
-                    } catch (Exception e) {
-                        progressDialog.setRunFinished();
-                        e.printStackTrace();
-                        JOptionPane.showMessageDialog(
-                                NewDialog.this,
-                                "An error occurred while reading the mgf file.",
-                                "Mgf Error",
-                                JOptionPane.WARNING_MESSAGE
-                        );
                     }
-                    verifySpectrumFiles();
+
+                    progressDialog.setRunFinished();
+
+                    if (allLoaded) {
+
+                        spectrumFiles.addAll(selectedFiles);
+                        txtSpectraFileLocation.setText(spectrumFiles.size() + " file(s) selected");
+                        validateInput();
+
+                    }
+
                 }
             }.start();
         }
@@ -1263,7 +1287,7 @@ public class NewDialog extends javax.swing.JDialog {
 
         for (String spectrumFileName : msFiles) { // @TODO: check alternative locations as for ps
             boolean found = false;
-            for (File spectrumFile : mgfFiles) {
+            for (File spectrumFile : spectrumFiles) {
                 if (spectrumFile.getName().equals(spectrumFileName)) {
                     found = true;
                 }
@@ -1282,10 +1306,10 @@ public class NewDialog extends javax.swing.JDialog {
                         + "Please locate them manually.", "Spectrum File Not Found", JOptionPane.WARNING_MESSAGE);
             }
         }
-        if (mgfFiles.size() > 1) {
-            txtSpectraFileLocation.setText(mgfFiles.size() + " files loaded"); //@TODO: allow editing
-        } else if (mgfFiles.size() == 1) {
-            txtSpectraFileLocation.setText(mgfFiles.get(0).getName()); //@TODO: allow editing
+        if (spectrumFiles.size() > 1) {
+            txtSpectraFileLocation.setText(spectrumFiles.size() + " files loaded"); //@TODO: allow editing
+        } else if (spectrumFiles.size() == 1) {
+            txtSpectraFileLocation.setText(spectrumFiles.get(0).getName()); //@TODO: allow editing
         } else {
             txtSpectraFileLocation.setText("");
         }
@@ -1372,7 +1396,7 @@ public class NewDialog extends javax.swing.JDialog {
                 psdbParent.setPsdbFile(psFile);
                 ProjectImporter projectImporter = new ProjectImporter(NewDialog.this);
                 try {
-                    projectImporter.importPeptideShakerProject(psdbParent, mgfFiles, progressDialog);
+                    projectImporter.importPeptideShakerProject(psdbParent, spectrumFiles, progressDialog);
                     projectImporter.importReporterProject(psdbParent, progressDialog);
                 } catch (OutOfMemoryError error) {
                     System.out.println("Ran out of memory! (runtime.maxMemory(): " + Runtime.getRuntime().maxMemory() + ")");
@@ -1523,79 +1547,6 @@ public class NewDialog extends javax.swing.JDialog {
         }
 
         return true;
-    }
-
-    /**
-     * Sets the spectra files to process.
-     *
-     * @param files the spectra files to process
-     */
-    public void addSpectrumFiles(ArrayList<File> files) {
-        progressDialog = new ProgressDialogX(this, reporterGUI,
-                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
-                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
-        progressDialog.setPrimaryProgressCounterIndeterminate(true);
-        progressDialog.setTitle("Importing Spectra. Please Wait...");
-        final ArrayList<File> newMgfFiles = files;
-
-        new Thread(new Runnable() {
-            public void run() {
-                try {
-                    progressDialog.setVisible(true);
-                } catch (IndexOutOfBoundsException e) {
-                    // ignore
-                }
-            }
-        }, "ProgressDialog").start();
-
-        new Thread("ImportThread") {
-            @Override
-            public void run() {
-                ArrayList<File> error = processSpectrumFiles(newMgfFiles, progressDialog);
-                String report = "An error occurred while importing ";
-                if (error.size() == 1) {
-                    report += error.get(0).getName() + ".";
-                } else if (error.size() == newMgfFiles.size()) {
-                    report += "the mgf files.";
-                } else {
-                    report += error.size() + " mgf files of the " + newMgfFiles.size() + " selected.";
-                }
-                JOptionPane.showMessageDialog(NewDialog.this,
-                        report,
-                        "File Input Error", JOptionPane.WARNING_MESSAGE);
-                txtSpectraFileLocation.setText(mgfFiles.size() + " file(s) selected");
-            }
-        }.start();
-    }
-
-    /**
-     * Imports a list of spectrum files and returns a list containing any
-     * problematic file.
-     *
-     * @param spectrumFiles list of spectrum files to process
-     * @param progressDialog process dialog displaying progress
-     * @return a list of files which could not be processed
-     */
-    private ArrayList<File> processSpectrumFiles(ArrayList<File> spectrumFiles, ProgressDialogX progressDialog) {
-        ArrayList<File> error = new ArrayList<>();
-        int cpt = 1;
-        for (File mgfFile : spectrumFiles) {
-
-            if (progressDialog.isRunCanceled()) {
-                progressDialog.dispose();
-                return null;
-            }
-
-            progressDialog.setTitle("Importing Spectrum Files (" + cpt++ + "/" + spectrumFiles.size() + "). Please Wait...");
-
-            try {
-                spectrumFactory.addSpectra(mgfFile, progressDialog);
-                mgfFiles.add(mgfFile);
-            } catch (Exception e) {
-                error.add(mgfFile);
-            }
-        }
-        return error;
     }
 
     /**
