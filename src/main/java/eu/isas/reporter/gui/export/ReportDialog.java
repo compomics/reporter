@@ -253,7 +253,7 @@ public class ReportDialog extends javax.swing.JDialog {
      */
     private void exitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitButtonActionPerformed
         try {
-            exportFactory.saveFactory();
+            exportFactory.saveFactory(exportFactory);
         } catch (Exception e) {
             reporterGUI.catchException(e);
         }
