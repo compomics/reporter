@@ -15,6 +15,7 @@ import static com.compomics.util.gui.parameters.identification.search.SequenceDb
 import com.compomics.util.gui.parameters.tools.ProcessingParametersDialog;
 import com.compomics.util.gui.renderers.AlignedListCellRenderer;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
+import com.compomics.util.io.IoUtil;
 import com.compomics.util.io.file.LastSelectedFolder;
 import com.compomics.util.parameters.identification.IdentificationParameters;
 import com.compomics.util.parameters.identification.search.SearchParameters;
@@ -168,6 +169,7 @@ public class NewDialog extends javax.swing.JDialog {
         }
 
         reporterMethodComboBox.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 selectedMethod = methodsFactory.getReporterMethod((String) reporterMethodComboBox.getSelectedItem());
                 reagents = selectedMethod.getReagentsSortedByMass();
@@ -211,6 +213,7 @@ public class NewDialog extends javax.swing.JDialog {
         }
 
         reporterMethodComboBox.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 selectedMethod = methodsFactory.getReporterMethod((String) reporterMethodComboBox.getSelectedItem());
                 reagents = selectedMethod.getReagentsSortedByMass();
@@ -764,7 +767,12 @@ public class NewDialog extends javax.swing.JDialog {
                 LastSelectedFolder lastSelectedFolder = reporterGUI.getLastSelectedFolder();
                 lastSelectedFolder.setLastSelectedFolder(selectedFile.getAbsolutePath());
             } else {
-                JOptionPane.showMessageDialog(this, "Not a PeptideShaker file (.psdb).", "Unsupported File.", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Not a PeptideShaker file (.psdb).",
+                        "Unsupported File.",
+                        JOptionPane.WARNING_MESSAGE
+                );
             }
         }
     }//GEN-LAST:event_addIdFilesButtonActionPerformed
@@ -841,6 +849,7 @@ public class NewDialog extends javax.swing.JDialog {
             progressDialog.setTitle("Loading Files. Please Wait...");
 
             new Thread(new Runnable() {
+                @Override
                 public void run() {
                     try {
                         progressDialog.setVisible(true);
@@ -851,6 +860,7 @@ public class NewDialog extends javax.swing.JDialog {
             }, "ProgressDialog").start();
 
             new Thread("loadingThread") {
+                @Override
                 public void run() {
 
                     boolean allLoaded = true;
@@ -1280,32 +1290,47 @@ public class NewDialog extends javax.swing.JDialog {
      * @return a boolean indicating that all spectrum files are loaded
      */
     private boolean verifySpectrumFiles() {
+
         String missing = "";
         int nMissing = 0;
 
         TreeSet<String> msFiles = new TreeSet<>(psdbParent.getIdentification().getSpectrumIdentification().keySet());
 
         for (String spectrumFileName : msFiles) { // @TODO: check alternative locations as for ps
+
             boolean found = false;
+
             for (File spectrumFile : spectrumFiles) {
-                if (spectrumFile.getName().equals(spectrumFileName)) {
+                if (IoUtil.removeExtension(spectrumFile.getName()).equalsIgnoreCase(spectrumFileName)) {
                     found = true;
                 }
             }
+
             if (!found) {
                 nMissing++;
                 missing += spectrumFileName + "\n";
             }
         }
+
         if (nMissing > 0) {
+
             if (nMissing < 11) {
-                JOptionPane.showMessageDialog(this, "Spectrum file(s) not found:\n" + missing
-                        + "\nPlease locate them manually.", "Spectrum File Not Found", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Spectrum file(s) not found:\n" + missing + "\nPlease locate them manually.",
+                        "Spectrum File Not Found",
+                        JOptionPane.WARNING_MESSAGE);
             } else {
-                JOptionPane.showMessageDialog(this, "Spectrum files not found.\n"
-                        + "Please locate them manually.", "Spectrum File Not Found", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Spectrum files not found.\n" + "Please locate them manually.",
+                        "Spectrum File Not Found",
+                        JOptionPane.WARNING_MESSAGE
+                );
             }
+
         }
+
         if (spectrumFiles.size() > 1) {
             txtSpectraFileLocation.setText(spectrumFiles.size() + " files loaded"); //@TODO: allow editing
         } else if (spectrumFiles.size() == 1) {
@@ -1313,6 +1338,7 @@ public class NewDialog extends javax.swing.JDialog {
         } else {
             txtSpectraFileLocation.setText("");
         }
+
         return nMissing == 0;
     }
 
@@ -1331,6 +1357,7 @@ public class NewDialog extends javax.swing.JDialog {
         setTableProperties();
 
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 sampleAssignmentTable.revalidate();
                 sampleAssignmentTable.repaint();
@@ -1379,6 +1406,7 @@ public class NewDialog extends javax.swing.JDialog {
         progressDialog.setTitle("Importing Project. Please Wait...");
 
         new Thread(new Runnable() {
+            @Override
             public void run() {
                 try {
                     progressDialog.setVisible(true);

@@ -14,6 +14,7 @@ import com.compomics.util.experiment.identification.features.IdentificationFeatu
 import com.compomics.util.experiment.identification.peptide_shaker.Metrics;
 import com.compomics.util.experiment.io.biology.protein.ProteinDetailsProvider;
 import com.compomics.util.experiment.io.biology.protein.SequenceProvider;
+import com.compomics.util.experiment.io.temp.TempFilesManager;
 import com.compomics.util.experiment.mass_spectrometry.SpectrumProvider;
 import com.compomics.util.experiment.normalization.NormalizationFactors;
 import com.compomics.util.gui.PrivacyParametersDialog;
@@ -288,7 +289,13 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * @param processingParameters the processing preferences
      * @param displayPreferences the display preferences
      */
-    public void createNewProject(PsdbParent psdbParent, ReporterSettings reporterSettings, ReporterIonQuantification reporterIonQuantification, ProcessingParameters processingParameters, DisplayPreferences displayPreferences) {
+    public void createNewProject(
+            PsdbParent psdbParent, 
+            ReporterSettings reporterSettings, 
+            ReporterIonQuantification reporterIonQuantification, 
+            ProcessingParameters processingParameters, 
+            DisplayPreferences displayPreferences
+    ) {
 
         if (psdbParent != null) {
             closeOpenedProject();
@@ -312,19 +319,28 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
                 psdbParent.getMetrics(),
                 psdbParent.getSpectrumCountingParameters()
         );
+        
         displayFeaturesGenerator = new DisplayFeaturesGenerator(
                 psdbParent.getIdentificationParameters(),
                 psdbParent.getDisplayParameters(),
                 psdbParent.getSequenceProvider(),
                 psdbParent.getProteinDetailsProvider()
         );
+        
         selectedProteins = new ArrayList<>();
         selectedPeptides = new ArrayList<>();
         selectedPsms = new ArrayList<>();
 
         projectSaved = false;
-        quantificationFeaturesGenerator = new QuantificationFeaturesGenerator(new QuantificationFeaturesCache(), getIdentification(), getIdentificationFeaturesGenerator(), reporterSettings, reporterIonQuantification,
-                psdbParent.getIdentificationParameters().getSearchParameters(), psdbParent.getIdentificationParameters().getSequenceMatchingParameters());
+        quantificationFeaturesGenerator = new QuantificationFeaturesGenerator(
+                new QuantificationFeaturesCache(), 
+                getIdentification(), 
+                getIdentificationFeaturesGenerator(), 
+                reporterSettings, 
+                reporterIonQuantification,
+                psdbParent.getIdentificationParameters().getSearchParameters(), 
+                psdbParent.getIdentificationParameters().getSequenceMatchingParameters()
+        );
 
         progressDialog = new ProgressDialogX(this,
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
@@ -720,7 +736,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         fileMenu.setMnemonic('F');
         fileMenu.setText("File");
 
-        newMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
+        newMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         newMenuItem.setMnemonic('N');
         newMenuItem.setText("New");
         newMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -731,7 +747,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         fileMenu.add(newMenuItem);
         fileMenu.add(jSeparator1);
 
-        openMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
+        openMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         openMenuItem.setMnemonic('O');
         openMenuItem.setText("Open");
         openMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -742,7 +758,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         fileMenu.add(openMenuItem);
         fileMenu.add(jSeparator2);
 
-        saveMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
+        saveMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         saveMenuItem.setMnemonic('S');
         saveMenuItem.setText("Save");
         saveMenuItem.setEnabled(false);
@@ -1153,18 +1169,27 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
                     // turn off the self updating table models
                     overviewPanel.deactivateSelfUpdatingTableModels();
 
-                    closeOpenedProject();
+                    // close the files and save the user preferences
+                    if (!progressDialog.isRunCanceled()) {
+
+                        TempFilesManager.deleteTempFolders();
+                        closeOpenedProject();
+                        saveUserPreferences();
+
+                    }
 
                     if (progressDialog.isRunCanceled()) {
                         return;
                     }
 
-                    saveUserPreferences();
+                } catch (Exception e) {
+                    
+                    e.printStackTrace();
+                    catchException(e);
+                    
+                } finally {
 
-                    // close the progress dialog
-                    if (!progressDialog.isRunCanceled()) {
-                        progressDialog.setRunFinished();
-                    }
+                    progressDialog.setRunFinished();
 
                     // hide the gui
                     finalRef.setVisible(false);
@@ -1175,9 +1200,6 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
                     // close the jvm
                     System.exit(0);
 
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    catchException(e);
                 }
             }
         });
@@ -1222,12 +1244,22 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         if (getIdentification() != null) {
 
             try {
+                
                 getIdentification().close(false);
                 psdbParent.setIdentification(null);
+                
             } catch (Exception e) {
+                
                 databaseClosed = false;
                 e.printStackTrace();
-                JOptionPane.showMessageDialog(null, "Failed to close the database.", "Database Error", JOptionPane.WARNING_MESSAGE);
+                
+                JOptionPane.showMessageDialog(
+                        null, 
+                        "Failed to close the database.", 
+                        "Database Error", 
+                        JOptionPane.WARNING_MESSAGE
+                );
+                
             }
         }
 
@@ -1247,8 +1279,12 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
                 }
 
                 if (matchFolder.listFiles() != null && matchFolder.listFiles().length > 0) {
-                    JOptionPane.showMessageDialog(null, "Failed to empty the database folder:\n" + matchFolder.getPath() + ".",
-                            "Database Cleanup Failed", JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(
+                            null, 
+                            "Failed to empty the database folder:\n" + matchFolder.getPath() + ".",
+                            "Database Cleanup Failed", 
+                            JOptionPane.WARNING_MESSAGE
+                    );
                 }
             }
         }
