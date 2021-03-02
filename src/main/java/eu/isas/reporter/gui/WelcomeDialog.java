@@ -94,9 +94,6 @@ public class WelcomeDialog extends javax.swing.JDialog {
         backgroundPanel = new javax.swing.JPanel();
         openJButton = new javax.swing.JButton();
         newJButton = new javax.swing.JButton();
-        compomicsButton = new javax.swing.JButton();
-        probeButton = new javax.swing.JButton();
-        isasButton = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JSeparator();
         recentProjectsLabel = new javax.swing.JLabel();
         gettingStartedJButton1 = new javax.swing.JButton();
@@ -105,6 +102,9 @@ public class WelcomeDialog extends javax.swing.JDialog {
         lowMemoryWarningLabel = new javax.swing.JLabel();
         searchJButton = new javax.swing.JButton();
         reshakeJButton = new javax.swing.JButton();
+        compomicsButton = new javax.swing.JButton();
+        probeButton = new javax.swing.JButton();
+        isasButton = new javax.swing.JButton();
 
         quantifyJButton.setFont(quantifyJButton.getFont().deriveFont(quantifyJButton.getFont().getStyle() | java.awt.Font.BOLD, quantifyJButton.getFont().getSize()+3));
         quantifyJButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/reporter_logo.png"))); // NOI18N
@@ -205,63 +205,6 @@ public class WelcomeDialog extends javax.swing.JDialog {
         newJButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newJButtonActionPerformed(evt);
-            }
-        });
-
-        compomicsButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/compomics.png"))); // NOI18N
-        compomicsButton.setToolTipText("Computational Omics and Systems Biology Group");
-        compomicsButton.setBorder(null);
-        compomicsButton.setBorderPainted(false);
-        compomicsButton.setContentAreaFilled(false);
-        compomicsButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                compomicsButtonMouseEntered(evt);
-            }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                compomicsButtonMouseExited(evt);
-            }
-        });
-        compomicsButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                compomicsButtonActionPerformed(evt);
-            }
-        });
-
-        probeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/probe.png"))); // NOI18N
-        probeButton.setToolTipText("Proteomics Unit at the University of Bergen");
-        probeButton.setBorder(null);
-        probeButton.setBorderPainted(false);
-        probeButton.setContentAreaFilled(false);
-        probeButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                probeButtonMouseEntered(evt);
-            }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                probeButtonMouseExited(evt);
-            }
-        });
-        probeButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                probeButtonActionPerformed(evt);
-            }
-        });
-
-        isasButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/isas.png"))); // NOI18N
-        isasButton.setToolTipText("<html>ISAS - Institute for Analytical Science</html>");
-        isasButton.setBorder(null);
-        isasButton.setBorderPainted(false);
-        isasButton.setContentAreaFilled(false);
-        isasButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                isasButtonMouseEntered(evt);
-            }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                isasButtonMouseExited(evt);
-            }
-        });
-        isasButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                isasButtonActionPerformed(evt);
             }
         });
 
@@ -372,6 +315,63 @@ public class WelcomeDialog extends javax.swing.JDialog {
             }
         });
 
+        compomicsButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/compomics.png"))); // NOI18N
+        compomicsButton.setToolTipText("Computational Omics and Systems Biology Group");
+        compomicsButton.setBorder(null);
+        compomicsButton.setBorderPainted(false);
+        compomicsButton.setContentAreaFilled(false);
+        compomicsButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                compomicsButtonMouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                compomicsButtonMouseExited(evt);
+            }
+        });
+        compomicsButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                compomicsButtonActionPerformed(evt);
+            }
+        });
+
+        probeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/probe-new.png"))); // NOI18N
+        probeButton.setToolTipText("Proteomics Unit at the University of Bergen");
+        probeButton.setBorder(null);
+        probeButton.setBorderPainted(false);
+        probeButton.setContentAreaFilled(false);
+        probeButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                probeButtonMouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                probeButtonMouseExited(evt);
+            }
+        });
+        probeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                probeButtonActionPerformed(evt);
+            }
+        });
+
+        isasButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/isas-cropped.png"))); // NOI18N
+        isasButton.setToolTipText("<html>ISAS - Institute for Analytical Science</html>");
+        isasButton.setBorder(null);
+        isasButton.setBorderPainted(false);
+        isasButton.setContentAreaFilled(false);
+        isasButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                isasButtonMouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                isasButtonMouseExited(evt);
+            }
+        });
+        isasButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                isasButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout backgroundPanelLayout = new javax.swing.GroupLayout(backgroundPanel);
         backgroundPanel.setLayout(backgroundPanelLayout);
         backgroundPanelLayout.setHorizontalGroup(
@@ -402,17 +402,17 @@ public class WelcomeDialog extends javax.swing.JDialog {
                             .addComponent(reshakeJButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                 .addGap(27, 27, 27))
             .addGroup(backgroundPanelLayout.createSequentialGroup()
-                .addGap(31, 31, 31)
-                .addComponent(compomicsButton)
-                .addGap(20, 20, 20)
-                .addComponent(probeButton)
-                .addGap(18, 18, 18)
-                .addComponent(isasButton, javax.swing.GroupLayout.PREFERRED_SIZE, 174, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(backgroundPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jSeparator1)
                 .addContainerGap())
+            .addGroup(backgroundPanelLayout.createSequentialGroup()
+                .addGap(30, 30, 30)
+                .addComponent(compomicsButton, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(probeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 178, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(isasButton, javax.swing.GroupLayout.PREFERRED_SIZE, 161, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         backgroundPanelLayout.setVerticalGroup(
             backgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -436,12 +436,12 @@ public class WelcomeDialog extends javax.swing.JDialog {
                     .addComponent(lowMemoryWarningLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(backgroundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
                     .addComponent(compomicsButton)
-                    .addComponent(probeButton)
+                    .addComponent(probeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(isasButton))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         backgroundPanelLayout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {newJButton, openJButton});
@@ -507,93 +507,6 @@ public class WelcomeDialog extends javax.swing.JDialog {
 //            }
         }
     }//GEN-LAST:event_openJButtonActionPerformed
-
-    /**
-     * Change the cursor to a hand cursor.
-     *
-     * @param evt
-     */
-    private void compomicsButtonMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_compomicsButtonMouseEntered
-        setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-    }//GEN-LAST:event_compomicsButtonMouseEntered
-
-    /**
-     * Change the cursor back to the default cursor.
-     *
-     * @param evt
-     */
-    private void compomicsButtonMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_compomicsButtonMouseExited
-        setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-    }//GEN-LAST:event_compomicsButtonMouseExited
-
-    /**
-     * Open the Compomics web page.
-     *
-     * @param evt
-     */
-    private void compomicsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compomicsButtonActionPerformed
-        setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
-        BareBonesBrowserLaunch.openURL("https://compomics.com");
-        setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-    }//GEN-LAST:event_compomicsButtonActionPerformed
-
-    /**
-     * Change the cursor to a hand cursor.
-     *
-     * @param evt
-     */
-    private void probeButtonMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_probeButtonMouseEntered
-        setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-    }//GEN-LAST:event_probeButtonMouseEntered
-
-    /**
-     * Change the cursor back to the default cursor.
-     *
-     * @param evt
-     */
-    private void probeButtonMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_probeButtonMouseExited
-        setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-    }//GEN-LAST:event_probeButtonMouseExited
-
-    /**
-     * Open the PROBE web page.
-     *
-     * @param evt
-     */
-    private void probeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_probeButtonActionPerformed
-        setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
-        BareBonesBrowserLaunch.openURL("http://probe.uib.no");
-        setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-    }//GEN-LAST:event_probeButtonActionPerformed
-
-    /**
-     * Change the cursor to a hand cursor.
-     *
-     * @param evt
-     */
-    private void isasButtonMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_isasButtonMouseEntered
-        setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-    }//GEN-LAST:event_isasButtonMouseEntered
-
-    /**
-     * Change the cursor back to the default cursor.
-     *
-     * @param evt
-     */
-    private void isasButtonMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_isasButtonMouseExited
-        setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-    }//GEN-LAST:event_isasButtonMouseExited
-
-    /**
-     * Open the ISAS web page.
-     *
-     * @param evt
-     */
-    private void isasButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_isasButtonActionPerformed
-        setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
-        BareBonesBrowserLaunch.openURL("https://www.isas.de");
-        setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-    }//GEN-LAST:event_isasButtonActionPerformed
 
     /**
      * Start Reporter.
@@ -827,6 +740,93 @@ public class WelcomeDialog extends javax.swing.JDialog {
             }
         }, "StartPeptideShaker").start();
     }//GEN-LAST:event_reshakeJButtonActionPerformed
+
+    /**
+     * Change the cursor to a hand cursor.
+     *
+     * @param evt
+     */
+    private void compomicsButtonMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_compomicsButtonMouseEntered
+        setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+    }//GEN-LAST:event_compomicsButtonMouseEntered
+
+    /**
+     * Change the cursor back to the default cursor.
+     *
+     * @param evt
+     */
+    private void compomicsButtonMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_compomicsButtonMouseExited
+        setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+    }//GEN-LAST:event_compomicsButtonMouseExited
+
+    /**
+     * Open the Compomics web page.
+     *
+     * @param evt
+     */
+    private void compomicsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compomicsButtonActionPerformed
+        setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
+        BareBonesBrowserLaunch.openURL("https://compomics.com");
+        setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+    }//GEN-LAST:event_compomicsButtonActionPerformed
+
+    /**
+     * Change the cursor to a hand cursor.
+     *
+     * @param evt
+     */
+    private void probeButtonMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_probeButtonMouseEntered
+        setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+    }//GEN-LAST:event_probeButtonMouseEntered
+
+    /**
+     * Change the cursor back to the default cursor.
+     *
+     * @param evt
+     */
+    private void probeButtonMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_probeButtonMouseExited
+        setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+    }//GEN-LAST:event_probeButtonMouseExited
+
+    /**
+     * Open the PROBE web page.
+     *
+     * @param evt
+     */
+    private void probeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_probeButtonActionPerformed
+        setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
+        BareBonesBrowserLaunch.openURL("http://probe.uib.no");
+        setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+    }//GEN-LAST:event_probeButtonActionPerformed
+
+    /**
+     * Change the cursor to a hand cursor.
+     *
+     * @param evt
+     */
+    private void isasButtonMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_isasButtonMouseEntered
+        setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+    }//GEN-LAST:event_isasButtonMouseEntered
+
+    /**
+     * Change the cursor back to the default cursor.
+     *
+     * @param evt
+     */
+    private void isasButtonMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_isasButtonMouseExited
+        setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+    }//GEN-LAST:event_isasButtonMouseExited
+
+    /**
+     * Open the ISAS web page.
+     *
+     * @param evt
+     */
+    private void isasButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_isasButtonActionPerformed
+        setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
+        BareBonesBrowserLaunch.openURL("https://www.isas.de");
+        setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+    }//GEN-LAST:event_isasButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem aboutMenuItem;
