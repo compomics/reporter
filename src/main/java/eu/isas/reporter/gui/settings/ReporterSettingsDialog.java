@@ -3,8 +3,8 @@ package eu.isas.reporter.gui.settings;
 import eu.isas.reporter.gui.settings.quantification.NormalizationSettingsDialog;
 import eu.isas.reporter.gui.settings.quantification.ReporterIonSelectionSettingsDialog;
 import eu.isas.reporter.gui.settings.quantification.RatioEstimationSettingsDialog;
-import com.compomics.util.experiment.identification.identification_parameters.PtmSettings;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
+import com.compomics.util.parameters.identification.search.ModificationParameters;
 import eu.isas.reporter.settings.NormalizationSettings;
 import eu.isas.reporter.settings.RatioEstimationSettings;
 import eu.isas.reporter.settings.ReporterIonSelectionSettings;
@@ -28,9 +28,9 @@ public class ReporterSettingsDialog extends javax.swing.JDialog {
      */
     private ReporterMethod reporterMethod = null;
     /**
-     * The PTM settings of the search.
+     * The modification parameters of the search.
      */
-    private PtmSettings ptmSettings;
+    private ModificationParameters modificationParameters;
     /**
      * The settings for the selection of the reporter ions in spectra
      */
@@ -53,16 +53,16 @@ public class ReporterSettingsDialog extends javax.swing.JDialog {
      *
      * @param parentDialog the parent dialog
      * @param reporterSettings the reporter settings to display
-     * @param ptmSettings the PTM settings of the search
+     * @param modificationParameters the modification parameters of the search
      * @param reporterMethod the reporter method used
      * @param editable boolean indicating whether the settings can be edited
      */
-    public ReporterSettingsDialog(JDialog parentDialog, ReporterSettings reporterSettings, PtmSettings ptmSettings, ReporterMethod reporterMethod, boolean editable) {
+    public ReporterSettingsDialog(JDialog parentDialog, ReporterSettings reporterSettings, ModificationParameters modificationParameters, ReporterMethod reporterMethod, boolean editable) {
         super(parentDialog, true);
         this.reporterIonSelectionSettings = reporterSettings.getReporterIonSelectionSettings();
         this.ratioEstimationSettings = reporterSettings.getRatioEstimationSettings();
         this.normalizationSettings = reporterSettings.getNormalizationSettings();
-        this.ptmSettings = ptmSettings;
+        this.modificationParameters = modificationParameters;
         this.reporterMethod = reporterMethod;
         this.editable = editable;
         initComponents();
@@ -231,7 +231,7 @@ public class ReporterSettingsDialog extends javax.swing.JDialog {
      * @param evt 
      */
     private void ratioEstimationButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ratioEstimationButtonActionPerformed
-        RatioEstimationSettingsDialog ratioEstimationSettingsDialog = new RatioEstimationSettingsDialog(this, ratioEstimationSettings, ptmSettings, editable);
+        RatioEstimationSettingsDialog ratioEstimationSettingsDialog = new RatioEstimationSettingsDialog(this, ratioEstimationSettings, modificationParameters, editable);
         if (!ratioEstimationSettingsDialog.isCanceled()) {
             ratioEstimationSettings = ratioEstimationSettingsDialog.getRatioEstimationSettings();
         }

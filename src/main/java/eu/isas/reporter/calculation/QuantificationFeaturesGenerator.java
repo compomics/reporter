@@ -1,14 +1,16 @@
 package eu.isas.reporter.calculation;
 
 import com.compomics.util.experiment.identification.Identification;
-import com.compomics.util.experiment.identification.identification_parameters.SearchParameters;
+import com.compomics.util.experiment.identification.features.IdentificationFeaturesGenerator;
 import com.compomics.util.experiment.identification.matches.PeptideMatch;
 import com.compomics.util.experiment.identification.matches.ProteinMatch;
+import com.compomics.util.experiment.identification.matches.SpectrumMatch;
+import com.compomics.util.experiment.mass_spectrometry.SpectrumProvider;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
-import com.compomics.util.preferences.SequenceMatchingPreferences;
+import com.compomics.util.parameters.identification.advanced.SequenceMatchingParameters;
+import com.compomics.util.parameters.identification.search.SearchParameters;
 import com.compomics.util.waiting.WaitingHandler;
-import eu.isas.peptideshaker.utils.IdentificationFeaturesGenerator;
 import eu.isas.reporter.Reporter;
 import eu.isas.reporter.settings.ReporterIonSelectionSettings;
 import eu.isas.reporter.settings.ReporterSettings;
@@ -19,13 +21,13 @@ import eu.isas.reporter.quantificationdetails.ProteinPtmQuantificationDetails;
 import eu.isas.reporter.quantificationdetails.SpectrumQuantificationDetails;
 import java.io.IOException;
 import java.sql.SQLException;
-import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
 
 /**
  * The quantification features generator provides various quantification
  * features.
  *
  * @author Marc Vaudel
+ * @author Harald Barsnes
  */
 public class QuantificationFeaturesGenerator {
 
@@ -58,9 +60,9 @@ public class QuantificationFeaturesGenerator {
      */
     private SearchParameters searchParameters;
     /**
-     * The sequence matching preferences.
+     * The sequence matching parameters.
      */
-    private SequenceMatchingPreferences sequenceMatchingPreferences;
+    private SequenceMatchingParameters sequenceMatchingParameters;
 
     /**
      * Constructor.
@@ -69,45 +71,40 @@ public class QuantificationFeaturesGenerator {
      * quantification results
      * @param identification the identification object containing all
      * identification results
-     * @param identificationFeaturesGenerator the identification features generator
+     * @param identificationFeaturesGenerator the identification features
+     * generator
      * @param reporterSettings the reporter settings
      * @param reporterIonQuantification the reporter ion quantification settings
      * @param searchParameters the identification parameters used for the
      * identification of spectra
-     * @param sequenceMatchingPreferences the sequence matching preferences
+     * @param sequenceMatchingParameters the sequence matching preferences
      */
     public QuantificationFeaturesGenerator(QuantificationFeaturesCache quantificationFeaturesCache, Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, ReporterSettings reporterSettings,
-            ReporterIonQuantification reporterIonQuantification, SearchParameters searchParameters, SequenceMatchingPreferences sequenceMatchingPreferences) {
+            ReporterIonQuantification reporterIonQuantification, SearchParameters searchParameters, SequenceMatchingParameters sequenceMatchingParameters) {
         this.quantificationFeaturesCache = quantificationFeaturesCache;
         this.identification = identification;
         this.identificationFeaturesGenerator = identificationFeaturesGenerator;
         this.reporterSettings = reporterSettings;
         this.reporterIonQuantification = reporterIonQuantification;
         this.searchParameters = searchParameters;
-        this.sequenceMatchingPreferences = sequenceMatchingPreferences;
+        this.sequenceMatchingParameters = sequenceMatchingParameters;
     }
 
     /**
      * Returns the quantification details of a protein match.
      *
+     * @param spectrumProvider the spectrum provider
      * @param matchKey the key of the match of interest
      * @param waitingHandler the waiting handler
      *
      * @return the quantification details of the match
-     *
-     * @throws SQLException thrown if an SQLException occurs
-     * @throws IOException thrown if an IOException
-     * @throws ClassNotFoundException thrown if a ClassNotFoundException
-     * @throws InterruptedException thrown if an InterruptedException
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException thrown if an
-     * MzMLUnmarshallerException occurs
      */
-    public ProteinQuantificationDetails getProteinMatchQuantificationDetails(String matchKey, WaitingHandler waitingHandler) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
+    public ProteinQuantificationDetails getProteinMatchQuantificationDetails(SpectrumProvider spectrumProvider, long matchKey, WaitingHandler waitingHandler) {
         ProteinMatch proteinMatch = identification.getProteinMatch(matchKey);
         int nPeptides = proteinMatch.getPeptideCount();
         ProteinQuantificationDetails result = quantificationFeaturesCache.getProteinMatchQuantificationDetails(nPeptides, matchKey);
         if (result == null) {
-            result = Reporter.estimateProteinMatchQuantificationDetails(identification, identificationFeaturesGenerator, this, reporterSettings.getRatioEstimationSettings(), reporterIonQuantification, searchParameters, proteinMatch, waitingHandler);
+            result = Reporter.estimateProteinMatchQuantificationDetails(identification, spectrumProvider, identificationFeaturesGenerator, this, reporterSettings.getRatioEstimationSettings(), reporterIonQuantification, searchParameters, proteinMatch, waitingHandler);
             quantificationFeaturesCache.addProteinMatchQuantificationDetails(nPeptides, matchKey, result);
         }
         return result;
@@ -116,6 +113,7 @@ public class QuantificationFeaturesGenerator {
     /**
      * Returns the quantification details of a PTM.
      *
+     * @param spectrumProvider the spectrum provider
      * @param ptmName the name of the PTM
      * @param matchKey the key of the match of interest
      * @param site the site on the protein sequence
@@ -127,91 +125,122 @@ public class QuantificationFeaturesGenerator {
      * @throws IOException thrown if an IOException
      * @throws ClassNotFoundException thrown if a ClassNotFoundException
      * @throws InterruptedException thrown if an InterruptedException
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException thrown if an
-     * MzMLUnmarshallerException occurs
      */
-    public ProteinPtmQuantificationDetails getPTMQuantificationDetails(String ptmName, String matchKey, int site, WaitingHandler waitingHandler)
-            throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
+    public ProteinPtmQuantificationDetails getPTMQuantificationDetails(
+            SpectrumProvider spectrumProvider,
+            String ptmName,
+            long matchKey,
+            int site,
+            WaitingHandler waitingHandler
+    ) throws SQLException, IOException, ClassNotFoundException, InterruptedException {
+
         ProteinPtmQuantificationDetails result = quantificationFeaturesCache.getPtmQuantificationDetails(ptmName, matchKey, site);
+
         if (result == null) {
-            result = Reporter.estimatePTMQuantificationDetails(identification, this, reporterSettings.getRatioEstimationSettings(), reporterIonQuantification, searchParameters, sequenceMatchingPreferences, ptmName, matchKey, site, waitingHandler);
+            result = Reporter.estimatePTMQuantificationDetails(identification, spectrumProvider, this, reporterSettings.getRatioEstimationSettings(), reporterIonQuantification, searchParameters, sequenceMatchingParameters, ptmName, matchKey, site, waitingHandler);
             quantificationFeaturesCache.addPtmQuantificationDetails(ptmName, matchKey, site, result);
         }
+
         return result;
     }
 
     /**
      * Returns the quantification details of a peptide match.
      *
+     * @param spectrumProvider the spectrum provider
      * @param peptideMatch the peptide match
      * @param waitingHandler the waiting handler
      *
      * @return the quantification details of the match
-     *
-     * @throws SQLException thrown if an SQLException occurs
-     * @throws IOException thrown if an IOException
-     * @throws ClassNotFoundException thrown if a ClassNotFoundException
-     * @throws InterruptedException thrown if an InterruptedException
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException thrown if an
-     * MzMLUnmarshallerException occurs
      */
-    public PeptideQuantificationDetails getPeptideMatchQuantificationDetails(PeptideMatch peptideMatch, WaitingHandler waitingHandler) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
+    public PeptideQuantificationDetails getPeptideMatchQuantificationDetails(SpectrumProvider spectrumProvider, PeptideMatch peptideMatch, WaitingHandler waitingHandler) {
+
         int nPsms = peptideMatch.getSpectrumCount();
-        String matchKey = peptideMatch.getKey();
+        long matchKey = peptideMatch.getKey();
         PeptideQuantificationDetails result = quantificationFeaturesCache.getPeptideMatchQuantificationDetails(nPsms, matchKey);
+
         if (result == null) {
-            result = Reporter.estimatePeptideMatchQuantificationDetails(identification, this, reporterSettings.getRatioEstimationSettings(), reporterIonQuantification, peptideMatch, waitingHandler);
+            result = Reporter.estimatePeptideMatchQuantificationDetails(identification, spectrumProvider, this, reporterSettings.getRatioEstimationSettings(), reporterIonQuantification, peptideMatch, waitingHandler);
             quantificationFeaturesCache.addPeptideMatchQuantificationDetails(nPsms, matchKey, result);
         }
+
         return result;
     }
 
     /**
      * Returns the quantification details of a PSM.
      *
+     * @param spectrumProvider the spectrum provider
      * @param matchKey the key of the match of interest
      *
      * @return the quantification details of the match
-     *
-     * @throws SQLException thrown if an SQLException occurs
-     * @throws IOException thrown if an IOException
-     * @throws ClassNotFoundException thrown if a ClassNotFoundException
-     * @throws InterruptedException thrown if an InterruptedException
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException thrown if an
-     * MzMLUnmarshallerException occurs
      */
-    public PsmQuantificationDetails getPSMQuantificationDetails(String matchKey) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
-        PsmQuantificationDetails result = quantificationFeaturesCache.getPSMQuantificationDetails(matchKey);
+    public PsmQuantificationDetails getPSMQuantificationDetails(
+            SpectrumProvider spectrumProvider,
+            Long matchKey
+    ) {
+
+        SpectrumMatch spectrumMatch = identification.getSpectrumMatch(matchKey);
+        String spectrumFile = spectrumMatch.getSpectrumFile();
+        String spectrumTitle = spectrumMatch.getSpectrumTitle();
+
+        PsmQuantificationDetails result = quantificationFeaturesCache.getPSMQuantificationDetails(spectrumFile, spectrumTitle);
+
         if (result == null) {
-            result = Reporter.estimatePSMQuantificationDetails(identification, this, reporterSettings.getReporterIonSelectionSettings(), reporterSettings.getRatioEstimationSettings(), reporterIonQuantification, matchKey);
-            quantificationFeaturesCache.addPSMQuantificationDetails(matchKey, result);
+
+            result = Reporter.estimatePSMQuantificationDetails(
+                    identification,
+                    spectrumProvider,
+                    this,
+                    reporterSettings.getReporterIonSelectionSettings(),
+                    reporterSettings.getRatioEstimationSettings(),
+                    reporterIonQuantification,
+                    matchKey
+            );
+
+            quantificationFeaturesCache.addPSMQuantificationDetails(spectrumFile, spectrumTitle, result);
         }
+
         return result;
     }
 
     /**
      * Returns the quantification details of a spectrum.
      *
+     * @param spectrumProvider the spectrum provider
      * @param reporterIonQuantification the quantification object
      * @param reporterIonSelectionSettings the reporter ion selection settings
      * @param matchKey the key of the match of interest
      *
      * @return the quantification details of the match
-     *
-     * @throws SQLException thrown if an SQLException occurs
-     * @throws IOException thrown if an IOException
-     * @throws ClassNotFoundException thrown if a ClassNotFoundException
-     * @throws InterruptedException thrown if an InterruptedException
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException thrown if an
-     * MzMLUnmarshallerException occurs
      */
-    public SpectrumQuantificationDetails getSpectrumQuantificationDetails(ReporterIonQuantification reporterIonQuantification,
-            ReporterIonSelectionSettings reporterIonSelectionSettings, String matchKey) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
-        SpectrumQuantificationDetails result = quantificationFeaturesCache.getSpectrumQuantificationDetails(matchKey);
+    public SpectrumQuantificationDetails getSpectrumQuantificationDetails(
+            SpectrumProvider spectrumProvider,
+            ReporterIonQuantification reporterIonQuantification,
+            ReporterIonSelectionSettings reporterIonSelectionSettings,
+            Long matchKey
+    ) {
+
+        SpectrumMatch spectrumMatch = identification.getSpectrumMatch(matchKey);
+        String spectrumFile = spectrumMatch.getSpectrumFile();
+        String spectrumTitle = spectrumMatch.getSpectrumTitle();
+
+        SpectrumQuantificationDetails result = quantificationFeaturesCache.getSpectrumQuantificationDetails(spectrumFile, spectrumTitle);
+
         if (result == null) {
-            result = Reporter.estimateSpectrumQuantificationDetails(identification, this, reporterIonQuantification, reporterIonSelectionSettings, matchKey);
-            quantificationFeaturesCache.addSpectrumQuantificationDetails(matchKey, result);
+
+            result = Reporter.estimateSpectrumQuantificationDetails(
+                    identification,
+                    spectrumProvider,
+                    this,
+                    reporterIonQuantification,
+                    reporterIonSelectionSettings,
+                    matchKey
+            );
+
+            quantificationFeaturesCache.addSpectrumQuantificationDetails(spectrumFile, spectrumTitle, result);
         }
+
         return result;
     }
 
@@ -233,7 +262,7 @@ public class QuantificationFeaturesGenerator {
 
     /**
      * Returns the quantification features cache.
-     * 
+     *
      * @return the quantification features cache
      */
     public QuantificationFeaturesCache getQuantificationFeaturesCache() {
@@ -242,7 +271,7 @@ public class QuantificationFeaturesGenerator {
 
     /**
      * Sets the quantification features cache.
-     * 
+     *
      * @param quantificationFeaturesCache the quantification features cache
      */
     public void setQuantificationFeaturesCache(QuantificationFeaturesCache quantificationFeaturesCache) {

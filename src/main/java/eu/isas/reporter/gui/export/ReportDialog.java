@@ -1,9 +1,9 @@
 package eu.isas.reporter.gui.export;
 
-import com.compomics.util.FileAndFileFilter;
-import com.compomics.util.Util;
 import com.compomics.util.gui.ExportFormatSelectionDialog;
 import com.compomics.util.gui.export.report.ReportEditor;
+import com.compomics.util.gui.file_handling.FileAndFileFilter;
+import com.compomics.util.gui.file_handling.FileChooserUtil;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
 import com.compomics.util.io.export.ExportFormat;
 import com.compomics.util.io.export.ExportScheme;
@@ -12,7 +12,6 @@ import eu.isas.reporter.gui.ReporterGUI;
 import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
@@ -254,7 +253,7 @@ public class ReportDialog extends javax.swing.JDialog {
      */
     private void exitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitButtonActionPerformed
         try {
-            exportFactory.saveFactory();
+            exportFactory.saveFactory(exportFactory);
         } catch (Exception e) {
             reporterGUI.catchException(e);
         }
@@ -407,7 +406,7 @@ public class ReportDialog extends javax.swing.JDialog {
         String textFileFilterDescription = "Tab separated text file (.txt)";
         String excelFileFilterDescription = "Excel Workbook (.xls)";
         String lastSelectedFolderPath = reporterGUI.getLastSelectedFolder().getLastSelectedFolder();
-        FileAndFileFilter selectedFileAndFilter = Util.getUserSelectedFile(this, new String[]{".xls", ".txt"},
+        FileAndFileFilter selectedFileAndFilter = FileChooserUtil.getUserSelectedFile(this, new String[]{".xls", ".txt"},
                 new String[]{excelFileFilterDescription, textFileFilterDescription}, "Export Report", lastSelectedFolderPath, schemeName, false, true, false, 1);
 
         if (selectedFileAndFilter != null) {
@@ -445,12 +444,30 @@ public class ReportDialog extends javax.swing.JDialog {
                     try {
                         ExportScheme exportScheme = exportFactory.getExportScheme(schemeName);
                         progressDialog.setTitle("Exporting. Please Wait...");
-                        ReporterExportFactory.writeExport(exportScheme, selectedFile, exportFormat, reporterGUI.getExperiment().getReference(),
-                                reporterGUI.getSample().getReference(), reporterGUI.getReplicateNumber(),
-                                reporterGUI.getProjectDetails(), reporterGUI.getIdentification(), reporterGUI.getIdentificationFeaturesGenerator(), reporterGUI.getGeneMaps(),
-                                reporterGUI.getQuantificationFeaturesGenerator(), reporterGUI.getReporterIonQuantification(), reporterGUI.getReporterSettings(),
-                                reporterGUI.getIdentificationParameters(), null, null, null, null, reporterGUI.getIdentificationDisplayPreferences().getnAASurroundingPeptides(),
-                                reporterGUI.getSpectrumCountingPreferences(), progressDialog);
+                        ReporterExportFactory.writeExport(
+                                exportScheme,
+                                selectedFile,
+                                exportFormat,
+                                reporterGUI.getProjectParameters().getProjectUniqueName(),
+                                reporterGUI.getProjectDetails(),
+                                reporterGUI.getIdentification(),
+                                reporterGUI.getIdentificationFeaturesGenerator(),
+                                reporterGUI.getSequenceProvider(),
+                                reporterGUI.getSpectrumProvider(),
+                                reporterGUI.getProteinDetailsProvider(),
+                                reporterGUI.getGeneMaps(),
+                                reporterGUI.getQuantificationFeaturesGenerator(),
+                                reporterGUI.getReporterIonQuantification(),
+                                reporterGUI.getReporterSettings(),
+                                reporterGUI.getIdentificationParameters(),
+                                null,
+                                null,
+                                null,
+                                null,
+                                reporterGUI.getIdentificationDisplayPreferences().getnAASurroundingPeptides(),
+                                reporterGUI.getSpectrumCountingParameters(),
+                                progressDialog
+                        );
 
                         boolean processCancelled = progressDialog.isRunCanceled();
                         progressDialog.setRunFinished();
@@ -458,12 +475,6 @@ public class ReportDialog extends javax.swing.JDialog {
                         if (!processCancelled) {
                             JOptionPane.showMessageDialog(reporterGUI, "Data copied to file:\n" + filePath, "Data Exported.", JOptionPane.INFORMATION_MESSAGE);
                         }
-                    } catch (FileNotFoundException e) {
-                        progressDialog.setRunFinished();
-                        JOptionPane.showMessageDialog(reporterGUI,
-                                "An error occurred while generating the output. Please make sure "
-                                + "that the destination file is not opened by another application.", "Output Error.", JOptionPane.ERROR_MESSAGE);
-                        e.printStackTrace();
                     } catch (Exception e) {
                         progressDialog.setRunFinished();
                         JOptionPane.showMessageDialog(reporterGUI, "An error occurred while generating the output.", "Output Error.", JOptionPane.ERROR_MESSAGE);

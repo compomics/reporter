@@ -7,11 +7,13 @@ import org.apache.commons.cli.Options;
  * This class provides the available reports as command line parameters.
  *
  * @author Marc Vaudel
+ * @author Harald Barsnes
  */
 public enum ReportCLIParams {
 
-    CPS_FILE("in", "Reporter project (.cpsx or .zip file)", true, true),
+    PSDB_FILE("in", "Reporter project (.psdb or .zip file)", true, true),
     EXPORT_FOLDER("out_reports", "Output folder for report files. (Existing files will be overwritten.)", true, true),
+    EXPORT_PREFIX("report_prefix", "Prefix added to the report file name.", false, true),
     REPORT_TYPE("reports", "Comma separated list of types of report to export. " + ReporterExportFactory.getInstance().getCommandLineOptions(), false, true),
     DOCUMENTATION_TYPE("documentation", "Comma separated list of types of report documentation to export. " + ReporterExportFactory.getInstance().getCommandLineOptions(), false, true);
 
@@ -77,13 +79,14 @@ public enum ReportCLIParams {
         String formatter = "%-35s";
 
         output += "Mandatory parameters:\n\n";
-        output += "-" + String.format(formatter, CPS_FILE.id) + CPS_FILE.description + "\n";
+        output += "-" + String.format(formatter, PSDB_FILE.id) + PSDB_FILE.description + "\n";
         output += "-" + String.format(formatter, EXPORT_FOLDER.id) + EXPORT_FOLDER.description + "\n";
 
         output += "\n\nOptional output parameters:\n";
         output += getOutputOptionsAsString();
 
-        output += "\n\nOptional temporary folder:\n\n";
+        output += "\n\nOptional temporary folder and name prefix:\n\n";
+        output += "-" + String.format(formatter, EXPORT_PREFIX.id) + EXPORT_PREFIX.description + "\n";
         output += "-" + String.format(formatter, PathSettingsCLIParams.ALL.id) + PathSettingsCLIParams.ALL.description + "\n";
 
         return output;

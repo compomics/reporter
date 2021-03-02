@@ -1,9 +1,9 @@
 package eu.isas.reporter.calculation;
 
-import com.compomics.util.experiment.biology.Atom;
-import com.compomics.util.experiment.biology.ions.ReporterIon;
+import com.compomics.util.experiment.biology.atoms.Atom;
+import com.compomics.util.experiment.biology.ions.impl.ReporterIon;
 import com.compomics.util.experiment.identification.matches.IonMatch;
-import com.compomics.util.experiment.massspectrometry.Spectrum;
+import com.compomics.util.experiment.mass_spectrometry.spectra.Spectrum;
 import com.compomics.util.experiment.quantification.reporterion.Reagent;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
 import eu.isas.reporter.Reporter;
@@ -15,6 +15,7 @@ import org.ujmp.core.doublematrix.calculation.general.decomposition.Ginv;
  * This class takes care of the deisotoping of reporter ion intensities.
  *
  * @author Marc Vaudel
+ * @author Harald Barsnes
  */
 public class Deisotoper {
 
@@ -43,9 +44,9 @@ public class Deisotoper {
      */
     private void estimateCorrectionFactors(double tolerance) {
 
-        correctionMatrices = new HashMap<String, CorrectionMatrix>();
-        ArrayList<String> labels = new ArrayList<String>(method.getReagentNames());
-        HashMap<Double, String> massesToLabelMap = new HashMap<Double, String>(labels.size());
+        correctionMatrices = new HashMap<>();
+        ArrayList<String> labels = new ArrayList<>(method.getReagentNames());
+        HashMap<Double, String> massesToLabelMap = new HashMap<>(labels.size());
         for (String label : labels) {
             double mass = method.getReporterIon(label).getTheoreticMass();
             if (massesToLabelMap.containsKey(mass)) {
@@ -65,7 +66,7 @@ public class Deisotoper {
                     }
                 }
             }
-            HashMap<Integer, String> isotopes = new HashMap<Integer, String>();
+            HashMap<Integer, String> isotopes = new HashMap<>();
             int isotopeCount = 2, isotopeMax = 2;
             double isotopeMass = minMass;
             while (isotopeMass <= maxMass + tolerance) {
@@ -86,7 +87,7 @@ public class Deisotoper {
             isotopeCount += 2;
             double refMass = method.getReagent(isotopes.get(2)).getReporterIon().getTheoreticMass() - 2* Atom.C.getDifferenceToMonoisotopic(1);
             double[][] coefficients = new double[isotopeCount][isotopeCount];
-            ArrayList<String> matrixLabels = new ArrayList<String>();
+            ArrayList<String> matrixLabels = new ArrayList<>();
             for (int i = 2; i <= isotopeMax; i++) {
                 String label = isotopes.get(i);
                 if (label != null) {
@@ -118,15 +119,13 @@ public class Deisotoper {
      * should be selected
      *
      * @return a map of the deisotoped intensities (ion index &gt; intensity)
-     * 
-     * @throws java.lang.InterruptedException if the thread is interrupted
      */
-    public HashMap<String, Double> deisotope(HashMap<String, IonMatch> ionMatches, Spectrum spectrum, double mzTolerance, boolean mostAccurate) throws InterruptedException {
+    public HashMap<String, Double> deisotope(HashMap<String, IonMatch> ionMatches, Spectrum spectrum, double mzTolerance, boolean mostAccurate) {
 
-        HashMap<String, Double> result = new HashMap<String, Double>();
+        HashMap<String, Double> result = new HashMap<>();
         for (String label : method.getReagentNames()) {
             IonMatch refMatch = ionMatches.get(label);
-            if (refMatch != null && refMatch.peak.intensity > 0) {
+            if (refMatch != null && refMatch.peakIntensity > 0) {
                 CorrectionMatrix correctionMatrix = correctionMatrices.get(label);
                 HashMap<Integer, String> involvedReagents = correctionMatrix.getReagentsNames();
                 int dimension = correctionMatrix.getDimension();
@@ -143,7 +142,7 @@ public class Deisotoper {
                     ReporterIon tempIon = new ReporterIon("tempIon", reagentMass, false);
                     IonMatch ionMatch = Reporter.getBestReporterIonMatch(tempIon, 1, spectrum, mzTolerance, mostAccurate);
                     if (ionMatch != null) {
-                        intensities[i] = ionMatch.peak.intensity;
+                        intensities[i] = ionMatch.peakIntensity;
                     }
                 }
                 if (lineNumber == -1) {

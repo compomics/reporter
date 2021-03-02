@@ -2,12 +2,12 @@ package eu.isas.reporter.gui;
 
 import com.compomics.util.experiment.identification.Identification;
 import com.compomics.util.experiment.identification.matches.ProteinMatch;
-import com.compomics.util.experiment.identification.protein_sequences.SequenceFactory;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 /**
@@ -36,7 +36,7 @@ public class JumpToPanel extends javax.swing.JPanel { // @TODO: should be merged
     /**
      * Items matching the criterion for each type.
      */
-    private HashMap<JumpType, ArrayList<String>> possibilities = new HashMap<JumpType, ArrayList<String>>();
+    private HashMap<JumpType, ArrayList<Long>> possibilities = new HashMap<JumpType, ArrayList<Long>>();
     /**
      * Currently selected item.
      */
@@ -49,10 +49,6 @@ public class JumpToPanel extends javax.swing.JPanel { // @TODO: should be merged
      * The text to display by default.
      */
     private HashMap<JumpType, String> lastLabel = new HashMap<JumpType, String>();
-    /**
-     * Instance of the sequence factory.
-     */
-    private SequenceFactory sequenceFactory = SequenceFactory.getInstance();
     /**
      * The text to display by default.
      */
@@ -70,7 +66,7 @@ public class JumpToPanel extends javax.swing.JPanel { // @TODO: should be merged
      * The current list of protein keys. Can be different from the complete
      * list, e.g., only include validated proteins.
      */
-    private ArrayList<String> currentProteinKeys;
+    private ArrayList<Long> currentProteinKeys;
 
     /**
      * Type of item selected.
@@ -93,7 +89,7 @@ public class JumpToPanel extends javax.swing.JPanel { // @TODO: should be merged
         initComponents();
 
         this.reporterGUI = reporterGUI;
-        currentProteinKeys = new ArrayList<String>();
+        currentProteinKeys = new ArrayList<Long>();
 
         welcomeText = new HashMap<JumpType, String>();
         welcomeText.put(JumpType.proteinAndPeptides, "(protein)");
@@ -102,13 +98,13 @@ public class JumpToPanel extends javax.swing.JPanel { // @TODO: should be merged
         previousButton.setEnabled(false);
         nextButton.setEnabled(false);
     }
-    
+
     /**
      * Set the current protein keys to search in.
-     * 
+     *
      * @param currentProteinKeys the current protein keys
      */
-    public void setProteinKeys(ArrayList<String> currentProteinKeys) {
+    public void setProteinKeys(ArrayList<Long> currentProteinKeys) {
         this.currentProteinKeys = currentProteinKeys;
     }
 
@@ -137,8 +133,8 @@ public class JumpToPanel extends javax.swing.JPanel { // @TODO: should be merged
         indexLabel.setForeground(Color.BLACK);
 
         if (types.get(jumpType).get(currentSelection.get(jumpType)) == Type.PROTEIN) {
-            String selectedProtein = possibilities.get(jumpType).get(currentSelection.get(jumpType));
-            ArrayList<String> selectedProteins = new ArrayList<String>();
+            Long selectedProtein = possibilities.get(jumpType).get(currentSelection.get(jumpType));
+            ArrayList<Long> selectedProteins = new ArrayList<Long>();
             selectedProteins.add(selectedProtein);
             reporterGUI.minimizeChart();
             reporterGUI.setSelectedProteins(selectedProteins, true, true);
@@ -166,22 +162,22 @@ public class JumpToPanel extends javax.swing.JPanel { // @TODO: should be merged
 
         // some necessary pre-caching
         ArrayList<Type> typeList = types.get(jumpType);
-        ArrayList<String> keys = possibilities.get(jumpType);
-        ArrayList<String> proteinKeys = new ArrayList<String>();
+        ArrayList<Long> keys = possibilities.get(jumpType);
+        ArrayList<Long> proteinKeys = new ArrayList<Long>();
 
         for (int i = 0; i < keys.size(); i++) {
-            String key = keys.get(i);
+            Long key = keys.get(i);
             if (typeList.get(i) == Type.PROTEIN) {
                 proteinKeys.add(key);
             }
         }
         if (!proteinKeys.isEmpty()) {
-            identification.loadProteinMatches(proteinKeys, null, false);
+            identification.loadObjects(proteinKeys, null, false);
         }
 
         ArrayList<String> descriptions = new ArrayList<String>();
         for (int i = 0; i < keys.size(); i++) {
-            String key = keys.get(i);
+            Long key = keys.get(i);
             Type type = typeList.get(i);
             String description = getItemDescription(key, type);
             descriptions.add(description);
@@ -202,15 +198,16 @@ public class JumpToPanel extends javax.swing.JPanel { // @TODO: should be merged
      * @throws IOException thrown if an IOException occurs
      * @throws InterruptedException thrown if an InterruptedException occurs
      */
-    private String getItemDescription(String key, Type itemType) throws IllegalArgumentException, SQLException, IOException, ClassNotFoundException, InterruptedException {
+    private String getItemDescription(Long key, Type itemType) throws IllegalArgumentException, SQLException, IOException, ClassNotFoundException, InterruptedException {
         Identification identification = reporterGUI.getIdentification();
         switch (itemType) {
             case PROTEIN:
                 ProteinMatch proteinMatch = identification.getProteinMatch(key);
-                String mainMatch = proteinMatch.getMainMatch();
-                String description = sequenceFactory.getHeader(mainMatch).getSimpleProteinDescription();
+                String mainMatch = proteinMatch.getLeadingAccession();
+                String description = reporterGUI.getProteinDetailsProvider().getSimpleDescription(proteinMatch.getLeadingAccession());
+
                 String result = mainMatch;
-                for (String accession : ProteinMatch.getAccessions(key)) {
+                for (String accession : proteinMatch.getAccessions()) {
                     if (!accession.equals(mainMatch)) {
                         if (!result.equals(mainMatch)) {
                             result += ", ";
@@ -393,39 +390,40 @@ public class JumpToPanel extends javax.swing.JPanel { // @TODO: should be merged
                             nextButtonActionPerformed(null);
                         } else {
                             if (!possibilities.containsKey(jumpType)) {
-                                possibilities.put(jumpType, new ArrayList<String>());
+                                possibilities.put(jumpType, new ArrayList<Long>());
                                 types.put(jumpType, new ArrayList<Type>());
                             } else {
                                 possibilities.get(jumpType).clear();
                                 types.get(jumpType).clear();
                             }
                             currentSelection.put(jumpType, 0);
-                            String input = inputTxt.getText().trim().toLowerCase();
-                            lastInput.put(jumpType, input);
+                            String inputLowerCase = inputTxt.getText().trim().toLowerCase();
+                            lastInput.put(jumpType, inputLowerCase);
 
-                            if (!input.equals("")) {
+                            if (!inputLowerCase.equals("")) {
 
                                 reporterGUI.setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
                                 inputTxt.setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
 
                                 if (jumpType == JumpType.proteinAndPeptides) {
 
-                                    for (String proteinKey : currentProteinKeys) {
-                                        if (!ProteinMatch.isDecoy(proteinKey)) {
-                                            if (proteinKey.toLowerCase().contains(input)) {
+                                    for (long proteinKey : currentProteinKeys) {
+
+                                        ProteinMatch proteinMatch = identification.getProteinMatch(proteinKey);
+
+                                        if (!proteinMatch.isDecoy()) {
+                                            if (Arrays.stream(proteinMatch.getAccessions())
+                                                    .map(accession -> accession.toLowerCase())
+                                                    .anyMatch(accession -> accession.contains(inputLowerCase))
+                                                    || Arrays.stream(proteinMatch.getAccessions())
+                                                            .map(accession -> reporterGUI.getProteinDetailsProvider().getDescription(accession))
+                                                            .map(description -> description.toLowerCase())
+                                                            .anyMatch(description -> description.contains(inputLowerCase))) {
+
                                                 possibilities.get(jumpType).add(proteinKey);
-                                                types.get(jumpType).add(Type.PROTEIN);
-                                            } else {
-                                                try {
-                                                    for (String accession : ProteinMatch.getAccessions(proteinKey)) {
-                                                        if (sequenceFactory.getHeader(accession).getSimpleProteinDescription().toLowerCase().contains(input)) {
-                                                            possibilities.get(jumpType).add(proteinKey);
-                                                            types.get(jumpType).add(Type.PROTEIN);
-                                                            break;
-                                                        }
-                                                    }
-                                                } catch (Exception e) {
-                                                    // cannot get description, ignore
+
+                                                for (long peptideKey : proteinMatch.getPeptideMatchesKeys()) {
+                                                    possibilities.get(jumpType).add(peptideKey);
                                                 }
                                             }
                                         }
@@ -447,7 +445,7 @@ public class JumpToPanel extends javax.swing.JPanel { // @TODO: should be merged
                                     previousButton.setEnabled(false);
                                     nextButton.setEnabled(false);
 
-                                    if (!input.equalsIgnoreCase(welcomeText.get(jumpType))) {
+                                    if (!inputLowerCase.equalsIgnoreCase(welcomeText.get(jumpType))) {
                                         indexLabel.setText("(no matches)");
                                     } else {
                                         indexLabel.setText("");

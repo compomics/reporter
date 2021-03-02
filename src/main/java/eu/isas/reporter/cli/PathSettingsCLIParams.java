@@ -1,6 +1,6 @@
 package eu.isas.reporter.cli;
 
-import com.compomics.software.settings.UtilitiesPathPreferences;
+import com.compomics.software.settings.UtilitiesPathParameters;
 import eu.isas.reporter.preferences.ReporterPathPreferences;
 import java.util.ArrayList;
 import org.apache.commons.cli.Options;
@@ -48,7 +48,7 @@ public enum PathSettingsCLIParams {
         for (ReporterPathPreferences.ReporterPathKey reporterPathKey : ReporterPathPreferences.ReporterPathKey.values()) {
             aOptions.addOption(reporterPathKey.getId(), true, reporterPathKey.getDescription());
         }
-        for (UtilitiesPathPreferences.UtilitiesPathKey utilitiesPathKey : UtilitiesPathPreferences.UtilitiesPathKey.values()) {
+        for (UtilitiesPathParameters.UtilitiesPathKey utilitiesPathKey : UtilitiesPathParameters.UtilitiesPathKey.values()) {
             aOptions.addOption(utilitiesPathKey.getId(), true, utilitiesPathKey.getDescription());
         }
     }
@@ -68,7 +68,7 @@ public enum PathSettingsCLIParams {
         for (ReporterPathPreferences.ReporterPathKey reporterPathKey : ReporterPathPreferences.ReporterPathKey.values()) {
             options.add("-" + reporterPathKey.getId());
         }
-        for (UtilitiesPathPreferences.UtilitiesPathKey utilitiesPathKey : UtilitiesPathPreferences.UtilitiesPathKey.values()) {
+        for (UtilitiesPathParameters.UtilitiesPathKey utilitiesPathKey : UtilitiesPathParameters.UtilitiesPathKey.values()) {
             options.add("-" + utilitiesPathKey.getId());
         }
         
@@ -95,7 +95,7 @@ public enum PathSettingsCLIParams {
         for (ReporterPathPreferences.ReporterPathKey reporterPathKey : ReporterPathPreferences.ReporterPathKey.values()) {
             output += "-" + String.format(formatter, reporterPathKey.getId()) + " " + reporterPathKey.getDescription() + System.getProperty("line.separator");
         }
-        for (UtilitiesPathPreferences.UtilitiesPathKey utilitiesPathKey : UtilitiesPathPreferences.UtilitiesPathKey.values()) {
+        for (UtilitiesPathParameters.UtilitiesPathKey utilitiesPathKey : UtilitiesPathParameters.UtilitiesPathKey.values()) {
             output += "-" + String.format(formatter, utilitiesPathKey.getId()) + " " + utilitiesPathKey.getDescription() + System.getProperty("line.separator");
         }
 

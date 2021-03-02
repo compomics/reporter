@@ -2,7 +2,7 @@ package eu.isas.reporter.cli;
 
 import com.compomics.software.CompomicsWrapper;
 import com.compomics.software.settings.PathKey;
-import com.compomics.software.settings.UtilitiesPathPreferences;
+import com.compomics.software.settings.UtilitiesPathParameters;
 import com.compomics.util.gui.waiting.waitinghandlers.WaitingHandlerCLIImpl;
 import com.compomics.util.waiting.WaitingHandler;
 import eu.isas.reporter.Reporter;
@@ -11,8 +11,8 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
-import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
@@ -92,11 +92,11 @@ public class PathSettingsCLI {
                 try {
                     ReporterPathPreferences.ReporterPathKey reporterPathKey = ReporterPathPreferences.ReporterPathKey.getKeyFromId(id);
                     if (reporterPathKey == null) {
-                        UtilitiesPathPreferences.UtilitiesPathKey utilitiesPathKey = UtilitiesPathPreferences.UtilitiesPathKey.getKeyFromId(id);
+                        UtilitiesPathParameters.UtilitiesPathKey utilitiesPathKey = UtilitiesPathParameters.UtilitiesPathKey.getKeyFromId(id);
                         if (utilitiesPathKey == null) {
                             System.out.println("Path id " + id + " not recognized.");
                         } else {
-                            UtilitiesPathPreferences.setPathPreference(utilitiesPathKey, pathInput.get(id));
+                            UtilitiesPathParameters.setPathParameter(utilitiesPathKey, pathInput.get(id));
                         }
                     } else {
                         ReporterPathPreferences.setPathPreference(reporterPathKey, pathInput.get(id));
@@ -108,7 +108,7 @@ public class PathSettingsCLI {
             }
 
             // write path file preference
-            File destinationFile = new File(Reporter.getJarFilePath(), UtilitiesPathPreferences.configurationFileName);
+            File destinationFile = new File(Reporter.getJarFilePath(), UtilitiesPathParameters.configurationFileName);
             try {
                 ReporterPathPreferences.writeConfigurationToFile(destinationFile);
             } catch (Exception e) {
@@ -118,7 +118,7 @@ public class PathSettingsCLI {
 
         } else {
             try {
-                File pathConfigurationFile = new File(getJarFilePath(), UtilitiesPathPreferences.configurationFileName);
+                File pathConfigurationFile = new File(getJarFilePath(), UtilitiesPathParameters.configurationFileName);
                 if (pathConfigurationFile.exists()) {
                     ReporterPathPreferences.loadPathPreferencesFromFile(pathConfigurationFile);
                 }
@@ -173,7 +173,7 @@ public class PathSettingsCLI {
         try {
             Options lOptions = new Options();
             PathSettingsCLIParams.createOptionsCLI(lOptions);
-            BasicParser parser = new BasicParser();
+            DefaultParser parser = new DefaultParser();
             CommandLine line = parser.parse(lOptions, args);
 
             if (args.length == 0) {
@@ -225,8 +225,8 @@ public class PathSettingsCLI {
 
         ArrayList<String> allPathOptions = PathSettingsCLIParams.getOptionIDs();
 
-        ArrayList<String> pathSettingArgs = new ArrayList<String>();
-        ArrayList<String> nonPathSettingArgs = new ArrayList<String>();
+        ArrayList<String> pathSettingArgs = new ArrayList<>();
+        ArrayList<String> nonPathSettingArgs = new ArrayList<>();
 
         for (int i = 0; i < args.length; i++) {
 
@@ -259,7 +259,7 @@ public class PathSettingsCLI {
         // update the paths if needed
         Options pathOptions = new Options();
         PathSettingsCLIParams.createOptionsCLI(pathOptions);
-        BasicParser parser = new BasicParser();
+        DefaultParser parser = new DefaultParser();
         CommandLine line = parser.parse(pathOptions, pathSettingArgsAsList);
         PathSettingsCLIInputBean pathSettingsCLIInputBean = new PathSettingsCLIInputBean(line);
         PathSettingsCLI pathSettingsCLI = new PathSettingsCLI(pathSettingsCLIInputBean);

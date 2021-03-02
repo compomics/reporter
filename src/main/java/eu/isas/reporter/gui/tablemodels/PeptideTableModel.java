@@ -1,32 +1,27 @@
 package eu.isas.reporter.gui.tablemodels;
 
 import com.compomics.util.exceptions.ExceptionHandler;
-import com.compomics.util.experiment.biology.Peptide;
-import com.compomics.util.experiment.biology.Protein;
 import com.compomics.util.experiment.identification.Identification;
+import com.compomics.util.experiment.identification.features.IdentificationFeaturesGenerator;
 import com.compomics.util.experiment.identification.matches.PeptideMatch;
-import com.compomics.util.experiment.identification.matches_iterators.PeptideMatchesIterator;
-import com.compomics.util.experiment.identification.protein_sequences.SequenceFactory;
-import com.compomics.util.experiment.personalization.UrParameter;
+import com.compomics.util.experiment.identification.peptide_shaker.PSParameter;
+import com.compomics.util.experiment.mass_spectrometry.SpectrumProvider;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.gui.tablemodels.SelfUpdatingTableModel;
 import com.compomics.util.math.BasicMathFunctions;
-import com.compomics.util.preferences.IdentificationParameters;
+import com.compomics.util.parameters.identification.IdentificationParameters;
 import com.compomics.util.waiting.WaitingHandler;
-import eu.isas.peptideshaker.parameters.PSParameter;
 import eu.isas.peptideshaker.utils.DisplayFeaturesGenerator;
-import eu.isas.peptideshaker.utils.IdentificationFeaturesGenerator;
 import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
 import eu.isas.reporter.preferences.DisplayPreferences;
 import eu.isas.reporter.quantificationdetails.PeptideQuantificationDetails;
 import java.awt.Color;
-import java.io.IOException;
-import java.sql.SQLNonTransientConnectionException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
 import no.uib.jsparklines.data.ArrrayListDataPoints;
 import no.uib.jsparklines.data.JSparklinesDataSeries;
-import no.uib.jsparklines.data.StartIndexes;
 import no.uib.jsparklines.renderers.JSparklinesArrayListBarChartTableCellRenderer;
 
 /**
@@ -41,6 +36,10 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
      * The identification.
      */
     private Identification identification;
+    /**
+     * The spectrum provider.
+     */
+    private SpectrumProvider spectrumProvider;
     /**
      * The identification features generator.
      */
@@ -66,13 +65,9 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
      */
     private ArrayList<String> sampleIndexes;
     /**
-     * The sequence factory.
-     */
-    private SequenceFactory sequenceFactory = SequenceFactory.getInstance();
-    /**
      * A list of ordered peptide keys.
      */
-    private ArrayList<String> peptideKeys = null;
+    private long[] peptideKeys = null;
     /**
      * The main accession of the protein match to which the list of peptides is
      * attached.
@@ -100,6 +95,7 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
      * Constructor which sets a new table.
      *
      * @param identification the identification object containing the matches
+     * @param spectrumProvider the spectrum provider
      * @param identificationFeaturesGenerator the identification features
      * generator
      * @param reporterIonQuantification the reporter quantification information
@@ -114,11 +110,12 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
      * displayed instead of the confidence
      * @param exceptionHandler handler for the exceptions
      */
-    public PeptideTableModel(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator,
+    public PeptideTableModel(Identification identification, SpectrumProvider spectrumProvider, IdentificationFeaturesGenerator identificationFeaturesGenerator,
             ReporterIonQuantification reporterIonQuantification, QuantificationFeaturesGenerator quantificationFeaturesGenerator,
             DisplayFeaturesGenerator displayFeaturesGenerator, DisplayPreferences displayPreferences, IdentificationParameters identificationParameters, String proteinAccession,
-            ArrayList<String> peptideKeys, boolean displayScores, ExceptionHandler exceptionHandler) {
+            long[] peptideKeys, boolean displayScores, ExceptionHandler exceptionHandler) {
         this.identification = identification;
+        this.spectrumProvider = spectrumProvider;
         this.identificationFeaturesGenerator = identificationFeaturesGenerator;
         this.reporterIonQuantification = reporterIonQuantification;
         this.quantificationFeaturesGenerator = quantificationFeaturesGenerator;
@@ -155,7 +152,7 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
     public void updateDataModel(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator,
             ReporterIonQuantification reporterIonQuantification, QuantificationFeaturesGenerator quantificationFeaturesGenerator,
             DisplayFeaturesGenerator displayFeaturesGenerator, DisplayPreferences displayPreferences, IdentificationParameters identificationParameters,
-            String proteinAccession, ArrayList<String> peptideKeys, boolean showScores) {
+            String proteinAccession, long[] peptideKeys, boolean showScores) {
         this.identification = identification;
         this.identificationFeaturesGenerator = identificationFeaturesGenerator;
         this.reporterIonQuantification = reporterIonQuantification;
@@ -187,16 +184,12 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
 
     @Override
     public int getRowCount() {
-        if (peptideKeys != null) {
-            return peptideKeys.size();
-        } else {
-            return 0;
-        }
+        return peptideKeys == null ? 0 : peptideKeys.length;
     }
 
     @Override
     public int getColumnCount() {
-        return 9;
+        return 8;
     }
 
     @Override
@@ -213,16 +206,14 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
             case 4:
                 return "Sequence";
             case 5:
-                return "Start";
-            case 6:
                 return "#Spectra";
-            case 7:
+            case 6:
                 if (showScores) {
                     return "Score";
                 } else {
                     return "Confidence";
                 }
-            case 8:
+            case 7:
                 return "";
             default:
                 return "";
@@ -232,23 +223,30 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
     @Override
     public Object getValueAt(int row, int column) {
 
-        try {
-            boolean useDB = !isSelfUpdating();
-            int viewIndex = getViewIndex(row);
+        int viewIndex = getViewIndex(row);
 
-            if (viewIndex >= peptideKeys.size()) {
-                return null;
+        if (viewIndex < peptideKeys.length) {
+
+            if (column == 0) {
+                return viewIndex + 1;
             }
 
-            String peptideKey = peptideKeys.get(viewIndex);
+//            if (isScrolling) {
+//                return null;
+//            }
+//
+//            if (!isSelfUpdating()) {
+//                dataMissingAtRow(row);
+//                return DisplayParameters.LOADING_MESSAGE;
+//            }
+            
+            long peptideKey = peptideKeys[viewIndex];
+            PeptideMatch peptideMatch = identification.getPeptideMatch(peptideKey);
 
             switch (column) {
-                case 0:
-                    return viewIndex + 1;
                 case 1:
-                    ArrayList<Double> data = new ArrayList<Double>();
-                    PeptideMatch peptideMatch = identification.getPeptideMatch(peptideKey, useDB && !isScrolling);
-                    PeptideQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideMatch, null);
+                    ArrayList<Double> data = new ArrayList<>();
+                    PeptideQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(spectrumProvider, peptideMatch, null);
                     ArrayList<String> reagentsOrder = displayPreferences.getReagents();
                     for (String tempReagent : reagentsOrder) {
                         int sampleIndex = sampleIndexes.indexOf(tempReagent);
@@ -263,127 +261,36 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
                     }
                     return new JSparklinesDataSeries(data, Color.BLACK, null);
                 case 2:
-                    PSParameter psParameter = (PSParameter) identification.getPeptideMatchParameter(peptideKey, new PSParameter(), useDB && !isScrolling);
-                    if (psParameter == null) {
-                        if (isScrolling()) {
-                            return null;
-                        } else if (!useDB) {
-                            dataMissingAtRow(row);
-                            return DisplayPreferences.LOADING_MESSAGE;
-                        }
-                    }
-                    return psParameter.getProteinInferenceClass();
+                    PSParameter psParameter = (PSParameter) peptideMatch.getUrParam(PSParameter.dummy);
+                    return psParameter.getProteinInferenceGroupClass();
                 case 3:
-                    peptideMatch = identification.getPeptideMatch(peptideKey, useDB && !isScrolling);
-                    if (peptideMatch == null) {
-                        if (isScrolling()) {
-                            return null;
-                        } else if (!useDB) {
-                            dataMissingAtRow(row);
-                            return peptideMatch.getTheoreticPeptide().getParentProteins(identificationParameters.getSequenceMatchingPreferences()).get(0); // @TODO: find a better way!
-                        }
-                    }
-                    return peptideMatch.getTheoreticPeptide().getParentProteins(identificationParameters.getSequenceMatchingPreferences()).get(0); // @TODO: find a better way!
+                    TreeMap<String, int[]> proteinMapping = peptideMatch.getPeptide().getProteinMapping();
+                    return proteinMapping.navigableKeySet().stream().collect(Collectors.joining(","));
                 case 4:
-                    peptideMatch = identification.getPeptideMatch(peptideKey, useDB && !isScrolling);
-                    if (peptideMatch == null) {
-                        if (isScrolling()) {
-                            return null;
-                        } else if (!useDB) {
-                            dataMissingAtRow(row);
-                            return Peptide.getSequence(peptideKey);
-                        }
-                    }
                     return displayFeaturesGenerator.getTaggedPeptideSequence(peptideMatch, true, true, true);
                 case 5:
-                    if (isScrolling) {
-                        return null;
-                    }
-                    ArrayList<Integer> indexes;
-                    if (sequenceFactory == null || proteinAccession == null) {
-                        return null;
-                    }
-                    try {
-                        Protein currentProtein = sequenceFactory.getProtein(proteinAccession);
-                        String peptideSequence = Peptide.getSequence(peptideKey);
-                        indexes = currentProtein.getPeptideStart(peptideSequence,
-                                identificationParameters.getSequenceMatchingPreferences());
-                    } catch (IOException e) {
-                        exceptionHandler.catchException(e);
-                        return "IO Exception";
-                    }
-                    Collections.sort(indexes);
-                    return new StartIndexes(indexes); // note: have to be "packed" like this in order to be able to resetSorting on the first index if multiple indexes
-                case 6:
-                    if (isScrolling) {
-                        return null;
-                    }
-                    peptideMatch = identification.getPeptideMatch(peptideKey, useDB);
-                    if (!useDB
-                            && (peptideMatch == null || !identificationFeaturesGenerator.nValidatedSpectraForPeptideInCache(peptideKey))
-                            && (peptideMatch == null || !identification.peptideDetailsInCache(peptideKey))) {
-                        dataMissingAtRow(row);
-                        return DisplayPreferences.LOADING_MESSAGE;
-                    }
-
                     double nConfidentSpectra = identificationFeaturesGenerator.getNConfidentSpectraForPeptide(peptideKey);
                     double nDoubtfulSpectra = identificationFeaturesGenerator.getNValidatedSpectraForPeptide(peptideKey) - nConfidentSpectra;
-                    int nSpectra = peptideMatch.getSpectrumMatchesKeys().size();
+                    int nSpectra = peptideMatch.getSpectrumMatchesKeys().length;
 
-                    ArrayList<Double> doubleValues = new ArrayList<Double>();
+                    ArrayList<Double> doubleValues = new ArrayList<>(3);
                     doubleValues.add(nConfidentSpectra);
                     doubleValues.add(nDoubtfulSpectra);
                     doubleValues.add(nSpectra - nConfidentSpectra - nDoubtfulSpectra);
                     ArrrayListDataPoints arrrayListDataPoints = new ArrrayListDataPoints(doubleValues, JSparklinesArrayListBarChartTableCellRenderer.ValueDisplayType.sumOfNumbers);
                     return arrrayListDataPoints;
+                case 6:
+                    psParameter = (PSParameter) peptideMatch.getUrParam(PSParameter.dummy);
+                    return showScores ? psParameter.getTransformedScore() : psParameter.getConfidence();
                 case 7:
-                    psParameter = (PSParameter) identification.getPeptideMatchParameter(peptideKey, new PSParameter(), useDB && !isScrolling);
-                    if (psParameter == null) {
-                        if (isScrolling) {
-                            return null;
-                        } else if (!useDB) {
-                            dataMissingAtRow(row);
-                            return DisplayPreferences.LOADING_MESSAGE;
-                        }
-                    }
-                    if (psParameter != null) {
-                        if (showScores) {
-                            return psParameter.getPeptideScore();
-                        } else {
-                            return psParameter.getPeptideConfidence();
-                        }
-                    } else {
-                        return null;
-                    }
-                case 8:
-                    psParameter = (PSParameter) identification.getPeptideMatchParameter(peptideKey, new PSParameter(), useDB && !isScrolling);
-                    if (psParameter == null) {
-                        if (isScrolling) {
-                            return null;
-                        } else if (!useDB) {
-                            dataMissingAtRow(row);
-                            return DisplayPreferences.LOADING_MESSAGE;
-                        }
-                    }
-                    if (psParameter != null) {
-                        return psParameter.getMatchValidationLevel().getIndex();
-                    } else {
-                        return null;
-                    }
+                    psParameter = (PSParameter) peptideMatch.getUrParam(PSParameter.dummy);
+                    return psParameter.getMatchValidationLevel().getIndex();
                 default:
                     return null;
             }
-        } catch (SQLNonTransientConnectionException e) {
-            // this one can be ignored i think?
-            return null;
-        } catch (Exception e) {
-            if (exceptionHandler != null) {
-                exceptionHandler.catchException(e);
-            } else {
-                throw new IllegalArgumentException("Table not instantiated.");
-            }
-            return null;
         }
+        
+        return null;
     }
 
     /**
@@ -419,57 +326,11 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
     @Override
     protected int loadDataForRows(ArrayList<Integer> rows, WaitingHandler waitingHandler) {
 
-        ArrayList<String> tempKeys = new ArrayList<String>();
-        for (int i : rows) {
-            if (i < peptideKeys.size()) {
-                String peptideKey = peptideKeys.get(i);
-                tempKeys.add(peptideKey);
-            }
-        }
+        boolean canceled = rows.parallelStream()
+                .map(i -> identification.getPeptideMatch(peptideKeys[i]))
+                .map(peptideMatch -> identificationFeaturesGenerator.getNValidatedSpectraForPeptide(peptideMatch.getKey()))
+                .anyMatch(dummy -> waitingHandler.isRunCanceled());
 
-        try {
-            ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
-            parameters.add(new PSParameter());
-            PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(tempKeys, parameters, true, parameters, waitingHandler);
-            peptideMatchesIterator.setBatchSize(batchSize);
-            PeptideMatch peptideMatch;
-
-            int i = 0;
-            
-            while ((peptideMatch = peptideMatchesIterator.next()) != null) {
-                if (waitingHandler.isRunCanceled()) {
-                    return rows.get(i);
-                }
-                String peptideKey = peptideMatch.getKey();
-                identificationFeaturesGenerator.getNValidatedSpectraForPeptide(peptideKey);
-                i++;
-            }
-        } catch (SQLNonTransientConnectionException e) {
-            // connection has been closed
-            return rows.get(0);
-        } catch (Exception e) {
-            catchException(e);
-            return rows.get(0);
-        }
-
-        return rows.get(rows.size() - 1);
-    }
-
-    @Override
-    protected void loadDataForColumn(int column, WaitingHandler waitingHandler) {
-        try {
-            if (column == 1
-                    || column == 2
-                    || column == 6
-                    || column == 7) {
-                identification.loadPeptideMatchParameters(peptideKeys, new PSParameter(), waitingHandler, false);
-            } else if (column == 3
-                    || column == 4
-                    || column == 5) {
-                identification.loadPeptideMatches(peptideKeys, waitingHandler, false);
-            }
-        } catch (Exception e) {
-            catchException(e);
-        }
+        return canceled ? rows.get(0) : rows.get(rows.size() - 1);
     }
 }

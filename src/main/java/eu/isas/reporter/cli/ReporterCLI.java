@@ -3,29 +3,27 @@ package eu.isas.reporter.cli;
 import com.compomics.software.cli.CommandLineUtils;
 import com.compomics.software.cli.CommandParameter;
 import com.compomics.util.Util;
-import com.compomics.util.db.DerbyUtil;
 import com.compomics.util.exceptions.ExceptionHandler;
 import com.compomics.util.exceptions.exception_handlers.CommandLineExceptionHandler;
-import com.compomics.util.experiment.biology.PTM;
-import com.compomics.util.experiment.biology.PTMFactory;
-import com.compomics.util.experiment.biology.Sample;
+import com.compomics.util.experiment.biology.modifications.Modification;
+import com.compomics.util.experiment.biology.modifications.ModificationFactory;
 import com.compomics.util.experiment.biology.taxonomy.SpeciesFactory;
 import com.compomics.util.experiment.identification.Identification;
-import com.compomics.util.experiment.identification.protein_sequences.SequenceFactory;
-import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
+import com.compomics.util.experiment.identification.validation.MatchValidationLevel;
+import com.compomics.util.experiment.io.temp.TempFilesManager;
+import com.compomics.util.experiment.mass_spectrometry.SpectrumProvider;
 import com.compomics.util.experiment.normalization.NormalizationFactors;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethodFactory;
-import com.compomics.util.gui.filehandling.TempFilesManager;
 import com.compomics.util.gui.waiting.waitinghandlers.WaitingHandlerCLIImpl;
-import com.compomics.util.preferences.IdentificationParameters;
-import com.compomics.util.preferences.ProcessingPreferences;
-import com.compomics.util.preferences.UtilitiesUserPreferences;
+import com.compomics.util.io.IoUtil;
+import com.compomics.util.parameters.UtilitiesUserParameters;
+import com.compomics.util.parameters.identification.IdentificationParameters;
+import com.compomics.util.parameters.tools.ProcessingParameters;
 import eu.isas.peptideshaker.PeptideShaker;
 import eu.isas.peptideshaker.export.ProjectExport;
-import eu.isas.peptideshaker.scoring.MatchValidationLevel;
-import eu.isas.peptideshaker.utils.CpsParent;
+import eu.isas.peptideshaker.utils.PsdbParent;
 import eu.isas.reporter.Reporter;
 import eu.isas.reporter.calculation.QuantificationFeaturesCache;
 import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
@@ -41,17 +39,17 @@ import eu.isas.reporter.settings.ReporterSettings;
 import eu.isas.reporter.utils.Properties;
 import java.io.EOFException;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.Field;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.concurrent.Callable;
-import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
@@ -61,16 +59,16 @@ import org.apache.commons.cli.ParseException;
  * @author Marc Vaudel
  * @author Harald Barsnes
  */
-public class ReporterCLI extends CpsParent implements Callable {
+public class ReporterCLI extends PsdbParent implements Callable {
 
     /**
      * The command line parameters.
      */
     private ReporterCLIInputBean reporterCLIInputBean;
     /**
-     * The PTM factory.
+     * The modification factory.
      */
-    private PTMFactory ptmFactory;
+    private ModificationFactory modificationFactory;
     /**
      * The command line.
      */
@@ -80,13 +78,13 @@ public class ReporterCLI extends CpsParent implements Callable {
      */
     private ReporterMethodFactory methodsFactory = ReporterMethodFactory.getInstance();
     /**
-     * The utilities user preferences.
+     * The utilities user parameters.
      */
-    private UtilitiesUserPreferences utilitiesUserPreferences;
+    private UtilitiesUserParameters utilitiesUserParameters;
     /**
-     * The mgf files loaded.
+     * The spectrum files loaded.
      */
-    private ArrayList<File> mgfFiles = new ArrayList<File>();
+    private ArrayList<File> spectrumFiles = new ArrayList<File>();
     /**
      * Handler for the exceptions.
      */
@@ -107,7 +105,7 @@ public class ReporterCLI extends CpsParent implements Callable {
         ReporterCLIParameters.createOptionsCLI(lOptions);
 
         // Parse the command line
-        BasicParser parser = new BasicParser();
+        DefaultParser parser = new DefaultParser();
         line = parser.parse(lOptions, args);
     }
 
@@ -118,7 +116,7 @@ public class ReporterCLI extends CpsParent implements Callable {
      * @return a boolean indicating whether the command line is valid
      */
     public static boolean isValidCommandLine(CommandLine aLine) {
-        
+
         // PeptideShaker file
         if (!aLine.hasOption(ReporterCLIParameters.ID.id) || ((String) aLine.getOptionValue(ReporterCLIParameters.ID.id)).equals("")) {
             System.out.println(System.getProperty("line.separator") + "PeptideShaker file not specified." + System.getProperty("line.separator"));
@@ -126,7 +124,7 @@ public class ReporterCLI extends CpsParent implements Callable {
         } else {
             String arg = aLine.getOptionValue(ReporterCLIParameters.ID.id);
             HashSet<String> supportedFormats = new HashSet<String>(2);
-            supportedFormats.add(".cpsx");
+            supportedFormats.add(".psdb");
             supportedFormats.add(".zip");
             if (!CommandParameter.fileExists(ReporterCLIParameters.ID.id, arg, supportedFormats)) {
                 return false;
@@ -136,7 +134,7 @@ public class ReporterCLI extends CpsParent implements Callable {
         // The isotopes file
         if (aLine.hasOption(ReporterCLIParameters.ISOTOPES.id)) {
             String arg = aLine.getOptionValue(ReporterCLIParameters.ISOTOPES.id);
-            HashSet<String> supportedFormats = new HashSet<String>(1);
+            HashSet<String> supportedFormats = new HashSet<>(1);
             supportedFormats.add(".xml");
             if (!CommandParameter.fileExists(ReporterCLIParameters.ISOTOPES.id, arg, supportedFormats)) {
                 return false;
@@ -334,14 +332,30 @@ public class ReporterCLI extends CpsParent implements Callable {
     @Override
     public Object call() throws IOException, ClassNotFoundException {
 
+        // turn off illegal access log messages
+        try {
+            Class loggerClass = Class.forName("jdk.internal.module.IllegalAccessLogger");
+            Field loggerField = loggerClass.getDeclaredField("logger");
+            Class unsafeClass = Class.forName("sun.misc.Unsafe");
+            Field unsafeField = unsafeClass.getDeclaredField("theUnsafe");
+            unsafeField.setAccessible(true);
+            Object unsafe = unsafeField.get(null);
+            Long offset = (Long) unsafeClass.getMethod("staticFieldOffset", Field.class).invoke(unsafe, loggerField);
+            unsafeClass.getMethod("putObjectVolatile", Object.class, long.class, Object.class) //
+                    .invoke(unsafe, loggerClass, offset, null);
+        } catch (Throwable ex) {
+            // ignore, i.e. simply show the warnings...
+            //ex.printStackTrace();
+        }
+
         // Parse command line
         reporterCLIInputBean = new ReporterCLIInputBean(line);
 
         // Load user preferences
-        utilitiesUserPreferences = UtilitiesUserPreferences.loadUserPreferences();
+        utilitiesUserParameters = utilitiesUserParameters.loadUserParameters();
 
         // Instantiate factories
-        PeptideShaker.instantiateFacories(utilitiesUserPreferences);
+        PeptideShaker.instantiateFacories(utilitiesUserParameters);
 
         // Load species
         try {
@@ -362,14 +376,14 @@ public class ReporterCLI extends CpsParent implements Callable {
         }
 
         // Load PTMs 
-        ptmFactory = PTMFactory.getInstance();
+        modificationFactory = ModificationFactory.getInstance();
 
         // Initiate the waiting handler
         WaitingHandlerCLIImpl waitingHandler = new WaitingHandlerCLIImpl();
 
         // Set processing preferences
-        ProcessingPreferences processingPreferences = new ProcessingPreferences();
-        processingPreferences.setnThreads(reporterCLIInputBean.getnThreads());
+        ProcessingParameters processingParameters = new ProcessingParameters();
+        processingParameters.setnThreads(reporterCLIInputBean.getnThreads());
 
         // Update the identification parameters if changed and save the changes
         IdentificationParameters tempIdentificationParameters = reporterCLIInputBean.getIdentificationParameters();
@@ -385,30 +399,30 @@ public class ReporterCLI extends CpsParent implements Callable {
             IdentificationParameters.saveIdentificationParameters(tempIdentificationParameters, parametersFile);
         }
 
-        // Load the project from the cps file
+        // Load the project from the psdb file
         ProjectImporter projectImporter = new ProjectImporter();
-        cpsFile = reporterCLIInputBean.getPeptideShakerFile();
+        psdbFile = reporterCLIInputBean.getPeptideShakerFile();
         setDbFolder(Reporter.getMatchesFolder());
         try {
-            projectImporter.importPeptideShakerProject(this, mgfFiles, waitingHandler);
+            projectImporter.importPeptideShakerProject(this, spectrumFiles, waitingHandler);
             projectImporter.importReporterProject(this, waitingHandler);
         } catch (OutOfMemoryError error) {
             System.out.println("Ran out of memory! (runtime.maxMemory(): " + Runtime.getRuntime().maxMemory() + ")");
             String errorText = "Reporter used up all the available memory and had to be stopped.<br>"
                     + "Memory boundaries are changed in the the Welcome Dialog (Settings<br>"
                     + "& Help > Settings > Java Memory Settings) or in the Edit menu (Edit<br>"
-                    + "Java Options). See also <a href=\"https://compomics.github.io/projects/compomics-utilities.html\">JavaTroubleShooting</a>.";
+                    + "Java Options). See also <a href=\"https://compomics.github.io/projects/compomics-utilities/wiki/JavaTroubleShooting.html\">JavaTroubleShooting</a>.";
             waitingHandler.appendReport(errorText, true, true);
             error.printStackTrace();
             return 1;
         } catch (EOFException e) {
-            String errorText = "An error occurred while reading:\n" + cpsFile + ".\n\n"
+            String errorText = "An error occurred while reading:\n" + psdbFile + ".\n\n"
                     + "The file is corrupted and cannot be opened anymore.";
             waitingHandler.appendReport(errorText, true, true);
             e.printStackTrace();
             return 1;
         } catch (Exception e) {
-            String errorText = "An error occurred while reading:\n" + cpsFile + ".\n\n"
+            String errorText = "An error occurred while reading:\n" + psdbFile + ".\n\n"
                     + "Please verify that the Reporter version used to create\n"
                     + "the file is compatible with your version of Reporter.";
             waitingHandler.appendReport(errorText, true, true);
@@ -416,6 +430,7 @@ public class ReporterCLI extends CpsParent implements Callable {
             return 1;
         }
         DisplayPreferences displayPreferences = projectImporter.getDisplayPreferences();
+        SpectrumProvider spectrumProvider = projectImporter.getSpectrumProvider();
 
         // Load project specific PTMs
         String error = PeptideShaker.loadModifications(getIdentificationParameters().getSearchParameters());
@@ -427,9 +442,9 @@ public class ReporterCLI extends CpsParent implements Callable {
         ArrayList<String> ignoredPtms = reporterCLIInputBean.getIgnoredPtms();
         if (ignoredPtms != null) {
             for (String ptmName : ignoredPtms) {
-                PTM ptm = ptmFactory.getPTM(ptmName);
-                if (ptm == null) {
-                    System.out.println("PTM " + ptmName + " not recognized.");
+                Modification modification = modificationFactory.getModification(ptmName);
+                if (modification == null) {
+                    System.out.println("Modification " + ptmName + " not recognized.");
                     return 1;
                 }
             }
@@ -476,7 +491,7 @@ public class ReporterCLI extends CpsParent implements Callable {
         // Name samples according to their reagent
         ArrayList<String> reagents = selectedMethod.getReagentsSortedByMass();
         for (String reagent : reagents) {
-            reporterIonQuantification.assignSample(reagent, new Sample(reagent));
+            reporterIonQuantification.assignSample(reagent, reagent);
         }
 
         // Set reference samples
@@ -495,8 +510,9 @@ public class ReporterCLI extends CpsParent implements Callable {
         }
 
         // Create quantification features generator
-        QuantificationFeaturesGenerator quantificationFeaturesGenerator = new QuantificationFeaturesGenerator(new QuantificationFeaturesCache(), getIdentification(), getIdentificationFeaturesGenerator(), reporterSettings, reporterIonQuantification,
-                identificationParameters.getSearchParameters(), identificationParameters.getSequenceMatchingPreferences());
+        QuantificationFeaturesGenerator quantificationFeaturesGenerator = new QuantificationFeaturesGenerator(new QuantificationFeaturesCache(),
+                getIdentification(), getIdentificationFeaturesGenerator(), reporterSettings, reporterIonQuantification,
+                identificationParameters.getSearchParameters(), identificationParameters.getSequenceMatchingParameters());
 
         // Set Normalization factors
         NormalizationFactors normalizationFactors = reporterIonQuantification.getNormalizationFactors();
@@ -504,13 +520,24 @@ public class ReporterCLI extends CpsParent implements Callable {
             try {
                 Normalizer normalizer = new Normalizer();
                 if (!normalizationFactors.hasPsmNormalisationFactors()) {
-                    normalizer.setPsmNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(), reporterSettings.getNormalizationSettings(), getIdentificationParameters().getSequenceMatchingPreferences(), getIdentification(), quantificationFeaturesGenerator, processingPreferences, exceptionHandler, waitingHandler);
+                    normalizer.setPsmNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(),
+                            reporterSettings.getNormalizationSettings(), getIdentificationParameters().getSequenceMatchingParameters(),
+                            getIdentification(), spectrumProvider, quantificationFeaturesGenerator, processingParameters,
+                            getIdentificationParameters().getSearchParameters(), getIdentificationParameters().getFastaParameters(),
+                            getIdentificationParameters().getPeptideVariantsParameters(), exceptionHandler, waitingHandler);
                 }
                 if (!normalizationFactors.hasPeptideNormalisationFactors()) {
-                    normalizer.setPeptideNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(), reporterSettings.getNormalizationSettings(), getIdentificationParameters().getSequenceMatchingPreferences(), getIdentification(), quantificationFeaturesGenerator, processingPreferences, exceptionHandler, waitingHandler);
+                    normalizer.setPeptideNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(),
+                            reporterSettings.getNormalizationSettings(), getIdentificationParameters().getSequenceMatchingParameters(),
+                            getIdentification(), spectrumProvider, quantificationFeaturesGenerator, processingParameters,
+                            getIdentificationParameters().getSearchParameters(), getIdentificationParameters().getFastaParameters(),
+                            getIdentificationParameters().getPeptideVariantsParameters(), exceptionHandler, waitingHandler);
                 }
                 if (!normalizationFactors.hasProteinNormalisationFactors()) {
-                    normalizer.setProteinNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(), reporterSettings.getNormalizationSettings(), getIdentification(), getMetrics(), quantificationFeaturesGenerator, processingPreferences, exceptionHandler, waitingHandler);
+                    normalizer.setProteinNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(),
+                            reporterSettings.getNormalizationSettings(), getIdentification(), spectrumProvider, getMetrics(), quantificationFeaturesGenerator,
+                            processingParameters, getIdentificationParameters().getSearchParameters(), getIdentificationParameters().getFastaParameters(),
+                            getIdentificationParameters().getPeptideVariantsParameters(), exceptionHandler, waitingHandler);
                 }
             } catch (Exception e) {
                 System.out.println(System.getProperty("line.separator") + "An error occurred while estimating the ratios." + System.getProperty("line.separator"));
@@ -519,12 +546,12 @@ public class ReporterCLI extends CpsParent implements Callable {
             }
         }
 
-        // Save the project in the cps file
+        // Save the project in the psdb file
         File destinationFile = reporterCLIInputBean.getOutputFile();
         if (destinationFile == null) {
-            destinationFile = cpsFile;
+            destinationFile = psdbFile;
         } else {
-            cpsFile = destinationFile;
+            psdbFile = destinationFile;
         }
         try {
             ProjectSaver.saveProject(reporterSettings, reporterIonQuantification, displayPreferences, this, waitingHandler);
@@ -538,7 +565,7 @@ public class ReporterCLI extends CpsParent implements Callable {
         // report export if needed
         ReportCLIInputBean reportCLIInputBean = reporterCLIInputBean.getReportCLIInputBean();
 
-        // see if output folder is set, and if not set to the same folder as the cps file
+        // see if output folder is set, and if not set to the same folder as the psdb file
         if (reportCLIInputBean.getReportOutputFolder() == null) {
             reportCLIInputBean.setReportOutputFolder(destinationFile.getParentFile());
         }
@@ -551,7 +578,9 @@ public class ReporterCLI extends CpsParent implements Callable {
                 int nSurroundingAAs = 2; //@TODO: this shall not be hard coded //peptideShakerGUI.getDisplayPreferences().getnAASurroundingPeptides()
                 for (String reportType : reportCLIInputBean.getReportTypes()) {
                     try {
-                        CLIExportMethods.exportReport(reportCLIInputBean, reportType, experiment.getReference(), sample.getReference(), replicateNumber, projectDetails, identification, geneMaps, identificationFeaturesGenerator, quantificationFeaturesGenerator, reporterIonQuantification, reporterSettings, identificationParameters, nSurroundingAAs, spectrumCountingPreferences, waitingHandler);
+                        CLIExportMethods.exportReport(reportCLIInputBean, reportType, projectParameters.getProjectUniqueName(), projectDetails, identification, geneMaps,
+                                identificationFeaturesGenerator, sequenceProvider, msFileHandler, proteinDetailsProvider, quantificationFeaturesGenerator,
+                                reporterIonQuantification, reporterSettings, identificationParameters, nSurroundingAAs, spectrumCountingParameters, waitingHandler);
                     } catch (Exception e) {
                         waitingHandler.appendReport("An error occurred while exporting the " + reportType + ".", true, true);
                         e.printStackTrace();
@@ -589,25 +618,22 @@ public class ReporterCLI extends CpsParent implements Callable {
                 waitingHandler.setRunCanceled();
             }
 
-            File fastaFile = identificationParameters.getProteinInferencePreferences().getProteinSequenceDatabase();
-            ArrayList<File> spectrumFiles = new ArrayList<File>();
-            for (String spectrumFileName : getIdentification().getSpectrumFiles()) {
-                File spectrumFile = getProjectDetails().getSpectrumFile(spectrumFileName);
-                spectrumFiles.add(spectrumFile);
-            }
+            File fastaFile = new File(projectDetails.getFastaFile());
 
             try {
-                ProjectExport.exportProjectAsZip(zipFile, fastaFile, spectrumFiles, cpsFile, waitingHandler);
+                ProjectExport.exportProjectAsZip(zipFile, fastaFile, msFileHandler, psdbFile, false, waitingHandler);
                 final int NUMBER_OF_BYTES_PER_MEGABYTE = 1048576;
                 double sizeOfZippedFile = Util.roundDouble(((double) zipFile.length() / NUMBER_OF_BYTES_PER_MEGABYTE), 2);
                 waitingHandler.appendReport("Project zipped to \'" + zipFile.getAbsolutePath() + "\' (" + sizeOfZippedFile + " MB)", true, true);
-            } catch (FileNotFoundException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
-                waitingHandler.appendReport("An error occurred while attempting to zip project in " + zipFile.getAbsolutePath() + ".", true, true);
-                waitingHandler.setRunCanceled();
-            } catch (IOException e) {
-                e.printStackTrace();
-                waitingHandler.appendReport("An error occurred while attempting to zip project in " + zipFile.getAbsolutePath() + ".", true, true);
+                waitingHandler.appendReport(
+                        "An error occurred while attempting to zip project in "
+                        + zipFile.getAbsolutePath()
+                        + ".",
+                        true,
+                        true
+                );
                 waitingHandler.setRunCanceled();
             }
         }
@@ -617,7 +643,7 @@ public class ReporterCLI extends CpsParent implements Callable {
         if (waitingHandler.isRunCanceled()) {
             return 1;
         }
-        
+
         waitingHandler.appendReport("Reporter processing completed.", true, true);
 
         return 0;
@@ -712,17 +738,16 @@ public class ReporterCLI extends CpsParent implements Callable {
         }
     }
 
-    /**
-     * Close the Reporter instance. Closes file connections and deletes
-     * temporary files.
-     *
-     * @throws IOException thrown of IOException occurs
-     * @throws SQLException thrown if SQLException occurs
-     */
-    public void close() throws IOException, SQLException {
-        close(identification);
-    }
-
+//    /**
+//     * Close the Reporter instance. Closes file connections and deletes
+//     * temporary files.
+//     *
+//     * @throws IOException thrown of IOException occurs
+//     * @throws SQLException thrown if SQLException occurs
+//     */
+//    public void close() throws IOException, SQLException {
+//        close(identification);
+//    }
     /**
      * Close the Reporter instance. Closes file connections and deletes
      * temporary files.
@@ -735,26 +760,9 @@ public class ReporterCLI extends CpsParent implements Callable {
     public static void close(Identification identification) throws IOException, SQLException {
 
         try {
-            SpectrumFactory.getInstance().closeFiles();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        try {
-            SequenceFactory.getInstance().closeFile();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        try {
             if (identification != null) {
-                identification.close();
+                identification.close(false);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        try {
-            DerbyUtil.closeConnection();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -765,7 +773,7 @@ public class ReporterCLI extends CpsParent implements Callable {
 
             if (tempFiles != null) {
                 for (File currentFile : tempFiles) {
-                    boolean deleted = Util.deleteDir(currentFile);
+                    boolean deleted = IoUtil.deleteDir(currentFile);
                     if (!deleted) {
                         System.out.println(currentFile.getAbsolutePath() + " could not be deleted!"); // @TODO: better handling of this error?
                     }
@@ -816,7 +824,7 @@ public class ReporterCLI extends CpsParent implements Callable {
             // parse the rest of the cptions   
             Options nonPathOptions = new Options();
             ReporterCLIParameters.createOptionsCLI(nonPathOptions);
-            BasicParser parser = new BasicParser();
+            DefaultParser parser = new DefaultParser();
             CommandLine line = parser.parse(nonPathOptions, nonPathSettingArgsAsList);
 
             ReporterCLI reporterCLI = new ReporterCLI(args);

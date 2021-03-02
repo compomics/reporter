@@ -1,8 +1,8 @@
 package eu.isas.reporter.gui;
 
-import com.compomics.util.Util;
-import com.compomics.util.experiment.biology.ions.ElementaryIon;
+import com.compomics.util.experiment.biology.ions.impl.ElementaryIon;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethodFactory;
+import com.compomics.util.gui.file_handling.FileChooserUtil;
 import java.io.File;
 import java.io.IOException;
 import javax.swing.JOptionPane;
@@ -209,7 +209,7 @@ public class MethodSettingsDialog extends javax.swing.JDialog {
             newDialog.getReporterGui().getLastSelectedFolder().setLastSelectedFolder(txtConfigurationFileLocation.getText());
         }
 
-        File selectedFile = Util.getUserSelectedFile(this, ".xml", "Reporter Method File (*.xml)", "Select Settings File",
+        File selectedFile = FileChooserUtil.getUserSelectedFile(this, ".xml", "Reporter Method File (*.xml)", "Select Settings File",
                 newDialog.getReporterGui().getLastSelectedFolder().getLastSelectedFolder(), null, true);
 
         if (selectedFile != null) {
@@ -247,7 +247,7 @@ public class MethodSettingsDialog extends javax.swing.JDialog {
             tempFileName = new File(txtConfigurationFileLocation.getText()).getName();
         }
 
-        File selectedFile = Util.getUserSelectedFile(this, ".xml", "Reporter Method File (*.xml)", "Save Settings File",
+        File selectedFile = FileChooserUtil.getUserSelectedFile(this, ".xml", "Reporter Method File (*.xml)", "Save Settings File",
                 newDialog.getReporterGui().getLastSelectedFolder().getLastSelectedFolder(), tempFileName, false);
 
         if (selectedFile != null) {
@@ -276,13 +276,25 @@ public class MethodSettingsDialog extends javax.swing.JDialog {
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
 
         if (valuesChanged) {
-            int selection = JOptionPane.showConfirmDialog(this, "Do you want to save the new settings to a file?", "Save File?", JOptionPane.YES_NO_CANCEL_OPTION);
-            if (selection == JOptionPane.YES_OPTION) {
-                saveConfigButtonActionPerformed(null);
-            } else if (selection == JOptionPane.CANCEL_OPTION) {
-                return;
-            } else if (selection == JOptionPane.NO_OPTION) {
-                newDialog.setMethodsFile(null);
+
+            int selection = JOptionPane.showConfirmDialog(
+                    this,
+                    "Do you want to save the new settings to a file?",
+                    "Save File?",
+                    JOptionPane.YES_NO_CANCEL_OPTION
+            );
+
+            switch (selection) {
+                case JOptionPane.YES_OPTION:
+                    saveConfigButtonActionPerformed(null);
+                    break;
+                case JOptionPane.CANCEL_OPTION:
+                    return;
+                case JOptionPane.NO_OPTION:
+                    newDialog.setMethodsFile(null);
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -309,6 +321,7 @@ public class MethodSettingsDialog extends javax.swing.JDialog {
     private void refresh() {
 
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 reagentsTable.revalidate();
                 reagentsTable.repaint();

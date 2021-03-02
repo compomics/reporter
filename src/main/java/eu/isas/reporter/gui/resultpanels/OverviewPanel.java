@@ -3,7 +3,9 @@ package eu.isas.reporter.gui.resultpanels;
 import com.compomics.util.examples.BareBonesBrowserLaunch;
 import com.compomics.util.experiment.biology.genes.GeneMaps;
 import com.compomics.util.experiment.identification.Identification;
-import com.compomics.util.experiment.identification.protein_sequences.SequenceFactory;
+import com.compomics.util.experiment.identification.features.IdentificationFeaturesGenerator;
+import com.compomics.util.experiment.identification.peptide_shaker.PSParameter;
+import com.compomics.util.experiment.identification.validation.MatchValidationLevel;
 import com.compomics.util.gui.genes.GeneDetailsDialog;
 import com.compomics.util.gui.GuiUtilities;
 import com.compomics.util.gui.TableProperties;
@@ -12,10 +14,6 @@ import com.compomics.util.gui.tablemodels.SelfUpdatingTableModel;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
 import com.compomics.util.math.clustering.KMeansClustering;
 import com.compomics.util.waiting.WaitingHandler;
-import eu.isas.peptideshaker.parameters.PSParameter;
-import eu.isas.peptideshaker.scoring.MatchValidationLevel;
-import eu.isas.peptideshaker.scoring.PSMaps;
-import eu.isas.peptideshaker.utils.IdentificationFeaturesGenerator;
 import eu.isas.reporter.calculation.clustering.ClusterBuilder;
 import eu.isas.reporter.gui.ReporterGUI;
 import eu.isas.reporter.gui.tablemodels.PeptideTableModel;
@@ -35,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.IntStream;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTable;
@@ -51,7 +50,6 @@ import no.uib.jsparklines.renderers.JSparklinesBarChartTableCellRenderer;
 import no.uib.jsparklines.renderers.JSparklinesHeatMapTableCellRenderer;
 import no.uib.jsparklines.renderers.JSparklinesIntegerColorTableCellRenderer;
 import no.uib.jsparklines.renderers.JSparklinesIntegerIconTableCellRenderer;
-import no.uib.jsparklines.renderers.JSparklinesMultiIntervalChartTableCellRenderer;
 import no.uib.jsparklines.renderers.util.GradientColorCoding;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartMouseEvent;
@@ -110,15 +108,15 @@ public class OverviewPanel extends javax.swing.JPanel {
     /**
      * A list of proteins in the protein table.
      */
-    private ArrayList<String> proteinKeys = new ArrayList<String>();
+    private long[] proteinKeys;
     /**
      * A list of peptides in the peptide table.
      */
-    private ArrayList<String> peptideKeys = new ArrayList<String>();
+    private long[] peptideKeys;
     /**
      * A list of PSMs in the PSM table.
      */
-    private ArrayList<String> psmKeys = new ArrayList<String>();
+    private long[] psmKeys;
     /**
      * The default line width for the line plots.
      */
@@ -146,7 +144,7 @@ public class OverviewPanel extends javax.swing.JPanel {
     /**
      * The complete list of ordered protein keys.
      */
-    private ArrayList<String> allOrderedProteinKeys;
+    private long[] allOrderedProteinKeys;
     /**
      * True of a single chart is maximized.
      */
@@ -154,11 +152,7 @@ public class OverviewPanel extends javax.swing.JPanel {
     /**
      * List with all the chart panels.
      */
-    private ArrayList<ChartPanel> allChartPanels = new ArrayList<ChartPanel>();
-    /**
-     * The sequence factory.
-     */
-    private SequenceFactory sequenceFactory = SequenceFactory.getInstance();
+    private ArrayList<ChartPanel> allChartPanels = new ArrayList<>();
     /**
      * Static index for the ID software agreement: no psm found.
      */
@@ -288,21 +282,23 @@ public class OverviewPanel extends javax.swing.JPanel {
                     progressDialog.setTitle("Preparing Overview. Please Wait...");
 
                     reporterGUI.getIdentificationFeaturesGenerator().setProteinKeys(reporterGUI.getMetrics().getProteinKeys());
-                    proteinKeys = reporterGUI.getIdentificationFeaturesGenerator().getProcessedProteinKeys(progressDialog, reporterGUI.getFilterPreferences());
-                    allOrderedProteinKeys = reporterGUI.getIdentificationFeaturesGenerator().getProcessedProteinKeys(progressDialog, reporterGUI.getFilterPreferences());
+                    proteinKeys = reporterGUI.getIdentificationFeaturesGenerator().getProcessedProteinKeys(progressDialog, reporterGUI.getFilterParameters());
+                    allOrderedProteinKeys = reporterGUI.getIdentificationFeaturesGenerator().getProcessedProteinKeys(progressDialog, reporterGUI.getFilterParameters());
 
                     // display the clusters
                     displayClusters(progressDialog);
 
                     // clear the tables
-                    ArrayList<String> proteinSelection = new ArrayList<String>();
-                    reporterGUI.setSelectedProteins(proteinSelection, false, false); // @TODO: what about peptides and psms..?
+                    ArrayList<Long> emptySelection = new ArrayList<>();
+                    reporterGUI.setSelectedProteins(emptySelection, false, false);
+                    reporterGUI.setSelectedPeptides(emptySelection, false, false);
+                    reporterGUI.setSelectedPsms(emptySelection, false, false);
                     proteinTable.clearSelection();
                     peptideTable.clearSelection();
                     psmTable.clearSelection();
-                    proteinKeys = new ArrayList<String>();
-                    peptideKeys = new ArrayList<String>();
-                    psmKeys = new ArrayList<String>();
+                    proteinKeys = null;
+                    peptideKeys = null;
+                    psmKeys = null;
 
                     ((ProteinTableModel) proteinTable.getModel()).reset();
                     ((PeptideTableModel) peptideTable.getModel()).reset();
@@ -357,9 +353,9 @@ public class OverviewPanel extends javax.swing.JPanel {
 
         plotPanel.removeAll();
 
-        ArrayList<String> sampleIndexes = new ArrayList<String>(reporterGUI.getReporterIonQuantification().getSampleIndexes());
+        ArrayList<String> sampleIndexes = new ArrayList<>(reporterGUI.getReporterIonQuantification().getSampleIndexes());
         Collections.sort(sampleIndexes);
-        ArrayList<String> reagentsOrder = reporterGUI.getDisplayPreferences().getReagents();
+        ArrayList<String> reagentsOrder = reporterGUI.getDisplayParameters().getReagents();
         KMeansClustering kMeansClustering = reporterGUI.getkMeansClutering();
 
         if (kMeansClustering != null) {
@@ -380,7 +376,7 @@ public class OverviewPanel extends javax.swing.JPanel {
 
                     for (String tempReagent : reagentsOrder) {
                         int sampleIndex = sampleIndexes.indexOf(tempReagent);
-                        chartDataset.addValue(tempValues.get(sampleIndex), tempKey, reporterGUI.getReporterIonQuantification().getSample(sampleIndexes.get(sampleIndex)).getReference());
+                        chartDataset.addValue(tempValues.get(sampleIndex), tempKey, reporterGUI.getReporterIonQuantification().getSample(sampleIndexes.get(sampleIndex)));
                     }
                 }
 
@@ -413,10 +409,10 @@ public class OverviewPanel extends javax.swing.JPanel {
 
         // set the renderer
         ClusterBuilder clusterBuilder = reporterGUI.getClusterBuilder();
-        ClusteringSettings clusteringSettings = reporterGUI.getDisplayPreferences().getClusteringSettings();
+        ClusteringSettings clusteringSettings = reporterGUI.getDisplayParameters().getClusteringSettings();
         CategoryItemRenderer renderer = new LineAndShapeRenderer(true, false);
         for (int i = 0; i < dataset.getRowCount(); i++) {
-            String key = (String) dataset.getRowKey(i);
+            Long key = Long.valueOf((String) dataset.getRowKey(i));
             boolean isProtein = clusterBuilder.getProteinIndex(key) != null;
             boolean isPeptide = clusterBuilder.getPeptideIndex(key) != null;
             boolean isPsm = clusterBuilder.getPsmIndex(key) != null;
@@ -509,7 +505,7 @@ public class OverviewPanel extends javax.swing.JPanel {
                     }
 
                     if (!chartAlreadySelected) {
-                        reporterGUI.setSelectedProteins(new ArrayList<String>(), true, true);
+                        reporterGUI.setSelectedProteins(new ArrayList<Long>(), true, true);
                         selectCluster((ChartPanel) c, true);
                     }
                 }
@@ -538,10 +534,10 @@ public class OverviewPanel extends javax.swing.JPanel {
                 CategoryItemRenderer renderer = selectedChartPanel.getChart().getCategoryPlot().getRenderer();
                 DefaultCategoryDataset dataset = (DefaultCategoryDataset) selectedChartPanel.getChart().getCategoryPlot().getDataset();
                 ClusterBuilder clusterBuilder = reporterGUI.getClusterBuilder();
-                ClusteringSettings clusteringSettings = reporterGUI.getDisplayPreferences().getClusteringSettings();
+                ClusteringSettings clusteringSettings = reporterGUI.getDisplayParameters().getClusteringSettings();
 
                 for (int i = 0; i < dataset.getRowCount(); i++) {
-                    String key = (String) dataset.getRowKey(i);
+                    Long key = Long.valueOf((String) dataset.getRowKey(i));
                     boolean isProtein = clusterBuilder.getProteinIndex(key) != null;
                     boolean isPeptide = clusterBuilder.getPeptideIndex(key) != null;
                     boolean isPsm = clusterBuilder.getPsmIndex(key) != null;
@@ -579,22 +575,26 @@ public class OverviewPanel extends javax.swing.JPanel {
             DefaultCategoryDataset dataset = (DefaultCategoryDataset) chartPanel.getChart().getCategoryPlot().getDataset();
             List<String> rowKeys = dataset.getRowKeys();
             int size = Math.max(32, rowKeys.size() / 3);
-            HashMap<Integer, String> psmKeysMap = new HashMap<Integer, String>(size);
-            HashMap<Integer, String> peptideKeysMap = new HashMap<Integer, String>(size);
-            HashMap<Integer, String> proteinKeysMap = new HashMap<Integer, String>(size);
+            HashMap<Integer, Long> psmKeysMap = new HashMap<>(size);
+            HashMap<Integer, Long> peptideKeysMap = new HashMap<>(size);
+            HashMap<Integer, Long> proteinKeysMap = new HashMap<>(size);
             ClusterBuilder clusterBuilder = reporterGUI.getClusterBuilder();
+
             for (String rowKey : rowKeys) {
-                Integer proteinIndex = clusterBuilder.getProteinIndex(rowKey);
+
+                long rowKeyAsLong = Long.valueOf(rowKey);
+
+                Integer proteinIndex = clusterBuilder.getProteinIndex(rowKeyAsLong);
                 if (proteinIndex != null) {
-                    proteinKeysMap.put(proteinIndex, rowKey);
+                    proteinKeysMap.put(proteinIndex, rowKeyAsLong);
                 }
-                Integer peptideIndex = clusterBuilder.getPeptideIndex(rowKey);
+                Integer peptideIndex = clusterBuilder.getPeptideIndex(rowKeyAsLong);
                 if (peptideIndex != null) {
-                    peptideKeysMap.put(peptideIndex, rowKey);
+                    peptideKeysMap.put(peptideIndex, rowKeyAsLong);
                 }
-                Integer psmIndex = clusterBuilder.getPsmIndex(rowKey);
+                Integer psmIndex = clusterBuilder.getPsmIndex(rowKeyAsLong);
                 if (psmIndex != null) {
-                    psmKeysMap.put(psmIndex, rowKey);
+                    psmKeysMap.put(psmIndex, rowKeyAsLong);
                 }
                 if (proteinIndex == null && peptideIndex == null && psmIndex == null) {
                     throw new IllegalArgumentException("Key " + rowKey + " not found.");
@@ -602,26 +602,26 @@ public class OverviewPanel extends javax.swing.JPanel {
             }
 
             // get tables contents
-            ArrayList<Integer> indexes = new ArrayList<Integer>(proteinKeysMap.keySet());
+            ArrayList<Integer> indexes = new ArrayList<>(proteinKeysMap.keySet());
             Collections.sort(indexes);
-            proteinKeys = new ArrayList<String>(proteinKeysMap.size());
-            for (Integer index : indexes) {
-                String accession = proteinKeysMap.get(index);
-                proteinKeys.add(accession);
+            proteinKeys = new long[proteinKeysMap.size()];
+            for (int i = 0; i < indexes.size(); i++) {
+                long accession = proteinKeysMap.get(indexes.get(i));
+                proteinKeys[i] = accession;
             }
             indexes = new ArrayList<Integer>(peptideKeysMap.keySet());
             Collections.sort(indexes);
-            peptideKeys = new ArrayList<String>(peptideKeysMap.size());
-            for (Integer index : indexes) {
-                String accession = peptideKeysMap.get(index);
-                peptideKeys.add(accession);
+            peptideKeys = new long[peptideKeysMap.size()];
+            for (int i = 0; i < indexes.size(); i++) {
+                long accession = peptideKeysMap.get(indexes.get(i));
+                peptideKeys[i] = accession;
             }
             indexes = new ArrayList<Integer>(psmKeysMap.keySet());
             Collections.sort(indexes);
-            psmKeys = new ArrayList<String>(psmKeysMap.size());
-            for (Integer index : indexes) {
-                String accession = psmKeysMap.get(index);
-                psmKeys.add(accession);
+            psmKeys = new long[psmKeysMap.size()];
+            for (int i = 0; i < indexes.size(); i++) {
+                long accession = psmKeysMap.get(indexes.get(i));
+                psmKeys[i] = accession;
             }
 
             // update the tables and panels
@@ -645,14 +645,38 @@ public class OverviewPanel extends javax.swing.JPanel {
     private void updateProteinTable() {
 
         if (proteinTable.getModel() instanceof ProteinTableModel && ((ProteinTableModel) proteinTable.getModel()).isInstantiated()) {
-            ((ProteinTableModel) proteinTable.getModel()).updateDataModel(identification, identificationFeaturesGenerator, geneMaps,
-                    reporterGUI.getReporterIonQuantification(), reporterGUI.getQuantificationFeaturesGenerator(),
-                    reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getDisplayPreferences(), proteinKeys);
+
+            ((ProteinTableModel) proteinTable.getModel()).updateDataModel(
+                    identification,
+                    identificationFeaturesGenerator,
+                    reporterGUI.getProteinDetailsProvider(),
+                    reporterGUI.getSequenceProvider(),
+                    reporterGUI.getSpectrumProvider(),
+                    geneMaps,
+                    reporterGUI.getReporterIonQuantification(),
+                    reporterGUI.getQuantificationFeaturesGenerator(),
+                    reporterGUI.getDisplayFeaturesGenerator(),
+                    reporterGUI.getDisplayParameters(), proteinKeys
+            );
+
         } else {
-            ProteinTableModel proteinTableModel = new ProteinTableModel(identification, identificationFeaturesGenerator, geneMaps,
-                    reporterGUI.getReporterIonQuantification(), reporterGUI.getQuantificationFeaturesGenerator(),
-                    reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getDisplayPreferences(), reporterGUI.getExceptionHandler(), proteinKeys);
+
+            ProteinTableModel proteinTableModel = new ProteinTableModel(
+                    identification,
+                    identificationFeaturesGenerator,
+                    reporterGUI.getProteinDetailsProvider(),
+                    reporterGUI.getSequenceProvider(),
+                    geneMaps,
+                    reporterGUI.getReporterIonQuantification(),
+                    reporterGUI.getQuantificationFeaturesGenerator(),
+                    reporterGUI.getDisplayFeaturesGenerator(),
+                    reporterGUI.getDisplayParameters(),
+                    reporterGUI.getExceptionHandler(),
+                    proteinKeys
+            );
+
             proteinTable.setModel(proteinTableModel);
+
         }
 
         setProteinTableProperties();
@@ -668,11 +692,11 @@ public class OverviewPanel extends javax.swing.JPanel {
         if (peptideTable.getModel() instanceof PeptideTableModel && ((PeptideTableModel) peptideTable.getModel()).isInstantiated()) {
             ((PeptideTableModel) peptideTable.getModel()).updateDataModel(identification, identificationFeaturesGenerator,
                     reporterGUI.getReporterIonQuantification(), reporterGUI.getQuantificationFeaturesGenerator(),
-                    reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getDisplayPreferences(), reporterGUI.getIdentificationParameters(), null, peptideKeys, false);;
+                    reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getDisplayParameters(), reporterGUI.getIdentificationParameters(), null, peptideKeys, false);;
         } else {
-            PeptideTableModel peptideTableModel = new PeptideTableModel(identification, identificationFeaturesGenerator,
+            PeptideTableModel peptideTableModel = new PeptideTableModel(identification, reporterGUI.getSpectrumProvider(), identificationFeaturesGenerator,
                     reporterGUI.getReporterIonQuantification(), reporterGUI.getQuantificationFeaturesGenerator(),
-                    reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getDisplayPreferences(), reporterGUI.getIdentificationParameters(), null,
+                    reporterGUI.getDisplayFeaturesGenerator(), reporterGUI.getDisplayParameters(), reporterGUI.getIdentificationParameters(), null,
                     peptideKeys, false, reporterGUI.getExceptionHandler());
             peptideTable.setModel(peptideTableModel);
         }
@@ -687,15 +711,36 @@ public class OverviewPanel extends javax.swing.JPanel {
      * Updates the PSM table.
      */
     private void updatePsmTable() {
+
         if (psmTable.getModel() instanceof PsmTableModel && ((PsmTableModel) psmTable.getModel()).isInstantiated()) {
-            ((PsmTableModel) psmTable.getModel()).updateDataModel(identification, reporterGUI.getDisplayFeaturesGenerator(),
-                    reporterGUI.getDisplayPreferences(), reporterGUI.getIdentificationParameters(), reporterGUI.getReporterIonQuantification(),
-                    reporterGUI.getQuantificationFeaturesGenerator(), psmKeys, false);
+
+            ((PsmTableModel) psmTable.getModel()).updateDataModel(
+                    identification,
+                    reporterGUI.getSpectrumProvider(),
+                    reporterGUI.getDisplayFeaturesGenerator(),
+                    reporterGUI.getDisplayParameters(),
+                    reporterGUI.getIdentificationParameters(),
+                    reporterGUI.getReporterIonQuantification(),
+                    reporterGUI.getQuantificationFeaturesGenerator(),
+                    psmKeys,
+                    false
+            );
+
         } else {
-            PsmTableModel psmTableModel = new PsmTableModel(identification, reporterGUI.getDisplayFeaturesGenerator(),
-                    reporterGUI.getDisplayPreferences(), reporterGUI.getIdentificationParameters(),
-                    reporterGUI.getReporterIonQuantification(), reporterGUI.getQuantificationFeaturesGenerator(),
-                    psmKeys, false, reporterGUI.getExceptionHandler());
+
+            PsmTableModel psmTableModel = new PsmTableModel(
+                    identification,
+                    reporterGUI.getSpectrumProvider(),
+                    reporterGUI.getDisplayFeaturesGenerator(),
+                    reporterGUI.getDisplayParameters(),
+                    reporterGUI.getIdentificationParameters(),
+                    reporterGUI.getReporterIonQuantification(),
+                    reporterGUI.getQuantificationFeaturesGenerator(),
+                    psmKeys,
+                    false,
+                    reporterGUI.getExceptionHandler()
+            );
+
             psmTable.setModel(psmTableModel);
         }
 
@@ -738,7 +783,7 @@ public class OverviewPanel extends javax.swing.JPanel {
         Double amplitude = clusterBuilder.getRatioAmplitude();
         ProteinTableModel.setProteinTableProperties(proteinTable, reporterGUI.getSparklineColor(), reporterGUI.getSparklineColorNonValidated(),
                 reporterGUI.getSparklineColorNotFound(), reporterGUI.getSparklineColorDoubtful(), reporterGUI.getScoreAndConfidenceDecimalFormat(),
-                this.getClass(), reporterGUI.getMetrics().getMaxProteinKeyLength(), amplitude);
+                this.getClass(), reporterGUI.getMetrics().getMaxProteinAccessionLength(), amplitude);
 
         proteinTable.getModel().addTableModelListener(new TableModelListener() {
             public void tableChanged(TableModelEvent e) {
@@ -759,7 +804,6 @@ public class OverviewPanel extends javax.swing.JPanel {
         // the index column
         peptideTable.getColumn(" ").setMaxWidth(50);
         peptideTable.getColumn(" ").setMinWidth(50);
-        peptideTable.getColumn("Start").setMinWidth(50);
 
         try {
             peptideTable.getColumn("Confidence").setMaxWidth(90);
@@ -832,30 +876,30 @@ public class OverviewPanel extends javax.swing.JPanel {
      */
     public void resetSelection() {
 
-        ArrayList<String> selectedProteins = reporterGUI.getSelectedProteins();
+        ArrayList<Long> selectedProteins = reporterGUI.getSelectedProteins();
         proteinTable.clearSelection();
 
-        for (String tempProteinKey : selectedProteins) {
+        for (long tempProteinKey : selectedProteins) {
             int proteinRow = getProteinRow(tempProteinKey);
             if (proteinRow != -1) {
                 proteinTable.addRowSelectionInterval(proteinRow, proteinRow);
             }
         }
-        
-        ArrayList<String> selectedPeptides = reporterGUI.getSelectedPeptides();
+
+        ArrayList<Long> selectedPeptides = reporterGUI.getSelectedPeptides();
         peptideTable.clearSelection();
 
-        for (String tempPeptideKey : selectedPeptides) {
+        for (long tempPeptideKey : selectedPeptides) {
             int peptideRow = getPeptideRow(tempPeptideKey);
             if (peptideRow != -1) {
                 peptideTable.addRowSelectionInterval(peptideRow, peptideRow);
             }
         }
-        
-        ArrayList<String> selectedPsms = reporterGUI.getSelectedPsms();
+
+        ArrayList<Long> selectedPsms = reporterGUI.getSelectedPsms();
         psmTable.clearSelection();
 
-        for (String tempPsmKey : selectedPsms) {
+        for (long tempPsmKey : selectedPsms) {
             int psmRow = getPsmRow(tempPsmKey);
             if (psmRow != -1) {
                 psmTable.addRowSelectionInterval(psmRow, psmRow);
@@ -879,9 +923,9 @@ public class OverviewPanel extends javax.swing.JPanel {
      */
     public void updateSelection(boolean clearSelection) {
 
-        ArrayList<String> selectedProteins = reporterGUI.getSelectedProteins();
-        ArrayList<String> selectedPeptides = reporterGUI.getSelectedPeptides();
-        ArrayList<String> selectedPsms = reporterGUI.getSelectedPsms();
+        ArrayList<Long> selectedProteins = reporterGUI.getSelectedProteins();
+        ArrayList<Long> selectedPeptides = reporterGUI.getSelectedPeptides();
+        ArrayList<Long> selectedPsms = reporterGUI.getSelectedPsms();
 
         if (clearSelection) {
             proteinTable.clearSelection();
@@ -894,7 +938,7 @@ public class OverviewPanel extends javax.swing.JPanel {
 
             int currentCluster = -1;
             for (int i = 0; i < reporterGUI.getkMeansClutering().getNumberOfClusters() && currentCluster == -1; i++) {
-                if (reporterGUI.getkMeansClutering().getClusterMembers(i).contains(selectedProteins.get(0))) {
+                if (reporterGUI.getkMeansClutering().getClusterMembers(i).contains(selectedProteins.get(0).toString())) {
                     currentCluster = i;
                 }
             }
@@ -905,7 +949,7 @@ public class OverviewPanel extends javax.swing.JPanel {
             }
         }
 
-        for (String tempProteinKey : selectedProteins) {
+        for (long tempProteinKey : selectedProteins) {
             int proteinRow = getProteinRow(tempProteinKey);
             if (proteinRow != -1) {
                 proteinTable.addRowSelectionInterval(proteinRow, proteinRow);
@@ -928,46 +972,46 @@ public class OverviewPanel extends javax.swing.JPanel {
      * @param proteinKey the key of the protein
      * @return the row of the desired protein
      */
-    private int getProteinRow(String proteinKey) {
-        int modelIndex = proteinKeys.indexOf(proteinKey);
-        if (modelIndex >= 0) {
-            SelfUpdatingTableModel tableModel = (SelfUpdatingTableModel) proteinTable.getModel();
-            return tableModel.getRowNumber(modelIndex);
-        } else {
-            return -1;
-        }
+    private int getProteinRow(long proteinKey) {
+
+        int modelIndex = IntStream.range(0, proteinKeys.length)
+                .filter(i -> proteinKeys[i] == proteinKey)
+                .findAny()
+                .orElse(-1);
+
+        return modelIndex == -1 ? -1 : ((SelfUpdatingTableModel) proteinTable.getModel()).getRowNumber(modelIndex);
     }
-    
+
     /**
      * Returns the row of a desired peptide.
      *
      * @param peptideKey the key of the peptide
      * @return the row of the desired peptide
      */
-    private int getPeptideRow(String peptideKey) {
-        int modelIndex = peptideKeys.indexOf(peptideKey);
-        if (modelIndex >= 0) {
-            SelfUpdatingTableModel tableModel = (SelfUpdatingTableModel) peptideTable.getModel();
-            return tableModel.getRowNumber(modelIndex);
-        } else {
-            return -1;
-        }
+    private int getPeptideRow(long peptideKey) {
+
+        int modelIndex = IntStream.range(0, peptideKeys.length)
+                .filter(i -> peptideKeys[i] == peptideKey)
+                .findAny()
+                .orElse(-1);
+
+        return modelIndex == -1 ? -1 : ((SelfUpdatingTableModel) peptideTable.getModel()).getRowNumber(modelIndex);
     }
-    
+
     /**
      * Returns the row of a desired PSM.
      *
      * @param psmKey the key of the PSM
      * @return the row of the desired PSM
      */
-    private int getPsmRow(String psmKey) {
-        int modelIndex = psmKeys.indexOf(psmKey);
-        if (modelIndex >= 0) {
-            SelfUpdatingTableModel tableModel = (SelfUpdatingTableModel) psmTable.getModel();
-            return tableModel.getRowNumber(modelIndex);
-        } else {
-            return -1;
-        }
+    private int getPsmRow(long psmKey) {
+
+        int modelIndex = IntStream.range(0, psmKeys.length)
+                .filter(i -> psmKeys[i] == psmKey)
+                .findAny()
+                .orElse(-1);
+
+        return modelIndex == -1 ? -1 : ((SelfUpdatingTableModel) psmTable.getModel()).getRowNumber(modelIndex);
     }
 
     /**
@@ -1434,24 +1478,25 @@ public class OverviewPanel extends javax.swing.JPanel {
             DefaultCategoryDataset oldDataset = (DefaultCategoryDataset) selectedChartPanel.getChart().getCategoryPlot().getDataset();
 
             // get the list of selected proteins
-            ArrayList<String> selectedProteins = new ArrayList<String>();
+            ArrayList<Long> selectedProteins = new ArrayList<>();
             int[] selectedRowIndexes = proteinTable.getSelectedRows();
 
             for (int i = 0; i < selectedRowIndexes.length; i++) {
-                String proteinKey = proteinKeys.get(((SelfUpdatingTableModel) proteinTable.getModel()).getViewIndex(selectedRowIndexes[i]));
+                Long proteinKey = proteinKeys[((SelfUpdatingTableModel) proteinTable.getModel()).getViewIndex(selectedRowIndexes[i])];
                 selectedProteins.add(proteinKey);
             }
 
             reporterGUI.setSelectedProteins(selectedProteins, false, false); // @TODO: should be possible to select proteins, peptides and PSMs at the same time
-            reporterGUI.setSelectedPeptides(new ArrayList<String>(), false, false);
-            reporterGUI.setSelectedPsms(new ArrayList<String>(), false, false);
+            reporterGUI.setSelectedPeptides(new ArrayList<Long>(), false, false);
+            reporterGUI.setSelectedPsms(new ArrayList<Long>(), false, false);
 
             // create the new dataset with the selected proteins in the front
             DefaultCategoryDataset newDataset = new DefaultCategoryDataset();
 
             for (int i = 0; i < oldDataset.getRowCount(); i++) {
                 String proteinKey = (String) oldDataset.getRowKey(i);
-                if (!selectedProteins.contains(proteinKey)) {
+                Long proteinKeyAsLong = Long.valueOf(proteinKey);
+                if (!selectedProteins.contains(proteinKeyAsLong)) {
                     for (int j = 0; j < oldDataset.getColumnKeys().size(); j++) {
                         newDataset.addValue(oldDataset.getValue(i, j), proteinKey, (String) oldDataset.getColumnKeys().get(j));
                     }
@@ -1460,7 +1505,8 @@ public class OverviewPanel extends javax.swing.JPanel {
 
             for (int i = 0; i < oldDataset.getRowCount(); i++) {
                 String proteinKey = (String) oldDataset.getRowKey(i);
-                if (selectedProteins.contains(proteinKey)) {
+                Long proteinKeyAsLong = Long.valueOf(proteinKey);
+                if (selectedProteins.contains(proteinKeyAsLong)) {
                     for (int j = 0; j < oldDataset.getColumnKeys().size(); j++) {
                         newDataset.addValue(oldDataset.getValue(i, j), proteinKey, (String) oldDataset.getColumnKeys().get(j));
                     }
@@ -1473,10 +1519,10 @@ public class OverviewPanel extends javax.swing.JPanel {
             CategoryItemRenderer renderer = selectedChartPanel.getChart().getCategoryPlot().getRenderer();
 
             ClusterBuilder clusterBuilder = reporterGUI.getClusterBuilder();
-            ClusteringSettings clusteringSettings = reporterGUI.getDisplayPreferences().getClusteringSettings();
+            ClusteringSettings clusteringSettings = reporterGUI.getDisplayParameters().getClusteringSettings();
 
             for (int i = 0; i < newDataset.getRowCount(); i++) {
-                String key = (String) newDataset.getRowKey(i);
+                Long key = Long.valueOf((String) newDataset.getRowKey(i));
                 boolean isProtein = clusterBuilder.getProteinIndex(key) != null;
                 boolean isPeptide = clusterBuilder.getPeptideIndex(key) != null;
                 boolean isPsm = clusterBuilder.getPsmIndex(key) != null;
@@ -1531,13 +1577,13 @@ public class OverviewPanel extends javax.swing.JPanel {
 
             if (proteinIndex != -1) {
 
-                String proteinKey = proteinKeys.get(proteinIndex);
+                long proteinKey = proteinKeys[proteinIndex];
 
                 // open the gene details dialog
                 if (column == proteinTable.getColumn("Chr").getModelIndex() && evt != null
                         && evt.getButton() == MouseEvent.BUTTON1) {
                     try {
-                        new GeneDetailsDialog(reporterGUI, proteinKey, geneMaps);
+                        new GeneDetailsDialog(reporterGUI, identification.getProteinMatch(proteinKey), geneMaps, reporterGUI.getProteinDetailsProvider());
                     } catch (Exception ex) {
                         reporterGUI.catchException(ex);
                     }
@@ -1961,7 +2007,7 @@ public class OverviewPanel extends javax.swing.JPanel {
             }
 
             if (!chartAlreadySelected) {
-                reporterGUI.setSelectedProteins(new ArrayList<String>(), true, true);
+                reporterGUI.setSelectedProteins(new ArrayList<Long>(), true, true);
                 if (selectedChartPanel != null) {
                     selectCluster(selectedChartPanel, true);
                     selectedChartPanel.setBorder(null);
@@ -2039,24 +2085,25 @@ public class OverviewPanel extends javax.swing.JPanel {
             DefaultCategoryDataset oldDataset = (DefaultCategoryDataset) selectedChartPanel.getChart().getCategoryPlot().getDataset();
 
             // get the list of selected peptides
-            ArrayList<String> selectedPeptides = new ArrayList<String>();
+            ArrayList<Long> selectedPeptides = new ArrayList<>();
             int[] selectedRowIndexes = peptideTable.getSelectedRows();
 
             for (int i = 0; i < selectedRowIndexes.length; i++) {
-                String peptideKey = peptideKeys.get(((SelfUpdatingTableModel) peptideTable.getModel()).getViewIndex(selectedRowIndexes[i]));
+                Long peptideKey = peptideKeys[((SelfUpdatingTableModel) peptideTable.getModel()).getViewIndex(selectedRowIndexes[i])];
                 selectedPeptides.add(peptideKey);
             }
 
-            reporterGUI.setSelectedProteins(new ArrayList<String>(), false, false); // @TODO: should be possible to select proteins, peptides and PSMs at the same time
+            reporterGUI.setSelectedProteins(new ArrayList<Long>(), false, false); // @TODO: should be possible to select proteins, peptides and PSMs at the same time
             reporterGUI.setSelectedPeptides(selectedPeptides, false, false);
-            reporterGUI.setSelectedPsms(new ArrayList<String>(), false, false);
+            reporterGUI.setSelectedPsms(new ArrayList<Long>(), false, false);
 
             // create the new dataset with the selected peptides in the front
             DefaultCategoryDataset newDataset = new DefaultCategoryDataset();
 
             for (int i = 0; i < oldDataset.getRowCount(); i++) {
                 String peptideKey = (String) oldDataset.getRowKey(i);
-                if (!selectedPeptides.contains(peptideKey)) {
+                Long peptideKeyAsLong = Long.valueOf(peptideKey);
+                if (!selectedPeptides.contains(peptideKeyAsLong)) {
                     for (int j = 0; j < oldDataset.getColumnKeys().size(); j++) {
                         newDataset.addValue(oldDataset.getValue(i, j), peptideKey, (String) oldDataset.getColumnKeys().get(j));
                     }
@@ -2065,7 +2112,8 @@ public class OverviewPanel extends javax.swing.JPanel {
 
             for (int i = 0; i < oldDataset.getRowCount(); i++) {
                 String peptideKey = (String) oldDataset.getRowKey(i);
-                if (selectedPeptides.contains(peptideKey)) {
+                Long peptideKeyAsLong = Long.valueOf(peptideKey);
+                if (selectedPeptides.contains(peptideKeyAsLong)) {
                     for (int j = 0; j < oldDataset.getColumnKeys().size(); j++) {
                         newDataset.addValue(oldDataset.getValue(i, j), peptideKey, (String) oldDataset.getColumnKeys().get(j));
                     }
@@ -2078,10 +2126,10 @@ public class OverviewPanel extends javax.swing.JPanel {
             CategoryItemRenderer renderer = selectedChartPanel.getChart().getCategoryPlot().getRenderer();
 
             ClusterBuilder clusterBuilder = reporterGUI.getClusterBuilder();
-            ClusteringSettings clusteringSettings = reporterGUI.getDisplayPreferences().getClusteringSettings();
+            ClusteringSettings clusteringSettings = reporterGUI.getDisplayParameters().getClusteringSettings();
 
             for (int i = 0; i < newDataset.getRowCount(); i++) {
-                String key = (String) newDataset.getRowKey(i);
+                Long key = Long.valueOf((String) newDataset.getRowKey(i));
                 boolean isProtein = clusterBuilder.getProteinIndex(key) != null;
                 boolean isPeptide = clusterBuilder.getPeptideIndex(key) != null;
                 boolean isPsm = clusterBuilder.getPsmIndex(key) != null;
@@ -2147,16 +2195,16 @@ public class OverviewPanel extends javax.swing.JPanel {
             DefaultCategoryDataset oldDataset = (DefaultCategoryDataset) selectedChartPanel.getChart().getCategoryPlot().getDataset();
 
             // get the list of selected PSMs
-            ArrayList<String> selectedPsms = new ArrayList<String>();
+            ArrayList<Long> selectedPsms = new ArrayList<>();
             int[] selectedRowIndexes = psmTable.getSelectedRows();
 
             for (int i = 0; i < selectedRowIndexes.length; i++) {
-                String proteinKey = psmKeys.get(((SelfUpdatingTableModel) psmTable.getModel()).getViewIndex(selectedRowIndexes[i]));
+                long proteinKey = psmKeys[((SelfUpdatingTableModel) psmTable.getModel()).getViewIndex(selectedRowIndexes[i])];
                 selectedPsms.add(proteinKey);
             }
 
-            reporterGUI.setSelectedProteins(new ArrayList<String>(), false, false); // @TODO: should be possible to select proteins, peptides and PSMs at the same time
-            reporterGUI.setSelectedPeptides(new ArrayList<String>(), false, false);
+            reporterGUI.setSelectedProteins(new ArrayList<Long>(), false, false); // @TODO: should be possible to select proteins, peptides and PSMs at the same time
+            reporterGUI.setSelectedPeptides(new ArrayList<Long>(), false, false);
             reporterGUI.setSelectedPsms(selectedPsms, false, false);
 
             // create the new dataset with the selected peptides in the front
@@ -2164,7 +2212,8 @@ public class OverviewPanel extends javax.swing.JPanel {
 
             for (int i = 0; i < oldDataset.getRowCount(); i++) {
                 String psmKey = (String) oldDataset.getRowKey(i);
-                if (!selectedPsms.contains(psmKey)) {
+                Long psmKeyLong = Long.valueOf(psmKey);
+                if (!selectedPsms.contains(psmKeyLong)) {
                     for (int j = 0; j < oldDataset.getColumnKeys().size(); j++) {
                         newDataset.addValue(oldDataset.getValue(i, j), psmKey, (String) oldDataset.getColumnKeys().get(j));
                     }
@@ -2173,7 +2222,8 @@ public class OverviewPanel extends javax.swing.JPanel {
 
             for (int i = 0; i < oldDataset.getRowCount(); i++) {
                 String psmKey = (String) oldDataset.getRowKey(i);
-                if (selectedPsms.contains(psmKey)) {
+                Long psmKeyLong = Long.valueOf(psmKey);
+                if (selectedPsms.contains(psmKeyLong)) {
                     for (int j = 0; j < oldDataset.getColumnKeys().size(); j++) {
                         newDataset.addValue(oldDataset.getValue(i, j), psmKey, (String) oldDataset.getColumnKeys().get(j));
                     }
@@ -2186,10 +2236,10 @@ public class OverviewPanel extends javax.swing.JPanel {
             CategoryItemRenderer renderer = selectedChartPanel.getChart().getCategoryPlot().getRenderer();
 
             ClusterBuilder clusterBuilder = reporterGUI.getClusterBuilder();
-            ClusteringSettings clusteringSettings = reporterGUI.getDisplayPreferences().getClusteringSettings();
+            ClusteringSettings clusteringSettings = reporterGUI.getDisplayParameters().getClusteringSettings();
 
             for (int i = 0; i < newDataset.getRowCount(); i++) {
-                String key = (String) newDataset.getRowKey(i);
+                Long key = Long.valueOf((String) newDataset.getRowKey(i));
                 boolean isProtein = clusterBuilder.getProteinIndex(key) != null;
                 boolean isPeptide = clusterBuilder.getPeptideIndex(key) != null;
                 boolean isPsm = clusterBuilder.getPsmIndex(key) != null;
@@ -2291,7 +2341,7 @@ public class OverviewPanel extends javax.swing.JPanel {
         if (reporterGUI.getIdentification() != null) {
 
             ((JSparklinesArrayListBarChartTableCellRenderer) proteinTable.getColumn("#Peptides").getCellRenderer()).setMaxValue(reporterGUI.getMetrics().getMaxNPeptides());
-            ((JSparklinesArrayListBarChartTableCellRenderer) proteinTable.getColumn("#Spectra").getCellRenderer()).setMaxValue(reporterGUI.getMetrics().getMaxNSpectra());
+            ((JSparklinesArrayListBarChartTableCellRenderer) proteinTable.getColumn("#Spectra").getCellRenderer()).setMaxValue(reporterGUI.getMetrics().getMaxNPsms());
             ((JSparklinesBarChartTableCellRenderer) proteinTable.getColumn("MW").getCellRenderer()).setMaxValue(reporterGUI.getMetrics().getMaxMW());
 
             try {
@@ -2310,30 +2360,29 @@ public class OverviewPanel extends javax.swing.JPanel {
         if (reporterGUI.getIdentification() != null) {
 
             // set up the peptide inference color map
-            HashMap<Integer, Color> peptideInferenceColorMap = new HashMap<Integer, Color>();
+            HashMap<Integer, Color> peptideInferenceColorMap = new HashMap<>();
             peptideInferenceColorMap.put(PSParameter.NOT_GROUP, reporterGUI.getSparklineColor());
             peptideInferenceColorMap.put(PSParameter.RELATED, Color.YELLOW);
             peptideInferenceColorMap.put(PSParameter.RELATED_AND_UNRELATED, Color.ORANGE);
             peptideInferenceColorMap.put(PSParameter.UNRELATED, Color.RED);
 
             // set up the peptide inference tooltip map
-            HashMap<Integer, String> peptideInferenceTooltipMap = new HashMap<Integer, String>();
+            HashMap<Integer, String> peptideInferenceTooltipMap = new HashMap<>();
             peptideInferenceTooltipMap.put(PSParameter.NOT_GROUP, "Unique to a single protein");
             peptideInferenceTooltipMap.put(PSParameter.RELATED, "Belongs to a group of related proteins");
             peptideInferenceTooltipMap.put(PSParameter.RELATED_AND_UNRELATED, "Belongs to a group of related and unrelated proteins");
             peptideInferenceTooltipMap.put(PSParameter.UNRELATED, "Belongs to unrelated proteins");
 
             peptideTable.getColumn("PI").setCellRenderer(new JSparklinesIntegerColorTableCellRenderer(reporterGUI.getSparklineColor(), peptideInferenceColorMap, peptideInferenceTooltipMap));
-            peptideTable.getColumn("Start").setCellRenderer(new JSparklinesMultiIntervalChartTableCellRenderer(PlotOrientation.HORIZONTAL, 100d, 100d, reporterGUI.getSparklineColor()));
 
             // use a gray color for no decoy searches
             Color nonValidatedColor = reporterGUI.getSparklineColorNonValidated();
-            if (!sequenceFactory.concatenatedTargetDecoy()) {
-                nonValidatedColor = reporterGUI.getUtilitiesUserPreferences().getSparklineColorNotFound();
+            if (!reporterGUI.getIdentificationParameters().getFastaParameters().isTargetDecoy()) {
+                nonValidatedColor = reporterGUI.getUtilitiesUserParameters().getSparklineColorNotFound();
             }
-            ArrayList<Color> sparklineColors = new ArrayList<Color>();
+            ArrayList<Color> sparklineColors = new ArrayList<>();
             sparklineColors.add(reporterGUI.getSparklineColor());
-            sparklineColors.add(reporterGUI.getUtilitiesUserPreferences().getSparklineColorDoubtful());
+            sparklineColors.add(reporterGUI.getUtilitiesUserParameters().getSparklineColorDoubtful());
             sparklineColors.add(nonValidatedColor);
             peptideTable.getColumn("#Spectra").setCellRenderer(new JSparklinesArrayListBarChartTableCellRenderer(PlotOrientation.HORIZONTAL, 10.0, sparklineColors, JSparklinesArrayListBarChartTableCellRenderer.ValueDisplayType.sumOfNumbers));
             ((JSparklinesArrayListBarChartTableCellRenderer) peptideTable.getColumn("#Spectra").getCellRenderer()).showNumberAndChart(true, TableProperties.getLabelWidth(), new DecimalFormat("0"));
@@ -2364,14 +2413,14 @@ public class OverviewPanel extends javax.swing.JPanel {
         if (reporterGUI.getIdentification() != null) {
 
             // set up the psm color map
-            HashMap<Integer, java.awt.Color> psmColorMap = new HashMap<Integer, java.awt.Color>();
+            HashMap<Integer, java.awt.Color> psmColorMap = new HashMap<>();
             psmColorMap.put(AGREEMENT_WITH_MODS, reporterGUI.getSparklineColor()); // id software agree with PTM certainty
             psmColorMap.put(AGREEMENT, java.awt.Color.CYAN); // id software agree on peptide but not ptm certainty
             psmColorMap.put(CONFLICT, java.awt.Color.YELLOW); // id software don't agree
             psmColorMap.put(PARTIALLY_MISSING, java.awt.Color.ORANGE); // some id software id'ed some didn't
 
             // set up the psm tooltip map
-            HashMap<Integer, String> psmTooltipMap = new HashMap<Integer, String>();
+            HashMap<Integer, String> psmTooltipMap = new HashMap<>();
             psmTooltipMap.put(AGREEMENT_WITH_MODS, "ID Software Agree");
             psmTooltipMap.put(AGREEMENT, "ID Software Agree - PTM Certainty Issues");
             psmTooltipMap.put(CONFLICT, "ID Software Disagree");
@@ -2383,7 +2432,7 @@ public class OverviewPanel extends javax.swing.JPanel {
                     reporterGUI.getSparklineColor(), reporterGUI.getSparklineColor()));
             ((JSparklinesBarChartTableCellRenderer) psmTable.getColumn("m/z Error").getCellRenderer()).showNumberAndChart(true, TableProperties.getLabelWidth());
             psmTable.getColumn("Charge").setCellRenderer(new JSparklinesBarChartTableCellRenderer(PlotOrientation.HORIZONTAL,
-                    (double) ((PSMaps) reporterGUI.getIdentification().getUrParam(new PSMaps())).getPsmSpecificMap().getMaxCharge(), reporterGUI.getSparklineColor()));
+                    (double) reporterGUI.getMetrics().getMaxCharge(), reporterGUI.getSparklineColor()));
             ((JSparklinesBarChartTableCellRenderer) psmTable.getColumn("Charge").getCellRenderer()).showNumberAndChart(true, TableProperties.getLabelWidth() - 30);
             psmTable.getColumn("").setCellRenderer(new JSparklinesIntegerIconTableCellRenderer(MatchValidationLevel.getIconMap(this.getClass()), MatchValidationLevel.getTooltipMap()));
 

@@ -1,34 +1,30 @@
 package eu.isas.reporter.cli;
 
-import com.compomics.util.Util;
-import com.compomics.util.db.DerbyUtil;
-import com.compomics.util.experiment.biology.EnzymeFactory;
-import com.compomics.util.experiment.biology.PTM;
-import com.compomics.util.experiment.biology.PTMFactory;
+import com.compomics.util.experiment.biology.enzymes.EnzymeFactory;
+import com.compomics.util.experiment.biology.modifications.Modification;
+import com.compomics.util.experiment.biology.modifications.ModificationFactory;
 import com.compomics.util.experiment.biology.taxonomy.SpeciesFactory;
-import com.compomics.util.experiment.identification.protein_sequences.SequenceFactory;
-import com.compomics.util.experiment.massspectrometry.SpectrumFactory;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
 import com.compomics.util.waiting.WaitingHandler;
 import com.compomics.util.gui.waiting.waitinghandlers.WaitingHandlerCLIImpl;
-import com.compomics.util.preferences.UtilitiesUserPreferences;
+import com.compomics.util.io.IoUtil;
+import com.compomics.util.parameters.UtilitiesUserParameters;
 import eu.isas.peptideshaker.PeptideShaker;
 import eu.isas.peptideshaker.cmd.PeptideShakerCLI;
-import eu.isas.peptideshaker.utils.CpsParent;
+import eu.isas.peptideshaker.utils.PsdbParent;
 import eu.isas.reporter.calculation.QuantificationFeaturesCache;
 import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
 import eu.isas.reporter.io.ProjectImporter;
 import eu.isas.reporter.settings.ReporterSettings;
-import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
-import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 
 /**
@@ -37,7 +33,7 @@ import org.apache.commons.cli.Options;
  * @author Marc Vaudel
  * @author Harald Barsnes
  */
-public class ReportCLI extends CpsParent {
+public class ReportCLI extends PsdbParent {
 
     /**
      * The report command line options.
@@ -48,22 +44,22 @@ public class ReportCLI extends CpsParent {
      */
     private EnzymeFactory enzymeFactory;
     /**
-     * The Progress messaging handler reports the status throughout all
-     * Reporter processes.
+     * The Progress messaging handler reports the status throughout all Reporter
+     * processes.
      */
     private WaitingHandler waitingHandler;
     /**
-     * The PTM factory.
+     * The modification factory.
      */
-    private PTMFactory ptmFactory;
+    private ModificationFactory modificationFactory;
     /**
      * The utilities user preferences.
      */
-    private UtilitiesUserPreferences utilitiesUserPreferences;
+    private UtilitiesUserParameters utilitiesUserParameters;
     /**
-     * The mgf files loaded.
+     * The spectrum files loaded.
      */
-    private ArrayList<File> mgfFiles = new ArrayList<File>();
+    private ArrayList<File> spectrumfFiles = new ArrayList<>();
 
     /**
      * Construct a new ReportCLI runnable from a ReportCLI Bean. When
@@ -86,11 +82,11 @@ public class ReportCLI extends CpsParent {
         setDbFolder(PeptideShaker.getMatchesFolder());
 
         // load user preferences
-        utilitiesUserPreferences = UtilitiesUserPreferences.loadUserPreferences();
+        utilitiesUserParameters = UtilitiesUserParameters.loadUserParameters();
 
         // instantiate factories
-        PeptideShaker.instantiateFacories(utilitiesUserPreferences);
-        ptmFactory = PTMFactory.getInstance();
+        PeptideShaker.instantiateFacories(utilitiesUserParameters);
+        modificationFactory = ModificationFactory.getInstance();
         enzymeFactory = EnzymeFactory.getInstance();
 
         // load resources files
@@ -99,26 +95,20 @@ public class ReportCLI extends CpsParent {
         // set waiting handler
         waitingHandler = new WaitingHandlerCLIImpl();
 
-        // Load the project from the cps file
+        // Load the project from the psdb file
         ProjectImporter projectImporter = new ProjectImporter();
-        File selectedFile = reportCLIInputBean.getCpsFile();
+        File selectedFile = reportCLIInputBean.getPsdbFile();
         try {
-            projectImporter.importPeptideShakerProject(this, mgfFiles, waitingHandler);
+            projectImporter.importPeptideShakerProject(this, spectrumfFiles, waitingHandler);
             projectImporter.importReporterProject(this, waitingHandler);
         } catch (OutOfMemoryError error) {
             System.out.println("Ran out of memory! (runtime.maxMemory(): " + Runtime.getRuntime().maxMemory() + ")");
             String errorText = "Reporter used up all the available memory and had to be stopped.<br>"
                     + "Memory boundaries are changed in the the Welcome Dialog (Settings<br>"
                     + "& Help > Settings > Java Memory Settings) or in the Edit menu (Edit<br>"
-                    + "Java Options). See also <a href=\"https://compomics.github.io/projects/compomics-utilities/wiki/javatroubleshooting.html\">JavaTroubleShooting</a>.";
+                    + "Java Options). See also <a href=\"https://compomics.github.io/projects/compomics-utilities/wiki/JavaTroubleShooting.html\">JavaTroubleShooting</a>.";
             waitingHandler.appendReport(errorText, true, true);
             error.printStackTrace();
-            return 1;
-        } catch (EOFException e) {
-            String errorText = "An error occurred while reading:\n" + selectedFile + ".\n\n"
-                    + "The file is corrupted and cannot be opened anymore.";
-            waitingHandler.appendReport(errorText, true, true);
-            e.printStackTrace();
             return 1;
         } catch (Exception e) {
             String errorText = "An error occurred while reading:\n" + selectedFile + ".\n\n"
@@ -144,24 +134,27 @@ public class ReportCLI extends CpsParent {
         HashSet<String> ignoredPtms = reporterSettings.getRatioEstimationSettings().getExcludingPtms();
         if (ignoredPtms != null) {
             for (String ptmName : ignoredPtms) {
-                PTM ptm = ptmFactory.getPTM(ptmName);
+                Modification ptm = modificationFactory.getModification(ptmName);
                 if (ptm == null) {
                     System.out.println("PTM " + ptmName + " not recognized.");
                     return 1;
                 }
             }
         }
-        
+
         // create quantification features generator
-        QuantificationFeaturesGenerator quantificationFeaturesGenerator = new QuantificationFeaturesGenerator(new QuantificationFeaturesCache(), getIdentification(), getIdentificationFeaturesGenerator(), reporterSettings, reporterIonQuantification,
-                identificationParameters.getSearchParameters(), identificationParameters.getSequenceMatchingPreferences());
+        QuantificationFeaturesGenerator quantificationFeaturesGenerator = new QuantificationFeaturesGenerator(
+                new QuantificationFeaturesCache(), getIdentification(), getIdentificationFeaturesGenerator(), reporterSettings, reporterIonQuantification,
+                identificationParameters.getSearchParameters(), identificationParameters.getSequenceMatchingParameters());
 
         // export report(s)
         if (reportCLIInputBean.exportNeeded()) {
             int nSurroundingAAs = 2; //@TODO: this shall not be hard coded
             for (String reportType : reportCLIInputBean.getReportTypes()) {
                 try {
-                    CLIExportMethods.exportReport(reportCLIInputBean, reportType, experiment.getReference(), sample.getReference(), replicateNumber, projectDetails, identification, geneMaps, identificationFeaturesGenerator, quantificationFeaturesGenerator, reporterIonQuantification, reporterSettings, identificationParameters, nSurroundingAAs, spectrumCountingPreferences, waitingHandler);
+                    CLIExportMethods.exportReport(reportCLIInputBean, reportType, projectParameters.getProjectUniqueName(), projectDetails, identification, geneMaps,
+                            identificationFeaturesGenerator, sequenceProvider, msFileHandler, proteinDetailsProvider, quantificationFeaturesGenerator,
+                            reporterIonQuantification, reporterSettings, identificationParameters, nSurroundingAAs, spectrumCountingParameters, waitingHandler);
                 } catch (Exception e) {
                     waitingHandler.appendReport("An error occurred while exporting the " + reportType + ".", true, true);
                     e.printStackTrace();
@@ -207,7 +200,7 @@ public class ReportCLI extends CpsParent {
      */
     private static String getHeader() {
         return System.getProperty("line.separator")
-                + "The Reporter report command line takes a cpsx file and generates various types of reports." + System.getProperty("line.separator")
+                + "The Reporter report command line takes a psdb file and generates various types of reports." + System.getProperty("line.separator")
                 + System.getProperty("line.separator")
                 + "For further help see https://compomics.github.io/projects/reporter.html and https://compomics.github.io/projects/reporter/wiki/reportercli.html." + System.getProperty("line.separator")
                 + System.getProperty("line.separator")
@@ -231,14 +224,14 @@ public class ReportCLI extends CpsParent {
         if (aLine.getOptions().length == 0) {
             return false;
         }
-        if (!aLine.hasOption(ReportCLIParams.CPS_FILE.id) || ((String) aLine.getOptionValue(ReportCLIParams.CPS_FILE.id)).equals("")) {
-            System.out.println("\n" + ReportCLIParams.CPS_FILE.description + " not specified.\n");
+        if (!aLine.hasOption(ReportCLIParams.PSDB_FILE.id) || ((String) aLine.getOptionValue(ReportCLIParams.PSDB_FILE.id)).equals("")) {
+            System.out.println("\n" + ReportCLIParams.PSDB_FILE.description + " not specified.\n");
             return false;
         } else {
-            String fileTxt = aLine.getOptionValue(ReportCLIParams.CPS_FILE.id);
+            String fileTxt = aLine.getOptionValue(ReportCLIParams.PSDB_FILE.id);
             File testFile = new File(fileTxt.trim());
             if (!testFile.exists()) {
-                System.out.println("\n" + ReportCLIParams.CPS_FILE.description + " \'" + testFile.getAbsolutePath() + "\' not found.\n");
+                System.out.println("\n" + ReportCLIParams.PSDB_FILE.description + " \'" + testFile.getAbsolutePath() + "\' not found.\n");
                 return false;
             }
         }
@@ -268,11 +261,11 @@ public class ReportCLI extends CpsParent {
         try {
             // check if there are updates to the paths
             String[] nonPathSettingArgsAsList = PathSettingsCLI.extractAndUpdatePathOptions(args);
-            
+
             // parse the rest of the cptions   
             Options nonPathOptions = new Options();
             ReportCLIParams.createOptionsCLI(nonPathOptions);
-            BasicParser parser = new BasicParser();
+            DefaultParser parser = new DefaultParser();
             CommandLine line = parser.parse(nonPathOptions, nonPathSettingArgsAsList);
 
             if (!isValidStartup(line)) {
@@ -314,25 +307,24 @@ public class ReportCLI extends CpsParent {
     /**
      * Close the Reporter instance by clearing up factories and cache.
      *
-     * @throws IOException thrown if an exception occurred when closing the connection to a file
-     * @throws SQLException thrown if an exception occurred when closing the connection to the back-end database
-     * @throws java.lang.InterruptedException thrown if a threading error occurred
+     * @throws IOException thrown if an exception occurred when closing the
+     * connection to a file
+     * @throws SQLException thrown if an exception occurred when closing the
+     * connection to the back-end database
+     * @throws java.lang.InterruptedException thrown if a threading error
+     * occurred
      */
     public void closePeptideShaker() throws IOException, SQLException, InterruptedException {
 
-        SpectrumFactory.getInstance().closeFiles();
-        SequenceFactory.getInstance().closeFile();
-        identification.close();
+        identification.close(false);
 
         File matchFolder = PeptideShaker.getMatchesFolder();
-
-        DerbyUtil.closeConnection();
 
         File[] tempFiles = matchFolder.listFiles();
 
         if (tempFiles != null) {
             for (File currentFile : tempFiles) {
-                Util.deleteDir(currentFile);
+                IoUtil.deleteDir(currentFile);
             }
         }
     }

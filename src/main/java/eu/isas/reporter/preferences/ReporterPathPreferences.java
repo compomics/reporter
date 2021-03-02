@@ -1,8 +1,8 @@
 package eu.isas.reporter.preferences;
 
 import com.compomics.software.settings.PathKey;
-import com.compomics.software.settings.UtilitiesPathPreferences;
-import eu.isas.peptideshaker.preferences.PeptideShakerPathPreferences;
+import com.compomics.software.settings.UtilitiesPathParameters;
+import eu.isas.peptideshaker.preferences.PeptideShakerPathParameters;
 import eu.isas.reporter.export.report.ReporterExportFactory;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -17,6 +17,7 @@ import java.util.ArrayList;
  * This class sets the path preferences for the files to read/write.
  *
  * @author Marc Vaudel
+ * @author Harald Barsnes
  */
 public class ReporterPathPreferences {
 
@@ -57,10 +58,12 @@ public class ReporterPathPreferences {
          * @param isDirectory boolean indicating whether a folder is expected
          */
         private ReporterPathKey(String id, String description, String defaultSubDirectory, boolean isDirectory) {
+
             this.id = id;
             this.description = description;
             this.defaultSubDirectory = defaultSubDirectory;
             this.isDirectory = isDirectory;
+
         }
 
         /**
@@ -71,28 +74,24 @@ public class ReporterPathPreferences {
          * @return the key of interest
          */
         public static ReporterPathKey getKeyFromId(String id) {
+
             for (ReporterPathKey pathKey : values()) {
+
                 if (pathKey.id.equals(id)) {
                     return pathKey;
                 }
+
             }
+
             return null;
         }
 
-        /**
-         * Returns the id of the path.
-         *
-         * @return the id of the path
-         */
+        @Override
         public String getId() {
             return id;
         }
 
-        /**
-         * Returns the description of the path.
-         *
-         * @return the description of the path
-         */
+        @Override
         public String getDescription() {
             return description;
         }
@@ -108,18 +107,26 @@ public class ReporterPathPreferences {
      * @throws IOException thrown if an IOException occurs
      */
     public static void loadPathPreferencesFromFile(File inputFile) throws FileNotFoundException, IOException {
+
         BufferedReader br = new BufferedReader(new FileReader(inputFile));
+
         try {
+
             String line;
+
             while ((line = br.readLine()) != null) {
+
                 line = line.trim();
+
                 if (!line.equals("") && !line.startsWith("#")) {
                     loadPathPreferenceFromLine(line);
                 }
             }
+
         } finally {
             br.close();
         }
+
     }
 
     /**
@@ -129,23 +136,43 @@ public class ReporterPathPreferences {
      * @throws FileNotFoundException thrown of the file cannot be found
      */
     public static void loadPathPreferenceFromLine(String line) throws FileNotFoundException, IOException {
-        String id = UtilitiesPathPreferences.getPathID(line);
+
+        String id = UtilitiesPathParameters.getPathID(line);
+
         if (id.equals("")) {
             throw new IllegalArgumentException("Impossible to parse path in " + line + ".");
         }
+
         ReporterPathKey reporterPathKey = ReporterPathKey.getKeyFromId(id);
+
         if (reporterPathKey == null) {
-            PeptideShakerPathPreferences.loadPathPreferenceFromLine(line);
+
+            PeptideShakerPathParameters.loadPathParametersFromLine(line);
+
         } else {
-            String path = UtilitiesPathPreferences.getPath(line);
-            if (!path.equals(UtilitiesPathPreferences.defaultPath)) {
+
+            String path = UtilitiesPathParameters.getPath(line);
+
+            if (!path.equals(UtilitiesPathParameters.defaultPath)) {
+
                 File file = new File(path);
+
                 if (!file.exists()) {
-                    throw new FileNotFoundException("File " + path + " not found.");
+                    throw new FileNotFoundException(
+                            "File "
+                            + path
+                            + " not found."
+                    );
                 }
+
                 if (reporterPathKey.isDirectory && !file.isDirectory()) {
-                    throw new FileNotFoundException("Found a file when expecting a directory for " + reporterPathKey.id + ".");
+                    throw new FileNotFoundException(
+                            "Found a file when expecting a directory for "
+                            + reporterPathKey.id
+                            + "."
+                    );
                 }
+
                 setPathPreference(reporterPathKey, path);
             }
         }
@@ -158,13 +185,21 @@ public class ReporterPathPreferences {
      * @param path the path to be set
      */
     public static void setPathPreference(ReporterPathKey reporterPathKey, String path) {
+
         switch (reporterPathKey) {
+
             case reporterExports:
-                ReporterExportFactory.setSerializationFolder(path);
+                ReporterExportFactory.setJsonFolder(path);
                 return;
+
             default:
-                throw new UnsupportedOperationException("Path " + reporterPathKey.id + " not implemented.");
+                throw new UnsupportedOperationException(
+                        "Path "
+                        + reporterPathKey.id
+                        + " not implemented."
+                );
         }
+
     }
 
     /**
@@ -175,18 +210,27 @@ public class ReporterPathPreferences {
      * @throws FileNotFoundException thrown if a file cannot be found
      */
     public static void setAllPathsIn(String path) throws FileNotFoundException {
+
         for (ReporterPathKey reporterPathKey : ReporterPathKey.values()) {
+
             String subDirectory = reporterPathKey.defaultSubDirectory;
             File newFile = new File(path, subDirectory);
+
             if (!newFile.exists()) {
                 newFile.mkdirs();
             }
+
             if (!newFile.exists()) {
-                throw new FileNotFoundException(newFile.getAbsolutePath() + "could not be created.");
+                throw new FileNotFoundException(
+                        newFile.getAbsolutePath()
+                        + "could not be created."
+                );
             }
+
             setPathPreference(reporterPathKey, newFile.getAbsolutePath());
         }
-        UtilitiesPathPreferences.setAllPathsIn(path);
+
+        UtilitiesPathParameters.setAllPathsIn(path);
     }
 
     /**
@@ -197,9 +241,11 @@ public class ReporterPathPreferences {
      * @throws IOException thrown if an IOException occurs
      */
     public static void writeConfigurationToFile(File file) throws IOException {
+
         BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+
         try {
-            writeConfigurationToFile(bw);
+            writeConfigurationToFile(file, bw);
         } finally {
             bw.close();
         }
@@ -208,15 +254,18 @@ public class ReporterPathPreferences {
     /**
      * Writes the configurations file using the provided buffered writer.
      *
-     * @param bw the writer to use for writing.
+     * @param file the configurations file
+     * @param bw the writer to use for writing
      *
      * @throws IOException thrown if an IOException occurs
      */
-    public static void writeConfigurationToFile(BufferedWriter bw) throws IOException {
+    public static void writeConfigurationToFile(File file, BufferedWriter bw) throws IOException {
+
         for (ReporterPathKey pathKey : ReporterPathKey.values()) {
             writePathToFile(bw, pathKey);
         }
-        PeptideShakerPathPreferences.writeConfigurationToFile(bw);
+
+        PeptideShakerPathParameters.writeConfigurationToFile(file);
     }
 
     /**
@@ -228,18 +277,31 @@ public class ReporterPathPreferences {
      * @throws IOException thrown if an IOException occurs
      */
     public static void writePathToFile(BufferedWriter bw, ReporterPathKey pathKey) throws IOException {
-        bw.write(pathKey.id + UtilitiesPathPreferences.separator);
+
+        bw.write(pathKey.id + UtilitiesPathParameters.separator);
+
         switch (pathKey) {
+
             case reporterExports:
-                String toWrite = ReporterExportFactory.getSerializationFolder();
+
+                String toWrite = ReporterExportFactory.getJsonFolder();
+
                 if (toWrite == null) {
-                    toWrite = UtilitiesPathPreferences.defaultPath;
+                    toWrite = UtilitiesPathParameters.defaultPath;
                 }
+
                 bw.write(toWrite);
+
                 break;
+
             default:
-                throw new UnsupportedOperationException("Path " + pathKey.id + " not implemented.");
+                throw new UnsupportedOperationException(
+                        "Path "
+                        + pathKey.id
+                        + " not implemented."
+                );
         }
+
         bw.newLine();
     }
 
@@ -252,11 +314,18 @@ public class ReporterPathPreferences {
      * @return the path
      */
     public static String getPathPreference(ReporterPathKey reporterPathKey, String jarFilePath) {
+
         switch (reporterPathKey) {
+
             case reporterExports:
-                return ReporterExportFactory.getSerializationFolder();
+                return ReporterExportFactory.getJsonFolder();
+
             default:
-                throw new UnsupportedOperationException("Path " + reporterPathKey.id + " not implemented.");
+                throw new UnsupportedOperationException(
+                        "Path "
+                        + reporterPathKey.id
+                        + " not implemented."
+                );
         }
     }
 
@@ -273,14 +342,20 @@ public class ReporterPathPreferences {
      * loading the path configuration
      */
     public static ArrayList<PathKey> getErrorKeys(String jarFilePath) throws IOException {
-        ArrayList<PathKey> result = new ArrayList<PathKey>();
+
+        ArrayList<PathKey> result = new ArrayList<>();
+
         for (ReporterPathKey pathKey : ReporterPathKey.values()) {
+
             String folder = ReporterPathPreferences.getPathPreference(pathKey, jarFilePath);
-            if (folder != null && !UtilitiesPathPreferences.testPath(folder)) {
+
+            if (folder != null && !UtilitiesPathParameters.testPath(folder)) {
                 result.add(pathKey);
             }
         }
-        result.addAll(UtilitiesPathPreferences.getErrorKeys());
+
+        result.addAll(UtilitiesPathParameters.getErrorKeys());
+
         return result;
     }
 }

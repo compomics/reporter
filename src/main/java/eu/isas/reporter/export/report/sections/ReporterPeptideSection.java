@@ -1,22 +1,26 @@
 package eu.isas.reporter.export.report.sections;
 
 import com.compomics.util.experiment.identification.Identification;
+import com.compomics.util.experiment.identification.features.IdentificationFeaturesGenerator;
 import com.compomics.util.experiment.identification.matches.PeptideMatch;
 import com.compomics.util.experiment.identification.matches_iterators.PeptideMatchesIterator;
+import com.compomics.util.experiment.identification.peptide_shaker.PSParameter;
+import com.compomics.util.experiment.identification.utils.PeptideUtils;
+import com.compomics.util.experiment.io.biology.protein.ProteinDetailsProvider;
+import com.compomics.util.experiment.io.biology.protein.SequenceProvider;
+import com.compomics.util.experiment.mass_spectrometry.SpectrumProvider;
 import com.compomics.util.experiment.personalization.UrParameter;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.io.export.ExportFeature;
 import com.compomics.util.io.export.ExportWriter;
 import com.compomics.util.io.export.writers.ExcelWriter;
-import com.compomics.util.preferences.IdentificationParameters;
+import com.compomics.util.parameters.identification.IdentificationParameters;
 import com.compomics.util.waiting.WaitingHandler;
 import eu.isas.peptideshaker.export.exportfeatures.PsFragmentFeature;
 import eu.isas.peptideshaker.export.exportfeatures.PsIdentificationAlgorithmMatchesFeature;
 import eu.isas.peptideshaker.export.exportfeatures.PsPeptideFeature;
 import eu.isas.peptideshaker.export.exportfeatures.PsPsmFeature;
 import eu.isas.peptideshaker.export.sections.PsPeptideSection;
-import eu.isas.peptideshaker.parameters.PSParameter;
-import eu.isas.peptideshaker.utils.IdentificationFeaturesGenerator;
 import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
 import eu.isas.reporter.export.report.ReporterExportFeature;
 import eu.isas.reporter.export.report.ReporterReportStyle;
@@ -29,23 +33,23 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import org.apache.commons.math.MathException;
-import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
 
 /**
  * This class outputs the peptide related quantification export features.
  *
  * @author Marc Vaudel
+ * @author Harald Barsnes
  */
 public class ReporterPeptideSection {
 
     /**
      * The peptide identification features to export.
      */
-    private ArrayList<ExportFeature> identificationFeatures = new ArrayList<ExportFeature>();
+    private ArrayList<ExportFeature> identificationFeatures = new ArrayList<>();
     /**
      * The peptide quantification features to export.
      */
-    private ArrayList<ReporterExportFeature> quantificationFeatures = new ArrayList<ReporterExportFeature>();
+    private ArrayList<ReporterExportFeature> quantificationFeatures = new ArrayList<>();
     /**
      * The PSM subsection if needed.
      */
@@ -76,7 +80,7 @@ public class ReporterPeptideSection {
      * @param writer the writer which will write to the file
      */
     public ReporterPeptideSection(ArrayList<ExportFeature> exportFeatures, boolean indexes, boolean header, ExportWriter writer) {
-        ArrayList<ExportFeature> psmFeatures = new ArrayList<ExportFeature>();
+        ArrayList<ExportFeature> psmFeatures = new ArrayList<>();
         for (ExportFeature exportFeature : exportFeatures) {
             if (exportFeature instanceof PsPeptideFeature) {
                 identificationFeatures.add(exportFeature);
@@ -108,6 +112,9 @@ public class ReporterPeptideSection {
      * @param identification the identification of the project
      * @param identificationFeaturesGenerator the identification features
      * generator of the project
+     * @param sequenceProvider the sequence provider
+     * @param spectrumProvider the spectrum provider
+     * @param proteinDetailsProvider the protein details provider
      * @param quantificationFeaturesGenerator the quantification features
      * generator containing the quantification information
      * @param reporterIonQuantification the reporter ion quantification object
@@ -127,18 +134,29 @@ public class ReporterPeptideSection {
      * while interacting with a file
      * @throws java.lang.ClassNotFoundException exception thrown whenever an
      * error occurred while deserializing an object
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown
-     * whenever an error occurred while reading an mzML file
      * @throws java.lang.InterruptedException exception thrown whenever a
      * threading error occurred
-     * @throws org.apache.commons.math.MathException  exception thrown whenever
+     * @throws org.apache.commons.math.MathException exception thrown whenever
      * an error occurred while transforming the ratios
      */
-    public void writeSection(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator,
-            QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, ReporterSettings reporterSettings,
+    public void writeSection(
+            Identification identification,
+            IdentificationFeaturesGenerator identificationFeaturesGenerator,
+            SequenceProvider sequenceProvider,
+            SpectrumProvider spectrumProvider,
+            ProteinDetailsProvider proteinDetailsProvider,
+            QuantificationFeaturesGenerator quantificationFeaturesGenerator,
+            ReporterIonQuantification reporterIonQuantification,
+            ReporterSettings reporterSettings,
             IdentificationParameters identificationParameters,
-            ArrayList<String> keys, int nSurroundingAA, String linePrefix, boolean validatedOnly, boolean decoys, WaitingHandler waitingHandler)
-            throws IOException, IllegalArgumentException, SQLException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException, MathException {
+            long[] keys,
+            int nSurroundingAA,
+            String linePrefix,
+            boolean validatedOnly,
+            boolean decoys,
+            WaitingHandler waitingHandler
+    ) throws IOException, IllegalArgumentException, SQLException,
+            ClassNotFoundException, InterruptedException, MathException {
 
         if (waitingHandler != null) {
             waitingHandler.setSecondaryProgressCounterIndeterminate(true);
@@ -149,21 +167,23 @@ public class ReporterPeptideSection {
         }
 
         if (keys == null) {
-            keys = new ArrayList<String>(identification.getPeptideIdentification());
+            keys = identification.getPeptideIdentification().stream()
+                    .mapToLong(Long::longValue)
+                    .toArray();
         }
 
         int line = 1;
         PSParameter psParameter = new PSParameter();
-        ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
+        ArrayList<UrParameter> parameters = new ArrayList<>(1);
         parameters.add(psParameter);
 
         if (waitingHandler != null) {
             waitingHandler.setWaitingText("Exporting. Please Wait...");
             waitingHandler.resetSecondaryProgressCounter();
-            waitingHandler.setMaxSecondaryProgressCounter(keys.size());
+            waitingHandler.setMaxSecondaryProgressCounter(keys.length);
         }
 
-        PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(keys, parameters, false, parameters, waitingHandler);
+        PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(keys, waitingHandler);
         PeptideMatch peptideMatch;
 
         while ((peptideMatch = peptideMatchesIterator.next()) != null) {
@@ -175,15 +195,15 @@ public class ReporterPeptideSection {
                 waitingHandler.increaseSecondaryProgressCounter();
             }
 
-            String peptideKey = peptideMatch.getKey();
+            long peptideKey = peptideMatch.getKey();
 
-            psParameter = (PSParameter) identification.getPeptideMatchParameter(peptideKey, psParameter);
+            psParameter = (PSParameter) identification.getPeptideMatch(peptideKey).getUrParam(psParameter);
 
             if (!validatedOnly || psParameter.getMatchValidationLevel().isValidated()) {
 
                 peptideMatch = identification.getPeptideMatch(peptideKey);
 
-                if (decoys || !peptideMatch.getTheoreticPeptide().isDecoy(identificationParameters.getSequenceMatchingPreferences())) {
+                if (decoys || !PeptideUtils.isDecoy(peptideMatch.getPeptide(), sequenceProvider)) {
 
                     boolean first = true;
 
@@ -202,11 +222,23 @@ public class ReporterPeptideSection {
                             first = false;
                         }
                         PsPeptideFeature peptideFeature = (PsPeptideFeature) exportFeature;
-                        writer.write(PsPeptideSection.getfeature(identification, identificationFeaturesGenerator, identificationParameters,
-                                keys, nSurroundingAA, linePrefix, peptideMatch, psParameter, peptideFeature, validatedOnly, decoys, waitingHandler));
+                        writer.write(PsPeptideSection.getfeature(
+                                identification,
+                                identificationFeaturesGenerator,
+                                sequenceProvider,
+                                proteinDetailsProvider,
+                                identificationParameters,
+                                nSurroundingAA,
+                                linePrefix,
+                                peptideMatch,
+                                peptideFeature,
+                                validatedOnly,
+                                decoys,
+                                waitingHandler)
+                        );
                     }
 
-                    ArrayList<String> sampleIndexes = new ArrayList<String>(reporterIonQuantification.getSampleIndexes());
+                    ArrayList<String> sampleIndexes = new ArrayList<>(reporterIonQuantification.getSampleIndexes());
                     Collections.sort(sampleIndexes);
                     for (ExportFeature exportFeature : quantificationFeatures) {
                         ReporterPeptideFeature peptideFeature = (ReporterPeptideFeature) exportFeature;
@@ -217,7 +249,17 @@ public class ReporterPeptideSection {
                                 } else {
                                     first = false;
                                 }
-                                writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, peptideMatch, peptideFeature, sampleIndex, waitingHandler), reporterStyle);
+                                writer.write(
+                                        getFeature(
+                                                spectrumProvider,
+                                                quantificationFeaturesGenerator,
+                                                reporterIonQuantification,
+                                                peptideMatch,
+                                                peptideFeature,
+                                                sampleIndex,
+                                                waitingHandler
+                                        ),
+                                        reporterStyle);
                             }
                         } else {
                             if (!first) {
@@ -225,7 +267,17 @@ public class ReporterPeptideSection {
                             } else {
                                 first = false;
                             }
-                            writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, peptideMatch, peptideFeature, "", waitingHandler), reporterStyle);
+                            writer.write(
+                                    getFeature(
+                                            spectrumProvider,
+                                            quantificationFeaturesGenerator,
+                                            reporterIonQuantification,
+                                            peptideMatch,
+                                            peptideFeature,
+                                            "",
+                                            waitingHandler
+                                    ),
+                                    reporterStyle);
                         }
                     }
 
@@ -237,8 +289,23 @@ public class ReporterPeptideSection {
                         }
                         psmSectionPrefix += line + ".";
                         writer.increaseDepth();
-                        psmSection.writeSection(identification, identificationFeaturesGenerator, quantificationFeaturesGenerator, reporterIonQuantification, reporterSettings,
-                                identificationParameters, peptideMatch.getSpectrumMatchesKeys(), psmSectionPrefix, nSurroundingAA, validatedOnly, decoys, null);
+                        psmSection.writeSection(
+                                identification,
+                                identificationFeaturesGenerator,
+                                sequenceProvider,
+                                spectrumProvider,
+                                proteinDetailsProvider,
+                                quantificationFeaturesGenerator,
+                                reporterIonQuantification,
+                                reporterSettings,
+                                identificationParameters,
+                                peptideMatch.getSpectrumMatchesKeys(),
+                                psmSectionPrefix,
+                                nSurroundingAA,
+                                validatedOnly,
+                                decoys,
+                                null
+                        );
                         writer.decreseDepth();
                     }
                     line++;
@@ -252,6 +319,7 @@ public class ReporterPeptideSection {
      * Returns the report component corresponding to a feature at a given
      * channel.
      *
+     * @param spectrumProvider the spectrum provider
      * @param quantificationFeaturesGenerator the quantification features
      * generator
      * @param reporterIonQuantification the reporter ion quantification object
@@ -271,19 +339,25 @@ public class ReporterPeptideSection {
      * while interacting with a file
      * @throws java.lang.ClassNotFoundException exception thrown whenever an
      * error occurred while deserializing an object
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown
-     * whenever an error occurred while reading an mzML file
      * @throws java.lang.InterruptedException exception thrown whenever a
      * threading error occurred
      */
-    public static String getFeature(QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, PeptideMatch peptideMatch,
-            ReporterPeptideFeature peptideFeatures, String sampleIndex, WaitingHandler waitingHandler) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
+    public static String getFeature(
+            SpectrumProvider spectrumProvider,
+            QuantificationFeaturesGenerator quantificationFeaturesGenerator,
+            ReporterIonQuantification reporterIonQuantification,
+            PeptideMatch peptideMatch,
+            ReporterPeptideFeature peptideFeatures,
+            String sampleIndex,
+            WaitingHandler waitingHandler
+    ) throws SQLException, IOException, ClassNotFoundException, InterruptedException {
+
         switch (peptideFeatures) {
             case raw_ratio:
-                PeptideQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideMatch, waitingHandler);
+                PeptideQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(spectrumProvider, peptideMatch, waitingHandler);
                 return quantificationDetails.getRawRatio(sampleIndex).toString();
             case normalized_ratio:
-                quantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(peptideMatch, waitingHandler);
+                quantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(spectrumProvider, peptideMatch, waitingHandler);
                 return quantificationDetails.getRatio(sampleIndex, reporterIonQuantification.getNormalizationFactors()).toString();
             default:
                 return "Not implemented";
@@ -302,7 +376,7 @@ public class ReporterPeptideSection {
     public void writeHeader(ReporterIonQuantification reporterIonQuantification) throws IOException {
 
         boolean needSecondLine = false;
-        ArrayList<String> sampleIndexes = new ArrayList<String>(reporterIonQuantification.getSampleIndexes());
+        ArrayList<String> sampleIndexes = new ArrayList<>(reporterIonQuantification.getSampleIndexes());
         Collections.sort(sampleIndexes);
 
         boolean firstColumn = true;
@@ -360,7 +434,7 @@ public class ReporterPeptideSection {
                             writer.writeHeaderText("", reporterStyle);
                             writer.addSeparator();
                         }
-                        writer.write(reporterIonQuantification.getSample(sampleIndex).getReference(), reporterStyle);
+                        writer.write(reporterIonQuantification.getSample(sampleIndex), reporterStyle);
                     }
                 } else {
                     if (firstColumn) {

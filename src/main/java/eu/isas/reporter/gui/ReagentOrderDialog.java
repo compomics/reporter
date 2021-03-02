@@ -1,7 +1,6 @@
 package eu.isas.reporter.gui;
 
-import com.compomics.util.experiment.biology.Sample;
-import com.compomics.util.experiment.biology.ions.ReporterIon;
+import com.compomics.util.experiment.biology.ions.impl.ReporterIon;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethodFactory;
@@ -38,10 +37,6 @@ public class ReagentOrderDialog extends javax.swing.JDialog {
      */
     private ReporterMethod selectedMethod;
     /**
-     * The sample.
-     */
-    private Sample sample;
-    /**
      * The reporter ion quantifications.
      */
     private ReporterIonQuantification reporterIonQuantification;
@@ -77,11 +72,11 @@ public class ReagentOrderDialog extends javax.swing.JDialog {
      * @param modal if the dialog is to be modal or not
      * @param reagents the reagents order
      * @param aSelectedMethod the selected method
-     * @param sample the sample
      * @param reporterIonQuantification the reporter ion quantifications
      * @param controlSamples the control sample names
      */
-    public ReagentOrderDialog(ReporterGUI reporterGUI, boolean modal, ArrayList<String> reagents, ReporterMethod aSelectedMethod, Sample sample, ReporterIonQuantification reporterIonQuantification, ArrayList<String> controlSamples) {
+    public ReagentOrderDialog(ReporterGUI reporterGUI, boolean modal, ArrayList<String> reagents, ReporterMethod aSelectedMethod, 
+            ReporterIonQuantification reporterIonQuantification, ArrayList<String> controlSamples) {
         super(reporterGUI, modal);
         
         this.reporterGUI = reporterGUI;
@@ -91,7 +86,6 @@ public class ReagentOrderDialog extends javax.swing.JDialog {
         this.reagents.addAll(reagents);
 
         selectedMethod = aSelectedMethod;
-        this.sample = sample;
         this.reporterIonQuantification = reporterIonQuantification;
         this.controlSamples = controlSamples;
         
@@ -615,7 +609,7 @@ public class ReagentOrderDialog extends javax.swing.JDialog {
                     ReporterIon reporterIon = selectedMethod.getReporterIon(reagentName);
                     return reporterIon.getName();
                 case 2:
-                    return reporterIonQuantification.getSample(reagentName).getReference();
+                    return reporterIonQuantification.getSample(reagentName);
                 case 3:
                     return controlSamples.contains(reagentName);
                 default:

@@ -6,14 +6,14 @@ import static com.compomics.software.autoupdater.DownloadLatestZipFromRepo.downl
 import com.compomics.software.autoupdater.GUIFileDAO;
 import com.compomics.software.autoupdater.MavenJarFile;
 import com.compomics.software.autoupdater.WebDAO;
+import com.compomics.software.dialogs.JavaParametersDialog;
 import com.compomics.util.examples.BareBonesBrowserLaunch;
-import com.compomics.software.dialogs.JavaSettingsDialog;
-import com.compomics.util.FileAndFileFilter;
-import com.compomics.util.Util;
 import com.compomics.util.gui.error_handlers.BugReport;
 import com.compomics.util.gui.error_handlers.HelpDialog;
+import com.compomics.util.gui.file_handling.FileAndFileFilter;
+import com.compomics.util.gui.file_handling.FileChooserUtil;
 import com.compomics.util.gui.waiting.waitinghandlers.ProgressDialogX;
-import com.compomics.util.preferences.UtilitiesUserPreferences;
+import com.compomics.util.parameters.UtilitiesUserParameters;
 import eu.isas.reporter.Reporter;
 import eu.isas.reporter.utils.Properties;
 import java.awt.Image;
@@ -477,11 +477,11 @@ public class WelcomeDialog extends javax.swing.JDialog {
     private void openJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openJButtonActionPerformed
 
         // @TODO: implement me!
-        String cpsFileFilterDescription = "PeptideShaker (.cpsx)";
+        String psdbFileFilterDescription = "PeptideShaker (.psdb)";
         String zipFileFilterDescription = "Zipped PeptideShaker (.zip)";
         String lastSelectedFolderPath = reporterGUI.getLastSelectedFolder().getLastSelectedFolder();
-        FileAndFileFilter selectedFileAndFilter = Util.getUserSelectedFile(this, new String[]{".cpsx", ".zip"}, 
-                new String[]{cpsFileFilterDescription, zipFileFilterDescription}, "Open PeptideShaker Project", lastSelectedFolderPath, null, true, false, false, 0);
+        FileAndFileFilter selectedFileAndFilter = FileChooserUtil.getUserSelectedFile(this, new String[]{".psdb", ".zip"}, 
+                new String[]{psdbFileFilterDescription, zipFileFilterDescription}, "Open PeptideShaker Project", lastSelectedFolderPath, null, true, false, false, 0);
 
         if (selectedFileAndFilter != null) {
 
@@ -493,7 +493,7 @@ public class WelcomeDialog extends javax.swing.JDialog {
 //                reporterGUI.setVisible(true);
 //                reporterGUI.importPeptideShakerZipFile(selectedFile);
 //                dispose();
-//            } else if (selectedFile.getName().endsWith(".cpsx")) {
+//            } else if (selectedFile.getName().endsWith(".psdb")) {
 //                setVisible(false);
 //                reporterGUI.setVisible(true);
 //                reporterGUI.importPeptideShakerFile(selectedFile);
@@ -503,7 +503,7 @@ public class WelcomeDialog extends javax.swing.JDialog {
 //                lastSelectedFolder.setLastSelectedFolder(selectedFile.getAbsolutePath());
 //                dispose();
 //            } else {
-//                JOptionPane.showMessageDialog(this, "Not a PeptideShaker file (.cpsx).", "Unsupported File.", JOptionPane.WARNING_MESSAGE);
+//                JOptionPane.showMessageDialog(this, "Not a PeptideShaker file (.psdb).", "Unsupported File.", JOptionPane.WARNING_MESSAGE);
 //            }
         }
     }//GEN-LAST:event_openJButtonActionPerformed
@@ -706,12 +706,12 @@ public class WelcomeDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_settingsLabelMouseExited
 
     /**
-     * Open the Java Settings dialog.
+     * Open the Java Parameters dialog.
      *
      * @param evt
      */
     private void javaSettingsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_javaSettingsMenuItemActionPerformed
-        new JavaSettingsDialog(dummyParentFrame, reporterGUI, this, "Reporter", true);
+        new JavaParametersDialog(dummyParentFrame, reporterGUI, this, "Reporter", true);
     }//GEN-LAST:event_javaSettingsMenuItemActionPerformed
 
     /**
@@ -765,12 +765,12 @@ public class WelcomeDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_lowMemoryWarningLabelMouseExited
 
     /**
-     * Open the java settings dialog.
+     * Open the Java Parameters dialog.
      *
      * @param evt
      */
     private void lowMemoryWarningLabelMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lowMemoryWarningLabelMouseReleased
-        new JavaSettingsDialog(dummyParentFrame, reporterGUI, this, "Reporter", true);
+        new JavaParametersDialog(dummyParentFrame, reporterGUI, this, "Reporter", true);
     }//GEN-LAST:event_lowMemoryWarningLabelMouseReleased
 
     /**
@@ -796,7 +796,7 @@ public class WelcomeDialog extends javax.swing.JDialog {
         new Thread(new Runnable() {
             public void run() {
                 try {
-                    ToolFactory.startSearchGUI(dummyParentFrame, null, null, null, null, null, null, null);
+                    ToolFactory.startSearchGUI(dummyParentFrame, null, null, null, null, null, null, null, null);
                     reporterGUI.closeReporter();
                 } catch (Exception e) {
                     reporterGUI.catchException(e);
@@ -905,12 +905,12 @@ public class WelcomeDialog extends javax.swing.JDialog {
         boolean firstTimeInstall = true;
         String installPath = null;
 
-        UtilitiesUserPreferences utilitiesUserPreferences = reporterGUI.getUtilitiesUserPreferences();
+        UtilitiesUserParameters utilitiesUserParameters = reporterGUI.getUtilitiesUserParameters();
 
-        if (utilitiesUserPreferences.getSearchGuiPath() != null) {
-            if (new File(utilitiesUserPreferences.getSearchGuiPath()).getParentFile() != null
-                    && new File(utilitiesUserPreferences.getSearchGuiPath()).getParentFile().getParentFile() != null) {
-                installPath = new File(utilitiesUserPreferences.getSearchGuiPath()).getParentFile().getParent();
+        if (utilitiesUserParameters.getSearchGuiPath() != null) {
+            if (new File(utilitiesUserParameters.getSearchGuiPath()).getParentFile() != null
+                    && new File(utilitiesUserParameters.getSearchGuiPath()).getParentFile().getParentFile() != null) {
+                installPath = new File(utilitiesUserParameters.getSearchGuiPath()).getParentFile().getParent();
             }
         }
 
@@ -918,7 +918,7 @@ public class WelcomeDialog extends javax.swing.JDialog {
 
         if (installPath == null) {
             installPath = "user.home";
-            downloadFolder = Util.getUserSelectedFolder(this, "Select SearchGUI Folder", installPath, "SearchGUI Folder", "Select", false);
+            downloadFolder = FileChooserUtil.getUserSelectedFolder(this, "Select SearchGUI Folder", installPath, "SearchGUI Folder", "Select", false);
         } else {
             firstTimeInstall = false;
             downloadFolder = new File(installPath);
@@ -955,7 +955,7 @@ public class WelcomeDialog extends javax.swing.JDialog {
                             downloadLatestZipFromRepo(downloadFolder, "SearchGUI", "eu.isas.searchgui", "SearchGUI", "searchgui.ico",
                                     null, jarRepository, false, true, new GUIFileDAO(), progressDialog);
                         } else {
-                            downloadLatestZipFromRepo(new File(reporterGUI.getUtilitiesUserPreferences().getSearchGuiPath()).toURI().toURL(), "SearchGUI", false,
+                            downloadLatestZipFromRepo(new File(reporterGUI.getUtilitiesUserParameters().getSearchGuiPath()).toURI().toURL(), "SearchGUI", false,
                                     "searchgui.ico", null, jarRepository, false, true, new GUIFileDAO(), progressDialog);
                         }
                     } catch (IOException e) {

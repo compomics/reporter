@@ -11,17 +11,22 @@ import org.apache.commons.cli.CommandLine;
  * Options instance.
  *
  * @author Marc Vaudel
+ * @author Harald Barsnes
  */
 public class ReportCLIInputBean {
 
     /**
-     * The cps file to work on.
+     * The psdb file to work on.
      */
-    private File cpsFile = null;
+    private File psdbFile = null;
     /**
      * Folder where to export the reports.
      */
     private File reportOutputFolder = null;
+    /**
+     * The prefix added to the report name. Can be null.
+     */
+    private String reportNamePrefix = null;
     /**
      * The report types required by the user.
      */
@@ -42,16 +47,19 @@ public class ReportCLIInputBean {
      */
     public ReportCLIInputBean(CommandLine aLine) {
 
-        if (aLine.hasOption(ReportCLIParams.CPS_FILE.id)) {
-            String file = aLine.getOptionValue(ReportCLIParams.CPS_FILE.id);
-            if (file.toLowerCase().endsWith(".cpsx") || file.toLowerCase().endsWith(".zip")) {
-                cpsFile = new File(file);
+        if (aLine.hasOption(ReportCLIParams.PSDB_FILE.id)) {
+            String file = aLine.getOptionValue(ReportCLIParams.PSDB_FILE.id);
+            if (file.toLowerCase().endsWith(".psdb") || file.toLowerCase().endsWith(".zip")) {
+                psdbFile = new File(file);
             } else {
                 throw new IllegalArgumentException("Unknown file format \'" + file + "\' for PeptideShaker project input.");
             }
         }
         if (aLine.hasOption(ReportCLIParams.EXPORT_FOLDER.id)) {
             reportOutputFolder = new File(aLine.getOptionValue(ReportCLIParams.EXPORT_FOLDER.id));
+        }
+        if (aLine.hasOption(ReportCLIParams.EXPORT_PREFIX.id)) {
+            reportNamePrefix = aLine.getOptionValue(ReportCLIParams.EXPORT_PREFIX.id);
         }
         if (aLine.hasOption(ReportCLIParams.REPORT_TYPE.id)) {
             ArrayList<Integer> options = CommandLineUtils.getIntegerListFromString(aLine.getOptionValue(ReportCLIParams.REPORT_TYPE.id), ",");
@@ -71,12 +79,12 @@ public class ReportCLIInputBean {
     }
 
     /**
-     * Returns the cps file from which the information can be obtained.
+     * Returns the psdb file from which the information can be obtained.
      *
-     * @return the cps file from which the information can be obtained
+     * @return the psdb file from which the information can be obtained
      */
-    public File getCpsFile() {
-        return cpsFile;
+    public File getPsdbFile() {
+        return psdbFile;
     }
 
     /**
@@ -95,6 +103,24 @@ public class ReportCLIInputBean {
      */
     public void setReportOutputFolder(File outputFolder) {
         this.reportOutputFolder = outputFolder;
+    }
+    
+    /**
+     * Returns the report name prefix.
+     *
+     * @return the report name prefix
+     */
+    public String getReportNamePrefix() {
+        return reportNamePrefix;
+    }
+
+    /**
+     * Set the report name prefix.
+     *
+     * @param reportNamePrefix the report output folder
+     */
+    public void setReportNamePrefix(String reportNamePrefix) {
+        this.reportNamePrefix = reportNamePrefix;
     }
 
     /**

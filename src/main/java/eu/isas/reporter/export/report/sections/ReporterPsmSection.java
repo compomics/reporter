@@ -1,18 +1,23 @@
 package eu.isas.reporter.export.report.sections;
 
 import com.compomics.util.experiment.identification.Identification;
+import com.compomics.util.experiment.identification.features.IdentificationFeaturesGenerator;
 import com.compomics.util.experiment.identification.matches.IonMatch;
 import com.compomics.util.experiment.identification.matches.SpectrumMatch;
-import com.compomics.util.experiment.identification.matches_iterators.PsmIterator;
+import com.compomics.util.experiment.identification.matches_iterators.SpectrumMatchesIterator;
+import com.compomics.util.experiment.identification.peptide_shaker.PSParameter;
 import com.compomics.util.experiment.identification.spectrum_assumptions.PeptideAssumption;
 import com.compomics.util.experiment.identification.spectrum_assumptions.TagAssumption;
-import com.compomics.util.experiment.massspectrometry.Spectrum;
+import com.compomics.util.experiment.identification.utils.PeptideUtils;
+import com.compomics.util.experiment.io.biology.protein.ProteinDetailsProvider;
+import com.compomics.util.experiment.io.biology.protein.SequenceProvider;
+import com.compomics.util.experiment.mass_spectrometry.SpectrumProvider;
 import com.compomics.util.experiment.personalization.UrParameter;
 import com.compomics.util.experiment.quantification.reporterion.ReporterIonQuantification;
 import com.compomics.util.io.export.ExportFeature;
 import com.compomics.util.io.export.ExportWriter;
 import com.compomics.util.io.export.writers.ExcelWriter;
-import com.compomics.util.preferences.IdentificationParameters;
+import com.compomics.util.parameters.identification.IdentificationParameters;
 import com.compomics.util.waiting.WaitingHandler;
 import eu.isas.peptideshaker.export.exportfeatures.PsFragmentFeature;
 import eu.isas.peptideshaker.export.exportfeatures.PsIdentificationAlgorithmMatchesFeature;
@@ -20,8 +25,6 @@ import eu.isas.peptideshaker.export.exportfeatures.PsPsmFeature;
 import eu.isas.peptideshaker.export.sections.PsFragmentSection;
 import eu.isas.peptideshaker.export.sections.PsIdentificationAlgorithmMatchesSection;
 import eu.isas.peptideshaker.export.sections.PsPsmSection;
-import eu.isas.peptideshaker.parameters.PSParameter;
-import eu.isas.peptideshaker.utils.IdentificationFeaturesGenerator;
 import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
 import eu.isas.reporter.export.report.ReporterExportFeature;
 import eu.isas.reporter.export.report.ReporterReportStyle;
@@ -33,15 +36,13 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import org.apache.commons.math.MathException;
-import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException;
 
 /**
  * This class outputs the PSM level quantification export features.
  *
  * @author Marc Vaudel
+ * @author Harald Barsnes
  */
 public class ReporterPsmSection {
 
@@ -87,8 +88,11 @@ public class ReporterPsmSection {
      * @param writer the writer which will write to the file
      */
     public ReporterPsmSection(ArrayList<ExportFeature> exportFeatures, boolean indexes, boolean header, ExportWriter writer) {
+
         ArrayList<ExportFeature> fragmentFeatures = new ArrayList<ExportFeature>();
+
         for (ExportFeature exportFeature : exportFeatures) {
+
             if (exportFeature instanceof ReporterPsmFeatures) {
                 quantificationFeatures.add((ReporterExportFeature) exportFeature);
             } else if (exportFeature instanceof PsPsmFeature) {
@@ -100,13 +104,17 @@ public class ReporterPsmSection {
             } else {
                 throw new IllegalArgumentException("Export feature of type " + exportFeature.getClass() + " not recognized.");
             }
+
         }
+
         if (!fragmentFeatures.isEmpty()) {
             fragmentSection = new PsFragmentSection(fragmentFeatures, indexes, header, writer);
         }
+
         this.indexes = indexes;
         this.header = header;
         this.writer = writer;
+
         if (writer instanceof ExcelWriter) {
             reporterStyle = ReporterReportStyle.getReportStyle((ExcelWriter) writer);
         }
@@ -118,6 +126,9 @@ public class ReporterPsmSection {
      * @param identification the identification of the project
      * @param identificationFeaturesGenerator the identification features
      * generator of the project
+     * @param sequenceProvider the sequence provider
+     * @param spectrumProvider the spectrum provider
+     * @param proteinDetailsProvider the protein details provider
      * @param quantificationFeaturesGenerator the quantification features
      * generator containing the quantification information
      * @param reporterIonQuantification the reporter ion quantification object
@@ -137,16 +148,29 @@ public class ReporterPsmSection {
      * while interacting with a file
      * @throws java.lang.ClassNotFoundException exception thrown whenever an
      * error occurred while deserializing an object
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown
-     * whenever an error occurred while reading an mzML file
      * @throws java.lang.InterruptedException exception thrown whenever a
      * threading error occurred
      * @throws org.apache.commons.math.MathException exception thrown whenever
      * an error occurred while transforming the ratios
      */
-    public void writeSection(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator, QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, ReporterSettings reporterSettings,
-            IdentificationParameters identificationParameters, ArrayList<String> keys, String linePrefix, int nSurroundingAA, boolean validatedOnly, boolean decoys, WaitingHandler waitingHandler) throws IOException, IllegalArgumentException, SQLException,
-            ClassNotFoundException, InterruptedException, MzMLUnmarshallerException, MathException {
+    public void writeSection(
+            Identification identification,
+            IdentificationFeaturesGenerator identificationFeaturesGenerator,
+            SequenceProvider sequenceProvider,
+            SpectrumProvider spectrumProvider,
+            ProteinDetailsProvider proteinDetailsProvider,
+            QuantificationFeaturesGenerator quantificationFeaturesGenerator,
+            ReporterIonQuantification reporterIonQuantification,
+            ReporterSettings reporterSettings,
+            IdentificationParameters identificationParameters,
+            long[] keys,
+            String linePrefix,
+            int nSurroundingAA,
+            boolean validatedOnly,
+            boolean decoys,
+            WaitingHandler waitingHandler
+    ) throws IOException, IllegalArgumentException, SQLException,
+            ClassNotFoundException, InterruptedException, MathException {
 
         if (waitingHandler != null) {
             waitingHandler.setSecondaryProgressCounterIndeterminate(true);
@@ -156,150 +180,188 @@ public class ReporterPsmSection {
             writeHeader(reporterIonQuantification);
         }
 
-        HashMap<String, HashSet<String>> psmMap = new HashMap<String, HashSet<String>>();
-
-        if (keys == null) {
-            psmMap = identification.getSpectrumIdentificationMap();
-        } else {
-            for (String key : keys) {
-                String fileName = Spectrum.getSpectrumFile(key);
-                if (!psmMap.containsKey(fileName)) {
-                    psmMap.put(fileName, new HashSet<String>());
-                }
-                psmMap.get(fileName).add(key);
-            }
-        }
-
         int line = 1;
-
-        int totalSize = 0;
-
-        for (String spectrumFile : psmMap.keySet()) {
-            totalSize += psmMap.get(spectrumFile).size();
-        }
-
-        // get the spectrum keys
-        ArrayList<String> spectrumKeys = new ArrayList<String>();
-
-        for (String spectrumFile : psmMap.keySet()) {
-            for (String spectrumKey : psmMap.get(spectrumFile)) {
-                if (!spectrumKeys.contains(spectrumKey)) {
-                    spectrumKeys.add(spectrumKey);
-                }
-            }
-        }
 
         if (waitingHandler != null) {
             waitingHandler.setWaitingText("Exporting. Please Wait...");
             waitingHandler.resetSecondaryProgressCounter();
-            waitingHandler.setMaxSecondaryProgressCounter(totalSize);
+            waitingHandler.setMaxSecondaryProgressCounter(keys.length);
         }
 
         PSParameter psParameter = new PSParameter();
-        ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
+        ArrayList<UrParameter> parameters = new ArrayList<>(1);
         parameters.add(psParameter);
 
-        for (String spectrumFile : psmMap.keySet()) {
+        SpectrumMatchesIterator spectrumMatchesIterator = identification.getSpectrumMatchesIterator(keys, waitingHandler);
+        SpectrumMatch spectrumMatch;
 
-            ArrayList<String> fileKeys = new ArrayList<String>(psmMap.get(spectrumFile));
+        while ((spectrumMatch = spectrumMatchesIterator.next()) != null) {
 
-            PsmIterator psmIterator = identification.getPsmIterator(spectrumFile, fileKeys, parameters, false, waitingHandler);
-            SpectrumMatch spectrumMatch;
-
-            while ((spectrumMatch = psmIterator.next()) != null) {
-
-                if (waitingHandler != null) {
-                    if (waitingHandler.isRunCanceled()) {
-                        return;
-                    }
-                    waitingHandler.increaseSecondaryProgressCounter();
+            if (waitingHandler != null) {
+                if (waitingHandler.isRunCanceled()) {
+                    return;
                 }
+                waitingHandler.increaseSecondaryProgressCounter();
+            }
 
-                String spectrumKey = spectrumMatch.getKey();
+            //String spectrumKey = spectrumMatch.getSpectrumKey();
+            psParameter = (PSParameter) spectrumMatch.getUrParam(psParameter);
 
-                psParameter = (PSParameter) identification.getSpectrumMatchParameter(spectrumKey, psParameter);
+            if (!validatedOnly || psParameter.getMatchValidationLevel().isValidated()) {
 
-                if (!validatedOnly || psParameter.getMatchValidationLevel().isValidated()) {
+                PeptideAssumption peptideAssumption = spectrumMatch.getBestPeptideAssumption();
 
-                    PeptideAssumption peptideAssumption = spectrumMatch.getBestPeptideAssumption();
+                if (decoys || peptideAssumption == null || !PeptideUtils.isDecoy(peptideAssumption.getPeptide(), sequenceProvider)) {
 
-                    if (decoys || peptideAssumption == null || !peptideAssumption.getPeptide().isDecoy(identificationParameters.getSequenceMatchingPreferences())) {
+                    boolean first = true;
 
-                        boolean first = true;
-
-                        if (indexes) {
-                            if (linePrefix != null) {
-                                writer.write(linePrefix);
-                            }
-                            writer.write(line + "");
+                    if (indexes) {
+                        if (linePrefix != null) {
+                            writer.write(linePrefix);
+                        }
+                        writer.write(line + "");
+                        first = false;
+                    }
+                    for (PsIdentificationAlgorithmMatchesFeature identificationAlgorithmMatchesFeature : identificationAlgorithmMatchesFeatures) {
+                        if (!first) {
+                            writer.addSeparator();
+                        } else {
                             first = false;
                         }
-                        for (PsIdentificationAlgorithmMatchesFeature identificationAlgorithmMatchesFeature : identificationAlgorithmMatchesFeatures) {
-                            if (!first) {
-                                writer.addSeparator();
-                            } else {
-                                first = false;
-                            }
-                            String feature;
-                            if (peptideAssumption != null) {
-                                peptideAssumption = spectrumMatch.getBestPeptideAssumption();
-                                feature = PsIdentificationAlgorithmMatchesSection.getPeptideAssumptionFeature(identification, identificationFeaturesGenerator,
-                                        identificationParameters, keys, linePrefix, nSurroundingAA, peptideAssumption, spectrumMatch.getKey(), psParameter, identificationAlgorithmMatchesFeature, waitingHandler);
-                            } else if (spectrumMatch.getBestTagAssumption() != null) {
-                                TagAssumption tagAssumption = spectrumMatch.getBestTagAssumption();
-                                feature = PsIdentificationAlgorithmMatchesSection.getTagAssumptionFeature(identification, identificationFeaturesGenerator,
-                                        identificationParameters, keys, linePrefix, tagAssumption, spectrumMatch.getKey(), psParameter, identificationAlgorithmMatchesFeature, waitingHandler);
-                            } else {
-                                throw new IllegalArgumentException("No best match found for spectrum " + spectrumMatch.getKey() + ".");
-                            }
-                            writer.write(feature);
+                        String feature;
+                        if (peptideAssumption != null) {
+
+                            peptideAssumption = spectrumMatch.getBestPeptideAssumption();
+
+                            feature = PsIdentificationAlgorithmMatchesSection.getPeptideAssumptionFeature(
+                                    identification,
+                                    identificationFeaturesGenerator,
+                                    sequenceProvider,
+                                    proteinDetailsProvider,
+                                    spectrumProvider,
+                                    identificationParameters,
+                                    linePrefix,
+                                    nSurroundingAA,
+                                    peptideAssumption,
+                                    spectrumMatch.getSpectrumFile(),
+                                    spectrumMatch.getSpectrumTitle(),
+                                    psParameter,
+                                    identificationAlgorithmMatchesFeature,
+                                    waitingHandler
+                            );
+
+                        } else if (spectrumMatch.getBestTagAssumption() != null) {
+
+                            TagAssumption tagAssumption = spectrumMatch.getBestTagAssumption();
+
+                            feature = PsIdentificationAlgorithmMatchesSection.getTagAssumptionFeature(
+                                    identification,
+                                    identificationFeaturesGenerator,
+                                    spectrumProvider,
+                                    identificationParameters,
+                                    linePrefix,
+                                    tagAssumption,
+                                    spectrumMatch.getSpectrumFile(),
+                                    spectrumMatch.getSpectrumTitle(),
+                                    psParameter,
+                                    identificationAlgorithmMatchesFeature,
+                                    waitingHandler
+                            );
+
+                        } else {
+                            throw new IllegalArgumentException(
+                                    "No best match found for spectrum "
+                                    + spectrumMatch.getKey()
+                                    + "."
+                            );
                         }
-                        for (PsPsmFeature psmFeature : psmFeatures) {
-                            if (!first) {
-                                writer.addSeparator();
-                            } else {
-                                first = false;
-                            }
-                            writer.write(PsPsmSection.getFeature(identification, identificationFeaturesGenerator,
-                                    identificationParameters, keys, linePrefix, spectrumMatch, psParameter, psmFeature, validatedOnly, decoys, waitingHandler));
+                        writer.write(feature);
+                    }
+                    for (PsPsmFeature psmFeature : psmFeatures) {
+                        if (!first) {
+                            writer.addSeparator();
+                        } else {
+                            first = false;
                         }
-                        ArrayList<String> sampleIndexes = new ArrayList<String>(reporterIonQuantification.getSampleIndexes());
-                        Collections.sort(sampleIndexes);
-                        for (ExportFeature exportFeature : quantificationFeatures) {
-                            ReporterPsmFeatures psmFeature = (ReporterPsmFeatures) exportFeature;
-                            if (psmFeature.hasChannels()) {
-                                for (String sampleIndex : sampleIndexes) {
-                                    if (!first) {
-                                        writer.addSeparator();
-                                    } else {
-                                        first = false;
-                                    }
-                                    writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, reporterSettings, spectrumKey, psmFeature, sampleIndex), reporterStyle);
-                                }
-                            } else {
+                        writer.write(PsPsmSection.getFeature(identification, identificationFeaturesGenerator,
+                                identificationParameters, linePrefix, spectrumMatch, psParameter, psmFeature, validatedOnly, decoys, waitingHandler));
+                    }
+                    ArrayList<String> sampleIndexes = new ArrayList<>(reporterIonQuantification.getSampleIndexes());
+                    Collections.sort(sampleIndexes);
+                    for (ExportFeature exportFeature : quantificationFeatures) {
+                        ReporterPsmFeatures psmFeature = (ReporterPsmFeatures) exportFeature;
+                        if (psmFeature.hasChannels()) {
+                            for (String sampleIndex : sampleIndexes) {
                                 if (!first) {
                                     writer.addSeparator();
                                 } else {
                                     first = false;
                                 }
-                                writer.write(getFeature(quantificationFeaturesGenerator, reporterIonQuantification, reporterSettings, spectrumKey, psmFeature, ""), reporterStyle);
+                                writer.write(
+                                        getFeature(
+                                                identification,
+                                                spectrumProvider,
+                                                quantificationFeaturesGenerator,
+                                                reporterIonQuantification,
+                                                reporterSettings,
+                                                spectrumMatch.getKey(),
+                                                psmFeature,
+                                                sampleIndex),
+                                        reporterStyle
+                                );
                             }
+                        } else {
+                            if (!first) {
+                                writer.addSeparator();
+                            } else {
+                                first = false;
+                            }
+                            writer.write(
+                                    getFeature(
+                                            identification,
+                                            spectrumProvider,
+                                            quantificationFeaturesGenerator,
+                                            reporterIonQuantification,
+                                            reporterSettings,
+                                            spectrumMatch.getKey(),
+                                            psmFeature,
+                                            ""),
+                                    reporterStyle
+                            );
                         }
-                        writer.newLine();
-                        if (fragmentSection != null) {
-                            String fractionPrefix = "";
-                            if (linePrefix != null) {
-                                fractionPrefix += linePrefix;
-                            }
-                            fractionPrefix += line + ".";
-                            if (spectrumMatch.getBestPeptideAssumption() != null) {
-                                fragmentSection.writeSection(spectrumKey, spectrumMatch.getBestPeptideAssumption(), identificationParameters, fractionPrefix, null);
-                            } else if (spectrumMatch.getBestTagAssumption() != null) {
-                                fragmentSection.writeSection(spectrumKey, spectrumMatch.getBestTagAssumption(), identificationParameters, fractionPrefix, null);
-                            }
-                        }
-                        line++;
                     }
+                    writer.newLine();
+                    if (fragmentSection != null) {
+                        String fractionPrefix = "";
+                        if (linePrefix != null) {
+                            fractionPrefix += linePrefix;
+                        }
+                        fractionPrefix += line + ".";
+                        if (spectrumMatch.getBestPeptideAssumption() != null) {
+                            fragmentSection.writeSection(
+                                    spectrumMatch.getSpectrumFile(),
+                                    spectrumMatch.getSpectrumTitle(),
+                                    spectrumMatch.getBestPeptideAssumption(),
+                                    sequenceProvider,
+                                    spectrumProvider,
+                                    identificationParameters,
+                                    fractionPrefix,
+                                    null
+                            );
+                        } else if (spectrumMatch.getBestTagAssumption() != null) {
+                            fragmentSection.writeSection(
+                                    spectrumMatch.getSpectrumFile(),
+                                    spectrumMatch.getSpectrumTitle(),
+                                    spectrumMatch.getBestTagAssumption(),
+                                    sequenceProvider,
+                                    spectrumProvider,
+                                    identificationParameters,
+                                    fractionPrefix,
+                                    null
+                            );
+                        }
+                    }
+                    line++;
                 }
             }
         }
@@ -309,12 +371,14 @@ public class ReporterPsmSection {
      * Returns the report component corresponding to a feature at a given
      * channel.
      *
+     * @param identification the identification of the project
+     * @param spectrumProvider the spectrum provider
      * @param quantificationFeaturesGenerator the quantification features
      * generator
      * @param reporterIonQuantification the reporter ion quantification object
      * containing the quantification configuration
      * @param reporterSettings the reporter settings
-     * @param spectrumKey the spectrum key
+     * @param matchKey the match key
      * @param psmFeatures the PSM feature to export
      * @param sampleIndex the index of the sample in case the feature is channel
      * dependent, ignored otherwise
@@ -328,36 +392,71 @@ public class ReporterPsmSection {
      * while interacting with a file
      * @throws java.lang.ClassNotFoundException exception thrown whenever an
      * error occurred while deserializing an object
-     * @throws uk.ac.ebi.jmzml.xml.io.MzMLUnmarshallerException exception thrown
-     * whenever an error occurred while reading an mzML file
      * @throws java.lang.InterruptedException exception thrown whenever a
      * threading error occurred
      */
-    public static String getFeature(QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, ReporterSettings reporterSettings, String spectrumKey, ReporterPsmFeatures psmFeatures, String sampleIndex) throws SQLException, IOException, ClassNotFoundException, InterruptedException, MzMLUnmarshallerException {
+    public static String getFeature(
+            Identification identification,
+            SpectrumProvider spectrumProvider,
+            QuantificationFeaturesGenerator quantificationFeaturesGenerator,
+            ReporterIonQuantification reporterIonQuantification,
+            ReporterSettings reporterSettings,
+            long matchKey,
+            ReporterPsmFeatures psmFeatures,
+            String sampleIndex
+    ) throws SQLException, IOException, ClassNotFoundException, InterruptedException {
+
+        SpectrumMatch spectrumMatch = identification.getSpectrumMatch(matchKey);
+        long spectrumKey = spectrumMatch.getKey();
+
         switch (psmFeatures) {
+
             case raw_ratio:
-                PsmQuantificationDetails psmDetails = quantificationFeaturesGenerator.getPSMQuantificationDetails(spectrumKey);
+                PsmQuantificationDetails psmDetails = quantificationFeaturesGenerator.getPSMQuantificationDetails(spectrumProvider, matchKey);
                 return psmDetails.getRawRatio(sampleIndex).toString();
+
             case ratio:
-                psmDetails = quantificationFeaturesGenerator.getPSMQuantificationDetails(spectrumKey);
+                psmDetails = quantificationFeaturesGenerator.getPSMQuantificationDetails(spectrumProvider, matchKey);
                 return psmDetails.getRatio(sampleIndex, reporterIonQuantification.getNormalizationFactors()).toString();
+
             case reporter_intensity:
-                SpectrumQuantificationDetails spectrumDetails = quantificationFeaturesGenerator.getSpectrumQuantificationDetails(reporterIonQuantification, reporterSettings.getReporterIonSelectionSettings(), spectrumKey);
+                SpectrumQuantificationDetails spectrumDetails
+                        = quantificationFeaturesGenerator.getSpectrumQuantificationDetails(
+                                spectrumProvider,
+                                reporterIonQuantification,
+                                reporterSettings.getReporterIonSelectionSettings(),
+                                spectrumKey
+                        );
                 IonMatch ionMatch = spectrumDetails.getRepoterMatch(sampleIndex);
                 if (ionMatch == null) {
                     return "";
                 }
-                return ionMatch.peak.intensity + "";
+                return ionMatch.peakIntensity + "";
+
             case reporter_mz:
-                spectrumDetails = quantificationFeaturesGenerator.getSpectrumQuantificationDetails(reporterIonQuantification, reporterSettings.getReporterIonSelectionSettings(), spectrumKey);
+                spectrumDetails
+                        = quantificationFeaturesGenerator.getSpectrumQuantificationDetails(
+                                spectrumProvider,
+                                reporterIonQuantification,
+                                reporterSettings.getReporterIonSelectionSettings(),
+                                spectrumKey
+                        );
                 ionMatch = spectrumDetails.getRepoterMatch(sampleIndex);
                 if (ionMatch == null) {
                     return "";
                 }
-                return ionMatch.peak.mz + "";
+                return ionMatch.peakMz + "";
+
             case deisotoped_intensity:
-                spectrumDetails = quantificationFeaturesGenerator.getSpectrumQuantificationDetails(reporterIonQuantification, reporterSettings.getReporterIonSelectionSettings(), spectrumKey);
+                spectrumDetails
+                        = quantificationFeaturesGenerator.getSpectrumQuantificationDetails(
+                                spectrumProvider,
+                                reporterIonQuantification,
+                                reporterSettings.getReporterIonSelectionSettings(),
+                                spectrumKey
+                        );
                 return spectrumDetails.getDeisotopedIntensity(sampleIndex).toString();
+
             default:
                 return "Not implemented";
         }
@@ -375,7 +474,7 @@ public class ReporterPsmSection {
     public void writeHeader(ReporterIonQuantification reporterIonQuantification) throws IOException {
 
         boolean needSecondLine = false;
-        ArrayList<String> sampleIndexes = new ArrayList<String>(reporterIonQuantification.getSampleIndexes());
+        ArrayList<String> sampleIndexes = new ArrayList<>(reporterIonQuantification.getSampleIndexes());
         Collections.sort(sampleIndexes);
 
         boolean firstColumn = true;
@@ -449,7 +548,7 @@ public class ReporterPsmSection {
                         } else {
                             writer.addSeparator();
                         }
-                        writer.writeHeaderText(reporterIonQuantification.getSample(sampleIndex).getReference(), reporterStyle);
+                        writer.writeHeaderText(reporterIonQuantification.getSample(sampleIndex), reporterStyle);
                     }
                 } else {
                     if (firstColumn) {

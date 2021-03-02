@@ -17,7 +17,7 @@ public enum ReporterCLIParameters {
     // (once the wiki exists)
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
-    ID("id", "The PeptideShaker project (.cpsx or .zip).", true),
+    ID("id", "The PeptideShaker project (.psdb or .zip).", true),
     OUT("out", "Output file to save the project.", false),
     ISOTOPES("isotopes", "The isotope correction factors file (.xml file). Default values used if not provided. It is strongly advised to provide the values corresponding to the labelling kit used during the experiment.", false),
     METHOD("method", "The reporter ion quantification method to use from the isotopic methods file in case multiple methods are listed in the file. Inferred from the identification parameters if not provided.", false),
@@ -28,7 +28,7 @@ public enum ReporterCLIParameters {
     SAME_SPECTRA("same_spectra", "Indicates whether reporter ions are in the same spectra as the identification fragment ions (1: yes, 0: no). If no, the spectra from prescursor in an m/z and RT window around the identified precursor will be used. Default is 1.", false),
     PREC_WINDOW_MZ_TOL("prec_window_mz_tol", "If " + SAME_SPECTRA.name() + " is set to 0, the m/z tolerance to use. Default is 1.", false),
     PREC_WINDOW_MZ_TOL_PPM("prec_window_mz_tol_ppm", "If " + SAME_SPECTRA.name() + " is set to 0, indicates whether the m/z tolerance to use is in ppm (1: yes, 0: no). Default is 1.", false),
-    PREC_WINDOW_RT_TOL("prec_window_rt_tol", "If " + SAME_SPECTRA.name() + " is set to 0, the rt tolerance in seconds to use. Default is 10. Will be used only if available in the mgf file.", false),
+    PREC_WINDOW_RT_TOL("prec_window_rt_tol", "If " + SAME_SPECTRA.name() + " is set to 0, the rt tolerance in seconds to use. Default is 10. Will be used only if available in the spectrum file.", false),
     
     IGNORE_NULL("ignore_null", "Ignore spectra where null intensities are found for at least one of the reporter ions (1: yes, 0: no). Default is 0.", false),
     IGNORE_MC("ignore_mc", "Ignore peptides with missed cleavages (1: yes, 0: no). Default is 0.", false),

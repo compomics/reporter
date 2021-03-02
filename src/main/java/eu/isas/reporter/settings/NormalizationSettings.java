@@ -1,18 +1,22 @@
 package eu.isas.reporter.settings;
 
-import com.compomics.util.experiment.identification.protein_sequences.FastaIndex;
-import com.compomics.util.experiment.identification.protein_sequences.SequenceFactory;
+import com.compomics.util.experiment.identification.protein_inference.fm_index.FMIndex;
+import com.compomics.util.experiment.io.biology.protein.FastaParameters;
+import com.compomics.util.parameters.identification.advanced.PeptideVariantsParameters;
+import com.compomics.util.parameters.identification.search.SearchParameters;
+import com.compomics.util.waiting.WaitingHandler;
 import eu.isas.reporter.Reporter;
 import eu.isas.reporter.calculation.normalization.NormalizationType;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.HashSet;
+import java.util.Collection;
 
 /**
  * Settings used for the normalization.
  *
  * @author Marc Vaudel
+ * @author Harald Barsnes
  */
 public class NormalizationSettings implements Serializable {
 
@@ -180,17 +184,21 @@ public class NormalizationSettings implements Serializable {
 
     /**
      * Returns the accessions of the stable proteins as a set taken from the
-     * stableProteinsFastaFile. Null if no file is set.
+     * stableProteinsFastaFile.Null if no file is set.
      *
-     * @return the accessions of the stable proteins as a set
+     * @param searchParameters the search parameters
+     * @param fastaParameters the FASTA parameters
+     * @param peptideVariantsPreferences the peptide variants parameters
+     * @param waitingHandler the waiting handler
+     * @return the accessions of the stable proteins as a collection
      *
      * @throws IOException exception thrown whenever an error occurred while
      * accessing the file.
      */
-    public HashSet<String> getStableProteins() throws IOException {
+    public Collection<String> getStableProteins(SearchParameters searchParameters, FastaParameters fastaParameters, PeptideVariantsParameters peptideVariantsPreferences, WaitingHandler waitingHandler) throws IOException {
         if (stableProteinsFastaFile != null) {
-            FastaIndex fastaIndex = SequenceFactory.getFastaIndex(stableProteinsFastaFile, false, null);
-            return new HashSet<String>(fastaIndex.getIndexes().keySet());
+            FMIndex fmIndex = new FMIndex(stableProteinsFastaFile, fastaParameters, waitingHandler, true, peptideVariantsPreferences, searchParameters);
+            return fmIndex.getAccessions();
         }
         return null;
     }
@@ -199,15 +207,19 @@ public class NormalizationSettings implements Serializable {
      * Returns the accessions of the contaminants as a set taken from the
      * contaminantsFastaFile. Null if no file is set.
      *
-     * @return the accessions of the contaminants as a set
+     * @param searchParameters the search parameters
+     * @param fastaParameters the FASTA parameters
+     * @param peptideVariantsPreferences the peptide variants parameters
+     * @param waitingHandler the waiting handler
+     * @return the accessions of the stable proteins as a collection
      *
      * @throws IOException exception thrown whenever an error occurred while
      * accessing the file.
      */
-    public HashSet<String> getContaminants() throws IOException {
+    public Collection<String> getContaminants(SearchParameters searchParameters, FastaParameters fastaParameters, PeptideVariantsParameters peptideVariantsPreferences, WaitingHandler waitingHandler) throws IOException {
         if (contaminantsFastaFile != null) {
-            FastaIndex fastaIndex = SequenceFactory.getFastaIndex(contaminantsFastaFile, false, null);
-            return new HashSet<String>(fastaIndex.getIndexes().keySet());
+            FMIndex fmIndex = new FMIndex(contaminantsFastaFile, fastaParameters, waitingHandler, true, peptideVariantsPreferences, searchParameters);
+            return fmIndex.getAccessions();
         }
         return null;
     }
