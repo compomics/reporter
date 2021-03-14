@@ -12,6 +12,17 @@ import com.compomics.util.io.export.ExportFeature;
 import com.compomics.util.io.export.ExportFormat;
 import com.compomics.util.io.export.ExportScheme;
 import com.compomics.util.io.export.ExportWriter;
+import com.compomics.util.io.export.features.peptideshaker.PsAnnotationFeature;
+import com.compomics.util.io.export.features.peptideshaker.PsFragmentFeature;
+import com.compomics.util.io.export.features.peptideshaker.PsInputFilterFeature;
+import com.compomics.util.io.export.features.peptideshaker.PsPeptideFeature;
+import com.compomics.util.io.export.features.peptideshaker.PsProjectFeature;
+import com.compomics.util.io.export.features.peptideshaker.PsProteinFeature;
+import com.compomics.util.io.export.features.peptideshaker.PsPsmFeature;
+import com.compomics.util.io.export.features.peptideshaker.PsPtmScoringFeature;
+import com.compomics.util.io.export.features.peptideshaker.PsSearchFeature;
+import com.compomics.util.io.export.features.peptideshaker.PsSpectrumCountingFeature;
+import com.compomics.util.io.export.features.peptideshaker.PsValidationFeature;
 import com.compomics.util.io.export.writers.ExcelWriter;
 import com.compomics.util.io.json.JsonMarshaller;
 import com.compomics.util.parameters.identification.IdentificationParameters;
@@ -19,14 +30,6 @@ import com.compomics.util.parameters.quantification.spectrum_counting.SpectrumCo
 import com.compomics.util.waiting.WaitingHandler;
 import eu.isas.peptideshaker.export.PSExportFactory;
 import eu.isas.peptideshaker.export.PsExportStyle;
-import eu.isas.peptideshaker.export.exportfeatures.PsAnnotationFeature;
-import eu.isas.peptideshaker.export.exportfeatures.PsFragmentFeature;
-import eu.isas.peptideshaker.export.exportfeatures.PsInputFilterFeature;
-import eu.isas.peptideshaker.export.exportfeatures.PsProjectFeature;
-import eu.isas.peptideshaker.export.exportfeatures.PsPtmScoringFeature;
-import eu.isas.peptideshaker.export.exportfeatures.PsSearchFeature;
-import eu.isas.peptideshaker.export.exportfeatures.PsSpectrumCountingFeature;
-import eu.isas.peptideshaker.export.exportfeatures.PsValidationFeature;
 import eu.isas.peptideshaker.export.sections.PsAnnotationSection;
 import eu.isas.peptideshaker.export.sections.PsInputFilterSection;
 import eu.isas.peptideshaker.export.sections.PsProjectSection;
@@ -37,9 +40,10 @@ import eu.isas.peptideshaker.export.sections.PsValidationSection;
 import eu.isas.peptideshaker.preferences.ProjectDetails;
 import eu.isas.peptideshaker.scoring.PSMaps;
 import eu.isas.reporter.calculation.QuantificationFeaturesGenerator;
-import eu.isas.reporter.export.report.export_features.ReporterPeptideFeature;
-import eu.isas.reporter.export.report.export_features.ReporterProteinFeatures;
-import eu.isas.reporter.export.report.export_features.ReporterPsmFeatures;
+import com.compomics.util.io.export.features.reporter.ReporterPeptideFeature;
+import com.compomics.util.io.export.features.reporter.ReporterProteinFeatures;
+import com.compomics.util.io.export.features.reporter.ReporterPsmFeatures;
+import eu.isas.peptideshaker.utils.ExportFactoryMarshaller;
 import eu.isas.reporter.export.report.sections.ReporterPeptideSection;
 import eu.isas.reporter.export.report.sections.ReporterProteinSection;
 import eu.isas.reporter.export.report.sections.ReporterPsmSection;
@@ -68,7 +72,7 @@ public class ReporterExportFactory implements ExportFactory {
     /**
      * User defined JSON file containing the user schemes.
      */
-    private static String JSON_FILE = System.getProperty("user.home") + "/.reporter/exportFactory.cus";
+    private static String JSON_FILE = System.getProperty("user.home") + "/.reporter/exportFactory.json";
     /**
      * The user export schemes.
      */
@@ -134,7 +138,7 @@ public class ReporterExportFactory implements ExportFactory {
             factoryFile.getParentFile().mkdir();
         }
 
-        JsonMarshaller jsonMarshaller = new JsonMarshaller();
+        JsonMarshaller jsonMarshaller = new ExportFactoryMarshaller();
         jsonMarshaller.saveObjectToJson(reporterExportFactory, factoryFile);
     }
 
@@ -151,7 +155,7 @@ public class ReporterExportFactory implements ExportFactory {
      */
     public static ReporterExportFactory loadFromFile(File file) throws IOException {
 
-        JsonMarshaller jsonMarshaller = new JsonMarshaller();
+        JsonMarshaller jsonMarshaller = new ExportFactoryMarshaller();
         ReporterExportFactory result = (ReporterExportFactory) jsonMarshaller.fromJson(ReporterExportFactory.class, file);
 
         return result;
@@ -758,11 +762,11 @@ public class ReporterExportFactory implements ExportFactory {
 
                 for (ExportFeature exportFeature : exportScheme.getExportFeatures(section)) {
 
-                    if (exportFeature instanceof eu.isas.peptideshaker.export.exportfeatures.PsProteinFeature) {
+                    if (exportFeature instanceof PsProteinFeature) {
                         protein = true;
-                    } else if (exportFeature instanceof eu.isas.peptideshaker.export.exportfeatures.PsPeptideFeature) {
+                    } else if (exportFeature instanceof PsPeptideFeature) {
                         peptide = true;
-                    } else if (exportFeature instanceof eu.isas.peptideshaker.export.exportfeatures.PsPsmFeature) {
+                    } else if (exportFeature instanceof PsPsmFeature) {
                         psm = true;
                     }
 
@@ -797,21 +801,21 @@ public class ReporterExportFactory implements ExportFactory {
             }
 
             // rename the PSM, Peptide and protein sections
-            String psSection = eu.isas.peptideshaker.export.exportfeatures.PsProteinFeature.type;
+            String psSection = PsProteinFeature.type;
 
             if (exportScheme.getSections().contains(psSection)) {
                 exportScheme.setExportFeatures(ReporterProteinFeatures.type, exportScheme.getExportFeatures(psSection));
                 exportScheme.removeSection(psSection);
             }
 
-            psSection = eu.isas.peptideshaker.export.exportfeatures.PsPeptideFeature.type;
+            psSection = PsPeptideFeature.type;
 
             if (exportScheme.getSections().contains(psSection)) {
                 exportScheme.setExportFeatures(ReporterPeptideFeature.type, exportScheme.getExportFeatures(psSection));
                 exportScheme.removeSection(psSection);
             }
 
-            psSection = eu.isas.peptideshaker.export.exportfeatures.PsPsmFeature.type;
+            psSection = PsPsmFeature.type;
 
             if (exportScheme.getSections().contains(psSection)) {
                 exportScheme.setExportFeatures(ReporterPsmFeatures.type, exportScheme.getExportFeatures(psSection));
