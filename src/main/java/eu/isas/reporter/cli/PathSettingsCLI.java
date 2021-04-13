@@ -69,10 +69,13 @@ public class PathSettingsCLI {
             waitingHandler = new WaitingHandlerCLIImpl();
         }
 
-        if (pathSettingsCLIInputBean.getLogFolder() != null) {
-            ReporterCLI.redirectErrorStream(pathSettingsCLIInputBean.getLogFolder());
-        } else {
-            ReporterCLI.redirectErrorStream(new File(getJarFilePath() + File.separator + "resources"));
+        // set the Reporter log file
+        if (pathSettingsCLIInputBean.useLogFile()) {
+            if (pathSettingsCLIInputBean.getLogFolder() != null) {
+                ReporterCLI.redirectErrorStream(pathSettingsCLIInputBean.getLogFolder());
+            } else {
+                ReporterCLI.redirectErrorStream(new File(getJarFilePath() + File.separator + "resources"));
+            }
         }
 
         if (pathSettingsCLIInputBean.hasInput()) {
