@@ -76,6 +76,8 @@ public class PathSettingsCLI {
             } else {
                 ReporterCLI.redirectErrorStream(new File(getJarFilePath() + File.separator + "resources"));
             }
+        } else {
+            System.setErr(new java.io.PrintStream(System.out));
         }
 
         if (pathSettingsCLIInputBean.hasInput()) {
