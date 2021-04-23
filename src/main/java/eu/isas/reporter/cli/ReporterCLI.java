@@ -821,7 +821,7 @@ public class ReporterCLI extends PsdbParent implements Callable {
             // check if there are updates to the paths
             String[] nonPathSettingArgsAsList = PathSettingsCLI.extractAndUpdatePathOptions(args);
 
-            // parse the rest of the cptions   
+            // parse the rest of the options   
             Options nonPathOptions = new Options();
             ReporterCLIParameters.createOptionsCLI(nonPathOptions);
             DefaultParser parser = new DefaultParser();
