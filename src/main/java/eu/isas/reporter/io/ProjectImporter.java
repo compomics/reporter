@@ -113,7 +113,7 @@ public class ProjectImporter {
     public void importPeptideShakerProject(PsdbParent psdbParent, ArrayList<File> mgfFiles, WaitingHandler waitingHandler) throws IOException, ClassNotFoundException, SQLException, InterruptedException, ArchiveException {
 
         File psdbFile = psdbParent.getPsdbFile();
-        if (IoUtil.getExtension(psdbFile).equalsIgnoreCase("zip")) {
+        if (IoUtil.getExtension(psdbFile).equalsIgnoreCase(".zip")) {
             psdbParent.loadPsdbFromZipFile(psdbFile, Reporter.getMatchesFolder(), waitingHandler);
         } else {
             psdbParent.loadPsdbFile(Reporter.getMatchesFolder(), waitingHandler, false);

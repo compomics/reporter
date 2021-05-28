@@ -267,7 +267,7 @@ public class Normalizer {
 
             int nThreads = processingParameters.getnThreads();
             ExecutorService pool = Executors.newFixedThreadPool(nThreads);
-            ArrayList<PeptideNormalizerRunnable> runnables = new ArrayList<PeptideNormalizerRunnable>(nThreads);
+            ArrayList<PeptideNormalizerRunnable> runnables = new ArrayList<>(nThreads);
 
             for (int i = 1; i <= nThreads && waitingHandler != null && !waitingHandler.isRunCanceled(); i++) {
                 PeptideNormalizerRunnable runnable = new PeptideNormalizerRunnable(
@@ -413,7 +413,7 @@ public class Normalizer {
 
             int nThreads = processingParameters.getnThreads();
             ExecutorService pool = Executors.newFixedThreadPool(nThreads);
-            ArrayList<ProteinNormalizerRunnable> runnables = new ArrayList<ProteinNormalizerRunnable>(nThreads);
+            ArrayList<ProteinNormalizerRunnable> runnables = new ArrayList<>(nThreads);
 
             for (int i = 1; i <= nThreads && waitingHandler != null && !waitingHandler.isRunCanceled(); i++) {
                 ProteinNormalizerRunnable runnable = new ProteinNormalizerRunnable(

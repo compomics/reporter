@@ -756,7 +756,7 @@ public class NewDialog extends javax.swing.JDialog {
             reporterGUI.getLastSelectedFolder().setLastSelectedFolder(selectedFile.getParent());
 
             if (selectedFile.getName().toLowerCase().endsWith(".zip")) {
-//                setVisible(false); // @TODO: support zip files
+//                setVisible(false); // @TODO: support zip files!!!
 //                reporterGUI.setVisible(true);
 //                reporterGUI.importPeptideShakerZipFile(selectedFile);
 //                dispose();
@@ -769,7 +769,7 @@ public class NewDialog extends javax.swing.JDialog {
             } else {
                 JOptionPane.showMessageDialog(
                         this,
-                        "Not a PeptideShaker file (.psdb).",
+                        "Not a PeptideShaker file.",
                         "Unsupported File.",
                         JOptionPane.WARNING_MESSAGE
                 );

@@ -184,7 +184,7 @@ public class NormalizationSettings implements Serializable {
 
     /**
      * Returns the accessions of the stable proteins as a set taken from the
-     * stableProteinsFastaFile.Null if no file is set.
+     * stableProteinsFastaFile. Null if no file is set.
      *
      * @param searchParameters the search parameters
      * @param fastaParameters the FASTA parameters

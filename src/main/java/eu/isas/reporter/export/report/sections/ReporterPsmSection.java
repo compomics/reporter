@@ -179,13 +179,14 @@ public class ReporterPsmSection {
         if (header) {
             writeHeader(reporterIonQuantification);
         }
-
+        
         int line = 1;
+        int totalSize = identification.getNumber(SpectrumMatch.class);
 
         if (waitingHandler != null) {
             waitingHandler.setWaitingText("Exporting. Please Wait...");
             waitingHandler.resetSecondaryProgressCounter();
-            waitingHandler.setMaxSecondaryProgressCounter(keys.length);
+            waitingHandler.setMaxSecondaryProgressCounter(totalSize);
         }
 
         PSParameter psParameter = new PSParameter();
