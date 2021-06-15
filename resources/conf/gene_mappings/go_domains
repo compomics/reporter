@@ -330,7 +330,6 @@ GO:0042254	biological_process
 GO:0004386	molecular_function
 GO:0043226	cellular_component
 GO:0044281	biological_process
-GO:0005623	cellular_component
 GO:0007009	biological_process
 GO:0008219	biological_process
 GO:0003723	molecular_function
@@ -371,7 +370,6 @@ GO:0005730	cellular_component
 GO:0005575	cellular_component
 GO:0000278	biological_process
 GO:0003674	molecular_function
-GO:0009536	cellular_component
 GO:0051301	biological_process
 GO:0003700	molecular_function
 GO:0016192	biological_process
@@ -432,7 +430,6 @@ GO:0007034	biological_process
 GO:0009058	biological_process
 GO:0005773	cellular_component
 GO:0005654	cellular_component
-GO:0009579	cellular_component
 GO:0005768	cellular_component
 GO:0051186	biological_process
 GO:0005929	cellular_component
