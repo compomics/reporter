@@ -5,7 +5,7 @@
     <groupId>eu.isas.reporter</groupId>
     <artifactId>Reporter</artifactId>
     <packaging>jar</packaging>
-    <version>0.8.12</version>
+    <version>0.9.0</version>
     <name>Reporter</name>
     <url>https://github.com/compomics/reporter</url>
     <description>Protein quantification based on reporter ions</description>
@@ -316,7 +316,7 @@
         <dependency>
             <groupId>com.compomics</groupId>
             <artifactId>utilities</artifactId>
-            <version>5.0.26</version>
+            <version>5.0.27</version>
             <exclusions>
                 <exclusion>
                     <artifactId>commons-math</artifactId>
@@ -376,7 +376,7 @@
         <dependency>
             <groupId>eu.isas.peptideshaker</groupId>
             <artifactId>PeptideShaker</artifactId>
-            <version>2.0.35</version>
+            <version>2.1.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>de.proteinms.omxparser</groupId>
@@ -429,7 +429,7 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.13.1</version>
+            <version>4.13.2</version>
             <scope>test</scope>
         </dependency>
 
@@ -440,16 +440,16 @@
         </dependency>
 
         <dependency>
-            <groupId>xpp3</groupId>
+            <groupId>org.ogce</groupId>
             <artifactId>xpp3</artifactId>
-            <version>1.1.3.4-RC3</version>
+            <version>1.1.6</version>
             <type>jar</type>
         </dependency>
 
         <dependency>
             <groupId>org.ujmp</groupId>
             <artifactId>ujmp-complete</artifactId>
-            <version>0.2.5</version>
+            <version>0.3.0</version>
         </dependency>
 
         <dependency>
@@ -476,7 +476,7 @@
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
-            <version>4.1.1</version>
+            <version>5.0.0</version>
         </dependency>
         
     </dependencies>
