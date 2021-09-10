@@ -494,7 +494,12 @@ public class Reporter {
         ReporterMethod reporterMethod = reporterIonQuantification.getReporterMethod();
 
         SpectrumMatch tempSpectrumMatch = identification.getSpectrumMatch(matchKey);
-        Spectrum spectrum = spectrumProvider.getSpectrum(tempSpectrumMatch.getSpectrumFile(), tempSpectrumMatch.getSpectrumTitle());
+
+        Spectrum spectrum = spectrumProvider.getSpectrum(
+                tempSpectrumMatch.getSpectrumFile(),
+                tempSpectrumMatch.getSpectrumTitle()
+        );
+
         SpectrumQuantificationDetails result = new SpectrumQuantificationDetails();
 
         // get reporter intensities
@@ -580,6 +585,7 @@ public class Reporter {
             if (bestMatch == null) {
 
                 bestIon = true;
+
             } else if (mostAccurate) {
 
                 double ionError = Math.abs(ionMatch.getAbsoluteError());
@@ -626,10 +632,12 @@ public class Reporter {
      * @return the path to the jar file
      */
     public static String getJarFilePath() {
+
         return CompomicsWrapper.getJarFilePath(
                 (new Reporter()).getClass().getResource("Reporter.class").getPath(),
                 "Reporter"
         );
+
     }
 
     /**
@@ -638,7 +646,9 @@ public class Reporter {
      * @return the file containing the database
      */
     public static File getMatchesFolder() {
+
         return new File(getJarFilePath(), MATCHES_FOLDER);
+
     }
 
     /**
@@ -648,10 +658,13 @@ public class Reporter {
      * while reading or writing the paths configuration file
      */
     public static void setPathConfiguration() throws IOException {
+
         File pathConfigurationFile = new File(getJarFilePath(), UtilitiesPathParameters.configurationFileName);
+
         if (pathConfigurationFile.exists()) {
-            ReporterPathPreferences.loadPathPreferencesFromFile(pathConfigurationFile);
+            ReporterPathPreferences.loadPathParametersFromFile(pathConfigurationFile);
         }
+
     }
 
     /**
@@ -660,14 +673,18 @@ public class Reporter {
      * @return the enzymes file
      */
     public static File getEnzymesFile() {
+
         String jarFilePath = getJarFilePath();
         File result = new File(jarFilePath, enzymeFile);
+
         if (!result.exists()) {
             System.out.println(result.getAbsolutePath() + " not found!");
             FileNotFoundException ex = new FileNotFoundException(result.getAbsolutePath() + " not found!");
             ex.printStackTrace();
         }
+
         return result;
+
     }
 
     /**
@@ -676,13 +693,17 @@ public class Reporter {
      * @return the default methods file
      */
     public static File getMethodsFile() {
+
         String jarFilePath = getJarFilePath();
         File result = new File(jarFilePath, methodsFile);
+
         if (!result.exists()) {
             System.out.println(result.getAbsolutePath() + " not found!");
             FileNotFoundException ex = new FileNotFoundException(result.getAbsolutePath() + " not found!");
             ex.printStackTrace();
         }
+
         return result;
+
     }
 }

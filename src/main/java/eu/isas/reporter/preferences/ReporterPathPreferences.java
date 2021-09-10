@@ -2,14 +2,12 @@ package eu.isas.reporter.preferences;
 
 import com.compomics.software.settings.PathKey;
 import com.compomics.software.settings.UtilitiesPathParameters;
+import com.compomics.util.io.flat.SimpleFileReader;
+import com.compomics.util.io.flat.SimpleFileWriter;
 import eu.isas.peptideshaker.preferences.PeptideShakerPathParameters;
 import eu.isas.reporter.export.report.ReporterExportFactory;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -57,7 +55,12 @@ public class ReporterPathPreferences {
          * should be included in a single directory
          * @param isDirectory boolean indicating whether a folder is expected
          */
-        private ReporterPathKey(String id, String description, String defaultSubDirectory, boolean isDirectory) {
+        private ReporterPathKey(
+                String id, 
+                String description, 
+                String defaultSubDirectory, 
+                boolean isDirectory
+        ) {
 
             this.id = id;
             this.description = description;
@@ -103,30 +106,28 @@ public class ReporterPathPreferences {
      *
      * @param inputFile the file to load the path preferences from
      *
-     * @throws FileNotFoundException thrown if the file cannot be found
+     * @throws FileNotFoundException thrown if an FileNotFoundException occurs
      * @throws IOException thrown if an IOException occurs
      */
-    public static void loadPathPreferencesFromFile(File inputFile) throws FileNotFoundException, IOException {
+    public static void loadPathParametersFromFile(
+            File inputFile
+    ) throws FileNotFoundException, IOException {
 
-        BufferedReader br = new BufferedReader(new FileReader(inputFile));
-
-        try {
+        try ( SimpleFileReader reader = SimpleFileReader.getFileReader(inputFile)) {
 
             String line;
 
-            while ((line = br.readLine()) != null) {
+            while ((line = reader.readLine()) != null) {
 
                 line = line.trim();
 
                 if (!line.equals("") && !line.startsWith("#")) {
-                    loadPathPreferenceFromLine(line);
+
+                    loadPathParametersFromLine(line);
+
                 }
             }
-
-        } finally {
-            br.close();
         }
-
     }
 
     /**
@@ -135,7 +136,9 @@ public class ReporterPathPreferences {
      * @param line the line where to read the path from
      * @throws FileNotFoundException thrown of the file cannot be found
      */
-    public static void loadPathPreferenceFromLine(String line) throws FileNotFoundException, IOException {
+    public static void loadPathParametersFromLine(
+            String line
+    ) throws FileNotFoundException, IOException {
 
         String id = UtilitiesPathParameters.getPathID(line);
 
@@ -238,47 +241,54 @@ public class ReporterPathPreferences {
      *
      * @param file the destination file
      *
-     * @throws IOException thrown if an IOException occurs
+     * @throws FileNotFoundException thrown if an FileNotFoundException occurs
      */
-    public static void writeConfigurationToFile(File file) throws IOException {
+    public static void writeConfigurationToFile(
+            File file
+    ) throws IOException {
 
-        BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+        try ( SimpleFileWriter writer = new SimpleFileWriter(file, false)) {
 
-        try {
-            writeConfigurationToFile(file, bw);
-        } finally {
-            bw.close();
+            writeConfigurationToFile(writer);
+
         }
     }
-
+    
     /**
-     * Writes the configurations file using the provided buffered writer.
+     * Writes the configuration file using the provided buffered writer.
      *
-     * @param file the configurations file
-     * @param bw the writer to use for writing
+     * @param writer the writer to use for writing.
      *
-     * @throws IOException thrown if an IOException occurs
+     * @throws FileNotFoundException thrown if an FileNotFoundException occurs
      */
-    public static void writeConfigurationToFile(File file, BufferedWriter bw) throws IOException {
+    public static void writeConfigurationToFile(
+            SimpleFileWriter writer
+    ) throws IOException {
 
         for (ReporterPathKey pathKey : ReporterPathKey.values()) {
-            writePathToFile(bw, pathKey);
+
+            writePathToFile(writer, pathKey);
+
         }
 
-        PeptideShakerPathParameters.writeConfigurationToFile(file);
+        PeptideShakerPathParameters.writeConfigurationToFile(writer);
+
     }
 
     /**
      * Writes the path of interest using the provided buffered writer.
      *
-     * @param bw the writer to use for writing
+     * @param writer the writer to use for writing
      * @param pathKey the key of the path of interest
      *
      * @throws IOException thrown if an IOException occurs
      */
-    public static void writePathToFile(BufferedWriter bw, ReporterPathKey pathKey) throws IOException {
+    public static void writePathToFile(
+            SimpleFileWriter writer, 
+            ReporterPathKey pathKey
+    ) throws IOException {
 
-        bw.write(pathKey.id + UtilitiesPathParameters.separator);
+        writer.write(pathKey.id + UtilitiesPathParameters.separator);
 
         switch (pathKey) {
 
@@ -290,7 +300,7 @@ public class ReporterPathPreferences {
                     toWrite = UtilitiesPathParameters.defaultPath;
                 }
 
-                bw.write(toWrite);
+                writer.write(toWrite);
 
                 break;
 
@@ -302,7 +312,7 @@ public class ReporterPathPreferences {
                 );
         }
 
-        bw.newLine();
+        writer.newLine();
     }
 
     /**

@@ -120,12 +120,16 @@ public class PathSettingsCLI {
                 System.out.println("An error occurred when saving the path preference to " + destinationFile.getAbsolutePath() + ".");
                 e.printStackTrace();
             }
+            
+            if (!waitingHandler.isRunCanceled()) {
+                System.out.println("Path configuration completed.");
+            }
 
         } else {
             try {
                 File pathConfigurationFile = new File(getJarFilePath(), UtilitiesPathParameters.configurationFileName);
                 if (pathConfigurationFile.exists()) {
-                    ReporterPathPreferences.loadPathPreferencesFromFile(pathConfigurationFile);
+                    ReporterPathPreferences.loadPathParametersFromFile(pathConfigurationFile);
                 }
             } catch (Exception e) {
                 System.out.println("An error occurred when setting path configuration. Default paths will be used.");
