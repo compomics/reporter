@@ -100,11 +100,11 @@ public class ReporterCLI extends PsdbParent implements Callable {
      */
     private ReporterCLI(String[] args) throws ParseException {
 
-        // Get command line parameters
+        // get command line parameters
         Options lOptions = new Options();
         ReporterCLIParameters.createOptionsCLI(lOptions);
 
-        // Parse the command line
+        // parse the command line
         DefaultParser parser = new DefaultParser();
         line = parser.parse(lOptions, args);
     }
@@ -259,6 +259,7 @@ public class ReporterCLI extends PsdbParent implements Callable {
         validationLevels.add("0");
         validationLevels.add("1");
         validationLevels.add("2");
+
         // PSM
         if (aLine.hasOption(ReporterCLIParameters.VALIDATION_PSM.id)) {
             String arg = aLine.getOptionValue(ReporterCLIParameters.VALIDATION_PSM.id);
@@ -266,6 +267,7 @@ public class ReporterCLI extends PsdbParent implements Callable {
                 return false;
             }
         }
+
         // Peptide
         if (aLine.hasOption(ReporterCLIParameters.VALIDATION_PEPTIDE.id)) {
             String arg = aLine.getOptionValue(ReporterCLIParameters.VALIDATION_PEPTIDE.id);
@@ -273,6 +275,7 @@ public class ReporterCLI extends PsdbParent implements Callable {
                 return false;
             }
         }
+
         // Protein
         if (aLine.hasOption(ReporterCLIParameters.VALIDATION_PROTEIN.id)) {
             String arg = aLine.getOptionValue(ReporterCLIParameters.VALIDATION_PROTEIN.id);
@@ -286,6 +289,7 @@ public class ReporterCLI extends PsdbParent implements Callable {
         for (NormalizationType normalizationType : NormalizationType.values()) {
             normalizationTypes.add(normalizationType.index + "");
         }
+
         // PSM
         if (aLine.hasOption(ReporterCLIParameters.NORMALIZATION_PSM.id)) {
             String arg = aLine.getOptionValue(ReporterCLIParameters.NORMALIZATION_PSM.id);
@@ -293,6 +297,7 @@ public class ReporterCLI extends PsdbParent implements Callable {
                 return false;
             }
         }
+
         // Peptide
         if (aLine.hasOption(ReporterCLIParameters.NORMALIZATION_PEPTIDE.id)) {
             String arg = aLine.getOptionValue(ReporterCLIParameters.NORMALIZATION_PEPTIDE.id);
@@ -300,6 +305,7 @@ public class ReporterCLI extends PsdbParent implements Callable {
                 return false;
             }
         }
+
         // Protein
         if (aLine.hasOption(ReporterCLIParameters.NORMALIZATION_PROTEIN.id)) {
             String arg = aLine.getOptionValue(ReporterCLIParameters.NORMALIZATION_PROTEIN.id);
@@ -307,6 +313,7 @@ public class ReporterCLI extends PsdbParent implements Callable {
                 return false;
             }
         }
+
         // Stable proteins
         if (aLine.hasOption(ReporterCLIParameters.STABLE_PROTEINS.id)) {
             String arg = aLine.getOptionValue(ReporterCLIParameters.STABLE_PROTEINS.id);
@@ -316,6 +323,7 @@ public class ReporterCLI extends PsdbParent implements Callable {
                 return false;
             }
         }
+
         // Contaminants
         if (aLine.hasOption(ReporterCLIParameters.CONTAMINANTS.id)) {
             String arg = aLine.getOptionValue(ReporterCLIParameters.CONTAMINANTS.id);
@@ -388,13 +396,16 @@ public class ReporterCLI extends PsdbParent implements Callable {
         // Update the identification parameters if changed and save the changes
         IdentificationParameters tempIdentificationParameters = reporterCLIInputBean.getIdentificationParameters();
         File parametersFile = reporterCLIInputBean.getIdentificationParametersFile();
+
         if (parametersFile == null) {
+
             String name = tempIdentificationParameters.getName();
             if (name == null) {
                 name = "SearchCLI.par";
             } else {
                 name += ".par";
             }
+
             parametersFile = new File(reporterCLIInputBean.getOutputFile(), name);
             IdentificationParameters.saveIdentificationParameters(tempIdentificationParameters, parametersFile);
         }
@@ -403,6 +414,7 @@ public class ReporterCLI extends PsdbParent implements Callable {
         ProjectImporter projectImporter = new ProjectImporter();
         psdbFile = reporterCLIInputBean.getPeptideShakerFile();
         setDbFolder(Reporter.getMatchesFolder());
+
         try {
             projectImporter.importPeptideShakerProject(this, spectrumFiles, waitingHandler);
             projectImporter.importReporterProject(this, waitingHandler);
@@ -429,6 +441,7 @@ public class ReporterCLI extends PsdbParent implements Callable {
             e.printStackTrace();
             return 1;
         }
+
         DisplayPreferences displayPreferences = projectImporter.getDisplayPreferences();
         SpectrumProvider spectrumProvider = projectImporter.getSpectrumProvider();
 
@@ -467,13 +480,16 @@ public class ReporterCLI extends PsdbParent implements Callable {
                 return 1;
             }
         }
+
         String specifiedMethodName = reporterCLIInputBean.getReporterMethod();
         if (specifiedMethodName != null) {
             selectedMethod = methodsFactory.getReporterMethod(specifiedMethodName);
         }
+
         if (selectedMethod == null && methodsFactory.getMethodsNames().size() == 1) {
             selectedMethod = methodsFactory.getReporterMethod(methodsFactory.getMethodsNames().get(0));
         }
+
         if (selectedMethod == null) {
             String errorText = "The reporter quantification methods to use could not be inferred, please specify a method from the isotopic correction file as command line parameter.\n\n";
             waitingHandler.appendReport(errorText, true, true);
@@ -510,40 +526,91 @@ public class ReporterCLI extends PsdbParent implements Callable {
         }
 
         // Create quantification features generator
-        QuantificationFeaturesGenerator quantificationFeaturesGenerator = new QuantificationFeaturesGenerator(new QuantificationFeaturesCache(),
-                getIdentification(), getIdentificationFeaturesGenerator(), reporterSettings, reporterIonQuantification,
-                identificationParameters.getSearchParameters(), identificationParameters.getSequenceMatchingParameters());
+        QuantificationFeaturesGenerator quantificationFeaturesGenerator = new QuantificationFeaturesGenerator(
+                new QuantificationFeaturesCache(),
+                getIdentification(),
+                getIdentificationFeaturesGenerator(),
+                reporterSettings,
+                reporterIonQuantification,
+                identificationParameters.getSearchParameters(),
+                identificationParameters.getSequenceMatchingParameters()
+        );
 
         // Set Normalization factors
         NormalizationFactors normalizationFactors = reporterIonQuantification.getNormalizationFactors();
+
         if (!normalizationFactors.hasNormalizationFactors()) {
+
             try {
                 Normalizer normalizer = new Normalizer();
+
                 if (!normalizationFactors.hasPsmNormalisationFactors()) {
-                    normalizer.setPsmNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(),
-                            reporterSettings.getNormalizationSettings(), getIdentificationParameters().getSequenceMatchingParameters(),
-                            getIdentification(), spectrumProvider, quantificationFeaturesGenerator, processingParameters,
-                            getIdentificationParameters().getSearchParameters(), getIdentificationParameters().getFastaParameters(),
-                            getIdentificationParameters().getPeptideVariantsParameters(), exceptionHandler, waitingHandler);
+                    normalizer.setPsmNormalizationFactors(
+                            reporterIonQuantification,
+                            reporterSettings.getRatioEstimationSettings(),
+                            reporterSettings.getNormalizationSettings(),
+                            getIdentificationParameters().getSequenceMatchingParameters(),
+                            getIdentification(),
+                            spectrumProvider,
+                            quantificationFeaturesGenerator,
+                            processingParameters,
+                            getIdentificationParameters().getSearchParameters(),
+                            getIdentificationParameters().getFastaParameters(),
+                            getIdentificationParameters().getPeptideVariantsParameters(),
+                            exceptionHandler,
+                            waitingHandler
+                    );
                 }
+
                 if (!normalizationFactors.hasPeptideNormalisationFactors()) {
-                    normalizer.setPeptideNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(),
-                            reporterSettings.getNormalizationSettings(), getIdentificationParameters().getSequenceMatchingParameters(),
-                            getIdentification(), spectrumProvider, quantificationFeaturesGenerator, processingParameters,
-                            getIdentificationParameters().getSearchParameters(), getIdentificationParameters().getFastaParameters(),
-                            getIdentificationParameters().getPeptideVariantsParameters(), exceptionHandler, waitingHandler);
+                    normalizer.setPeptideNormalizationFactors(
+                            reporterIonQuantification,
+                            reporterSettings.getRatioEstimationSettings(),
+                            reporterSettings.getNormalizationSettings(),
+                            getIdentificationParameters().getSequenceMatchingParameters(),
+                            getIdentification(),
+                            spectrumProvider,
+                            quantificationFeaturesGenerator,
+                            processingParameters,
+                            getIdentificationParameters().getSearchParameters(),
+                            getIdentificationParameters().getFastaParameters(),
+                            getIdentificationParameters().getPeptideVariantsParameters(),
+                            exceptionHandler,
+                            waitingHandler
+                    );
                 }
+
                 if (!normalizationFactors.hasProteinNormalisationFactors()) {
-                    normalizer.setProteinNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(),
-                            reporterSettings.getNormalizationSettings(), getIdentification(), spectrumProvider, getMetrics(), quantificationFeaturesGenerator,
-                            processingParameters, getIdentificationParameters().getSearchParameters(), getIdentificationParameters().getFastaParameters(),
-                            getIdentificationParameters().getPeptideVariantsParameters(), exceptionHandler, waitingHandler);
+                    normalizer.setProteinNormalizationFactors(
+                            reporterIonQuantification,
+                            reporterSettings.getRatioEstimationSettings(),
+                            reporterSettings.getNormalizationSettings(),
+                            getIdentification(),
+                            spectrumProvider,
+                            getMetrics(),
+                            quantificationFeaturesGenerator,
+                            processingParameters,
+                            getIdentificationParameters().getSearchParameters(),
+                            getIdentificationParameters().getFastaParameters(),
+                            getIdentificationParameters().getPeptideVariantsParameters(),
+                            exceptionHandler,
+                            waitingHandler
+                    );
                 }
+
             } catch (Exception e) {
-                System.out.println(System.getProperty("line.separator") + "An error occurred while estimating the ratios." + System.getProperty("line.separator"));
+
+                System.out.println(
+                        System.getProperty("line.separator")
+                        + "An error occurred while estimating the ratios."
+                        + System.getProperty("line.separator")
+                );
+
                 e.printStackTrace();
+
                 return 1;
             }
+
         }
 
         // Save the project in the psdb file
@@ -553,12 +620,22 @@ public class ReporterCLI extends PsdbParent implements Callable {
         } else {
             psdbFile = destinationFile;
         }
+
         try {
+
             ProjectSaver.saveProject(reporterSettings, reporterIonQuantification, displayPreferences, this, waitingHandler);
             waitingHandler.appendReport("Project saved as " + destinationFile.getAbsolutePath() + ".", true, true);
+
         } catch (Exception e) {
-            System.out.println(System.getProperty("line.separator") + "An error occurred while saving the project." + System.getProperty("line.separator"));
+
+            System.out.println(
+                    System.getProperty("line.separator")
+                    + "An error occurred while saving the project."
+                    + System.getProperty("line.separator")
+            );
+
             e.printStackTrace();
+
             return 1;
         }
 
@@ -571,20 +648,42 @@ public class ReporterCLI extends PsdbParent implements Callable {
         }
 
         if (reportCLIInputBean.exportNeeded()) {
+
             waitingHandler.appendReport("Starting report export.", true, true);
 
-            // Export report(s)
+            // export report(s)
             if (reportCLIInputBean.exportNeeded()) {
-                int nSurroundingAAs = 2; //@TODO: this shall not be hard coded //peptideShakerGUI.getDisplayPreferences().getnAASurroundingPeptides()
+
                 for (String reportType : reportCLIInputBean.getReportTypes()) {
+
                     try {
-                        CLIExportMethods.exportReport(reportCLIInputBean, reportType, projectParameters.getProjectUniqueName(), projectDetails, identification, geneMaps,
-                                identificationFeaturesGenerator, sequenceProvider, msFileHandler, proteinDetailsProvider, quantificationFeaturesGenerator,
-                                reporterIonQuantification, reporterSettings, identificationParameters, nSurroundingAAs, spectrumCountingParameters, waitingHandler);
+
+                        CLIExportMethods.exportReport(
+                                reportCLIInputBean,
+                                reportType,
+                                projectParameters.getProjectUniqueName(),
+                                projectDetails,
+                                identification,
+                                geneMaps,
+                                identificationFeaturesGenerator,
+                                sequenceProvider,
+                                msFileHandler,
+                                proteinDetailsProvider,
+                                quantificationFeaturesGenerator,
+                                reporterIonQuantification,
+                                reporterSettings,
+                                identificationParameters,
+                                displayParameters.getnAASurroundingPeptides(),
+                                spectrumCountingParameters,
+                                waitingHandler
+                        );
+
                     } catch (Exception e) {
+
                         waitingHandler.appendReport("An error occurred while exporting the " + reportType + ".", true, true);
                         e.printStackTrace();
                         waitingHandler.setRunCanceled();
+
                     }
                 }
             }

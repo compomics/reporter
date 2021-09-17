@@ -85,7 +85,7 @@ public class CLIExportMethods {
             reportName = reportCLIInputBean.getReportNamePrefix() + reportName;
         }
         
-        File reportFile = new File(reportCLIInputBean.getReportOutputFolder(), ReporterExportFactory.getDefaultReportName(experiment, reportName));
+        File reportFile = new File(reportCLIInputBean.getReportOutputFolder(), reportName);
 
         //@TODO: allow format selection
         ReporterExportFactory.writeExport(exportScheme, reportFile, ExportFormat.text, experiment, projectDetails, identification, 

@@ -53,7 +53,7 @@ public class ProjectSaver {
     ) throws IOException, SQLException, ClassNotFoundException, InterruptedException, ArchiveException {
 
         // @TODO: is an updated version of the below code still needed?
-//        ObjectsDB objectsDB = psdbParent.getIdentification().getIdentificationDB().getObjectsDB();
+//        ObjectsDB objectsDB = psdbParent.getIdentification().getObjectsDB();
 //        if (!objectsDB.hasTable(REPORTER_SETTINGS_TABLE_NAME)) {
 //            objectsDB.addTable(REPORTER_SETTINGS_TABLE_NAME);
 //        }
