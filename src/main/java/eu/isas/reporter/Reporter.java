@@ -134,15 +134,21 @@ public class Reporter {
                     }
 
                     if (QuantificationFilter.isRatioValid(ratioEstimationSettings, ratio)) {
+
                         channelRatios.add(ratio);
+
                         if (identificationFeaturesGenerator.getNValidatedProteinGroups(peptideMatch.getKey()) == 1) {
                             channelUniqueRatios.add(ratio);
                         } else {
                             channelSharedRatios.add(ratio);
                         }
+
                     }
+
                 }
+
             }
+
         }
 
         for (String index : indexes) {
@@ -159,6 +165,7 @@ public class Reporter {
                 ArrayList<Double> channelRatios = ratios.get(index);
                 result.setRawRatio(index, RatioEstimator.estimateRatios(ratioEstimationSettings, channelRatios));
             }
+
         }
 
         return result;
@@ -219,38 +226,55 @@ public class Reporter {
         while ((peptideMatch = peptideMatchesIterator.next()) != null) {
 
             Peptide peptide = peptideMatch.getPeptide();
+
             if (peptide.getNVariableModifications() > 0) {
+
                 boolean modified = false;
+
                 for (ModificationMatch modificationMatch : peptide.getVariableModifications()) {
+
                     if (modificationMatch.getModification().equals(ptmName) && modificationMatch.getConfident()) {
+
                         String leadingAccession = proteinMatch.getLeadingAccession();
                         int[] startIndexes = peptideMatch.getPeptide().getProteinMapping().get(leadingAccession);
+
                         for (int index : startIndexes) {
                             if (index + modificationMatch.getSite() == site) {
                                 modified = true;
                                 break;
                             }
                         }
+
                     }
+
                     if (modified) {
                         break;
                     }
+
                 }
+
             }
+
             if (QuantificationFilter.isPeptideValid(ratioEstimationSettings, identification, searchParameters, peptideMatch)) {
+
                 for (String index : indexes) {
+
                     PeptideQuantificationDetails peptideQuantification = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(spectrumProvider, peptideMatch, waitingHandler);
                     double ratio = peptideQuantification.getRatio(index, reporterIonQuantification.getNormalizationFactors());
                     ArrayList<Double> channelRatios = ratios.get(index);
+
                     if (channelRatios == null) {
                         channelRatios = new ArrayList<>(proteinMatch.getPeptideCount());
                         ratios.put(index, channelRatios);
                     }
+
                     if (QuantificationFilter.isRatioValid(ratioEstimationSettings, ratio)) {
                         channelRatios.add(ratio);
                     }
                 }
+
             }
+
         }
 
         for (String index : indexes) {
@@ -295,20 +319,27 @@ public class Reporter {
         SpectrumMatch spectrumMatch;
 
         while ((spectrumMatch = spectrumMatchesIterator.next()) != null) {
+
             if (QuantificationFilter.isPsmValid(ratioEstimationSettings, identification, spectrumMatch.getKey())) {
+
                 for (String index : indexes) {
+
                     PsmQuantificationDetails spectrumQuantification = quantificationFeaturesGenerator.getPSMQuantificationDetails(spectrumProvider, spectrumMatch.getKey());
                     double ratio = spectrumQuantification.getRatio(index, reporterIonQuantification.getNormalizationFactors());
                     ArrayList<Double> channelRatios = ratios.get(index);
+
                     if (channelRatios == null) {
                         channelRatios = new ArrayList<Double>(peptideMatch.getSpectrumCount());
                         ratios.put(index, channelRatios);
                     }
+
                     if (QuantificationFilter.isRatioValid(ratioEstimationSettings, ratio)) {
                         channelRatios.add(ratio);
                     }
                 }
+
             }
+
         }
 
         for (String index : indexes) {
@@ -317,6 +348,7 @@ public class Reporter {
         }
 
         return result;
+
     }
 
     /**
@@ -386,7 +418,9 @@ public class Reporter {
                         spectra.add(key);
                     }
                 }
+
             }
+
         }
 
         // compute spectrum level ratios
@@ -466,6 +500,7 @@ public class Reporter {
         }
 
         return result;
+
     }
 
     /**
@@ -492,7 +527,6 @@ public class Reporter {
     ) {
 
         ReporterMethod reporterMethod = reporterIonQuantification.getReporterMethod();
-
         SpectrumMatch tempSpectrumMatch = identification.getSpectrumMatch(matchKey);
 
         Spectrum spectrum = spectrumProvider.getSpectrum(

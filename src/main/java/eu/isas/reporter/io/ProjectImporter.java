@@ -110,12 +110,18 @@ public class ProjectImporter {
      * @throws org.apache.commons.compress.archivers.ArchiveException exception
      * thrown whenever an error occurs while untaring the file
      */
-    public void importPeptideShakerProject(PsdbParent psdbParent, ArrayList<File> mgfFiles, WaitingHandler waitingHandler) throws IOException, ClassNotFoundException, SQLException, InterruptedException, ArchiveException {
+    public void importPeptideShakerProject(
+            PsdbParent psdbParent,
+            ArrayList<File> mgfFiles,
+            WaitingHandler waitingHandler
+    ) throws IOException, ClassNotFoundException, SQLException, InterruptedException, ArchiveException {
 
         File psdbFile = psdbParent.getPsdbFile();
+
         if (IoUtil.getExtension(psdbFile).equalsIgnoreCase(".zip")) {
             psdbParent.loadPsdbFromZipFile(psdbFile, Reporter.getMatchesFolder(), waitingHandler);
         } else {
+            waitingHandler.setWaitingText("Opening PeptideShaker Project. Please Wait...");
             psdbParent.loadPsdbFile(Reporter.getMatchesFolder(), waitingHandler, false);
         }
 
@@ -148,6 +154,7 @@ public class ProjectImporter {
         Set<String> spectrumFiles = psdbParent.getProjectDetails().getSpectrumFileNames();
         waitingHandler.setWaitingText("Loading Spectrum Files. Please Wait...");
         waitingHandler.setPrimaryProgressCounterIndeterminate(true);
+
         int cpt = 0, total = spectrumFiles.size();
 
         for (String spectrumFileName : spectrumFiles) {
@@ -155,6 +162,7 @@ public class ProjectImporter {
             waitingHandler.setWaitingText("Loading Spectrum Files (" + ++cpt + " of " + total + "). Please Wait...");
 
             if (owner != null) { // GUI
+
                 try {
                     psdbParent.loadSpectrumFile(spectrumFileName, mgfFiles, waitingHandler);
                 } catch (Exception e) {
@@ -197,7 +205,10 @@ public class ProjectImporter {
      * @throws InterruptedException exception thrown if a threading error occurs
      * while interacting with the database
      */
-    public void importReporterProject(PsdbParent psdbParent, WaitingHandler waitingHandler) throws SQLException, IOException, ClassNotFoundException, InterruptedException {
+    public void importReporterProject(
+            PsdbParent psdbParent,
+            WaitingHandler waitingHandler
+    ) throws SQLException, IOException, ClassNotFoundException, InterruptedException {
 
         // load reporter settings
         Identification identification = psdbParent.getIdentification();
@@ -212,14 +223,17 @@ public class ProjectImporter {
 //            reporterIonQuantification = (ReporterIonQuantification) objectsDB.retrieveObject(ProjectSaver.REPORTER_SETTINGS_TABLE_NAME, ReporterIonQuantification.class.getName(), true, false);
 //            displayPreferences = (DisplayPreferences) objectsDB.retrieveObject(ProjectSaver.REPORTER_SETTINGS_TABLE_NAME, DisplayPreferences.class.getName(), true, false);
 //        } else {
-            waitingHandler.setWaitingText("Inferring Quantification Parameters. Please Wait...");
+        waitingHandler.setWaitingText("Inferring Quantification Parameters. Please Wait...");
 //        }
+
         if (reporterIonQuantification == null) {
             reporterIonQuantification = getDefaultReporterIonQuantification(identificationParameters);
         }
+
         if (reporterSettings == null) {
             reporterSettings = getDefaultReporterSettings(reporterIonQuantification.getReporterMethod(), identificationParameters);
         }
+
         if (displayPreferences == null) {
             displayPreferences = new DisplayPreferences();
             ClusteringSettings clusteringSettings = getDefaultClusterMetrics(identificationParameters, identification);
@@ -227,6 +241,7 @@ public class ProjectImporter {
             clusteringSettings.setKMeansClusteringSettings(kMeansClusteringSettings);
             displayPreferences.setClusteringSettings(clusteringSettings);
         }
+
     }
 
     /**
@@ -238,7 +253,10 @@ public class ProjectImporter {
      *
      * @return the default reporter settings
      */
-    public static ReporterSettings getDefaultReporterSettings(ReporterMethod reporterMethod, IdentificationParameters identificationParameters) {
+    public static ReporterSettings getDefaultReporterSettings(
+            ReporterMethod reporterMethod,
+            IdentificationParameters identificationParameters
+    ) {
 
         ReporterSettings reporterSettings = new ReporterSettings();
         return getDefaultReporterSettings(reporterMethod, identificationParameters, reporterSettings);
@@ -254,30 +272,43 @@ public class ProjectImporter {
      *
      * @return the default reporter settings
      */
-    public static ReporterSettings getDefaultReporterSettings(ReporterMethod reporterMethod, IdentificationParameters identificationParameters, ReporterSettings reporterSettings) {
+    public static ReporterSettings getDefaultReporterSettings(
+            ReporterMethod reporterMethod,
+            IdentificationParameters identificationParameters,
+            ReporterSettings reporterSettings
+    ) {
 
         ReporterIonSelectionSettings reporterIonSelectionSettings = reporterSettings.getReporterIonSelectionSettings();
         SearchParameters searchParameters = identificationParameters.getSearchParameters();
 
         // adapt the ion tolerance and selection settings
         if (reporterMethod.getName().contains("iTRAQ")) {
+
             if (reporterMethod.getName().contains("4")) {
+
                 double massTolerance = searchParameters.getFragmentIonAccuracyInDaltons(ReporterIon.iTRAQ4Plex_117.getTheoreticMz(1));
                 reporterIonSelectionSettings.setReporterIonsMzTolerance(massTolerance);
                 reporterIonSelectionSettings.setMostAccurate(massTolerance < DEFAULT_REPORTER_ION_TOLERANCE_ITRAQ);
+
             } else {
+
                 double massTolerance = searchParameters.getFragmentIonAccuracyInDaltons(ReporterIon.iTRAQ8Plex_121.getTheoreticMz(1));
                 reporterIonSelectionSettings.setReporterIonsMzTolerance(massTolerance);
                 reporterIonSelectionSettings.setMostAccurate(massTolerance < DEFAULT_REPORTER_ION_TOLERANCE_ITRAQ);
+
             }
+
         } else if (reporterMethod.getName().contains("TMT")) {
+
             if (reporterIonSelectionSettings.getReporterIonsMzTolerance() > DEFAULT_REPORTER_ION_TOLERANCE_TMT) {
                 reporterIonSelectionSettings.setReporterIonsMzTolerance(DEFAULT_REPORTER_ION_TOLERANCE_TMT);
                 reporterIonSelectionSettings.setMostAccurate(true);
             }
+
         }
 
         return reporterSettings;
+
     }
 
     /**
@@ -291,12 +322,12 @@ public class ProjectImporter {
     public static ReporterIonQuantification getDefaultReporterIonQuantification(IdentificationParameters identificationParameters) {
 
         ReporterMethod selectedMethod = null;
-
         SearchParameters searchParameters = identificationParameters.getSearchParameters();
         ReporterMethodFactory reporterMethodFactory = ReporterMethodFactory.getInstance();
 
         // try to detect the method used
         for (String ptmName : searchParameters.getModificationParameters().getAllModifications()) {
+
             if (ptmName.contains("iTRAQ 4-plex")) {
                 selectedMethod = reporterMethodFactory.getReporterMethod("iTRAQ 4-plex");
                 break;
@@ -327,6 +358,7 @@ public class ProjectImporter {
                 selectedMethod = reporterMethodFactory.getReporterMethod("TMTpro");
                 break;
             }
+
         }
 
         ReporterIonQuantification reporterIonQuantification = new ReporterIonQuantification(Quantification.QuantificationMethod.REPORTER_IONS);
@@ -339,6 +371,7 @@ public class ProjectImporter {
         reporterIonQuantification.setMethod(selectedMethod);
 
         return reporterIonQuantification;
+
     }
 
     /**
@@ -349,7 +382,10 @@ public class ProjectImporter {
      *
      * @return the cluster metrics for a given project
      */
-    public static ClusteringSettings getDefaultClusterMetrics(IdentificationParameters identificationParameters, Identification identification) {
+    public static ClusteringSettings getDefaultClusterMetrics(
+            IdentificationParameters identificationParameters,
+            Identification identification
+    ) {
 
         ClusteringSettings clusteringSettings = new ClusteringSettings();
 
@@ -390,20 +426,28 @@ public class ProjectImporter {
         ArrayList<Double> ptmMasses = new ArrayList<>();
         HashMap<Double, ArrayList<String>> modificationsMap = new HashMap<>();
         HashMap<Double, Color> ptmColorMap = new HashMap<>();
+
         for (String ptmName : modificationParameters.getAllNotFixedModifications()) {
+
             Modification modification = ptmFactory.getModification(ptmName);
             Double ptmMass = modification.getMass();
             ArrayList<String> modifications = modificationsMap.get(ptmMass);
+
             if (modifications == null) {
+
                 ptmMasses.add(ptmMass);
                 modifications = new ArrayList<String>(2);
                 modificationsMap.put(ptmMass, modifications);
                 Color ptmColor = new Color(modificationParameters.getColor(ptmName));
                 ptmColorMap.put(ptmMass, ptmColor);
+
             }
+
             modifications.add(ptmName);
         }
+
         for (Double ptmMass : ptmMasses) {
+
             ArrayList<String> ptms = modificationsMap.get(ptmMass);
             Collections.sort(ptms);
             peptidelusterClassKey = new PeptideClusterClassKey();
@@ -411,6 +455,7 @@ public class ProjectImporter {
             peptideClasses.add(peptidelusterClassKey);
             Color color = ptmColorMap.get(ptmMass);
             clusteringSettings.setColor(peptidelusterClassKey.toString(), color);
+
         }
 
         // psm colors
@@ -423,20 +468,27 @@ public class ProjectImporter {
         psmClasses.add(psmClusterClassKey);
         clusteringSettings.setColor(psmClusterClassKey.toString(), Color.yellow);
         TreeSet<String> spectrumFiles = new TreeSet<>(identification.getSpectrumIdentification().keySet());
+
         if (spectrumFiles.size() > 1) {
+
             for (String spectrumFile : spectrumFiles) {
+
                 psmClusterClassKey = new PsmClusterClassKey();
                 psmClusterClassKey.setFile(spectrumFile);
                 psmClasses.add(psmClusterClassKey);
                 clusteringSettings.setColor(psmClusterClassKey.toString(), Color.LIGHT_GRAY);
+
             }
+
         }
 
         clusteringSettings.setProteinClassKeys(proteinClasses);
         clusteringSettings.setPeptideClassKeys(peptideClasses);
         clusteringSettings.setPsmClassKeys(psmClasses);
         clusteringSettings.addProteinClass(defaultClusterClass.toString());
+
         return clusteringSettings;
+
     }
 
     /**
@@ -465,7 +517,7 @@ public class ProjectImporter {
     public DisplayPreferences getDisplayPreferences() {
         return displayPreferences;
     }
-    
+
     public SpectrumProvider getSpectrumProvider() {
         return spectrumProvider;
     }

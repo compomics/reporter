@@ -100,14 +100,31 @@ public class QuantificationFeaturesGenerator {
      * @return the quantification details of the match
      */
     public ProteinQuantificationDetails getProteinMatchQuantificationDetails(SpectrumProvider spectrumProvider, long matchKey, WaitingHandler waitingHandler) {
+        
         ProteinMatch proteinMatch = identification.getProteinMatch(matchKey);
         int nPeptides = proteinMatch.getPeptideCount();
         ProteinQuantificationDetails result = quantificationFeaturesCache.getProteinMatchQuantificationDetails(nPeptides, matchKey);
+        
         if (result == null) {
-            result = Reporter.estimateProteinMatchQuantificationDetails(identification, spectrumProvider, identificationFeaturesGenerator, this, reporterSettings.getRatioEstimationSettings(), reporterIonQuantification, searchParameters, proteinMatch, waitingHandler);
+            
+            result = Reporter.estimateProteinMatchQuantificationDetails(
+                    identification, 
+                    spectrumProvider, 
+                    identificationFeaturesGenerator, 
+                    this, 
+                    reporterSettings.getRatioEstimationSettings(), 
+                    reporterIonQuantification, 
+                    searchParameters, 
+                    proteinMatch, 
+                    waitingHandler
+            );
+            
             quantificationFeaturesCache.addProteinMatchQuantificationDetails(nPeptides, matchKey, result);
+        
         }
+        
         return result;
+        
     }
 
     /**
@@ -137,7 +154,21 @@ public class QuantificationFeaturesGenerator {
         ProteinPtmQuantificationDetails result = quantificationFeaturesCache.getPtmQuantificationDetails(ptmName, matchKey, site);
 
         if (result == null) {
-            result = Reporter.estimatePTMQuantificationDetails(identification, spectrumProvider, this, reporterSettings.getRatioEstimationSettings(), reporterIonQuantification, searchParameters, sequenceMatchingParameters, ptmName, matchKey, site, waitingHandler);
+            
+            result = Reporter.estimatePTMQuantificationDetails(
+                    identification, 
+                    spectrumProvider, 
+                    this, 
+                    reporterSettings.getRatioEstimationSettings(), 
+                    reporterIonQuantification, 
+                    searchParameters, 
+                    sequenceMatchingParameters, 
+                    ptmName, 
+                    matchKey, 
+                    site, 
+                    waitingHandler
+            );
+            
             quantificationFeaturesCache.addPtmQuantificationDetails(ptmName, matchKey, site, result);
         }
 
@@ -153,18 +184,33 @@ public class QuantificationFeaturesGenerator {
      *
      * @return the quantification details of the match
      */
-    public PeptideQuantificationDetails getPeptideMatchQuantificationDetails(SpectrumProvider spectrumProvider, PeptideMatch peptideMatch, WaitingHandler waitingHandler) {
+    public PeptideQuantificationDetails getPeptideMatchQuantificationDetails(
+            SpectrumProvider spectrumProvider,
+            PeptideMatch peptideMatch,
+            WaitingHandler waitingHandler
+    ) {
 
         int nPsms = peptideMatch.getSpectrumCount();
         long matchKey = peptideMatch.getKey();
         PeptideQuantificationDetails result = quantificationFeaturesCache.getPeptideMatchQuantificationDetails(nPsms, matchKey);
 
         if (result == null) {
-            result = Reporter.estimatePeptideMatchQuantificationDetails(identification, spectrumProvider, this, reporterSettings.getRatioEstimationSettings(), reporterIonQuantification, peptideMatch, waitingHandler);
+
+            result = Reporter.estimatePeptideMatchQuantificationDetails(
+                    identification,
+                    spectrumProvider,
+                    this,
+                    reporterSettings.getRatioEstimationSettings(),
+                    reporterIonQuantification,
+                    peptideMatch,
+                    waitingHandler
+            );
+
             quantificationFeaturesCache.addPeptideMatchQuantificationDetails(nPsms, matchKey, result);
         }
 
         return result;
+
     }
 
     /**

@@ -65,7 +65,6 @@ public class Normalizer {
      * @param searchParameters the search parameters
      * @param peptideVariantsPreferences the peptide variants parameters
      * @param fastaParameters the FASTA parameters
-
      * @param exceptionHandler handler in case exception occur
      * @param waitingHandler waiting handler displaying progress to the user
      *
@@ -79,23 +78,24 @@ public class Normalizer {
      * threading error occurred
      */
     public void setPsmNormalizationFactors(
-            ReporterIonQuantification reporterIonQuantification, 
+            ReporterIonQuantification reporterIonQuantification,
             RatioEstimationSettings ratioEstimationSettings,
-            NormalizationSettings normalizationSettings, 
-            SequenceMatchingParameters sequenceMatchingParameters, 
+            NormalizationSettings normalizationSettings,
+            SequenceMatchingParameters sequenceMatchingParameters,
             Identification identification,
             SpectrumProvider spectrumProvider,
-            QuantificationFeaturesGenerator quantificationFeaturesGenerator, 
+            QuantificationFeaturesGenerator quantificationFeaturesGenerator,
             ProcessingParameters processingParameters,
-            SearchParameters searchParameters, 
-            FastaParameters fastaParameters, 
-            PeptideVariantsParameters peptideVariantsPreferences, 
-            ExceptionHandler exceptionHandler, 
+            SearchParameters searchParameters,
+            FastaParameters fastaParameters,
+            PeptideVariantsParameters peptideVariantsPreferences,
+            ExceptionHandler exceptionHandler,
             WaitingHandler waitingHandler
     ) throws SQLException, IOException, ClassNotFoundException, InterruptedException {
 
         HashMap<String, ArrayList<Double>> allRawRatios = new HashMap<>();
         HashMap<String, ArrayList<Double>> seedRawRatios = new HashMap<>();
+
         for (String sampleIndex : reporterIonQuantification.getSampleIndexes()) {
             allRawRatios.put(sampleIndex, new ArrayList<>());
             seedRawRatios.put(sampleIndex, new ArrayList<>());
@@ -109,14 +109,25 @@ public class Normalizer {
 
             if (waitingHandler != null) {
                 waitingHandler.setWaitingText("PSM Ratio Normalization. Please Wait...");
-                waitingHandler.resetPrimaryProgressCounter();
-                waitingHandler.setPrimaryProgressCounterIndeterminate(false);
-                waitingHandler.setMaxPrimaryProgressCounter(identification.getSpectrumIdentificationSize() + 1);
-                waitingHandler.increasePrimaryProgressCounter();
+                waitingHandler.resetSecondaryProgressCounter();
+                waitingHandler.setSecondaryProgressCounterIndeterminate(false);
+                waitingHandler.setMaxSecondaryProgressCounter(identification.getSpectrumIdentificationSize() + 1);
+                waitingHandler.increaseSecondaryProgressCounter();
             }
 
-            Collection<String> seeds = normalizationSettings.getStableProteins(searchParameters, fastaParameters, peptideVariantsPreferences, waitingHandler);
-            Collection<String> exclusion = normalizationSettings.getContaminants(searchParameters, fastaParameters, peptideVariantsPreferences, waitingHandler);
+            Collection<String> seeds = normalizationSettings.getStableProteins(
+                    searchParameters,
+                    fastaParameters,
+                    peptideVariantsPreferences,
+                    waitingHandler
+            );
+
+            Collection<String> exclusion = normalizationSettings.getContaminants(
+                    searchParameters,
+                    fastaParameters,
+                    peptideVariantsPreferences,
+                    waitingHandler
+            );
 
             int nThreads = processingParameters.getnThreads();
 
@@ -125,73 +136,115 @@ public class Normalizer {
             ArrayList<PsmNormalizerRunnable> runnables = new ArrayList<>(nThreads);
 
             for (int i = 1; i <= nThreads && waitingHandler != null && !waitingHandler.isRunCanceled(); i++) {
+
                 PsmNormalizerRunnable runnable = new PsmNormalizerRunnable(
-                        reporterIonQuantification, quantificationFeaturesGenerator, identification, spectrumProvider, spectrumMatchesIterator, seeds,
-                        exclusion, ratioEstimationSettings, sequenceMatchingParameters, waitingHandler, exceptionHandler);
+                        reporterIonQuantification,
+                        quantificationFeaturesGenerator,
+                        identification,
+                        spectrumProvider,
+                        spectrumMatchesIterator,
+                        seeds,
+                        exclusion,
+                        ratioEstimationSettings,
+                        sequenceMatchingParameters,
+                        waitingHandler,
+                        exceptionHandler
+                );
+
                 pool.submit(runnable);
                 runnables.add(runnable);
             }
+
             if (waitingHandler != null && waitingHandler.isRunCanceled()) {
                 pool.shutdownNow();
                 return;
             }
+
             pool.shutdown();
+
             if (!pool.awaitTermination(7, TimeUnit.DAYS)) {
                 throw new InterruptedException("PSM validation timed out. Please contact the developers.");
             }
+
             for (PsmNormalizerRunnable runnable : runnables) {
+
                 for (String reagent : runnable.getAllRawRatios().keySet()) {
+
                     ArrayList<Double> ratios = allRawRatios.get(reagent);
+
                     if (ratios == null) {
                         ratios = new ArrayList<>();
                         allRawRatios.put(reagent, ratios);
                     }
+
                     ratios.addAll(runnable.getAllRawRatios().get(reagent));
                 }
+
                 for (String reagent : runnable.getSeedRawRatios().keySet()) {
+
                     ArrayList<Double> ratios = seedRawRatios.get(reagent);
+
                     if (ratios == null) {
                         ratios = new ArrayList<Double>();
                         seedRawRatios.put(reagent, ratios);
                     }
+
                     ratios.addAll(runnable.getSeedRawRatios().get(reagent));
                 }
+
             }
+
         }
 
         NormalizationFactors normalizationFactors = reporterIonQuantification.getNormalizationFactors();
+
         for (String sampleIndex : reporterIonQuantification.getSampleIndexes()) {
+
             double normalisationFactor;
             ArrayList<Double> rawRatios = allRawRatios.get(sampleIndex);
             ArrayList<Double> seedRatios = seedRawRatios.get(sampleIndex);
+
             if (allRawRatios.get(sampleIndex) != null && !rawRatios.isEmpty()) {
+
                 NormalizationType normalizationType = normalizationSettings.getPsmNormalization();
-                if (normalizationType == NormalizationType.none) {
-                    normalisationFactor = 1;
-                } else if (normalizationType == NormalizationType.mean) {
-                    if (seedRatios != null && !seedRatios.isEmpty()) {
-                        normalisationFactor = BasicMathFunctions.mean(seedRatios);
-                    } else {
-                        normalisationFactor = BasicMathFunctions.mean(rawRatios);
-                    }
-                } else if (normalizationType == NormalizationType.median) {
-                    if (seedRatios != null && !seedRatios.isEmpty()) {
-                        normalisationFactor = BasicMathFunctions.median(seedRatios);
-                    } else {
-                        normalisationFactor = BasicMathFunctions.median(rawRatios);
-                    }
-                } else if (normalizationType == NormalizationType.mode) {
-                    throw new UnsupportedOperationException("Normalization method not implemented.");
-                } else if (normalizationType == NormalizationType.sum) {
+
+                if (null == normalizationType) {
                     throw new UnsupportedOperationException("Normalization method not implemented.");
                 } else {
-                    throw new UnsupportedOperationException("Normalization method not implemented.");
+                    switch (normalizationType) {
+                        case none:
+                            normalisationFactor = 1;
+                            break;
+                        case mean:
+                            if (seedRatios != null && !seedRatios.isEmpty()) {
+                                normalisationFactor = BasicMathFunctions.mean(seedRatios);
+                            } else {
+                                normalisationFactor = BasicMathFunctions.mean(rawRatios);
+                            }
+                            break;
+                        case median:
+                            if (seedRatios != null && !seedRatios.isEmpty()) {
+                                normalisationFactor = BasicMathFunctions.median(seedRatios);
+                            } else {
+                                normalisationFactor = BasicMathFunctions.median(rawRatios);
+                            }
+                            break;
+                        case mode:
+                            throw new UnsupportedOperationException("Normalization method not implemented.");
+                        case sum:
+                            throw new UnsupportedOperationException("Normalization method not implemented.");
+                        default:
+                            throw new UnsupportedOperationException("Normalization method not implemented.");
+                    }
                 }
+
             } else {
                 normalisationFactor = 1;
             }
+
             normalizationFactors.addPsmNormalisationFactor(sampleIndex, normalisationFactor);
         }
+
     }
 
     /**
@@ -224,23 +277,24 @@ public class Normalizer {
      * threading error occurred
      */
     public void setPeptideNormalizationFactors(
-            ReporterIonQuantification reporterIonQuantification, 
-            RatioEstimationSettings ratioEstimationSettings, 
-            NormalizationSettings normalizationSettings, 
+            ReporterIonQuantification reporterIonQuantification,
+            RatioEstimationSettings ratioEstimationSettings,
+            NormalizationSettings normalizationSettings,
             SequenceMatchingParameters sequenceMatchingParameters,
-            Identification identification, 
+            Identification identification,
             SpectrumProvider spectrumProvider,
-            QuantificationFeaturesGenerator quantificationFeaturesGenerator, 
+            QuantificationFeaturesGenerator quantificationFeaturesGenerator,
             ProcessingParameters processingParameters,
-            SearchParameters searchParameters, 
-            FastaParameters fastaParameters, 
-            PeptideVariantsParameters peptideVariantsPreferences, 
-            ExceptionHandler exceptionHandler, 
+            SearchParameters searchParameters,
+            FastaParameters fastaParameters,
+            PeptideVariantsParameters peptideVariantsPreferences,
+            ExceptionHandler exceptionHandler,
             WaitingHandler waitingHandler
     ) throws SQLException, IOException, ClassNotFoundException, InterruptedException {
 
         HashMap<String, ArrayList<Double>> allRawRatios = new HashMap<>();
         HashMap<String, ArrayList<Double>> seedRawRatios = new HashMap<>();
+
         for (String sampleIndex : reporterIonQuantification.getSampleIndexes()) {
             allRawRatios.put(sampleIndex, new ArrayList<Double>());
             seedRawRatios.put(sampleIndex, new ArrayList<Double>());
@@ -253,89 +307,137 @@ public class Normalizer {
         if (normalizationSettings.getPeptideNormalization() != NormalizationType.none) {
 
             if (waitingHandler != null) {
-                waitingHandler.setWaitingText("Peptide Ratio Normalization. Please Wait...");
-                waitingHandler.resetPrimaryProgressCounter();
-                waitingHandler.setPrimaryProgressCounterIndeterminate(false);
-                waitingHandler.setMaxPrimaryProgressCounter(identification.getPeptideIdentification().size() + 1);
-                waitingHandler.increasePrimaryProgressCounter();
+                waitingHandler.setWaitingText("Getting Stable Proteins and Contaminats. Please Wait...");
+                waitingHandler.resetSecondaryProgressCounter();
+                waitingHandler.setSecondaryProgressCounterIndeterminate(true);
             }
-
-            PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(waitingHandler);
 
             Collection<String> seeds = normalizationSettings.getStableProteins(searchParameters, fastaParameters, peptideVariantsPreferences, waitingHandler);
             Collection<String> exclusion = normalizationSettings.getContaminants(searchParameters, fastaParameters, peptideVariantsPreferences, waitingHandler);
+
+            if (waitingHandler != null) {
+                waitingHandler.setWaitingText("Peptide Ratio Normalization. Please Wait...");
+                waitingHandler.resetSecondaryProgressCounter();
+                waitingHandler.setSecondaryProgressCounterIndeterminate(false);
+                waitingHandler.setMaxSecondaryProgressCounter(identification.getPeptideIdentification().size() + 1);
+                waitingHandler.increaseSecondaryProgressCounter();
+            }
+
+            PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(waitingHandler);
 
             int nThreads = processingParameters.getnThreads();
             ExecutorService pool = Executors.newFixedThreadPool(nThreads);
             ArrayList<PeptideNormalizerRunnable> runnables = new ArrayList<>(nThreads);
 
             for (int i = 1; i <= nThreads && waitingHandler != null && !waitingHandler.isRunCanceled(); i++) {
+
                 PeptideNormalizerRunnable runnable = new PeptideNormalizerRunnable(
-                        reporterIonQuantification, quantificationFeaturesGenerator, identification, spectrumProvider, peptideMatchesIterator,
-                        seeds, exclusion, ratioEstimationSettings, sequenceMatchingParameters, waitingHandler, exceptionHandler);
+                        reporterIonQuantification,
+                        quantificationFeaturesGenerator,
+                        identification,
+                        spectrumProvider,
+                        peptideMatchesIterator,
+                        seeds,
+                        exclusion,
+                        ratioEstimationSettings,
+                        sequenceMatchingParameters,
+                        waitingHandler,
+                        exceptionHandler
+                );
+
                 pool.submit(runnable);
                 runnables.add(runnable);
+
             }
+
             if (waitingHandler != null && waitingHandler.isRunCanceled()) {
                 pool.shutdownNow();
                 return;
             }
+
             pool.shutdown();
+
             if (!pool.awaitTermination(7, TimeUnit.DAYS)) {
                 throw new InterruptedException("Peptide validation timed out. Please contact the developers.");
             }
+
             for (PeptideNormalizerRunnable runnable : runnables) {
+
                 for (String reagent : runnable.getAllRawRatios().keySet()) {
+
                     ArrayList<Double> ratios = allRawRatios.get(reagent);
+
                     if (ratios == null) {
                         ratios = new ArrayList<Double>();
                         allRawRatios.put(reagent, ratios);
                     }
+
                     ratios.addAll(runnable.getAllRawRatios().get(reagent));
                 }
+
                 for (String reagent : runnable.getSeedRawRatios().keySet()) {
+
                     ArrayList<Double> ratios = seedRawRatios.get(reagent);
+
                     if (ratios == null) {
                         ratios = new ArrayList<Double>();
                         seedRawRatios.put(reagent, ratios);
                     }
+
                     ratios.addAll(runnable.getSeedRawRatios().get(reagent));
                 }
+
             }
+
         }
 
         NormalizationFactors normalizationFactors = reporterIonQuantification.getNormalizationFactors();
+
         for (String sampleIndex : reporterIonQuantification.getSampleIndexes()) {
+
             double normalisationFactor;
             ArrayList<Double> rawRatios = allRawRatios.get(sampleIndex);
             ArrayList<Double> seedRatios = seedRawRatios.get(sampleIndex);
+
             if (allRawRatios.get(sampleIndex) != null && !rawRatios.isEmpty()) {
+
                 NormalizationType normalizationType = normalizationSettings.getPeptideNormalization();
-                if (normalizationType == NormalizationType.none) {
-                    normalisationFactor = 1;
-                } else if (normalizationType == NormalizationType.mean) {
-                    if (seedRatios != null && !seedRatios.isEmpty()) {
-                        normalisationFactor = BasicMathFunctions.mean(seedRatios);
-                    } else {
-                        normalisationFactor = BasicMathFunctions.mean(rawRatios);
-                    }
-                } else if (normalizationType == NormalizationType.median) {
-                    if (seedRatios != null && !seedRatios.isEmpty()) {
-                        normalisationFactor = BasicMathFunctions.median(seedRatios);
-                    } else {
-                        normalisationFactor = BasicMathFunctions.median(rawRatios);
-                    }
-                } else if (normalizationType == NormalizationType.mode) {
-                    throw new UnsupportedOperationException("Normalization method not implemented.");
-                } else if (normalizationType == NormalizationType.sum) {
+
+                if (null == normalizationType) {
                     throw new UnsupportedOperationException("Normalization method not implemented.");
                 } else {
-                    throw new UnsupportedOperationException("Normalization method not implemented.");
+                    switch (normalizationType) {
+                        case none:
+                            normalisationFactor = 1;
+                            break;
+                        case mean:
+                            if (seedRatios != null && !seedRatios.isEmpty()) {
+                                normalisationFactor = BasicMathFunctions.mean(seedRatios);
+                            } else {
+                                normalisationFactor = BasicMathFunctions.mean(rawRatios);
+                            }
+                            break;
+                        case median:
+                            if (seedRatios != null && !seedRatios.isEmpty()) {
+                                normalisationFactor = BasicMathFunctions.median(seedRatios);
+                            } else {
+                                normalisationFactor = BasicMathFunctions.median(rawRatios);
+                            }
+                            break;
+                        case mode:
+                            throw new UnsupportedOperationException("Normalization method not implemented.");
+                        case sum:
+                            throw new UnsupportedOperationException("Normalization method not implemented.");
+                        default:
+                            throw new UnsupportedOperationException("Normalization method not implemented.");
+                    }
                 }
             } else {
                 normalisationFactor = 1;
             }
+
             normalizationFactors.addPeptideNormalisationFactor(sampleIndex, normalisationFactor);
+
         }
     }
 
@@ -355,7 +457,7 @@ public class Normalizer {
      * @param searchParameters the search parameters
      * @param fastaParameters the FASTA parameters
      * @param peptideVariantsPreferences the peptide variants parameters
-
+     *
      * @param exceptionHandler handler in case exception occur
      * @param waitingHandler waiting handler displaying progress to the user
      *
@@ -369,24 +471,25 @@ public class Normalizer {
      * threading error occurred
      */
     public void setProteinNormalizationFactors(
-            ReporterIonQuantification reporterIonQuantification, 
-            RatioEstimationSettings ratioEstimationSettings, 
+            ReporterIonQuantification reporterIonQuantification,
+            RatioEstimationSettings ratioEstimationSettings,
             NormalizationSettings normalizationSettings,
-            Identification identification, 
+            Identification identification,
             SpectrumProvider spectrumProvider,
-            Metrics metrics, 
-            QuantificationFeaturesGenerator quantificationFeaturesGenerator, 
-            ProcessingParameters processingParameters, 
-            SearchParameters searchParameters, 
-            FastaParameters fastaParameters, 
-            PeptideVariantsParameters peptideVariantsPreferences, 
-            ExceptionHandler exceptionHandler, 
+            Metrics metrics,
+            QuantificationFeaturesGenerator quantificationFeaturesGenerator,
+            ProcessingParameters processingParameters,
+            SearchParameters searchParameters,
+            FastaParameters fastaParameters,
+            PeptideVariantsParameters peptideVariantsPreferences,
+            ExceptionHandler exceptionHandler,
             WaitingHandler waitingHandler
     ) throws SQLException, IOException, ClassNotFoundException, InterruptedException {
 
         Set<String> sampleIndexes = reporterIonQuantification.getSampleIndexes();
         HashMap<String, ArrayList<Double>> allRawRatios = new HashMap<>(sampleIndexes.size());
         HashMap<String, ArrayList<Double>> seedRawRatios = new HashMap<>(sampleIndexes.size());
+
         for (String sampleIndex : sampleIndexes) {
             allRawRatios.put(sampleIndex, new ArrayList<Double>(metrics.getnValidatedProteins()));
             seedRawRatios.put(sampleIndex, new ArrayList<Double>(metrics.getnValidatedProteins()));
@@ -399,90 +502,148 @@ public class Normalizer {
         if (normalizationSettings.getProteinNormalization() != NormalizationType.none) {
 
             if (waitingHandler != null) {
+                waitingHandler.setWaitingText("Getting Stable Proteins and Contaminats. Please Wait...");
+                waitingHandler.resetSecondaryProgressCounter();
+                waitingHandler.setSecondaryProgressCounterIndeterminate(true);
+            }
+
+            Collection<String> seeds = normalizationSettings.getStableProteins(
+                    searchParameters,
+                    fastaParameters,
+                    peptideVariantsPreferences,
+                    waitingHandler
+            );
+
+            Collection<String> exclusion = normalizationSettings.getContaminants(
+                    searchParameters,
+                    fastaParameters,
+                    peptideVariantsPreferences,
+                    waitingHandler
+            );
+
+            if (waitingHandler != null) {
                 waitingHandler.setWaitingText("Protein Ratio Normalization. Please Wait...");
-                waitingHandler.resetPrimaryProgressCounter();
-                waitingHandler.setPrimaryProgressCounterIndeterminate(false);
-                waitingHandler.setMaxPrimaryProgressCounter(identification.getProteinIdentification().size() + 1);
-                waitingHandler.increasePrimaryProgressCounter();
+                waitingHandler.resetSecondaryProgressCounter();
+                waitingHandler.setSecondaryProgressCounterIndeterminate(false);
+                waitingHandler.setMaxSecondaryProgressCounter(identification.getProteinIdentification().size() + 1);
+                waitingHandler.increaseSecondaryProgressCounter();
             }
 
             ProteinMatchesIterator proteinMatchesIterator = identification.getProteinMatchesIterator(waitingHandler);
-
-            Collection<String> seeds = normalizationSettings.getStableProteins(searchParameters, fastaParameters, peptideVariantsPreferences, waitingHandler);
-            Collection<String> exclusion = normalizationSettings.getContaminants(searchParameters, fastaParameters, peptideVariantsPreferences, waitingHandler);
 
             int nThreads = processingParameters.getnThreads();
             ExecutorService pool = Executors.newFixedThreadPool(nThreads);
             ArrayList<ProteinNormalizerRunnable> runnables = new ArrayList<>(nThreads);
 
             for (int i = 1; i <= nThreads && waitingHandler != null && !waitingHandler.isRunCanceled(); i++) {
+
                 ProteinNormalizerRunnable runnable = new ProteinNormalizerRunnable(
-                        reporterIonQuantification, quantificationFeaturesGenerator, identification, spectrumProvider, 
-                        proteinMatchesIterator, seeds, exclusion, ratioEstimationSettings, waitingHandler, exceptionHandler);
+                        reporterIonQuantification,
+                        quantificationFeaturesGenerator,
+                        identification,
+                        spectrumProvider,
+                        proteinMatchesIterator,
+                        seeds,
+                        exclusion,
+                        ratioEstimationSettings,
+                        waitingHandler,
+                        exceptionHandler
+                );
+
                 pool.submit(runnable);
                 runnables.add(runnable);
             }
+
             if (waitingHandler != null && waitingHandler.isRunCanceled()) {
                 pool.shutdownNow();
                 return;
             }
+
             pool.shutdown();
+
             if (!pool.awaitTermination(7, TimeUnit.DAYS)) {
                 throw new InterruptedException("Protein validation timed out. Please contact the developers.");
             }
+
             for (ProteinNormalizerRunnable runnable : runnables) {
+
                 for (String reagent : runnable.getAllRawRatios().keySet()) {
+
                     ArrayList<Double> ratios = allRawRatios.get(reagent);
+
                     if (ratios == null) {
                         ratios = new ArrayList<Double>();
                         allRawRatios.put(reagent, ratios);
                     }
+
                     ratios.addAll(runnable.getAllRawRatios().get(reagent));
                 }
+
                 for (String reagent : runnable.getSeedRawRatios().keySet()) {
+
                     ArrayList<Double> ratios = seedRawRatios.get(reagent);
+
                     if (ratios == null) {
                         ratios = new ArrayList<Double>();
                         seedRawRatios.put(reagent, ratios);
                     }
+
                     ratios.addAll(runnable.getSeedRawRatios().get(reagent));
                 }
+
             }
+
         }
 
         NormalizationFactors normalizationFactors = reporterIonQuantification.getNormalizationFactors();
+
         for (String sampleIndex : reporterIonQuantification.getSampleIndexes()) {
+
             double normalisationFactor;
             ArrayList<Double> rawRatios = allRawRatios.get(sampleIndex);
             ArrayList<Double> seedRatios = seedRawRatios.get(sampleIndex);
+
             if (rawRatios != null && !rawRatios.isEmpty()) {
+
                 NormalizationType normalizationType = normalizationSettings.getProteinNormalization();
-                if (normalizationType == NormalizationType.none) {
-                    normalisationFactor = 1;
-                } else if (normalizationType == NormalizationType.mean) {
-                    if (seedRatios != null && !seedRatios.isEmpty()) {
-                        normalisationFactor = BasicMathFunctions.mean(seedRatios);
-                    } else {
-                        normalisationFactor = BasicMathFunctions.mean(rawRatios);
-                    }
-                } else if (normalizationType == NormalizationType.median) {
-                    if (seedRatios != null && !seedRatios.isEmpty()) {
-                        normalisationFactor = BasicMathFunctions.median(seedRatios);
-                    } else {
-                        normalisationFactor = BasicMathFunctions.median(rawRatios);
-                    }
-                } else if (normalizationType == NormalizationType.mode) {
-                    throw new UnsupportedOperationException("Normalization method not implemented.");
-                } else if (normalizationType == NormalizationType.sum) {
+
+                if (null == normalizationType) {
                     throw new UnsupportedOperationException("Normalization method not implemented.");
                 } else {
-                    throw new UnsupportedOperationException("Normalization method not implemented.");
+                    switch (normalizationType) {
+                        case none:
+                            normalisationFactor = 1;
+                            break;
+                        case mean:
+                            if (seedRatios != null && !seedRatios.isEmpty()) {
+                                normalisationFactor = BasicMathFunctions.mean(seedRatios);
+                            } else {
+                                normalisationFactor = BasicMathFunctions.mean(rawRatios);
+                            }
+                            break;
+                        case median:
+                            if (seedRatios != null && !seedRatios.isEmpty()) {
+                                normalisationFactor = BasicMathFunctions.median(seedRatios);
+                            } else {
+                                normalisationFactor = BasicMathFunctions.median(rawRatios);
+                            }
+                            break;
+                        case mode:
+                            throw new UnsupportedOperationException("Normalization method not implemented.");
+                        case sum:
+                            throw new UnsupportedOperationException("Normalization method not implemented.");
+                        default:
+                            throw new UnsupportedOperationException("Normalization method not implemented.");
+                    }
                 }
+
             } else {
                 normalisationFactor = 1;
             }
+
             normalizationFactors.addProteinNormalisationFactor(sampleIndex, normalisationFactor);
         }
+
     }
 
     /**
@@ -495,11 +656,15 @@ public class Normalizer {
      * proteins
      */
     private static boolean isSeed(Collection<String> seeds, String[] accessions) {
+
         for (String accession : accessions) {
+
             if (!seeds.contains(accession)) {
                 return false;
             }
+
         }
+
         return true;
     }
 
@@ -513,11 +678,15 @@ public class Normalizer {
      * proteins
      */
     private static boolean isContaminant(Collection<String> contaminants, String[] accessions) {
+
         for (String accession : accessions) {
+
             if (contaminants.contains(accession)) {
                 return true;
             }
+
         }
+
         return false;
     }
 
@@ -610,18 +779,18 @@ public class Normalizer {
          * @param exceptionHandler an exception handler
          */
         public ProteinNormalizerRunnable(
-                ReporterIonQuantification reporterIonQuantification, 
+                ReporterIonQuantification reporterIonQuantification,
                 QuantificationFeaturesGenerator quantificationFeaturesGenerator,
-                Identification identification, 
+                Identification identification,
                 SpectrumProvider spectrumProvider,
-                ProteinMatchesIterator proteinMatchesIterator, 
-                Collection<String> seeds, 
-                Collection<String> exclusion, 
-                RatioEstimationSettings ratioEstimationSettings, 
-                WaitingHandler waitingHandler, 
+                ProteinMatchesIterator proteinMatchesIterator,
+                Collection<String> seeds,
+                Collection<String> exclusion,
+                RatioEstimationSettings ratioEstimationSettings,
+                WaitingHandler waitingHandler,
                 ExceptionHandler exceptionHandler
         ) {
-            
+
             this.reporterIonQuantification = reporterIonQuantification;
             this.quantificationFeaturesGenerator = quantificationFeaturesGenerator;
             this.proteinMatchesIterator = proteinMatchesIterator;
@@ -638,6 +807,7 @@ public class Normalizer {
         public void run() {
 
             try {
+
                 PSParameter psParameter = new PSParameter();
                 ProteinMatch proteinMatch;
 
@@ -652,71 +822,113 @@ public class Normalizer {
 
                             if (psParameter.getMatchValidationLevel().getIndex() >= ratioEstimationSettings.getProteinValidationLevel().getIndex()) {
 
-                                ProteinQuantificationDetails matchQuantificationDetails = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(spectrumProvider, proteinMatchKey, waitingHandler);
+                                ProteinQuantificationDetails matchQuantificationDetails
+                                        = quantificationFeaturesGenerator.getProteinMatchQuantificationDetails(
+                                                spectrumProvider,
+                                                proteinMatchKey,
+                                                waitingHandler
+                                        );
 
                                 for (String sampleIndex : reporterIonQuantification.getSampleIndexes()) {
+
                                     Double ratio = matchQuantificationDetails.getRawRatio(sampleIndex);
+
                                     if (QuantificationFilter.isRatioValid(ratioEstimationSettings, ratio) && ratio > 0) {
+
                                         ArrayList<Double> ratios = allRawRatios.get(sampleIndex);
+
                                         if (ratios == null) {
                                             ratios = new ArrayList<Double>();
                                             allRawRatios.put(sampleIndex, ratios);
                                         }
+
                                         ratios.add(ratio);
+
                                         if (seeds != null && isSeed(seeds, proteinMatch.getAccessions())) {
+
                                             ratios = seedRawRatios.get(sampleIndex);
+
                                             if (ratios == null) {
                                                 ratios = new ArrayList<Double>();
                                                 seedRawRatios.put(sampleIndex, ratios);
                                             }
+
                                             ratios.add(ratio);
                                         }
+
                                     }
+
                                     ratio = matchQuantificationDetails.getUniqueRawRatio(sampleIndex);
+
                                     if (QuantificationFilter.isRatioValid(ratioEstimationSettings, ratio) && ratio > 0) {
+
                                         ArrayList<Double> ratios = allUniqueRawRatios.get(sampleIndex);
+
                                         if (ratios == null) {
                                             ratios = new ArrayList<Double>();
                                             allUniqueRawRatios.put(sampleIndex, ratios);
                                         }
+
                                         ratios.add(ratio);
+
                                         if (seeds != null && isSeed(seeds, proteinMatch.getAccessions())) {
+
                                             ratios = seedUniqueRawRatios.get(sampleIndex);
+
                                             if (ratios == null) {
                                                 ratios = new ArrayList<Double>();
                                                 seedUniqueRawRatios.put(sampleIndex, ratios);
                                             }
+
                                             ratios.add(ratio);
                                         }
+
                                     }
+
                                     ratio = matchQuantificationDetails.getSharedRawRatio(sampleIndex);
+
                                     if (QuantificationFilter.isRatioValid(ratioEstimationSettings, ratio) && ratio > 0) {
+
                                         ArrayList<Double> ratios = allSharedRawRatios.get(sampleIndex);
+
                                         if (ratios == null) {
                                             ratios = new ArrayList<Double>();
                                             allSharedRawRatios.put(sampleIndex, ratios);
                                         }
+
                                         ratios.add(ratio);
+
                                         if (seeds != null && isSeed(seeds, proteinMatch.getAccessions())) {
+
                                             ratios = seedSharedRawRatios.get(sampleIndex);
+
                                             if (ratios == null) {
                                                 ratios = new ArrayList<Double>();
                                                 seedSharedRawRatios.put(sampleIndex, ratios);
                                             }
+
                                             ratios.add(ratio);
                                         }
+
                                     }
+
                                 }
+
                             }
+
                         }
+
                     }
 
                     if (waitingHandler != null) {
+
                         if (waitingHandler.isRunCanceled()) {
                             return;
                         }
+
                         waitingHandler.increaseSecondaryProgressCounter();
                     }
+
                 }
 
             } catch (Exception e) {
@@ -858,19 +1070,19 @@ public class Normalizer {
          * @param exceptionHandler an exception handler
          */
         public PeptideNormalizerRunnable(
-                ReporterIonQuantification reporterIonQuantification, 
+                ReporterIonQuantification reporterIonQuantification,
                 QuantificationFeaturesGenerator quantificationFeaturesGenerator,
-                Identification identification, 
+                Identification identification,
                 SpectrumProvider spectrumProvider,
-                PeptideMatchesIterator peptideMatchesIterator, 
-                Collection<String> seeds, 
+                PeptideMatchesIterator peptideMatchesIterator,
+                Collection<String> seeds,
                 Collection<String> exclusion,
-                RatioEstimationSettings ratioEstimationSettings, 
-                SequenceMatchingParameters sequenceMatchingParameters, 
-                WaitingHandler waitingHandler, 
+                RatioEstimationSettings ratioEstimationSettings,
+                SequenceMatchingParameters sequenceMatchingParameters,
+                WaitingHandler waitingHandler,
                 ExceptionHandler exceptionHandler
         ) {
-            
+
             this.reporterIonQuantification = reporterIonQuantification;
             this.quantificationFeaturesGenerator = quantificationFeaturesGenerator;
             this.peptideMatchesIterator = peptideMatchesIterator;
@@ -894,10 +1106,10 @@ public class Normalizer {
                 while ((peptideMatch = peptideMatchesIterator.next()) != null) {
 
                     if (peptideMatch != null) {
-                        Peptide peptide = peptideMatch.getPeptide();
 
+                        Peptide peptide = peptideMatch.getPeptide();
                         String[] parentProteins = peptide.getProteinMapping().keySet().stream().toArray(String[]::new);
-                        
+
                         if (exclusion == null || !isContaminant(exclusion, parentProteins)) {
 
                             long peptideKey = peptideMatch.getKey();
@@ -905,37 +1117,59 @@ public class Normalizer {
 
                             if (psParameter.getMatchValidationLevel().getIndex() >= ratioEstimationSettings.getPeptideValidationLevel().getIndex()) {
 
-                                PeptideQuantificationDetails matchQuantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(spectrumProvider, peptideMatch, waitingHandler);
+                                PeptideQuantificationDetails matchQuantificationDetails
+                                        = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(
+                                                spectrumProvider,
+                                                peptideMatch,
+                                                waitingHandler
+                                        );
 
                                 for (String sampleIndex : reporterIonQuantification.getSampleIndexes()) {
+
                                     Double ratio = matchQuantificationDetails.getRawRatio(sampleIndex);
+
                                     if (QuantificationFilter.isRatioValid(ratioEstimationSettings, ratio) && ratio > 0) {
+
                                         ArrayList<Double> ratios = allRawRatios.get(sampleIndex);
+
                                         if (ratios == null) {
                                             ratios = new ArrayList<Double>();
                                             allRawRatios.put(sampleIndex, ratios);
                                         }
+
                                         ratios.add(ratio);
+
                                         if (seeds != null && isSeed(seeds, parentProteins)) {
+
                                             ratios = seedRawRatios.get(sampleIndex);
+
                                             if (ratios == null) {
                                                 ratios = new ArrayList<Double>();
                                                 seedRawRatios.put(sampleIndex, ratios);
                                             }
+
                                             ratios.add(ratio);
                                         }
+
                                     }
+
                                 }
+
                             }
+
                         }
+
                     }
 
                     if (waitingHandler != null) {
+
                         if (waitingHandler.isRunCanceled()) {
                             return;
                         }
+
                         waitingHandler.increaseSecondaryProgressCounter();
                     }
+
                 }
 
             } catch (Exception e) {
@@ -1041,19 +1275,19 @@ public class Normalizer {
          * @param exceptionHandler an exception handler
          */
         public PsmNormalizerRunnable(
-                ReporterIonQuantification reporterIonQuantification, 
+                ReporterIonQuantification reporterIonQuantification,
                 QuantificationFeaturesGenerator quantificationFeaturesGenerator,
                 Identification identification,
                 SpectrumProvider spectrumProvider,
-                SpectrumMatchesIterator spectrumMatchesIterator, 
-                Collection<String> seeds, 
-                Collection<String> exclusion, 
+                SpectrumMatchesIterator spectrumMatchesIterator,
+                Collection<String> seeds,
+                Collection<String> exclusion,
                 RatioEstimationSettings ratioEstimationSettings,
-                SequenceMatchingParameters sequenceMatchingParameters, 
-                WaitingHandler waitingHandler, 
+                SequenceMatchingParameters sequenceMatchingParameters,
+                WaitingHandler waitingHandler,
                 ExceptionHandler exceptionHandler
         ) {
-            
+
             this.reporterIonQuantification = reporterIonQuantification;
             this.quantificationFeaturesGenerator = quantificationFeaturesGenerator;
             this.spectrumMatchesIterator = spectrumMatchesIterator;
@@ -1071,6 +1305,7 @@ public class Normalizer {
         public void run() {
 
             try {
+
                 PSParameter psParameter = new PSParameter();
                 SpectrumMatch spectrumMatch;
 
@@ -1083,7 +1318,7 @@ public class Normalizer {
                         if (peptideAssumption != null) {
 
                             Peptide peptide = peptideAssumption.getPeptide();
-                            
+
                             String[] parentProteins = peptide.getProteinMapping().keySet().stream().toArray(String[]::new);
 
                             if (exclusion == null || !isContaminant(exclusion, parentProteins)) {
@@ -1095,35 +1330,53 @@ public class Normalizer {
                                     PsmQuantificationDetails matchQuantificationDetails = quantificationFeaturesGenerator.getPSMQuantificationDetails(spectrumProvider, spectrumMatch.getKey());
 
                                     for (String sampleIndex : reporterIonQuantification.getSampleIndexes()) {
+
                                         Double ratio = matchQuantificationDetails.getRawRatio(sampleIndex);
+
                                         if (QuantificationFilter.isRatioValid(ratioEstimationSettings, ratio) && ratio > 0) {
+
                                             ArrayList<Double> ratios = allRawRatios.get(sampleIndex);
+
                                             if (ratios == null) {
                                                 ratios = new ArrayList<Double>();
                                                 allRawRatios.put(sampleIndex, ratios);
                                             }
+
                                             ratios.add(ratio);
+
                                             if (seeds != null && isSeed(seeds, parentProteins)) {
+
                                                 ratios = seedRawRatios.get(sampleIndex);
+
                                                 if (ratios == null) {
                                                     ratios = new ArrayList<Double>();
                                                     seedRawRatios.put(sampleIndex, ratios);
                                                 }
+
                                                 ratios.add(ratio);
+
                                             }
                                         }
+
                                     }
+
                                 }
+
                             }
+
                         }
+
                     }
 
                     if (waitingHandler != null) {
+
                         if (waitingHandler.isRunCanceled()) {
                             return;
                         }
+
                         waitingHandler.increaseSecondaryProgressCounter();
                     }
+
                 }
 
             } catch (Exception e) {

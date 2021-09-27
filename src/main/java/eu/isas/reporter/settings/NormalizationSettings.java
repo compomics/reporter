@@ -50,6 +50,7 @@ public class NormalizationSettings implements Serializable {
 
     @Override
     public NormalizationSettings clone() throws CloneNotSupportedException {
+
         NormalizationSettings clone = new NormalizationSettings();
         clone.setPsmNormalization(psmNormalization);
         clone.setPeptideNormalization(peptideNormalization);
@@ -57,6 +58,7 @@ public class NormalizationSettings implements Serializable {
         clone.setStableProteinsFastaFile(stableProteinsFastaFile);
         clone.setContaminantsFastaFile(contaminantsFastaFile);
         return clone;
+
     }
 
     /**
@@ -68,20 +70,25 @@ public class NormalizationSettings implements Serializable {
      * one
      */
     public boolean isSameAs(NormalizationSettings anotherSetting) {
+
         if (stableProteinsFastaFile == null && anotherSetting.getStableProteinsFastaFile() != null
                 || stableProteinsFastaFile != null && anotherSetting.getStableProteinsFastaFile() == null) {
             return false;
         }
+
         if (contaminantsFastaFile == null && anotherSetting.getContaminantsFastaFile() != null
                 || contaminantsFastaFile != null && anotherSetting.getContaminantsFastaFile() == null) {
             return false;
         }
+
         if (stableProteinsFastaFile != null && anotherSetting.getStableProteinsFastaFile() != null && !stableProteinsFastaFile.getAbsolutePath().equals(anotherSetting.getStableProteinsFastaFile().getAbsolutePath())) {
             return false;
         }
+
         if (contaminantsFastaFile != null && anotherSetting.getContaminantsFastaFile() != null && !contaminantsFastaFile.getAbsolutePath().equals(anotherSetting.getContaminantsFastaFile().getAbsolutePath())) {
             return false;
         }
+
         return psmNormalization == anotherSetting.getPsmNormalization()
                 && peptideNormalization == anotherSetting.getPeptideNormalization()
                 && proteinNormalization == anotherSetting.getProteinNormalization();
@@ -195,12 +202,29 @@ public class NormalizationSettings implements Serializable {
      * @throws IOException exception thrown whenever an error occurred while
      * accessing the file.
      */
-    public Collection<String> getStableProteins(SearchParameters searchParameters, FastaParameters fastaParameters, PeptideVariantsParameters peptideVariantsPreferences, WaitingHandler waitingHandler) throws IOException {
+    public Collection<String> getStableProteins(
+            SearchParameters searchParameters,
+            FastaParameters fastaParameters,
+            PeptideVariantsParameters peptideVariantsPreferences,
+            WaitingHandler waitingHandler
+    ) throws IOException {
+
         if (stableProteinsFastaFile != null) {
-            FMIndex fmIndex = new FMIndex(stableProteinsFastaFile, fastaParameters, waitingHandler, true, peptideVariantsPreferences, searchParameters);
+
+            FMIndex fmIndex = new FMIndex(
+                    stableProteinsFastaFile,
+                    fastaParameters,
+                    waitingHandler,
+                    true,
+                    peptideVariantsPreferences,
+                    searchParameters
+            );
+
             return fmIndex.getAccessions();
         }
+
         return null;
+
     }
 
     /**
@@ -216,12 +240,29 @@ public class NormalizationSettings implements Serializable {
      * @throws IOException exception thrown whenever an error occurred while
      * accessing the file.
      */
-    public Collection<String> getContaminants(SearchParameters searchParameters, FastaParameters fastaParameters, PeptideVariantsParameters peptideVariantsPreferences, WaitingHandler waitingHandler) throws IOException {
+    public Collection<String> getContaminants(
+            SearchParameters searchParameters,
+            FastaParameters fastaParameters,
+            PeptideVariantsParameters peptideVariantsPreferences,
+            WaitingHandler waitingHandler
+    ) throws IOException {
+
         if (contaminantsFastaFile != null) {
-            FMIndex fmIndex = new FMIndex(contaminantsFastaFile, fastaParameters, waitingHandler, true, peptideVariantsPreferences, searchParameters);
+
+            FMIndex fmIndex = new FMIndex(
+                    contaminantsFastaFile,
+                    fastaParameters,
+                    waitingHandler,
+                    true,
+                    peptideVariantsPreferences,
+                    searchParameters
+            );
+
             return fmIndex.getAccessions();
         }
+
         return null;
+
     }
 
     /**
