@@ -129,7 +129,7 @@ public enum ReporterCLIParameters {
         output += "-" + String.format(formatter, IdentificationParametersCLIParams.IDENTIFICATION_PARAMETERS.id) + " " + IdentificationParametersCLIParams.IDENTIFICATION_PARAMETERS.description + "\n";
 
         output += "\n\n\nFor identification parameters options:\nReplace eu.isas.reporter.cmd.ReporterCLI with eu.isas.reportergui.cmd.IdentificationParametersCLI\n\n";
-        output += "\nFor report export options:\nReplace eu.isas.reporter.cli.ReporterCLI with eu.isas.reporter.cli.ReporterCLI\n";
+        output += "\nFor report export options:\nReplace eu.isas.reporter.cli.ReporterCLI with eu.isas.reporter.cli.ReportCLI\n";
 
         return output;
     }
