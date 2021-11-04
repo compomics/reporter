@@ -55,7 +55,7 @@ public class Reporter {
      * The location of the folder used for the database. //@TODO: make this
      * editable by the user
      */
-    private static String MATCHES_FOLDER = "resources/matches";
+    private static String MATCHES_FOLDER = "matches";
     /**
      * Enzymes file.
      */
@@ -64,6 +64,10 @@ public class Reporter {
      * Default methods file.
      */
     private static String methodsFile = "resources/conf/defaultMethods.xml";
+    /**
+     * A folder used to store temporary files.
+     */
+    private static String tempFolderPath = null;
 
     /**
      * Empty constructor for instantiation purposes.
@@ -675,13 +679,48 @@ public class Reporter {
     }
 
     /**
+     * Sets the folder to use for temporary files.
+     *
+     * @param tempFolderPath the folder to use for temporary files
+     */
+    public static void setTempFolderPath(
+            String tempFolderPath
+    ) {
+        Reporter.tempFolderPath = tempFolderPath;
+    }
+
+    /**
+     * Returns the folder to use for temporary files. By default the resources
+     * folder is used.
+     *
+     * @param jarFilePath the path to the jar file
+     * @return the folder to use for temporary files
+     */
+    public static String getTempFolderPath(
+            String jarFilePath
+    ) {
+        if (tempFolderPath == null) {
+            if (jarFilePath.equals(".")) {
+                tempFolderPath = "resources" + File.separator + "temp";
+            } else {
+                tempFolderPath = jarFilePath + File.separator + "resources" + File.separator + "temp";
+            }
+            File tempFolder = new File(tempFolderPath);
+            if (!tempFolder.exists()) {
+                tempFolder.mkdirs();
+            }
+        }
+        return tempFolderPath;
+    }
+
+    /**
      * Returns the file containing the database.
      *
      * @return the file containing the database
      */
     public static File getMatchesFolder() {
 
-        return new File(getJarFilePath(), MATCHES_FOLDER);
+        return new File(getTempFolderPath(getJarFilePath()), MATCHES_FOLDER);
 
     }
 

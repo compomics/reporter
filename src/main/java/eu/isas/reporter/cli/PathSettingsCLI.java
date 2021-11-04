@@ -85,6 +85,7 @@ public class PathSettingsCLI {
             String path = pathSettingsCLIInputBean.getTempFolder();
             if (!path.equals("")) {
                 try {
+                    Reporter.setTempFolderPath(path);
                     ReporterPathPreferences.setAllPathsIn(path);
                 } catch (Exception e) {
                     System.out.println("An error occurred when setting the temporary folder path.");
