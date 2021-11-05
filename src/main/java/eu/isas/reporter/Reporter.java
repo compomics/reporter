@@ -52,10 +52,9 @@ import java.util.Set;
 public class Reporter {
 
     /**
-     * The location of the folder used for the database. //@TODO: make this
-     * editable by the user
+     * The location of the folder used for the database.
      */
-    private static String MATCHES_FOLDER = "matches";
+    private static String matchesFolder = "matches";
     /**
      * Enzymes file.
      */
@@ -720,7 +719,7 @@ public class Reporter {
      */
     public static File getMatchesFolder() {
 
-        return new File(getTempFolderPath(getJarFilePath()), MATCHES_FOLDER);
+        return new File(getTempFolderPath(getJarFilePath()), matchesFolder);
 
     }
 
