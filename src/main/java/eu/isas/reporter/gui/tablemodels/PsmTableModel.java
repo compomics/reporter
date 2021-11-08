@@ -299,7 +299,7 @@ public class PsmTableModel extends SelfUpdatingTableModel {
                     if (spectrumMatch.getBestPeptideAssumption() != null) {
 
                         return Math.abs(
-                                spectrumMatch.getBestPeptideAssumption().getDeltaMass(
+                                spectrumMatch.getBestPeptideAssumption().getDeltaMz(
                                         precursor.mz,
                                         searchParameters.isPrecursorAccuracyTypePpm(),
                                         searchParameters.getMinIsotopicCorrection(),
@@ -310,7 +310,7 @@ public class PsmTableModel extends SelfUpdatingTableModel {
                     } else if (spectrumMatch.getBestTagAssumption() != null) {
 
                         return Math.abs(
-                                spectrumMatch.getBestTagAssumption().getDeltaMass(
+                                spectrumMatch.getBestTagAssumption().getDeltaMz(
                                         precursor.mz,
                                         searchParameters.isPrecursorAccuracyTypePpm(),
                                         searchParameters.getMinIsotopicCorrection(),
