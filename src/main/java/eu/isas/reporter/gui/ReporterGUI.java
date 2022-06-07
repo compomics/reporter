@@ -198,7 +198,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
             // ignore, i.e. simply show the warnings...
             //ex.printStackTrace();
         }
-        
+
         // set up the ErrorLog
         setUpLogFile();
 
@@ -290,10 +290,10 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * @param displayPreferences the display preferences
      */
     public void createNewProject(
-            PsdbParent psdbParent, 
-            ReporterSettings reporterSettings, 
-            ReporterIonQuantification reporterIonQuantification, 
-            ProcessingParameters processingParameters, 
+            PsdbParent psdbParent,
+            ReporterSettings reporterSettings,
+            ReporterIonQuantification reporterIonQuantification,
+            ProcessingParameters processingParameters,
             DisplayPreferences displayPreferences
     ) {
 
@@ -319,26 +319,26 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
                 psdbParent.getMetrics(),
                 psdbParent.getSpectrumCountingParameters()
         );
-        
+
         displayFeaturesGenerator = new DisplayFeaturesGenerator(
                 psdbParent.getIdentificationParameters(),
                 psdbParent.getDisplayParameters(),
                 psdbParent.getSequenceProvider(),
                 psdbParent.getProteinDetailsProvider()
         );
-        
+
         selectedProteins = new ArrayList<>();
         selectedPeptides = new ArrayList<>();
         selectedPsms = new ArrayList<>();
 
         projectSaved = false;
         quantificationFeaturesGenerator = new QuantificationFeaturesGenerator(
-                new QuantificationFeaturesCache(), 
-                getIdentification(), 
-                getIdentificationFeaturesGenerator(), 
-                reporterSettings, 
+                new QuantificationFeaturesCache(),
+                getIdentification(),
+                getIdentificationFeaturesGenerator(),
+                reporterSettings,
                 reporterIonQuantification,
-                psdbParent.getIdentificationParameters().getSearchParameters(), 
+                psdbParent.getIdentificationParameters().getSearchParameters(),
                 psdbParent.getIdentificationParameters().getSequenceMatchingParameters()
         );
 
@@ -645,7 +645,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
     public SequenceProvider getSequenceProvider() {
         return psdbParent.getSequenceProvider();
     }
-    
+
     /**
      * Returns the spectrum provider.
      *
@@ -1183,10 +1183,10 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
                     }
 
                 } catch (Exception e) {
-                    
+
                     e.printStackTrace();
                     catchException(e);
-                    
+
                 } finally {
 
                     progressDialog.setRunFinished();
@@ -1244,22 +1244,22 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         if (getIdentification() != null) {
 
             try {
-                
+
                 getIdentification().close(false);
                 psdbParent.setIdentification(null);
-                
+
             } catch (Exception e) {
-                
+
                 databaseClosed = false;
                 e.printStackTrace();
-                
+
                 JOptionPane.showMessageDialog(
-                        null, 
-                        "Failed to close the database.", 
-                        "Database Error", 
+                        null,
+                        "Failed to close the database.",
+                        "Database Error",
                         JOptionPane.WARNING_MESSAGE
                 );
-                
+
             }
         }
 
@@ -1280,9 +1280,9 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
 
                 if (matchFolder.listFiles() != null && matchFolder.listFiles().length > 0) {
                     JOptionPane.showMessageDialog(
-                            null, 
+                            null,
                             "Failed to empty the database folder:\n" + matchFolder.getPath() + ".",
-                            "Database Cleanup Failed", 
+                            "Database Cleanup Failed",
                             JOptionPane.WARNING_MESSAGE
                     );
                 }
@@ -1553,14 +1553,36 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      */
     public boolean checkForNewVersion() {
         try {
-            File jarFile = new File(ReporterGUI.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
+            File jarFile = new File(
+                    ReporterGUI.class
+                            .getProtectionDomain()
+                            .getCodeSource()
+                            .getLocation()
+                            .toURI()
+                            .getPath()
+            );
+
             MavenJarFile oldMavenJarFile = new MavenJarFile(jarFile.toURI());
-            URL jarRepository = new URL("http", "genesis.ugent.be", new StringBuilder().append("/maven2/").toString());
+
+            URL jarRepository = new URL(
+                    "https",
+                    "genesis.ugent.be",
+                    "/archiva/repository/maven2/"
+            );
 
             return CompomicsWrapper.checkForNewDeployedVersion(
-                    "Reporter", oldMavenJarFile, jarRepository, "reporter.ico",
-                    false, true, true, Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
-                    Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
+                    "Reporter",
+                    oldMavenJarFile,
+                    jarRepository,
+                    "reporter.ico",
+                    false,
+                    true,
+                    true,
+                    Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
+                    Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")),
+                    true
+            );
+
         } catch (UnknownHostException ex) {
             // no internet connection
             System.out.println("Checking for new version failed. No internet connection.");

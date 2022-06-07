@@ -47,7 +47,7 @@ public class WelcomeDialog extends javax.swing.JDialog {
      * The progress dialog.
      */
     private ProgressDialogX progressDialog;
- 
+
     /**
      * Create a new WelcomeDialog.
      *
@@ -480,7 +480,7 @@ public class WelcomeDialog extends javax.swing.JDialog {
         String psdbFileFilterDescription = "PeptideShaker (.psdb)";
         String zipFileFilterDescription = "Zipped PeptideShaker (.zip)";
         String lastSelectedFolderPath = reporterGUI.getLastSelectedFolder().getLastSelectedFolder();
-        FileAndFileFilter selectedFileAndFilter = FileChooserUtil.getUserSelectedFile(this, new String[]{".psdb", ".zip"}, 
+        FileAndFileFilter selectedFileAndFilter = FileChooserUtil.getUserSelectedFile(this, new String[]{".psdb", ".zip"},
                 new String[]{psdbFileFilterDescription, zipFileFilterDescription}, "Open PeptideShaker Project", lastSelectedFolderPath, null, true, false, false, 0);
 
         if (selectedFileAndFilter != null) {
@@ -697,8 +697,8 @@ public class WelcomeDialog extends javax.swing.JDialog {
 
     /**
      * Start SearchGUI.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void searchJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchJButtonActionPerformed
 
@@ -720,8 +720,8 @@ public class WelcomeDialog extends javax.swing.JDialog {
 
     /**
      * Start PeptideShaker.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void reshakeJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reshakeJButtonActionPerformed
 
@@ -880,18 +880,31 @@ public class WelcomeDialog extends javax.swing.JDialog {
      * @return true if a new version is available
      */
     public boolean checkForNewSearchGUIVersion(String searchGuiJarPath) {
+
         try {
+
             File jarFile = new File(searchGuiJarPath);
             MavenJarFile oldMavenJarFile = new MavenJarFile(jarFile.toURI());
-            URL jarRepository = new URL("http", "genesis.ugent.be", new StringBuilder().append("/maven2/").toString());
+
+            URL jarRepository = new URL(
+                    "https",
+                    "genesis.ugent.be",
+                    "/archiva/repository/maven2/"
+            );
+
             return WebDAO.newVersionReleased(oldMavenJarFile, jarRepository);
+
         } catch (UnknownHostException ex) {
+
             System.out.println("Checking for new version failed. No internet connection.");
             // no internet connection
             return false;
+
         } catch (Exception e) {
+
             e.printStackTrace();
             return false;
+
         }
     }
 
