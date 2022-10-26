@@ -17,7 +17,7 @@ public class PsmQuantificationDetails {
 
     /**
      * Returns the ratio of a given sample normalized if the given reporter ion
-     * quantification has normalization factors. null if not found.
+     * quantification has normalization factors. Null if not found.
      *
      * @param reporterIonName the index of sample of interest
      * @param normalizationFactors the normalization factors
