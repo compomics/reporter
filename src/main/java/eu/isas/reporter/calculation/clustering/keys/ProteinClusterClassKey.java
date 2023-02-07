@@ -42,22 +42,30 @@ public class ProteinClusterClassKey implements ClusterClassKey, Serializable {
 
     @Override
     public String getName() {
+
         if (starred) {
             return "Starred";
         }
+
         return "All";
+
     }
 
     @Override
     public String getDescription() {
+
         StringBuilder description = new StringBuilder();
+
         if (starred) {
             description.append("Starred ");
         } else {
             description.append("All ");
         }
+
         description.append("proteins");
+
         return description.toString();
+
     }
 
     @Override

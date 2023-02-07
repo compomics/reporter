@@ -76,7 +76,7 @@ public class NewDialog extends javax.swing.JDialog {
     /**
      * The spectrum files loaded.
      */
-    private ArrayList<File> spectrumFiles = new ArrayList<File>();
+    private ArrayList<File> spectrumFiles = new ArrayList<>();
     /**
      * The FASTA file.
      */
@@ -149,6 +149,7 @@ public class NewDialog extends javax.swing.JDialog {
      * @param modal if the dialog is modal or not
      */
     public NewDialog(ReporterGUI reporterGUI, boolean modal) {
+
         super(reporterGUI, modal);
 
         this.reporterGUI = reporterGUI;
@@ -164,7 +165,9 @@ public class NewDialog extends javax.swing.JDialog {
         // load the user preferences
         loadDefaultPreferences();
 
-        if (selectedMethod == null && methodsFactory.getMethodsNames() != null && methodsFactory.getMethodsNames().size() > 0) {
+        if (selectedMethod == null
+                && methodsFactory.getMethodsNames() != null
+                && !methodsFactory.getMethodsNames().isEmpty()) {
             reporterMethodComboBox.setSelectedItem(methodsFactory.getReporterMethod(methodsFactory.getMethodsNames().get(0)));
         }
 
@@ -192,7 +195,12 @@ public class NewDialog extends javax.swing.JDialog {
      * @param welcomeDialog the welcome dialog parent frame
      * @param modal if the dialog is modal or not
      */
-    public NewDialog(WelcomeDialog welcomeDialog, ReporterGUI reporterGui, boolean modal) {
+    public NewDialog(
+            WelcomeDialog welcomeDialog,
+            ReporterGUI reporterGui,
+            boolean modal
+    ) {
+
         super(welcomeDialog, modal);
 
         this.reporterGUI = reporterGui;
@@ -208,7 +216,9 @@ public class NewDialog extends javax.swing.JDialog {
         // load the user preferences
         loadDefaultPreferences();
 
-        if (selectedMethod == null && methodsFactory.getMethodsNames() != null && methodsFactory.getMethodsNames().size() > 0) {
+        if (selectedMethod == null
+                && methodsFactory.getMethodsNames() != null
+                && !methodsFactory.getMethodsNames().isEmpty()) {
             reporterMethodComboBox.setSelectedItem(methodsFactory.getMethodsNames().get(0));
         }
 
@@ -264,10 +274,16 @@ public class NewDialog extends javax.swing.JDialog {
         sampleAssignmentTable.getColumnModel().getColumn(3).setMinWidth(80);
         sampleAssignmentTable.getColumnModel().getColumn(3).setMaxWidth(80);
 
-        sampleAssignmentTable.getColumnModel().getColumn(3).setCellRenderer(new TrueFalseIconRenderer(
-                new ImageIcon(this.getClass().getResource("/icons/selected_green-new.png")),
-                null,
-                "Yes", "No"));
+        sampleAssignmentTable.getColumnModel().getColumn(3).setCellRenderer(
+                new TrueFalseIconRenderer(
+                        new ImageIcon(
+                                this.getClass().getResource("/icons/selected_green-new.png")
+                        ),
+                        null,
+                        "Yes",
+                        "No"
+                )
+        );
     }
 
     /**
@@ -747,8 +763,19 @@ public class NewDialog extends javax.swing.JDialog {
         String psdbFileFilterDescription = "PeptideShaker Database (.psdb)";
         String zipFileFilterDescription = "Zipped PeptideShaker (.zip)";
         String lastSelectedFolderPath = reporterGUI.getLastSelectedFolder().getLastSelectedFolder();
-        FileAndFileFilter selectedFileAndFilter = FileChooserUtil.getUserSelectedFile(this, new String[]{".psdb", ".zip"},
-                new String[]{psdbFileFilterDescription, zipFileFilterDescription}, "Open PeptideShaker Project", lastSelectedFolderPath, null, true, false, false, 0);
+
+        FileAndFileFilter selectedFileAndFilter = FileChooserUtil.getUserSelectedFile(
+                this,
+                new String[]{".psdb", ".zip"},
+                new String[]{psdbFileFilterDescription, zipFileFilterDescription},
+                "Open PeptideShaker Project",
+                lastSelectedFolderPath,
+                null,
+                true,
+                false,
+                false,
+                0
+        );
 
         if (selectedFileAndFilter != null) {
 
@@ -801,7 +828,7 @@ public class NewDialog extends javax.swing.JDialog {
 
             @Override
             public String getDescription() {
-                return "mgf or mzML (.mgf, .mg.gz, .mzml, .mzml.gz)";
+                return "mgf or mzML (.mgf, .mgf.gz, .mzml, .mzml.gz)";
             }
         };
 
@@ -845,6 +872,7 @@ public class NewDialog extends javax.swing.JDialog {
                     Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/peptide-shaker-orange.gif")),
                     true
             );
+
             progressDialog.setPrimaryProgressCounterIndeterminate(true);
             progressDialog.setTitle("Loading Files. Please Wait...");
 
@@ -912,6 +940,7 @@ public class NewDialog extends javax.swing.JDialog {
      * @param evt
      */
     private void reporterMethodComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reporterMethodComboBoxActionPerformed
+
         sampleNames = new HashMap<>();
         selectedMethod = methodsFactory.getReporterMethod((String) reporterMethodComboBox.getSelectedItem());
         reagents = selectedMethod.getReagentsSortedByMass();
@@ -923,6 +952,7 @@ public class NewDialog extends javax.swing.JDialog {
         }
 
         refresh();
+
     }//GEN-LAST:event_reporterMethodComboBoxActionPerformed
 
     /**
@@ -934,7 +964,9 @@ public class NewDialog extends javax.swing.JDialog {
 
         File startLocation = fastaFile;
 
-        if (startLocation == null && reporterGUI.getUtilitiesUserParameters().getDbFolder() != null && reporterGUI.getUtilitiesUserParameters().getDbFolder().exists()) {
+        if (startLocation == null
+                && reporterGUI.getUtilitiesUserParameters().getDbFolder() != null
+                && reporterGUI.getUtilitiesUserParameters().getDbFolder().exists()) {
             startLocation = reporterGUI.getUtilitiesUserParameters().getDbFolder();
         }
 
@@ -974,7 +1006,14 @@ public class NewDialog extends javax.swing.JDialog {
             psdbParent.getProjectDetails().setFastaFile(fastaFile);
 
             if (fastaFile.getName().contains(" ")) {
-                JOptionPane.showMessageDialog(this, "Your FASTA file name contains white space and ougth to be renamed.", "File Name Warning", JOptionPane.WARNING_MESSAGE);
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Your FASTA file name contains white space and ougth to be renamed.",
+                        "File Name Warning",
+                        JOptionPane.WARNING_MESSAGE
+                );
+
             }
 
         }
@@ -986,8 +1025,10 @@ public class NewDialog extends javax.swing.JDialog {
      * @param evt
      */
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+
         cancelled = true;
         this.dispose();
+
     }//GEN-LAST:event_formWindowClosing
 
     /**
@@ -1023,12 +1064,23 @@ public class NewDialog extends javax.swing.JDialog {
      * @param evt
      */
     private void editQuantPrefsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editQuantPrefsButtonActionPerformed
-        ReporterSettingsDialog reporterSettingsDialog = new ReporterSettingsDialog(this, reporterSettings, psdbParent.getIdentificationParameters().getSearchParameters().getModificationParameters(), getSelectedMethod(), true);
+
+        ReporterSettingsDialog reporterSettingsDialog
+                = new ReporterSettingsDialog(
+                        this,
+                        reporterSettings,
+                        psdbParent.getIdentificationParameters().getSearchParameters().getModificationParameters(),
+                        getSelectedMethod(),
+                        true
+                );
+
         ReporterSettings newSettings = reporterSettingsDialog.getReporterSettings();
+
         if (!reporterSettingsDialog.isCanceled()) {
             reporterSettings = newSettings;
             quantificationPreferencesTxt.setText("Custom Settings");
         }
+
     }//GEN-LAST:event_editQuantPrefsButtonActionPerformed
 
     /**
@@ -1095,11 +1147,15 @@ public class NewDialog extends javax.swing.JDialog {
      * @param evt
      */
     private void loadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadButtonActionPerformed
+
         if (validateInput()) {
+
             reporterIonQuantification = new ReporterIonQuantification(Quantification.QuantificationMethod.REPORTER_IONS);
+
             for (String key : sampleNames.keySet()) {
                 reporterIonQuantification.assignSample(key, sampleNames.get(key));
             }
+
             reporterIonQuantification.setMethod(selectedMethod);
             reporterIonQuantification.setControlSamples(controlSamples);
 
@@ -1110,9 +1166,17 @@ public class NewDialog extends javax.swing.JDialog {
             // set the user defined reagents order
             displayPreferences.setReagents(reagents);
 
-            reporterGUI.createNewProject(psdbParent, reporterSettings, reporterIonQuantification, processingParameters, displayPreferences);
+            reporterGUI.createNewProject(
+                    psdbParent,
+                    reporterSettings,
+                    reporterIonQuantification,
+                    processingParameters,
+                    displayPreferences
+            );
+
             dispose();
         }
+
     }//GEN-LAST:event_loadButtonActionPerformed
 
     /**
@@ -1121,11 +1185,20 @@ public class NewDialog extends javax.swing.JDialog {
      * @param evt
      */
     private void editProcessingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editProcessingButtonActionPerformed
-        ProcessingParametersDialog processingParametersDialog = new ProcessingParametersDialog(this, reporterGUI, processingParameters, true);
+
+        ProcessingParametersDialog processingParametersDialog
+                = new ProcessingParametersDialog(
+                        this,
+                        reporterGUI,
+                        processingParameters,
+                        true
+                );
+
         if (!processingParametersDialog.isCanceled()) {
             processingParameters = processingParametersDialog.getProcessingParameters();
             processingTxt.setText(processingParameters.getnThreads() + " cores");
         }
+
     }//GEN-LAST:event_editProcessingButtonActionPerformed
 
     /**
@@ -1134,9 +1207,11 @@ public class NewDialog extends javax.swing.JDialog {
      * @param evt
      */
     private void moveUpButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveUpButtonActionPerformed
+
         int[] selectedRows = sampleAssignmentTable.getSelectedRows();
 
         if (selectedRows.length > 0 && selectedRows[0] > 0) {
+
             String toMove = reagents.get(selectedRows[0]);
             String toReplace = reagents.get(selectedRows[0] - 1);
             reagents.set(selectedRows[0] - 1, toMove);
@@ -1144,7 +1219,9 @@ public class NewDialog extends javax.swing.JDialog {
             sampleAssignmentTable.setRowSelectionInterval(selectedRows[0] - 1, selectedRows[0] - 1 + selectedRows.length - 1);
             resetTableIndexes();
             sampleAssignmentTableMouseReleased(null);
+
         }
+
     }//GEN-LAST:event_moveUpButtonActionPerformed
 
     /**
@@ -1153,6 +1230,7 @@ public class NewDialog extends javax.swing.JDialog {
      * @param evt
      */
     private void moveTopButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveTopButtonActionPerformed
+
         int[] selectedRows = sampleAssignmentTable.getSelectedRows();
 
         if (selectedRows.length > 0 && selectedRows[0] > 0) {
@@ -1163,6 +1241,7 @@ public class NewDialog extends javax.swing.JDialog {
             resetTableIndexes();
             sampleAssignmentTableMouseReleased(null);
         }
+
     }//GEN-LAST:event_moveTopButtonActionPerformed
 
     /**
@@ -1171,6 +1250,7 @@ public class NewDialog extends javax.swing.JDialog {
      * @param evt
      */
     private void moveDownButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveDownButtonActionPerformed
+
         int[] selectedRows = sampleAssignmentTable.getSelectedRows();
 
         if (selectedRows.length > 0 && selectedRows[selectedRows.length - 1] < sampleAssignmentTable.getRowCount() - 1) {
@@ -1182,6 +1262,7 @@ public class NewDialog extends javax.swing.JDialog {
             resetTableIndexes();
             sampleAssignmentTableMouseReleased(null);
         }
+
     }//GEN-LAST:event_moveDownButtonActionPerformed
 
     /**
@@ -1190,6 +1271,7 @@ public class NewDialog extends javax.swing.JDialog {
      * @param evt
      */
     private void moveBottomButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveBottomButtonActionPerformed
+
         int[] selectedRows = sampleAssignmentTable.getSelectedRows();
 
         if (selectedRows.length > 0 && selectedRows[selectedRows.length - 1] < sampleAssignmentTable.getRowCount() - 1) {
@@ -1200,6 +1282,7 @@ public class NewDialog extends javax.swing.JDialog {
             resetTableIndexes();
             sampleAssignmentTableMouseReleased(null);
         }
+
     }//GEN-LAST:event_moveBottomButtonActionPerformed
 
     /**
@@ -1208,6 +1291,7 @@ public class NewDialog extends javax.swing.JDialog {
      * @param evt the mouse event
      */
     private void sampleAssignmentTableMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_sampleAssignmentTableMouseReleased
+
         int selectedRows[] = sampleAssignmentTable.getSelectedRows();
 
         if (selectedRows.length > 0) {
@@ -1221,6 +1305,7 @@ public class NewDialog extends javax.swing.JDialog {
             moveDownButton.setEnabled(false);
             moveBottomButton.setEnabled(false);
         }
+
     }//GEN-LAST:event_sampleAssignmentTableMouseReleased
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -1273,7 +1358,8 @@ public class NewDialog extends javax.swing.JDialog {
             return true;
         }
 
-        String errorText = "FASTA file not found or incorrectly loaded:\n" + psdbParent.getProjectDetails().getFastaFile()
+        String errorText = "FASTA file not found or incorrectly loaded:\n"
+                + psdbParent.getProjectDetails().getFastaFile()
                 + "\nPlease locate it manually.";
 
         JOptionPane.showMessageDialog(this,
@@ -1281,6 +1367,7 @@ public class NewDialog extends javax.swing.JDialog {
                 "FASTA File(s) Not Found", JOptionPane.WARNING_MESSAGE);
 
         return false;
+
     }
 
     /**
@@ -1315,18 +1402,23 @@ public class NewDialog extends javax.swing.JDialog {
         if (nMissing > 0) {
 
             if (nMissing < 11) {
+
                 JOptionPane.showMessageDialog(
                         this,
                         "Spectrum file(s) not found:\n" + missing + "\nPlease locate them manually.",
                         "Spectrum File Not Found",
-                        JOptionPane.WARNING_MESSAGE);
+                        JOptionPane.WARNING_MESSAGE
+                );
+
             } else {
+
                 JOptionPane.showMessageDialog(
                         this,
                         "Spectrum files not found.\n" + "Please locate them manually.",
                         "Spectrum File Not Found",
                         JOptionPane.WARNING_MESSAGE
                 );
+
             }
 
         }
@@ -1369,20 +1461,24 @@ public class NewDialog extends javax.swing.JDialog {
      * Imports the methods from the methods file.
      */
     private void importMethods() {
+
         try {
             methodsFactory.importMethods(methodsFile);
         } catch (Exception e) {
             e.printStackTrace();
             importMethodsError();
         }
+
     }
 
     /**
      * Loads the quantification preferences in the GUI.
      */
     private void loadDefaultPreferences() {
+
         ReporterPreferences reporterPreferences = ReporterPreferences.getUserPreferences();
         reporterSettings = reporterPreferences.getDefaultSettings();
+
     }
 
     /**
@@ -1423,28 +1519,44 @@ public class NewDialog extends javax.swing.JDialog {
                 psdbParent = new PsdbParent(Reporter.getMatchesFolder());
                 psdbParent.setPsdbFile(psFile);
                 ProjectImporter projectImporter = new ProjectImporter(NewDialog.this);
+
                 try {
+
                     projectImporter.importPeptideShakerProject(psdbParent, spectrumFiles, progressDialog);
                     projectImporter.importReporterProject(psdbParent, progressDialog);
+
                 } catch (OutOfMemoryError error) {
+
                     System.out.println("Ran out of memory! (runtime.maxMemory(): " + Runtime.getRuntime().maxMemory() + ")");
                     error.printStackTrace();
+
                     String errorText = "PeptideShaker used up all the available memory and had to be stopped.<br>"
                             + "Memory boundaries are changed in the the Welcome Dialog (Settings<br>"
                             + "& Help > Settings > Java Memory Settings) or in the Edit menu (Edit<br>"
                             + "Java Options). See also <a href=\"https://compomics.github.io/projects/compomics-utilities/wiki/JavaTroubleShooting.html\">JavaTroubleShooting</a>.";
-                    JOptionPane.showMessageDialog(NewDialog.this,
+
+                    JOptionPane.showMessageDialog(
+                            NewDialog.this,
                             errorText,
-                            "Out of Memory", JOptionPane.ERROR_MESSAGE);
+                            "Out of Memory", JOptionPane.ERROR_MESSAGE
+                    );
+
                     return;
+
                 } catch (Exception e) {
+
                     e.printStackTrace();
+
                     String errorText = "An error occurred while reading:\n" + psFile + ".\n\n"
                             + "Please verify that the PeptideShaker version used to create\n"
                             + "the file is compatible with your version of Reporter.";
-                    JOptionPane.showMessageDialog(NewDialog.this,
+
+                    JOptionPane.showMessageDialog(
+                            NewDialog.this,
                             errorText,
-                            "Error", JOptionPane.ERROR_MESSAGE);
+                            "Error", JOptionPane.ERROR_MESSAGE
+                    );
+
                     return;
                 }
 
@@ -1461,20 +1573,27 @@ public class NewDialog extends javax.swing.JDialog {
 
                 // load project specific ptms
                 String error = PeptideShaker.loadModifications(getSearchParameters());
+
                 if (error != null) {
-                    JOptionPane.showMessageDialog(NewDialog.this,
+
+                    JOptionPane.showMessageDialog(
+                            NewDialog.this,
                             error,
-                            "PTM Definition Changed", JOptionPane.WARNING_MESSAGE);
+                            "PTM Definition Changed", JOptionPane.WARNING_MESSAGE
+                    );
+
                 }
 
                 // set up quantification settings
                 reporterSettings = projectImporter.getReporterSettings();
                 reporterIonQuantification = projectImporter.getReporterIonQuantification();
                 selectedMethod = reporterIonQuantification.getReporterMethod();
+
                 if (selectedMethod == null) {
                     // Default to the first one if not found
                     selectedMethod = methodsFactory.getReporterMethod(methodsFactory.getMethodsNames().get(0));
                 }
+
                 reagents = selectedMethod.getReagentsSortedByMass();
 
                 // get the display preferences
@@ -1521,29 +1640,48 @@ public class NewDialog extends javax.swing.JDialog {
      */
     private void importMethodsError() {
 
-        JOptionPane.showMessageDialog(this, "Default reporter methods file could not be parsed, please select a method file.", "No Spectrum File Selected", JOptionPane.WARNING_MESSAGE);
+        JOptionPane.showMessageDialog(
+                this,
+                "Default reporter methods file could not be parsed, please select a method file.",
+                "No Spectrum File Selected",
+                JOptionPane.WARNING_MESSAGE
+        );
+
         JFileChooser fileChooser = new JFileChooser(reporterGUI.getLastSelectedFolder().getLastSelectedFolder());
         fileChooser.setDialogTitle("Select Methods file");
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fileChooser.setMultiSelectionEnabled(false);
 
         int returnVal = fileChooser.showDialog(this.getParent(), "Add");
+
         if (returnVal == JFileChooser.APPROVE_OPTION) {
+
             File newFile = fileChooser.getSelectedFile();
+
             try {
                 methodsFactory.importMethods(newFile);
                 reporterGUI.getLastSelectedFolder().setLastSelectedFolder(newFile.getPath());
             } catch (IOException e) {
-                JOptionPane.showMessageDialog(null,
+
+                JOptionPane.showMessageDialog(
+                        null,
                         "File " + newFile + " could not be parsed.",
-                        "Methods file error", JOptionPane.WARNING_MESSAGE);
+                        "Methods file error", JOptionPane.WARNING_MESSAGE
+                );
+
                 importMethodsError();
+
             } catch (XmlPullParserException e) {
-                JOptionPane.showMessageDialog(this,
+
+                JOptionPane.showMessageDialog(
+                        this,
                         "An error occurred while parsing " + newFile + " at line " + e.getLineNumber() + ".",
-                        "Parsing error", JOptionPane.WARNING_MESSAGE);
+                        "Parsing error", JOptionPane.WARNING_MESSAGE
+                );
+
                 importMethodsError();
             }
+
         }
     }
 
@@ -1557,21 +1695,32 @@ public class NewDialog extends javax.swing.JDialog {
         // @TODO: validate that the project has been loaded
 
         if (fastaTxt.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(this,
+
+            JOptionPane.showMessageDialog(
+                    this,
                     "FASTA file not selected.",
-                    "FASTA File Missing", JOptionPane.WARNING_MESSAGE);
+                    "FASTA File Missing", JOptionPane.WARNING_MESSAGE
+            );
+
             return false;
         }
 
         // warning for tmt data with low mass accuracy
         if (selectedMethod.getName().contains("TMT")) {
+
             if (reporterSettings.getReporterIonSelectionSettings().getReporterIonsMzTolerance() > ProjectImporter.DEFAULT_REPORTER_ION_TOLERANCE_TMT) {
-                JOptionPane.showMessageDialog(this,
+
+                JOptionPane.showMessageDialog(
+                        this,
                         "TMT quantification requires high resolution spectra. Please check\n"
                         + "the Reporter Ions Tolerance in the Quantification Settings.",
-                        "TMT Resolution Warning", JOptionPane.WARNING_MESSAGE);
+                        "TMT Resolution Warning",
+                        JOptionPane.WARNING_MESSAGE
+                );
+
                 return false;
             }
+
         }
 
         return true;
@@ -1645,10 +1794,13 @@ public class NewDialog extends javax.swing.JDialog {
 
         @Override
         public int getRowCount() {
+
             if (selectedMethod == null || psdbParent == null) {
                 return 0;
             }
+
             return reagents.size();
+
         }
 
         @Override
@@ -1658,6 +1810,7 @@ public class NewDialog extends javax.swing.JDialog {
 
         @Override
         public String getColumnName(int column) {
+
             switch (column) {
                 case 0:
                     return " ";
@@ -1670,19 +1823,28 @@ public class NewDialog extends javax.swing.JDialog {
                 default:
                     return "";
             }
+
         }
 
         @Override
         public Object getValueAt(int row, int column) {
+
             String reagentName = reagents.get(row);
+
             switch (column) {
                 case 0:
+
                     return (row + 1);
+
                 case 1:
+
                     ReporterIon reporterIon = selectedMethod.getReporterIon(reagentName);
                     return reporterIon.getName();
+
                 case 2:
+
                     String projectName = psdbParent.getProjectParameters().getProjectUniqueName();
+
                     if (sampleNames.get(reagentName) == null) {
                         if (projectName != null) {
                             sampleNames.put(reagentName, projectName + " " + reagentName);
@@ -1690,26 +1852,39 @@ public class NewDialog extends javax.swing.JDialog {
                             sampleNames.put(reagentName, "Sample " + reagentName);
                         }
                     }
+
                     return sampleNames.get(reagentName);
+
                 case 3:
+
                     return controlSamples.contains(reagentName);
+
                 default:
+
                     return "";
+
             }
         }
 
         @Override
         public void setValueAt(Object aValue, int row, int column) {
+
             String reagentName = reagents.get(row);
+
             if (column == 2) {
+
                 sampleNames.put(reagentName, aValue.toString());
+
             } else if (column == 3) {
+
                 if (controlSamples.contains(reagentName)) {
                     controlSamples.remove(reagentName);
                 } else {
                     controlSamples.add(reagentName);
                 }
+
             }
+
             repaint();
         }
 
@@ -1777,8 +1952,10 @@ public class NewDialog extends javax.swing.JDialog {
      * Resets the table indexes.
      */
     private void resetTableIndexes() {
+
         for (int i = 0; i < sampleAssignmentTable.getRowCount(); i++) {
             sampleAssignmentTable.setValueAt((i + 1), i, 0);
         }
+
     }
 }

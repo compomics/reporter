@@ -36,7 +36,10 @@ public class MethodSettingsDialog extends javax.swing.JDialog {
      * @param newDialog the parent dialog
      * @param modal if the dialog is to be modal or not
      */
-    public MethodSettingsDialog(NewDialog newDialog, boolean modal) {
+    public MethodSettingsDialog(
+            NewDialog newDialog,
+            boolean modal
+    ) {
         super(newDialog, modal);
         this.newDialog = newDialog;
         initComponents();
@@ -49,15 +52,19 @@ public class MethodSettingsDialog extends javax.swing.JDialog {
      * Set up the GUI.
      */
     private void setUpGui() {
+
         reagentsTableJScrollPane.getViewport().setOpaque(false);
         reagentsTable.getTableHeader().setReorderingAllowed(false);
+
         if (newDialog.getMethodsFile() != null) {
             txtConfigurationFileLocation.setText(newDialog.getMethodsFile().getAbsolutePath());
         } else {
             txtConfigurationFileLocation.setText("(not saved to file)");
         }
+
         reagentsTable.getColumnModel().getColumn(0).setMaxWidth(30);
         reagentsTable.getColumnModel().getColumn(1).setMaxWidth(100);
+
     }
 
     /**
@@ -209,11 +216,20 @@ public class MethodSettingsDialog extends javax.swing.JDialog {
             newDialog.getReporterGui().getLastSelectedFolder().setLastSelectedFolder(txtConfigurationFileLocation.getText());
         }
 
-        File selectedFile = FileChooserUtil.getUserSelectedFile(this, ".xml", "Reporter Method File (*.xml)", "Select Settings File",
-                newDialog.getReporterGui().getLastSelectedFolder().getLastSelectedFolder(), null, true);
+        File selectedFile = FileChooserUtil.getUserSelectedFile(
+                this,
+                ".xml",
+                "Reporter Method File (*.xml)",
+                "Select Settings File",
+                newDialog.getReporterGui().getLastSelectedFolder().getLastSelectedFolder(),
+                null,
+                true
+        );
 
         if (selectedFile != null) {
+
             try {
+
                 methodsFactory.importMethods(selectedFile);
                 newDialog.setSelectedMethod(methodsFactory.getReporterMethod(newDialog.getSelectedMethod().getName()));
                 newDialog.setReagents(newDialog.getSelectedMethod().getReagentsSortedByMass());
@@ -221,14 +237,27 @@ public class MethodSettingsDialog extends javax.swing.JDialog {
                 txtConfigurationFileLocation.setText(selectedFile.getAbsolutePath());
                 newDialog.setMethodsFile(selectedFile);
                 newDialog.getReporterGui().getLastSelectedFolder().setLastSelectedFolder(selectedFile.getPath());
+
             } catch (IOException e) {
-                JOptionPane.showMessageDialog(null,
+
+                JOptionPane.showMessageDialog(
+                        null,
                         "File " + selectedFile.getAbsolutePath() + " not found.",
-                        "File Not Found", JOptionPane.WARNING_MESSAGE);
+                        "File Not Found",
+                        JOptionPane.WARNING_MESSAGE
+                );
+
             } catch (XmlPullParserException e) {
-                JOptionPane.showMessageDialog(null,
-                        "An error occurred while parsing " + selectedFile.getAbsolutePath() + " at line " + e.getLineNumber() + ".",
-                        "Parsing Error", JOptionPane.WARNING_MESSAGE);
+
+                JOptionPane.showMessageDialog(
+                        null,
+                        "An error occurred while parsing "
+                        + selectedFile.getAbsolutePath()
+                        + " at line " + e.getLineNumber() + ".",
+                        "Parsing Error",
+                        JOptionPane.WARNING_MESSAGE
+                );
+
                 e.printStackTrace();
             }
         }
@@ -242,27 +271,47 @@ public class MethodSettingsDialog extends javax.swing.JDialog {
     private void saveConfigButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveConfigButtonActionPerformed
 
         String tempFileName = null;
+
         if (txtConfigurationFileLocation.getText().length() > 0) {
             newDialog.getReporterGui().getLastSelectedFolder().setLastSelectedFolder(txtConfigurationFileLocation.getText());
             tempFileName = new File(txtConfigurationFileLocation.getText()).getName();
         }
 
-        File selectedFile = FileChooserUtil.getUserSelectedFile(this, ".xml", "Reporter Method File (*.xml)", "Save Settings File",
-                newDialog.getReporterGui().getLastSelectedFolder().getLastSelectedFolder(), tempFileName, false);
+        File selectedFile = FileChooserUtil.getUserSelectedFile(
+                this,
+                ".xml",
+                "Reporter Method File (*.xml)",
+                "Save Settings File",
+                newDialog.getReporterGui().getLastSelectedFolder().getLastSelectedFolder(),
+                tempFileName,
+                false
+        );
 
         if (selectedFile != null) {
+
             try {
+
                 methodsFactory.saveFile(selectedFile);
                 newDialog.setMethodsFile(selectedFile);
                 txtConfigurationFileLocation.setText(selectedFile.getAbsolutePath());
                 valuesChanged = false;
-                JOptionPane.showMessageDialog(null,
+
+                JOptionPane.showMessageDialog(
+                        null,
                         "Settings saved to " + selectedFile.getAbsolutePath() + ".",
-                        "Settings Saved", JOptionPane.INFORMATION_MESSAGE);
+                        "Settings Saved",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
+
             } catch (IOException ex) {
-                JOptionPane.showMessageDialog(null,
+
+                JOptionPane.showMessageDialog(
+                        null,
                         "An error occured when saving the file.",
-                        "File Error", JOptionPane.WARNING_MESSAGE);
+                        "File Error",
+                        JOptionPane.WARNING_MESSAGE
+                );
+
                 ex.printStackTrace();
             }
         }
@@ -346,6 +395,7 @@ public class MethodSettingsDialog extends javax.swing.JDialog {
 
         @Override
         public String getColumnName(int column) {
+
             switch (column) {
                 case 0:
                     return " ";
@@ -366,11 +416,14 @@ public class MethodSettingsDialog extends javax.swing.JDialog {
                 default:
                     return "";
             }
+
         }
 
         @Override
         public Object getValueAt(int row, int column) {
+
             String reagentName = newDialog.getReagents().get(row);
+
             switch (column) {
                 case 0:
                     return row + 1;
@@ -391,11 +444,14 @@ public class MethodSettingsDialog extends javax.swing.JDialog {
                 default:
                     return "";
             }
+
         }
 
         @Override
         public void setValueAt(Object aValue, int row, int column) {
+
             String reagentName = newDialog.getReagents().get(row);
+
             switch (column) {
                 case 1:
                     newDialog.getSelectedMethod().getReagent(reagentName).getReporterIon().setName((String) aValue);
@@ -428,6 +484,7 @@ public class MethodSettingsDialog extends javax.swing.JDialog {
                 default:
                     break;
             }
+
         }
 
         @Override

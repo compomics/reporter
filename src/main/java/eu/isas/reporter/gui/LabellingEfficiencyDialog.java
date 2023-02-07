@@ -75,7 +75,7 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
     /**
      * The spectrum files loaded.
      */
-    private ArrayList<File> spectrumFiles = new ArrayList<File>();
+    private ArrayList<File> spectrumFiles = new ArrayList<>();
     /**
      * The modification factory.
      */
@@ -102,7 +102,13 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
      * @param waitingIcon the waiting icon
      * @param lastSelectedFolder the last selected folder
      */
-    public LabellingEfficiencyDialog(Dialog owner, JFrame parentFrame, Image normalIcon, Image waitingIcon, LastSelectedFolder lastSelectedFolder) {
+    public LabellingEfficiencyDialog(
+            Dialog owner,
+            JFrame parentFrame,
+            Image normalIcon,
+            Image waitingIcon,
+            LastSelectedFolder lastSelectedFolder
+    ) {
 
         super(owner, true);
 
@@ -324,8 +330,8 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
 
     /**
      * Add the identification files.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void addIdFilesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addIdFilesButtonActionPerformed
 
@@ -334,8 +340,18 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
         String lastSelectedFolderPath = lastSelectedFolder.getLastSelectedFolder();
         //        FileAndFileFilter selectedFileAndFilter = Util.getUserSelectedFile(this, new String[]{".psdb", ".zip"},
         //                new String[]{psdbFileFilterDescription, zipFileFilterDescription}, "Select Identification File(s)", lastSelectedFolderPath, null, true, false, false, 0);
-        FileAndFileFilter selectedFileAndFilter = FileChooserUtil.getUserSelectedFile(this, new String[]{".psdb"},
-                new String[]{psdbFileFilterDescription}, "Select Identification File(s)", lastSelectedFolderPath, null, true, false, false, 0);
+
+        FileAndFileFilter selectedFileAndFilter = FileChooserUtil.getUserSelectedFile(
+                this, new String[]{".psdb"},
+                new String[]{psdbFileFilterDescription},
+                "Select Identification File(s)",
+                lastSelectedFolderPath,
+                null,
+                true,
+                false,
+                false,
+                0
+        );
 
         if (selectedFileAndFilter != null) {
 
@@ -349,15 +365,23 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
                 //                reporterGui.getUserPreferences().addRecentProject(selectedFile); // @TOOD: implement me?
                 //                reporterGui.updateRecentProjectsList();
             } else {
-                JOptionPane.showMessageDialog(this, "Not a PeptideShaker file (.psdb).", "Unsupported File.", JOptionPane.WARNING_MESSAGE);
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Not a PeptideShaker file (.psdb).",
+                        "Unsupported File.",
+                        JOptionPane.WARNING_MESSAGE
+                );
+
             }
         }
+
     }//GEN-LAST:event_addIdFilesButtonActionPerformed
 
     /**
      * Add the spectrum files.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void addSpectraFilesJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addSpectraFilesJButtonActionPerformed
 
@@ -378,7 +402,7 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
 
             @Override
             public String getDescription() {
-                return "mgf or mzML (.mgf, .mg.gz, .mzml, .mzml.gz)";
+                return "mgf or mzML (.mgf, .mgf.gz, .mzml, .mzml.gz)";
             }
         };
 
@@ -416,7 +440,7 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
 
             // Load the files
             progressDialog = new ProgressDialogX(
-                    this, 
+                    this,
                     parentFrame,
                     Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/peptide-shaker.gif")),
                     Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/peptide-shaker-orange.gif")),
@@ -479,15 +503,16 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
                 }
             }.start();
         }
-        
+
     }//GEN-LAST:event_addSpectraFilesJButtonActionPerformed
 
     /**
      * Set the FASTA file.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void addDbButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addDbButtonActionPerformed
+
         JFileChooser fileChooser;
 
         //        if (searchParameters != null && searchParameters.getFastaFile() != null && searchParameters.getFastaFile().exists()) {
@@ -518,23 +543,24 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
 
         fileChooser.setFileFilter(filter);
         int returnVal = fileChooser.showDialog(this.getParent(), "Open");
+
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File fastaFile = fileChooser.getSelectedFile();
             lastSelectedFolder.setLastSelectedFolder(fastaFile.getAbsolutePath());
             fastaTxt.setText(fastaFile.getName());
             psdbParent.getProjectDetails().setFastaFile(fastaFile);
         }
+
     }//GEN-LAST:event_addDbButtonActionPerformed
 
     /**
      * Close the dialog.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void closeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeButtonActionPerformed
         dispose();
     }//GEN-LAST:event_closeButtonActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addDbButton;
@@ -561,9 +587,13 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
      */
     private void importPeptideShakerFile(final File psFile) {
 
-        progressDialog = new ProgressDialogX(this, parentFrame,
+        progressDialog = new ProgressDialogX(
+                this,
+                parentFrame,
                 normalIcon,
-                waitingIcon, true);
+                waitingIcon,
+                true
+        );
 
         progressDialog.setPrimaryProgressCounterIndeterminate(true);
         progressDialog.setTitle("Importing Project. Please Wait...");
@@ -606,11 +636,16 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
                     progressDialog.setRunFinished();
 
                 } catch (Exception e) {
+
                     e.printStackTrace();
                     progressDialog.setRunCanceled();
-                    JOptionPane.showMessageDialog(LabellingEfficiencyDialog.this,
+
+                    JOptionPane.showMessageDialog(
+                            LabellingEfficiencyDialog.this,
                             "An error occurred while estimating the labelling efficiency.",
-                            "Error", JOptionPane.ERROR_MESSAGE);
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE
+                    );
                 }
             }
         }.start();
@@ -638,9 +673,12 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
         ModificationParameters modificationParameters = identificationParameters.getSearchParameters().getModificationParameters();
         sortedModifications = new ArrayList<>(modificationParameters.getAllNotFixedModifications());
         Collections.sort(sortedModifications);
+
         HashMap<String, Integer> nModifiedMap = new HashMap<>(sortedModifications.size()),
                 nPossibleMap = new HashMap<>(sortedModifications.size());
+
         ArrayList<Modification> modifications = new ArrayList<>(sortedModifications.size());
+
         for (String ptmName : sortedModifications) {
             nModifiedMap.put(ptmName, 0);
             nPossibleMap.put(ptmName, 0);
@@ -650,7 +688,7 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
         Identification identification = psdbParent.getIdentification();
 
         PSParameter psParameter = new PSParameter();
-        ArrayList<UrParameter> parameters = new ArrayList<UrParameter>(1);
+        ArrayList<UrParameter> parameters = new ArrayList<>(1);
         parameters.add(psParameter);
 
         PeptideMatchesIterator peptideMatchesIterator = identification.getPeptideMatchesIterator(progressDialog);
@@ -663,24 +701,40 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
             for (Modification modification : modifications) {
 
                 String modificationName = modification.getName();
-                int nNew = ModificationUtils.getPossibleModificationSites(peptide, modification, sequenceProvider, proteinSequenceMatchingPreferences).length;
+
+                int nNew = ModificationUtils.getPossibleModificationSites(
+                        peptide,
+                        modification,
+                        sequenceProvider,
+                        proteinSequenceMatchingPreferences
+                ).length;
+
                 if (nNew > 0) {
                     Integer nPossible = nPossibleMap.get(modificationName);
                     nPossible += nNew;
                     nPossibleMap.put(modificationName, nPossible);
                 }
+
                 nNew = 0;
+
                 if (peptide.getNVariableModifications() > 0) {
+
                     for (ModificationMatch modificationMatch : peptide.getVariableModifications()) {
+
                         if (modificationMatch.getModification().equals(modificationName)) {
                             nNew++;
                         }
+
                     }
+
                 }
+
                 if (nNew > 0) {
+
                     Integer nModified = nModifiedMap.get(modificationName);
                     nModified += nNew;
                     nModifiedMap.put(modificationName, nModified);
+
                 }
             }
         }
@@ -721,10 +775,13 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
 
         @Override
         public int getRowCount() {
+
             if (sortedModifications == null || psdbParent == null) {
                 return 0;
             }
+
             return sortedModifications.size();
+
         }
 
         @Override
@@ -734,6 +791,7 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
 
         @Override
         public String getColumnName(int column) {
+
             switch (column) {
                 case 0:
                     return " ";
@@ -744,11 +802,14 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
                 default:
                     return "";
             }
+
         }
 
         @Override
         public Object getValueAt(int row, int column) {
+
             String ptmName = sortedModifications.get(row);
+
             switch (column) {
                 case 0:
                     return (row + 1);
@@ -761,6 +822,7 @@ public class LabellingEfficiencyDialog extends javax.swing.JDialog {
                 default:
                     return "";
             }
+
         }
 
         @Override

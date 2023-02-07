@@ -68,29 +68,69 @@ public class CLIExportMethods {
      * an exception occurred while estimating the theoretical coverage of a
      * protein
      */
-    public static void exportReport(ReportCLIInputBean reportCLIInputBean, String reportType, String experiment, 
-            ProjectDetails projectDetails, Identification identification, GeneMaps geneMaps, IdentificationFeaturesGenerator identificationFeaturesGenerator, 
-            SequenceProvider sequenceProvider, SpectrumProvider spectrumProvider, ProteinDetailsProvider proteinDetailsProvider, 
-            QuantificationFeaturesGenerator quantificationFeaturesGenerator, ReporterIonQuantification reporterIonQuantification, ReporterSettings reporterSettings,
-            IdentificationParameters identificationParameters, int nSurroundingAA, SpectrumCountingParameters spectrumCountingParameters, WaitingHandler waitingHandler)
-            throws IOException, IllegalArgumentException, SQLException, ClassNotFoundException,
+    public static void exportReport(
+            ReportCLIInputBean reportCLIInputBean,
+            String reportType,
+            String experiment,
+            ProjectDetails projectDetails,
+            Identification identification,
+            GeneMaps geneMaps,
+            IdentificationFeaturesGenerator identificationFeaturesGenerator,
+            SequenceProvider sequenceProvider,
+            SpectrumProvider spectrumProvider,
+            ProteinDetailsProvider proteinDetailsProvider,
+            QuantificationFeaturesGenerator quantificationFeaturesGenerator,
+            ReporterIonQuantification reporterIonQuantification,
+            ReporterSettings reporterSettings,
+            IdentificationParameters identificationParameters,
+            int nSurroundingAA,
+            SpectrumCountingParameters spectrumCountingParameters,
+            WaitingHandler waitingHandler
+    )
+            throws IOException, IllegalArgumentException,
+            SQLException, ClassNotFoundException,
             InterruptedException, MathException {
-        
+
         ReporterExportFactory exportFactory = ReporterExportFactory.getInstance();
         ExportScheme exportScheme = exportFactory.getExportScheme(reportType);
-        
+
         String reportName = reportType.replaceAll(" ", "_");
         reportName = ReporterExportFactory.getDefaultReportName(experiment, reportName);
+
         if (reportCLIInputBean.getReportNamePrefix() != null) {
             reportName = reportCLIInputBean.getReportNamePrefix() + reportName;
         }
-        
-        File reportFile = new File(reportCLIInputBean.getReportOutputFolder(), reportName);
+
+        File reportFile = new File(
+                reportCLIInputBean.getReportOutputFolder(),
+                reportName
+        );
 
         //@TODO: allow format selection
-        ReporterExportFactory.writeExport(exportScheme, reportFile, ExportFormat.text, experiment, projectDetails, identification, 
-                identificationFeaturesGenerator, sequenceProvider, spectrumProvider, proteinDetailsProvider, geneMaps, quantificationFeaturesGenerator, reporterIonQuantification, reporterSettings, identificationParameters,
-                null, null, null, null, nSurroundingAA, spectrumCountingParameters, waitingHandler);
+        ReporterExportFactory.writeExport(
+                exportScheme,
+                reportFile,
+                ExportFormat.text,
+                experiment,
+                projectDetails,
+                identification,
+                identificationFeaturesGenerator,
+                sequenceProvider,
+                spectrumProvider,
+                proteinDetailsProvider,
+                geneMaps,
+                quantificationFeaturesGenerator,
+                reporterIonQuantification,
+                reporterSettings,
+                identificationParameters,
+                null,
+                null,
+                null,
+                null,
+                nSurroundingAA,
+                spectrumCountingParameters,
+                waitingHandler
+        );
     }
 
     /**
@@ -104,12 +144,26 @@ public class CLIExportMethods {
      * @throws IOException exception thrown whenever an IO exception occurred
      * while reading or writing to a file
      */
-    public static void exportDocumentation(ReportCLIInputBean reportCLIInputBean, String reportType, WaitingHandler waitingHandler) throws IOException {
+    public static void exportDocumentation(
+            ReportCLIInputBean reportCLIInputBean,
+            String reportType,
+            WaitingHandler waitingHandler
+    ) throws IOException {
+
         ReporterExportFactory exportFactory = ReporterExportFactory.getInstance();
         ExportScheme exportScheme = exportFactory.getExportScheme(reportType);
-        File reportFile = new File(reportCLIInputBean.getReportOutputFolder(), ReporterExportFactory.getDefaultDocumentation(reportType));
+
+        File reportFile = new File(
+                reportCLIInputBean.getReportOutputFolder(),
+                ReporterExportFactory.getDefaultDocumentation(reportType)
+        );
 
         //@TODO: allow format selection
-        ReporterExportFactory.writeDocumentation(exportScheme, ExportFormat.text, reportFile);
+        ReporterExportFactory.writeDocumentation(
+                exportScheme,
+                ExportFormat.text,
+                reportFile
+        );
+
     }
 }

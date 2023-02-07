@@ -41,12 +41,18 @@ public enum NormalizationType {
      * @return the normalization type of interest.
      */
     public static NormalizationType getNormalizationType(int index) {
+
         for (NormalizationType normalizationType : NormalizationType.values()) {
+
             if (normalizationType.index == index) {
                 return normalizationType;
             }
+
         }
-        throw new IllegalArgumentException("No normalization type found for index " + index + ".");
+
+        throw new IllegalArgumentException(
+                "No normalization type found for index " + index + "."
+        );
     }
 
     /**
@@ -57,27 +63,39 @@ public enum NormalizationType {
      * @return the normalization type of interest.
      */
     public static NormalizationType getNormalizationType(String name) {
+
         for (NormalizationType normalizationType : NormalizationType.values()) {
+
             if (normalizationType.name.equals(name)) {
                 return normalizationType;
             }
+
         }
-        throw new IllegalArgumentException("No normalization type found for name " + name + ".");
+
+        throw new IllegalArgumentException(
+                "No normalization type found for name " + name + "."
+        );
     }
-    
+
     /**
      * Returns the different options as command line description.
-     * 
+     *
      * @return the different options as command line description
      */
     public static String getCommandLineDescription() {
+
         StringBuilder sb = new StringBuilder();
+
         for (NormalizationType normalizationType : values()) {
+
             if (sb.length() > 0) {
                 sb.append(", ");
             }
+
             sb.append(normalizationType.index).append(": ").append(normalizationType.name);
         }
+
         return sb.toString();
+
     }
 }

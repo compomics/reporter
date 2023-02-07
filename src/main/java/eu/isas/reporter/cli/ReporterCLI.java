@@ -84,7 +84,7 @@ public class ReporterCLI extends PsdbParent implements Callable {
     /**
      * The spectrum files loaded.
      */
-    private ArrayList<File> spectrumFiles = new ArrayList<File>();
+    private ArrayList<File> spectrumFiles = new ArrayList<>();
     /**
      * Handler for the exceptions.
      */
@@ -119,139 +119,197 @@ public class ReporterCLI extends PsdbParent implements Callable {
 
         // PeptideShaker file
         if (!aLine.hasOption(ReporterCLIParameters.ID.id) || ((String) aLine.getOptionValue(ReporterCLIParameters.ID.id)).equals("")) {
+
             System.out.println(System.getProperty("line.separator") + "PeptideShaker file not specified." + System.getProperty("line.separator"));
             return false;
+
         } else {
+
             String arg = aLine.getOptionValue(ReporterCLIParameters.ID.id);
             HashSet<String> supportedFormats = new HashSet<String>(2);
             supportedFormats.add(".psdb");
             supportedFormats.add(".zip");
+
             if (!CommandParameter.fileExists(ReporterCLIParameters.ID.id, arg, supportedFormats)) {
                 return false;
             }
+
         }
 
         // The isotopes file
         if (aLine.hasOption(ReporterCLIParameters.ISOTOPES.id)) {
+
             String arg = aLine.getOptionValue(ReporterCLIParameters.ISOTOPES.id);
             HashSet<String> supportedFormats = new HashSet<>(1);
             supportedFormats.add(".xml");
+
             if (!CommandParameter.fileExists(ReporterCLIParameters.ISOTOPES.id, arg, supportedFormats)) {
                 return false;
             }
+
         }
 
         // The reference samples
         if (aLine.hasOption(ReporterCLIParameters.REFERENCE.id)) {
+
             String arg = aLine.getOptionValue(ReporterCLIParameters.REFERENCE.id);
+
             try {
+
                 ArrayList<Integer> input = CommandLineUtils.getIntegerListFromString(arg, ",");
+
                 for (Integer reagent : input) {
+
                     if (!CommandParameter.isPositiveInteger(ReporterCLIParameters.REFERENCE.id, reagent + "", false)) {
                         return false;
                     }
+
                 }
+
             } catch (Exception e) {
-                System.out.println(System.getProperty("line.separator") + "Error parsing the " + ReporterCLIParameters.REFERENCE.id
-                        + " option: not a comma separated list of integers." + System.getProperty("line.separator"));
+
+                System.out.println(
+                        System.getProperty("line.separator")
+                        + "Error parsing the "
+                        + ReporterCLIParameters.REFERENCE.id
+                        + " option: not a comma separated list of integers."
+                        + System.getProperty("line.separator")
+                );
+
                 return false;
             }
         }
 
         // The number of threads
         if (aLine.hasOption(ReporterCLIParameters.THREADS.id)) {
+
             String arg = aLine.getOptionValue(ReporterCLIParameters.THREADS.id);
+
             if (!CommandParameter.isPositiveInteger(ReporterCLIParameters.THREADS.id, arg, false)) {
                 return false;
             }
+
         }
 
         // The ion tolerance
         if (aLine.hasOption(ReporterCLIParameters.ION_TOL.id)) {
+
             String arg = aLine.getOptionValue(ReporterCLIParameters.ION_TOL.id);
+
             if (!CommandParameter.isPositiveDouble(ReporterCLIParameters.ION_TOL.id, arg, false)) {
                 return false;
             }
+
         }
 
         // Most accurate option
         if (aLine.hasOption(ReporterCLIParameters.MOST_ACCURATE.id)) {
+
             String arg = aLine.getOptionValue(ReporterCLIParameters.MOST_ACCURATE.id);
+
             if (!CommandParameter.isBooleanInput(ReporterCLIParameters.MOST_ACCURATE.id, arg)) {
                 return false;
             }
+
         }
 
         // Same spectra option
         if (aLine.hasOption(ReporterCLIParameters.SAME_SPECTRA.id)) {
+
             String arg = aLine.getOptionValue(ReporterCLIParameters.SAME_SPECTRA.id);
+
             if (!CommandParameter.isBooleanInput(ReporterCLIParameters.SAME_SPECTRA.id, arg)) {
                 return false;
             }
+
         }
 
         // The precursor ion m/z tolerance
         if (aLine.hasOption(ReporterCLIParameters.PREC_WINDOW_MZ_TOL.id)) {
+
             String arg = aLine.getOptionValue(ReporterCLIParameters.PREC_WINDOW_MZ_TOL.id);
+
             if (!CommandParameter.isPositiveDouble(ReporterCLIParameters.PREC_WINDOW_MZ_TOL.id, arg, false)) {
                 return false;
             }
+
         }
 
         // The precursor ion m/z tolerance unit
         if (aLine.hasOption(ReporterCLIParameters.PREC_WINDOW_MZ_TOL_PPM.id)) {
+
             String arg = aLine.getOptionValue(ReporterCLIParameters.PREC_WINDOW_MZ_TOL_PPM.id);
+
             if (!CommandParameter.isBooleanInput(ReporterCLIParameters.PREC_WINDOW_MZ_TOL_PPM.id, arg)) {
                 return false;
             }
+
         }
 
         // The precursor ion RT tolerance
         if (aLine.hasOption(ReporterCLIParameters.PREC_WINDOW_RT_TOL.id)) {
+
             String arg = aLine.getOptionValue(ReporterCLIParameters.PREC_WINDOW_RT_TOL.id);
+
             if (!CommandParameter.isPositiveDouble(ReporterCLIParameters.PREC_WINDOW_RT_TOL.id, arg, false)) {
                 return false;
             }
+
         }
 
         // The ignore null option
         if (aLine.hasOption(ReporterCLIParameters.IGNORE_NULL.id)) {
+
             String arg = aLine.getOptionValue(ReporterCLIParameters.IGNORE_NULL.id);
+
             if (!CommandParameter.isBooleanInput(ReporterCLIParameters.IGNORE_NULL.id, arg)) {
                 return false;
             }
+
         }
 
         // The ignore missed cleavages option
         if (aLine.hasOption(ReporterCLIParameters.IGNORE_MC.id)) {
+
             String arg = aLine.getOptionValue(ReporterCLIParameters.IGNORE_MC.id);
+
             if (!CommandParameter.isBooleanInput(ReporterCLIParameters.IGNORE_MC.id, arg)) {
                 return false;
             }
+
         }
 
         // The percentile
         if (aLine.hasOption(ReporterCLIParameters.PERCENTILE.id)) {
+
             String arg = aLine.getOptionValue(ReporterCLIParameters.PERCENTILE.id);
+
             if (!CommandParameter.isPositiveDouble(ReporterCLIParameters.PERCENTILE.id, arg, false)) {
                 return false;
             }
+
         }
 
         // The resolution option for ratio estimation
         if (aLine.hasOption(ReporterCLIParameters.RESOLUTION.id)) {
+
             String arg = aLine.getOptionValue(ReporterCLIParameters.RESOLUTION.id);
+
             if (!CommandParameter.isPositiveDouble(ReporterCLIParameters.RESOLUTION.id, arg, false)) {
                 return false;
             }
+
         }
 
         // The number of unique peptides
         if (aLine.hasOption(ReporterCLIParameters.MIN_UNIQUE.id)) {
+
             String arg = aLine.getOptionValue(ReporterCLIParameters.MIN_UNIQUE.id);
+
             if (!CommandParameter.isInteger(ReporterCLIParameters.MIN_UNIQUE.id, arg)) {
                 return false;
             }
+
         }
 
         // The validation levels
@@ -262,76 +320,101 @@ public class ReporterCLI extends PsdbParent implements Callable {
 
         // PSM
         if (aLine.hasOption(ReporterCLIParameters.VALIDATION_PSM.id)) {
+
             String arg = aLine.getOptionValue(ReporterCLIParameters.VALIDATION_PSM.id);
+
             if (!CommandParameter.isInList(ReporterCLIParameters.VALIDATION_PSM.id, arg, validationLevels)) {
                 return false;
             }
+
         }
 
         // Peptide
         if (aLine.hasOption(ReporterCLIParameters.VALIDATION_PEPTIDE.id)) {
+
             String arg = aLine.getOptionValue(ReporterCLIParameters.VALIDATION_PEPTIDE.id);
+
             if (!CommandParameter.isInList(ReporterCLIParameters.VALIDATION_PEPTIDE.id, arg, validationLevels)) {
                 return false;
             }
+
         }
 
         // Protein
         if (aLine.hasOption(ReporterCLIParameters.VALIDATION_PROTEIN.id)) {
+
             String arg = aLine.getOptionValue(ReporterCLIParameters.VALIDATION_PROTEIN.id);
+
             if (!CommandParameter.isInList(ReporterCLIParameters.VALIDATION_PROTEIN.id, arg, validationLevels)) {
                 return false;
             }
+
         }
 
         // Normalization
         ArrayList<String> normalizationTypes = new ArrayList<String>(NormalizationType.values().length);
+
         for (NormalizationType normalizationType : NormalizationType.values()) {
             normalizationTypes.add(normalizationType.index + "");
         }
 
         // PSM
         if (aLine.hasOption(ReporterCLIParameters.NORMALIZATION_PSM.id)) {
+
             String arg = aLine.getOptionValue(ReporterCLIParameters.NORMALIZATION_PSM.id);
+
             if (!CommandParameter.isInList(ReporterCLIParameters.NORMALIZATION_PSM.id, arg, normalizationTypes)) {
                 return false;
             }
+
         }
 
         // Peptide
         if (aLine.hasOption(ReporterCLIParameters.NORMALIZATION_PEPTIDE.id)) {
+
             String arg = aLine.getOptionValue(ReporterCLIParameters.NORMALIZATION_PEPTIDE.id);
+
             if (!CommandParameter.isInList(ReporterCLIParameters.NORMALIZATION_PEPTIDE.id, arg, normalizationTypes)) {
                 return false;
             }
+
         }
 
         // Protein
         if (aLine.hasOption(ReporterCLIParameters.NORMALIZATION_PROTEIN.id)) {
+
             String arg = aLine.getOptionValue(ReporterCLIParameters.NORMALIZATION_PROTEIN.id);
+
             if (!CommandParameter.isInList(ReporterCLIParameters.NORMALIZATION_PROTEIN.id, arg, normalizationTypes)) {
                 return false;
             }
+
         }
 
         // Stable proteins
         if (aLine.hasOption(ReporterCLIParameters.STABLE_PROTEINS.id)) {
+
             String arg = aLine.getOptionValue(ReporterCLIParameters.STABLE_PROTEINS.id);
             HashSet<String> supportedFormats = new HashSet<String>(1);
             supportedFormats.add(".fasta");
+
             if (!CommandParameter.fileExists(ReporterCLIParameters.STABLE_PROTEINS.id, arg, supportedFormats)) {
                 return false;
             }
+
         }
 
         // Contaminants
         if (aLine.hasOption(ReporterCLIParameters.CONTAMINANTS.id)) {
+
             String arg = aLine.getOptionValue(ReporterCLIParameters.CONTAMINANTS.id);
             HashSet<String> supportedFormats = new HashSet<String>(1);
             supportedFormats.add(".fasta");
+
             if (!CommandParameter.fileExists(ReporterCLIParameters.CONTAMINANTS.id, arg, supportedFormats)) {
                 return false;
             }
+
         }
 
         return true;
@@ -342,6 +425,7 @@ public class ReporterCLI extends PsdbParent implements Callable {
 
         // turn off illegal access log messages
         try {
+
             Class loggerClass = Class.forName("jdk.internal.module.IllegalAccessLogger");
             Field loggerField = loggerClass.getDeclaredField("logger");
             Class unsafeClass = Class.forName("sun.misc.Unsafe");
@@ -351,6 +435,7 @@ public class ReporterCLI extends PsdbParent implements Callable {
             Long offset = (Long) unsafeClass.getMethod("staticFieldOffset", Field.class).invoke(unsafe, loggerField);
             unsafeClass.getMethod("putObjectVolatile", Object.class, long.class, Object.class) //
                     .invoke(unsafe, loggerClass, offset, null);
+
         } catch (Throwable ex) {
             // ignore, i.e. simply show the warnings...
             //ex.printStackTrace();
@@ -416,9 +501,12 @@ public class ReporterCLI extends PsdbParent implements Callable {
         setDbFolder(Reporter.getMatchesFolder());
 
         try {
+
             projectImporter.importPeptideShakerProject(this, spectrumFiles, waitingHandler);
             projectImporter.importReporterProject(this, waitingHandler);
+
         } catch (OutOfMemoryError error) {
+
             System.out.println("Ran out of memory! (runtime.maxMemory(): " + Runtime.getRuntime().maxMemory() + ")");
             String errorText = "Reporter used up all the available memory and had to be stopped.<br>"
                     + "Memory boundaries are changed in the the Welcome Dialog (Settings<br>"
@@ -426,19 +514,26 @@ public class ReporterCLI extends PsdbParent implements Callable {
                     + "Java Options). See also <a href=\"https://compomics.github.io/projects/compomics-utilities/wiki/JavaTroubleShooting.html\">JavaTroubleShooting</a>.";
             waitingHandler.appendReport(errorText, true, true);
             error.printStackTrace();
+
             return 1;
+
         } catch (EOFException e) {
+
             String errorText = "An error occurred while reading:\n" + psdbFile + ".\n\n"
                     + "The file is corrupted and cannot be opened anymore.";
             waitingHandler.appendReport(errorText, true, true);
             e.printStackTrace();
+
             return 1;
+
         } catch (Exception e) {
+
             String errorText = "An error occurred while reading:\n" + psdbFile + ".\n\n"
                     + "Please verify that the Reporter version used to create\n"
                     + "the file is compatible with your version of Reporter.";
             waitingHandler.appendReport(errorText, true, true);
             e.printStackTrace();
+
             return 1;
         }
 
@@ -454,13 +549,17 @@ public class ReporterCLI extends PsdbParent implements Callable {
         // Verify that ignored PTMs are recognized
         ArrayList<String> ignoredPtms = reporterCLIInputBean.getIgnoredPtms();
         if (ignoredPtms != null) {
+
             for (String ptmName : ignoredPtms) {
+
                 Modification modification = modificationFactory.getModification(ptmName);
+
                 if (modification == null) {
                     System.out.println("Modification " + ptmName + " not recognized.");
                     return 1;
                 }
             }
+
         }
 
         // get previously set quantification settings or defaults from the identification results
@@ -470,18 +569,25 @@ public class ReporterCLI extends PsdbParent implements Callable {
 
         // Update the method according to the command line
         File methodsFile = reporterCLIInputBean.getIsotopesFile();
+
         if (methodsFile != null) {
+
             try {
                 methodsFactory.importMethods(methodsFile);
             } catch (Exception e) {
+
                 String errorText = "An error occurred while parsing:\n" + methodsFile + ".\n\n";
                 waitingHandler.appendReport(errorText, true, true);
                 e.printStackTrace();
+
                 return 1;
+
             }
+
         }
 
         String specifiedMethodName = reporterCLIInputBean.getReporterMethod();
+
         if (specifiedMethodName != null) {
             selectedMethod = methodsFactory.getReporterMethod(specifiedMethodName);
         }
@@ -491,9 +597,13 @@ public class ReporterCLI extends PsdbParent implements Callable {
         }
 
         if (selectedMethod == null) {
-            String errorText = "The reporter quantification methods to use could not be inferred, please specify a method from the isotopic correction file as command line parameter.\n\n";
+
+            String errorText = "The reporter quantification methods to use could not be inferred, "
+                    + "please specify a method from the isotopic correction file as command line parameter.\n\n";
             waitingHandler.appendReport(errorText, true, true);
+
             return 1;
+
         }
 
         // Set the method
@@ -506,22 +616,37 @@ public class ReporterCLI extends PsdbParent implements Callable {
 
         // Name samples according to their reagent
         ArrayList<String> reagents = selectedMethod.getReagentsSortedByMass();
+
         for (String reagent : reagents) {
             reporterIonQuantification.assignSample(reagent, reagent);
         }
 
         // Set reference samples
         ArrayList<Integer> referenceIndexes = reporterCLIInputBean.getReferenceSamples();
+
         if (referenceIndexes != null) {
+
             ArrayList<String> referenceSamples = new ArrayList<String>(referenceIndexes.size());
+
             for (Integer index : referenceIndexes) {
+
                 if (index > reagents.size()) {
-                    System.out.println(System.getProperty("line.separator") + "Reference sample index " + index
-                            + " is higher than the number of reagents (" + reagents.size() + ")." + System.getProperty("line.separator"));
+
+                    System.out.println(
+                            System.getProperty("line.separator")
+                            + "Reference sample index " + index
+                            + " is higher than the number of reagents ("
+                            + reagents.size()
+                            + ")."
+                            + System.getProperty("line.separator")
+                    );
+
                     return 1;
                 }
+
                 referenceSamples.add(reagents.get(index - 1));
             }
+
             reporterIonQuantification.setControlSamples(referenceSamples);
         }
 
@@ -545,6 +670,7 @@ public class ReporterCLI extends PsdbParent implements Callable {
                 Normalizer normalizer = new Normalizer();
 
                 if (!normalizationFactors.hasPsmNormalisationFactors()) {
+
                     normalizer.setPsmNormalizationFactors(
                             reporterIonQuantification,
                             reporterSettings.getRatioEstimationSettings(),
@@ -560,9 +686,11 @@ public class ReporterCLI extends PsdbParent implements Callable {
                             exceptionHandler,
                             waitingHandler
                     );
+
                 }
 
                 if (!normalizationFactors.hasPeptideNormalisationFactors()) {
+
                     normalizer.setPeptideNormalizationFactors(
                             reporterIonQuantification,
                             reporterSettings.getRatioEstimationSettings(),
@@ -578,9 +706,11 @@ public class ReporterCLI extends PsdbParent implements Callable {
                             exceptionHandler,
                             waitingHandler
                     );
+
                 }
 
                 if (!normalizationFactors.hasProteinNormalisationFactors()) {
+
                     normalizer.setProteinNormalizationFactors(
                             reporterIonQuantification,
                             reporterSettings.getRatioEstimationSettings(),
@@ -596,6 +726,7 @@ public class ReporterCLI extends PsdbParent implements Callable {
                             exceptionHandler,
                             waitingHandler
                     );
+
                 }
 
             } catch (Exception e) {
@@ -680,7 +811,11 @@ public class ReporterCLI extends PsdbParent implements Callable {
 
                     } catch (Exception e) {
 
-                        waitingHandler.appendReport("An error occurred while exporting the " + reportType + ".", true, true);
+                        waitingHandler.appendReport(
+                                "An error occurred while exporting the " + reportType + ".",
+                                true,
+                                true);
+
                         e.printStackTrace();
                         waitingHandler.setRunCanceled();
 
@@ -690,49 +825,86 @@ public class ReporterCLI extends PsdbParent implements Callable {
 
             // export documentation
             if (reportCLIInputBean.documentationExportNeeded()) {
+
                 for (String reportType : reportCLIInputBean.getReportTypes()) {
+
                     try {
                         CLIExportMethods.exportDocumentation(reportCLIInputBean, reportType, waitingHandler);
                     } catch (Exception e) {
-                        waitingHandler.appendReport("An error occurred while exporting the documentation for " + reportType + ".", true, true);
+
+                        waitingHandler.appendReport(
+                                "An error occurred while exporting the documentation for "
+                                + reportType + ".",
+                                true,
+                                true
+                        );
+
                         e.printStackTrace();
                         waitingHandler.setRunCanceled();
                     }
+
                 }
             }
         }
 
         // export as zip
         File zipFile = reporterCLIInputBean.getZipExport();
+
         if (zipFile != null) {
 
             waitingHandler.appendReportEndLine();
             waitingHandler.appendReport("Zipping project.", true, true);
 
             File parent = zipFile.getParentFile();
+
             try {
                 parent.mkdirs();
             } catch (Exception e) {
-                waitingHandler.appendReport("An error occurred while creating folder " + parent.getAbsolutePath() + ".", true, true);
+
+                waitingHandler.appendReport(
+                        "An error occurred while creating folder "
+                        + parent.getAbsolutePath() + ".",
+                        true,
+                        true
+                );
+
                 waitingHandler.setRunCanceled();
             }
 
             File fastaFile = new File(projectDetails.getFastaFile());
 
             try {
-                ProjectExport.exportProjectAsZip(zipFile, fastaFile, msFileHandler, psdbFile, false, waitingHandler);
+                ProjectExport.exportProjectAsZip(
+                        zipFile,
+                        fastaFile,
+                        msFileHandler,
+                        psdbFile,
+                        false,
+                        waitingHandler
+                );
+
                 final int NUMBER_OF_BYTES_PER_MEGABYTE = 1048576;
                 double sizeOfZippedFile = Util.roundDouble(((double) zipFile.length() / NUMBER_OF_BYTES_PER_MEGABYTE), 2);
-                waitingHandler.appendReport("Project zipped to \'" + zipFile.getAbsolutePath() + "\' (" + sizeOfZippedFile + " MB)", true, true);
-            } catch (Exception e) {
-                e.printStackTrace();
+
                 waitingHandler.appendReport(
-                        "An error occurred while attempting to zip project in "
+                        "Project zipped to \'"
                         + zipFile.getAbsolutePath()
-                        + ".",
+                        + "\' (" + sizeOfZippedFile + " MB)",
                         true,
                         true
                 );
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+                waitingHandler.appendReport(
+                        "An error occurred while attempting to zip project in "
+                        + zipFile.getAbsolutePath() + ".",
+                        true,
+                        true
+                );
+
                 waitingHandler.setRunCanceled();
             }
         }
@@ -755,24 +927,31 @@ public class ReporterCLI extends PsdbParent implements Callable {
      * @param reporterIonSelectionSettings the reporter ion selection settings
      */
     private void updateReporterIonSelectionSettings(ReporterIonSelectionSettings reporterIonSelectionSettings) {
+
         if (reporterCLIInputBean.getReporterIonTolerance() != null) {
             reporterIonSelectionSettings.setReporterIonsMzTolerance(reporterCLIInputBean.getReporterIonTolerance());
         }
+
         if (reporterCLIInputBean.getMostAccurate() != null) {
             reporterIonSelectionSettings.setMostAccurate(reporterCLIInputBean.getMostAccurate());
         }
+
         if (reporterCLIInputBean.getSameSpectra() != null) {
             reporterIonSelectionSettings.setSameSpectra(reporterCLIInputBean.getSameSpectra());
         }
+
         if (reporterCLIInputBean.getPrecMzTolerance() != null) {
             reporterIonSelectionSettings.setPrecursorMzTolerance(reporterCLIInputBean.getPrecMzTolerance());
         }
+
         if (reporterCLIInputBean.getPrecMzTolerancePpm() != null) {
             reporterIonSelectionSettings.setPrecursorMzPpm(reporterCLIInputBean.getPrecMzTolerancePpm());
         }
+
         if (reporterCLIInputBean.getPrecRtTolerance() != null) {
             reporterIonSelectionSettings.setPrecursorRTTolerance(reporterCLIInputBean.getPrecRtTolerance());
         }
+
     }
 
     /**
@@ -782,33 +961,45 @@ public class ReporterCLI extends PsdbParent implements Callable {
      * @param ratioEstimationSettings the ratio estimation settings to update
      */
     private void updateRatioEstimationSettings(RatioEstimationSettings ratioEstimationSettings) {
+
         if (reporterCLIInputBean.getIgnoreNull() != null) {
             ratioEstimationSettings.setIgnoreNullIntensities(reporterCLIInputBean.getIgnoreNull());
         }
+
         if (reporterCLIInputBean.getIgnoreMc() != null) {
             ratioEstimationSettings.setIgnoreMissedCleavages(reporterCLIInputBean.getIgnoreMc());
         }
+
         if (reporterCLIInputBean.getPercentile() != null) {
             ratioEstimationSettings.setPercentile(reporterCLIInputBean.getPercentile());
         }
+
         if (reporterCLIInputBean.getResolution() != null) {
             ratioEstimationSettings.setRatioResolution(reporterCLIInputBean.getResolution());
         }
+
         if (reporterCLIInputBean.getMinUnique() != null) {
             ratioEstimationSettings.setMinUnique(reporterCLIInputBean.getMinUnique());
         }
+
         if (reporterCLIInputBean.getIgnoredPtms() != null) {
+
             ratioEstimationSettings.emptyPTMList();
+
             for (String ptmName : reporterCLIInputBean.getIgnoredPtms()) {
                 ratioEstimationSettings.addExcludingPtm(ptmName);
             }
+
         }
+
         if (reporterCLIInputBean.getValidationPsm() != null) {
             ratioEstimationSettings.setPsmValidationLevel(MatchValidationLevel.getMatchValidationLevel(reporterCLIInputBean.getValidationPsm()));
         }
+
         if (reporterCLIInputBean.getValidationPeptide() != null) {
             ratioEstimationSettings.setPeptideValidationLevel(MatchValidationLevel.getMatchValidationLevel(reporterCLIInputBean.getValidationPeptide()));
         }
+
         if (reporterCLIInputBean.getValidationProtein() != null) {
             ratioEstimationSettings.setProteinValidationLevel(MatchValidationLevel.getMatchValidationLevel(reporterCLIInputBean.getValidationProtein()));
         }
@@ -820,21 +1011,27 @@ public class ReporterCLI extends PsdbParent implements Callable {
      * @param normalizationSettings the normalization settings to update
      */
     private void updateNormalizationSettings(NormalizationSettings normalizationSettings) {
+
         if (reporterCLIInputBean.getPsmNormalizationType() != null) {
             normalizationSettings.setPsmNormalization(reporterCLIInputBean.getPsmNormalizationType());
         }
+
         if (reporterCLIInputBean.getPeptideNormalizationType() != null) {
             normalizationSettings.setPeptideNormalization(reporterCLIInputBean.getPeptideNormalizationType());
         }
+
         if (reporterCLIInputBean.getProteinNormalizationType() != null) {
             normalizationSettings.setProteinNormalization(reporterCLIInputBean.getProteinNormalizationType());
         }
+
         if (reporterCLIInputBean.getStableProteins() != null) {
             normalizationSettings.setStableProteinsFastaFile(reporterCLIInputBean.getStableProteins());
         }
+
         if (reporterCLIInputBean.getContaminants() != null) {
             normalizationSettings.setContaminantsFastaFile(reporterCLIInputBean.getContaminants());
         }
+
     }
 
 //    /**
@@ -867,17 +1064,23 @@ public class ReporterCLI extends PsdbParent implements Callable {
         }
 
         try {
+
             File matchFolder = Reporter.getMatchesFolder();
             File[] tempFiles = matchFolder.listFiles();
 
             if (tempFiles != null) {
+
                 for (File currentFile : tempFiles) {
+
                     boolean deleted = IoUtil.deleteDir(currentFile);
+
                     if (!deleted) {
                         System.out.println(currentFile.getAbsolutePath() + " could not be deleted!"); // @TODO: better handling of this error?
                     }
                 }
+
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -893,19 +1096,26 @@ public class ReporterCLI extends PsdbParent implements Callable {
      * SearchCLI header message when printing the usage.
      */
     private static String getHeader() {
+
         return System.getProperty("line.separator")
-                + "ReporterCLI estimates abundance ratios from PeptideShaker projects based on reporter ion quantification." + System.getProperty("line.separator")
+                + "ReporterCLI estimates abundance ratios from PeptideShaker projects based on reporter ion quantification."
                 + System.getProperty("line.separator")
-                + "For further help see https://compomics.github.io/projects/reporter.html and https://compomics.github.io/projects/reporter/wiki/reportercli.html." + System.getProperty("line.separator")
                 + System.getProperty("line.separator")
-                + "Or contact the developers at https://groups.google.com/group/reporter." + System.getProperty("line.separator")
+                + "For further help see https://compomics.github.io/projects/reporter.html "
+                + "and https://compomics.github.io/projects/reporter/wiki/reportercli.html."
+                + System.getProperty("line.separator")
+                + System.getProperty("line.separator")
+                + "Or contact the developers at https://groups.google.com/group/reporter."
+                + System.getProperty("line.separator")
                 + System.getProperty("line.separator")
                 + "----------------------"
                 + System.getProperty("line.separator")
                 + "OPTIONS"
                 + System.getProperty("line.separator")
-                + "----------------------" + System.getProperty("line.separator")
+                + "----------------------"
+                + System.getProperty("line.separator")
                 + "\n";
+
     }
 
     /**
@@ -929,6 +1139,7 @@ public class ReporterCLI extends PsdbParent implements Callable {
             ReporterCLI reporterCLI = new ReporterCLI(args);
 
             if (!isValidCommandLine(line)) {
+
                 // Not a valid command line, display the options and exit
                 PrintWriter lPrintWriter = new PrintWriter(System.out);
                 lPrintWriter.print(System.getProperty("line.separator") + "======================" + System.getProperty("line.separator"));
@@ -938,11 +1149,14 @@ public class ReporterCLI extends PsdbParent implements Callable {
                 lPrintWriter.print(ReporterCLIParameters.getOptionsAsString());
                 lPrintWriter.flush();
                 lPrintWriter.close();
+
                 System.exit(1);
+
             } else {
                 // Valid command line, start the processing
                 reporterCLI.call();
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -963,6 +1177,7 @@ public class ReporterCLI extends PsdbParent implements Callable {
     public static void redirectErrorStream(File logFolder) {
 
         try {
+
             logFolder.mkdirs();
             File file = new File(logFolder, "Reporter.log");
             System.setErr(new java.io.PrintStream(new FileOutputStream(file, true)));
@@ -973,6 +1188,7 @@ public class ReporterCLI extends PsdbParent implements Callable {
             System.err.println("Total amount of memory in the Java virtual machine: " + Runtime.getRuntime().totalMemory() + " b.");
             System.err.println("Free memory: " + Runtime.getRuntime().freeMemory() + " b.");
             System.err.println("Java version: " + System.getProperty("java.version") + ".");
+
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -183,64 +183,104 @@ public class PeptideClusterClassKey implements ClusterClassKey, Serializable {
 
     @Override
     public String getName() {
+
         StringBuilder name = new StringBuilder();
+
         if (nTerm) {
             name.append("N-term");
         }
+
         if (cTerm) {
+
             if (name.length() > 0) {
                 name.append(" ");
             }
+
             name.append("C-term");
+
         }
+
         if (notModified) {
+
             if (name.length() > 0) {
                 name.append(" ");
             }
+
             name.append("Not modified");
+
         }
+
         if (starred) {
+
             if (name.length() > 0) {
                 name.append(" ");
             }
+
             name.append("Starred");
+
         }
+
         if (possiblePtms != null || forbiddenPtms != null) {
+
             StringBuilder possible = new StringBuilder();
+
             if (possiblePtms != null) {
+
                 for (String possiblePtm : possiblePtms) {
+
                     if (possible.length() > 0) {
                         possible.append(", ");
                     }
+
                     possible.append(possiblePtm);
+
                 }
+
             }
+
             StringBuilder forbidden = new StringBuilder();
+
             if (forbiddenPtms != null) {
+
                 for (String possiblePtm : forbiddenPtms) {
+
                     if (forbidden.length() > 0) {
                         forbidden.append(", ");
                     }
+
                     forbidden.append(possiblePtm);
+
                 }
+
             }
+
             if (possible.length() > 0 && forbidden.length() > 0) {
+
                 if (name.length() > 0) {
                     name.append(" ");
                 }
+
                 name.append(possible).append("; but not ").append(forbidden);
+
             } else if (possible.length() > 0) {
+
                 if (name.length() > 0) {
                     name.append(" ");
                 }
+
                 name.append(possible);
+
             } else if (forbidden.length() > 0) {
+
                 if (name.length() > 0) {
                     name.append(" ");
                 }
+
                 name.append(forbidden);
+
             }
         }
+
         if (name.length() == 0) {
             return "All";
         } else {
@@ -250,7 +290,9 @@ public class PeptideClusterClassKey implements ClusterClassKey, Serializable {
 
     @Override
     public String getDescription() {
+
         StringBuilder description = new StringBuilder();
+
         if (starred) {
             description.append("Starred ");
         } else if (nTerm) {
@@ -262,21 +304,32 @@ public class PeptideClusterClassKey implements ClusterClassKey, Serializable {
         } else {
             description.append("All ");
         }
+
         description.append("peptides");
         StringBuilder possible = new StringBuilder();
+
         for (String possiblePtm : possiblePtms) {
+
             if (possible.length() > 0) {
                 possible.append(", ");
             }
+
             possible.append(possiblePtm);
+
         }
+
         StringBuilder forbidden = new StringBuilder();
+
         for (String possiblePtm : forbiddenPtms) {
+
             if (forbidden.length() > 0) {
                 forbidden.append(", ");
             }
+
             forbidden.append(possiblePtm);
+
         }
+
         if (possible.length() > 0 && forbidden.length() > 0) {
             description.append(" carrying ").append(possible).append("; but not ").append(forbidden);
         } else if (possible.length() > 0) {
@@ -284,6 +337,7 @@ public class PeptideClusterClassKey implements ClusterClassKey, Serializable {
         } else {
             description.append(" not carrying ").append(possible);
         }
+
         return description.toString();
     }
 

@@ -14,7 +14,7 @@ import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 
 /**
- * This class contains the style for a Reporter excel export.
+ * This class contains the style for a Reporter Excel export.
  *
  * @author Marc Vaudel
  * @author Harald Barsnes
@@ -32,15 +32,15 @@ public class ReporterReportStyle implements WorkbookStyle {
     /**
      * Map of the cell styles according to the hierarchical depth.
      */
-    private HashMap<Integer, CellStyle> hierarchicalStyles = new HashMap<Integer, CellStyle>();
+    private HashMap<Integer, CellStyle> hierarchicalStyles = new HashMap<>();
     /**
      * Map of the header styles according to the hierarchical depth.
      */
-    private HashMap<Integer, CellStyle> hierarchicalHeaders = new HashMap<Integer, CellStyle>();
+    private HashMap<Integer, CellStyle> hierarchicalHeaders = new HashMap<>();
     /**
      * Map of the different styles available.
      */
-    private static HashMap<HSSFWorkbook, ReporterReportStyle> styles = new HashMap<HSSFWorkbook, ReporterReportStyle>();
+    private static HashMap<HSSFWorkbook, ReporterReportStyle> styles = new HashMap<>();
 
     /**
      * Returns the style attached to that writer or create a new one if none
@@ -51,12 +51,15 @@ public class ReporterReportStyle implements WorkbookStyle {
      * @return the style attached to that writer
      */
     public static ReporterReportStyle getReportStyle(ExcelWriter excelWriter) {
+
         HSSFWorkbook workbook = excelWriter.getWorkbook();
         ReporterReportStyle result = styles.get(workbook);
+
         if (result == null) {
             result = new ReporterReportStyle(excelWriter);
             styles.put(workbook, result);
         }
+
         return result;
     }
 
@@ -66,8 +69,10 @@ public class ReporterReportStyle implements WorkbookStyle {
      * @param excelWriter the excel writer for this style
      */
     private ReporterReportStyle(ExcelWriter excelWriter) { //@TODO: possible to make a generic style workbook independent?
+
         this.workbook = excelWriter.getWorkbook();
         setCellStyles();
+
     }
 
     /**
@@ -121,11 +126,14 @@ public class ReporterReportStyle implements WorkbookStyle {
         subHeader.setAlignment(HorizontalAlignment.CENTER);
         subHeader.setVerticalAlignment(VerticalAlignment.CENTER);
         subHeader.setFillForegroundColor(HSSFColor.HSSFColorPredefined.GREY_50_PERCENT.getIndex());
-        palette.setColorAtIndex(HSSFColor.HSSFColorPredefined.GREY_50_PERCENT.getIndex(),
+
+        palette.setColorAtIndex(
+                HSSFColor.HSSFColorPredefined.GREY_50_PERCENT.getIndex(),
                 (byte) 250,
                 (byte) 220,
                 (byte) 220
         );
+
         subHeader.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         hierarchicalHeaders.put(1, subHeader);
 
@@ -138,11 +146,14 @@ public class ReporterReportStyle implements WorkbookStyle {
         subHeader.setAlignment(HorizontalAlignment.CENTER);
         subHeader.setVerticalAlignment(VerticalAlignment.CENTER);
         subHeader.setFillForegroundColor(HSSFColor.HSSFColorPredefined.GREY_40_PERCENT.getIndex());
-        palette.setColorAtIndex(HSSFColor.HSSFColorPredefined.GREY_40_PERCENT.getIndex(),
+
+        palette.setColorAtIndex(
+                HSSFColor.HSSFColorPredefined.GREY_40_PERCENT.getIndex(),
                 (byte) 250,
                 (byte) 230,
                 (byte) 230
         );
+
         subHeader.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         hierarchicalHeaders.put(2, subHeader);
 
@@ -155,15 +166,20 @@ public class ReporterReportStyle implements WorkbookStyle {
         subHeader.setAlignment(HorizontalAlignment.CENTER);
         subHeader.setVerticalAlignment(VerticalAlignment.CENTER);
         subHeader.setFillForegroundColor(HSSFColor.HSSFColorPredefined.GREY_25_PERCENT.getIndex());
-        palette.setColorAtIndex(HSSFColor.HSSFColorPredefined.GREY_25_PERCENT.getIndex(),
+
+        palette.setColorAtIndex(
+                HSSFColor.HSSFColorPredefined.GREY_25_PERCENT.getIndex(),
                 (byte) 250,
                 (byte) 240,
                 (byte) 240
         );
+
         subHeader.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
         for (int i = 3; i < 100; i++) {
             hierarchicalHeaders.put(i, subHeader);
         }
+
     }
 
     @Override
@@ -183,11 +199,15 @@ public class ReporterReportStyle implements WorkbookStyle {
 
     @Override
     public CellStyle getStandardStyle(int hierarchicalDepth) {
+
         CellStyle cellStyle = hierarchicalStyles.get(hierarchicalDepth);
+
         if (cellStyle == null) {
             cellStyle = standard;
         }
+
         return cellStyle;
+
     }
 
     @Override
@@ -202,11 +222,14 @@ public class ReporterReportStyle implements WorkbookStyle {
 
     @Override
     public CellStyle getHeaderStyle(int hierarchicalDepth) {
+
         CellStyle cellStyle = hierarchicalHeaders.get(hierarchicalDepth);
         if (cellStyle == null) {
             cellStyle = standardHeader;
         }
+
         return cellStyle;
+
     }
 
     @Override

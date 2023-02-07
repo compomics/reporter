@@ -43,7 +43,12 @@ public enum ReportCLIParams {
      * @param mandatory boolean indicating whether the parameter mandatory
      * @param hasArg boolean indicating whether the parameter needs an argument
      */
-    private ReportCLIParams(String id, String description, boolean mandatory, boolean hasArg) {
+    private ReportCLIParams(
+            String id,
+            String description,
+            boolean mandatory,
+            boolean hasArg
+    ) {
         this.id = id;
         this.description = description;
         this.mandatory = mandatory;

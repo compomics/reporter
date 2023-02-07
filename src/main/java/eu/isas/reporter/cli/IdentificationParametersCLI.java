@@ -19,7 +19,7 @@ public class IdentificationParametersCLI extends AbstractIdentificationParameter
      * The waiting handler.
      */
     private WaitingHandler waitingHandler;
-    
+
     /**
      * Construct a new SearchParametersCLI runnable from a list of arguments.
      * When initialization is successful, calling "run" will write the created
@@ -28,15 +28,26 @@ public class IdentificationParametersCLI extends AbstractIdentificationParameter
      * @param args the command line arguments
      */
     public IdentificationParametersCLI(String[] args) {
+
         try {
+
             waitingHandler = new WaitingHandlerCLIImpl();
             // check if there are updates to the paths
             String[] nonPathSettingArgsAsList = PathSettingsCLI.extractAndUpdatePathOptions(args);
             initiate(nonPathSettingArgsAsList);
+
         } catch (ParseException ex) {
-            waitingHandler.appendReport("An error occurred while running the command line.", true, true);
+
+            waitingHandler.appendReport(
+                    "An error occurred while running the command line.",
+                    true,
+                    true
+            );
+
             ex.printStackTrace();
+
         }
+
     }
 
     /**
@@ -46,11 +57,13 @@ public class IdentificationParametersCLI extends AbstractIdentificationParameter
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+
         try {
             new IdentificationParametersCLI(args);
         } catch (Exception e) {
             e.printStackTrace();
         }
+
     }
 
     @Override
@@ -69,6 +82,11 @@ public class IdentificationParametersCLI extends AbstractIdentificationParameter
      * @return the path to the jar file
      */
     public String getJarFilePath() {
-        return CompomicsWrapper.getJarFilePath(this.getClass().getResource("IdentificationParametersCLI.class").getPath(), "Reporter");
+
+        return CompomicsWrapper.getJarFilePath(
+                this.getClass().getResource("IdentificationParametersCLI.class").getPath(),
+                "Reporter"
+        );
+
     }
 }

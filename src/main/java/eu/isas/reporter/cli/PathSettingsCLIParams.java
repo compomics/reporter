@@ -104,11 +104,13 @@ public enum PathSettingsCLIParams {
         output += "\n\nSpecific Path Setting:\n\n";
 
         for (ReporterPathPreferences.ReporterPathKey reporterPathKey : ReporterPathPreferences.ReporterPathKey.values()) {
-            output += "-" + String.format(formatter, reporterPathKey.getId()) + " " + reporterPathKey.getDescription() + System.getProperty("line.separator");
+            output += "-" + String.format(formatter, reporterPathKey.getId())
+                    + " " + reporterPathKey.getDescription() + System.getProperty("line.separator");
         }
 
         for (UtilitiesPathParameters.UtilitiesPathKey utilitiesPathKey : UtilitiesPathParameters.UtilitiesPathKey.values()) {
-            output += "-" + String.format(formatter, utilitiesPathKey.getId()) + " " + utilitiesPathKey.getDescription() + System.getProperty("line.separator");
+            output += "-" + String.format(formatter, utilitiesPathKey.getId())
+                    + " " + utilitiesPathKey.getDescription() + System.getProperty("line.separator");
         }
 
         return output;

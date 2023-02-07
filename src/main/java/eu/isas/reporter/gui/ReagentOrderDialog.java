@@ -75,10 +75,17 @@ public class ReagentOrderDialog extends javax.swing.JDialog {
      * @param reporterIonQuantification the reporter ion quantifications
      * @param controlSamples the control sample names
      */
-    public ReagentOrderDialog(ReporterGUI reporterGUI, boolean modal, ArrayList<String> reagents, ReporterMethod aSelectedMethod, 
-            ReporterIonQuantification reporterIonQuantification, ArrayList<String> controlSamples) {
+    public ReagentOrderDialog(
+            ReporterGUI reporterGUI,
+            boolean modal,
+            ArrayList<String> reagents,
+            ReporterMethod aSelectedMethod,
+            ReporterIonQuantification reporterIonQuantification,
+            ArrayList<String> controlSamples
+    ) {
+
         super(reporterGUI, modal);
-        
+
         this.reporterGUI = reporterGUI;
 
         // copy the regagents
@@ -88,26 +95,26 @@ public class ReagentOrderDialog extends javax.swing.JDialog {
         selectedMethod = aSelectedMethod;
         this.reporterIonQuantification = reporterIonQuantification;
         this.controlSamples = controlSamples;
-        
+
         methodsFile = Reporter.getMethodsFile();
         importMethods();
 
         initComponents();
 
         setUpGui();
-        
+
         reporterMethodComboBox.setSelectedItem(aSelectedMethod.getName());
         setTableProperties();
 
         setLocationRelativeTo(reporterGUI);
         setVisible(true);
     }
-    
+
     /**
      * Set up the GUI.
      */
     private void setUpGui() {
-        
+
         // table header tooltips
         sampleAssignmentTableToolTips = new ArrayList<String>();
         sampleAssignmentTableToolTips.add(null);
@@ -124,7 +131,7 @@ public class ReagentOrderDialog extends javax.swing.JDialog {
         // disable the user to drag column headers to reorder columns
         sampleAssignmentTable.getTableHeader().setReorderingAllowed(false);
     }
-    
+
     /**
      * Set up the properties of the tables.
      */
@@ -136,12 +143,16 @@ public class ReagentOrderDialog extends javax.swing.JDialog {
         sampleAssignmentTable.getColumnModel().getColumn(3).setMinWidth(80);
         sampleAssignmentTable.getColumnModel().getColumn(3).setMaxWidth(80);
 
-        sampleAssignmentTable.getColumnModel().getColumn(3).setCellRenderer(new TrueFalseIconRenderer(
-                new ImageIcon(this.getClass().getResource("/icons/selected_green-new.png")),
-                null,
-                "Yes", "No"));
+        sampleAssignmentTable.getColumnModel().getColumn(3).setCellRenderer(
+                new TrueFalseIconRenderer(
+                        new ImageIcon(this.getClass().getResource("/icons/selected_green-new.png")),
+                        null,
+                        "Yes",
+                        "No"
+                )
+        );
     }
-    
+
     /**
      * Returns the new reagents order.
      *
@@ -159,7 +170,7 @@ public class ReagentOrderDialog extends javax.swing.JDialog {
     public boolean isCancelled() {
         return cancelled;
     }
-    
+
     /**
      * Imports the methods from the methods file.
      */
@@ -171,34 +182,56 @@ public class ReagentOrderDialog extends javax.swing.JDialog {
             importMethodsError();
         }
     }
-    
+
     /**
      * Method called whenever an error was encountered while loading the
      * methods.
      */
     private void importMethodsError() {
 
-        JOptionPane.showMessageDialog(this, "Default reporter methods file could not be parsed, please select a method file.", "No Spectrum File Selected", JOptionPane.WARNING_MESSAGE);
+        JOptionPane.showMessageDialog(
+                this,
+                "Default reporter methods file could not be parsed, please select a method file.",
+                "No Spectrum File Selected",
+                JOptionPane.WARNING_MESSAGE
+        );
+
         JFileChooser fileChooser = new JFileChooser(reporterGUI.getLastSelectedFolder().getLastSelectedFolder());
         fileChooser.setDialogTitle("Select Methods file");
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fileChooser.setMultiSelectionEnabled(false);
 
         int returnVal = fileChooser.showDialog(this.getParent(), "Add");
+
         if (returnVal == JFileChooser.APPROVE_OPTION) {
+
             File newFile = fileChooser.getSelectedFile();
+
             try {
+
                 methodsFactory.importMethods(newFile);
                 reporterGUI.getLastSelectedFolder().setLastSelectedFolder(newFile.getPath());
+
             } catch (IOException e) {
-                JOptionPane.showMessageDialog(null,
+
+                JOptionPane.showMessageDialog(
+                        null,
                         "File " + newFile + " could not be parsed.",
-                        "Methods file error", JOptionPane.WARNING_MESSAGE);
+                        "Methods file error",
+                        JOptionPane.WARNING_MESSAGE
+                );
+
                 importMethodsError();
+
             } catch (XmlPullParserException e) {
-                JOptionPane.showMessageDialog(this,
+
+                JOptionPane.showMessageDialog(
+                        this,
                         "An error occurred while parsing " + newFile + " at line " + e.getLineNumber() + ".",
-                        "Parsing error", JOptionPane.WARNING_MESSAGE);
+                        "Parsing error",
+                        JOptionPane.WARNING_MESSAGE
+                );
+
                 importMethodsError();
             }
         }
@@ -426,6 +459,7 @@ public class ReagentOrderDialog extends javax.swing.JDialog {
      * @param evt the mouse event
      */
     private void sampleAssignmentTableMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_sampleAssignmentTableMouseReleased
+
         int selectedRows[] = sampleAssignmentTable.getSelectedRows();
 
         if (selectedRows.length > 0) {
@@ -439,14 +473,16 @@ public class ReagentOrderDialog extends javax.swing.JDialog {
             moveDownButton.setEnabled(false);
             moveBottomButton.setEnabled(false);
         }
+
     }//GEN-LAST:event_sampleAssignmentTableMouseReleased
 
     /**
      * Move the selected row up.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void moveUpButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveUpButtonActionPerformed
+
         int[] selectedRows = sampleAssignmentTable.getSelectedRows();
 
         if (selectedRows.length > 0 && selectedRows[0] > 0) {
@@ -458,14 +494,16 @@ public class ReagentOrderDialog extends javax.swing.JDialog {
             resetTableIndexes();
             sampleAssignmentTableMouseReleased(null);
         }
+
     }//GEN-LAST:event_moveUpButtonActionPerformed
 
     /**
      * Move the selected row to the top.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void moveTopButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveTopButtonActionPerformed
+
         int[] selectedRows = sampleAssignmentTable.getSelectedRows();
 
         if (selectedRows.length > 0 && selectedRows[0] > 0) {
@@ -476,14 +514,16 @@ public class ReagentOrderDialog extends javax.swing.JDialog {
             resetTableIndexes();
             sampleAssignmentTableMouseReleased(null);
         }
+
     }//GEN-LAST:event_moveTopButtonActionPerformed
 
     /**
      * Move the selected row down.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void moveDownButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveDownButtonActionPerformed
+
         int[] selectedRows = sampleAssignmentTable.getSelectedRows();
 
         if (selectedRows.length > 0 && selectedRows[selectedRows.length - 1] < sampleAssignmentTable.getRowCount() - 1) {
@@ -495,14 +535,16 @@ public class ReagentOrderDialog extends javax.swing.JDialog {
             resetTableIndexes();
             sampleAssignmentTableMouseReleased(null);
         }
+
     }//GEN-LAST:event_moveDownButtonActionPerformed
 
     /**
      * Move the selected row to the bottom.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void moveBottomButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveBottomButtonActionPerformed
+
         int[] selectedRows = sampleAssignmentTable.getSelectedRows();
 
         if (selectedRows.length > 0 && selectedRows[selectedRows.length - 1] < sampleAssignmentTable.getRowCount() - 1) {
@@ -513,6 +555,7 @@ public class ReagentOrderDialog extends javax.swing.JDialog {
             resetTableIndexes();
             sampleAssignmentTableMouseReleased(null);
         }
+
     }//GEN-LAST:event_moveBottomButtonActionPerformed
 
     /**
@@ -521,24 +564,28 @@ public class ReagentOrderDialog extends javax.swing.JDialog {
      * @param evt
      */
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+
         cancelled = true;
         this.dispose();
+
     }//GEN-LAST:event_formWindowClosing
 
     /**
      * Cancel the dialog.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+
         cancelled = true;
         this.dispose();
+
     }//GEN-LAST:event_cancelButtonActionPerformed
 
     /**
      * Close the dialog.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
         this.dispose();
@@ -585,6 +632,7 @@ public class ReagentOrderDialog extends javax.swing.JDialog {
 
         @Override
         public String getColumnName(int column) {
+
             switch (column) {
                 case 0:
                     return " ";
@@ -597,11 +645,14 @@ public class ReagentOrderDialog extends javax.swing.JDialog {
                 default:
                     return "";
             }
+
         }
 
         @Override
         public Object getValueAt(int row, int column) {
+
             String reagentName = reagents.get(row);
+
             switch (column) {
                 case 0:
                     return (row + 1);
@@ -615,6 +666,7 @@ public class ReagentOrderDialog extends javax.swing.JDialog {
                 default:
                     return "";
             }
+
         }
 
         @Override

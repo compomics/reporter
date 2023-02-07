@@ -48,33 +48,47 @@ public class ReportCLIInputBean {
     public ReportCLIInputBean(CommandLine aLine) {
 
         if (aLine.hasOption(ReportCLIParams.PSDB_FILE.id)) {
+
             String file = aLine.getOptionValue(ReportCLIParams.PSDB_FILE.id);
+
             if (file.toLowerCase().endsWith(".psdb") || file.toLowerCase().endsWith(".zip")) {
                 psdbFile = new File(file);
             } else {
                 throw new IllegalArgumentException("Unknown file format \'" + file + "\' for PeptideShaker project input.");
             }
+
         }
+
         if (aLine.hasOption(ReportCLIParams.EXPORT_FOLDER.id)) {
             reportOutputFolder = new File(aLine.getOptionValue(ReportCLIParams.EXPORT_FOLDER.id));
         }
+
         if (aLine.hasOption(ReportCLIParams.EXPORT_PREFIX.id)) {
             reportNamePrefix = aLine.getOptionValue(ReportCLIParams.EXPORT_PREFIX.id);
         }
+
         if (aLine.hasOption(ReportCLIParams.REPORT_TYPE.id)) {
+
             ArrayList<Integer> options = CommandLineUtils.getIntegerListFromString(aLine.getOptionValue(ReportCLIParams.REPORT_TYPE.id), ",");
             ReporterExportFactory exportFactory = ReporterExportFactory.getInstance();
+
             for (int option : options) {
                 reportTypes.add(exportFactory.getExportTypeFromCommandLineOption(option));
             }
+
         }
+
         if (aLine.hasOption(ReportCLIParams.DOCUMENTATION_TYPE.id)) {
+
             ArrayList<Integer> options = CommandLineUtils.getIntegerListFromString(aLine.getOptionValue(ReportCLIParams.DOCUMENTATION_TYPE.id), ",");
             ReporterExportFactory exportFactory = ReporterExportFactory.getInstance();
+
             for (int option : options) {
                 documentationTypes.add(exportFactory.getExportTypeFromCommandLineOption(option));
             }
+
         }
+
         pathSettingsCLIInputBean = new PathSettingsCLIInputBean(aLine);
     }
 
@@ -104,7 +118,7 @@ public class ReportCLIInputBean {
     public void setReportOutputFolder(File outputFolder) {
         this.reportOutputFolder = outputFolder;
     }
-    
+
     /**
      * Returns the report name prefix.
      *

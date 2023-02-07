@@ -177,7 +177,7 @@ public class ReporterCLIInputBean {
         // get the number of threads
         if (aLine.hasOption(ReporterCLIParameters.THREADS.id)) {
             arg = aLine.getOptionValue(ReporterCLIParameters.THREADS.id);
-            nThreads = new Integer(arg);
+            nThreads = Integer.valueOf(arg);
         }
 
         // get the reporter ion method
@@ -196,77 +196,77 @@ public class ReporterCLIInputBean {
         // get the reporter ion m/z tolerance
         if (aLine.hasOption(ReporterCLIParameters.ION_TOL.id)) {
             arg = aLine.getOptionValue(ReporterCLIParameters.ION_TOL.id);
-            Double input = new Double(arg);
+            Double input = Double.valueOf(arg);
             reporterIonTolerance = input;
         }
 
         // get the most accurate option
         if (aLine.hasOption(ReporterCLIParameters.MOST_ACCURATE.id)) {
             arg = aLine.getOptionValue(ReporterCLIParameters.MOST_ACCURATE.id);
-            Integer input = new Integer(arg);
+            Integer input = Integer.valueOf(arg);
             mostAccurate = input.equals(1);
         }
 
         // get the same spectra option
         if (aLine.hasOption(ReporterCLIParameters.SAME_SPECTRA.id)) {
             arg = aLine.getOptionValue(ReporterCLIParameters.SAME_SPECTRA.id);
-            Integer input = new Integer(arg);
+            Integer input = Integer.valueOf(arg);
             sameSpectra = input.equals(1);
         }
 
         // get the precursor ion m/z tolerance
         if (aLine.hasOption(ReporterCLIParameters.PREC_WINDOW_MZ_TOL.id)) {
             arg = aLine.getOptionValue(ReporterCLIParameters.PREC_WINDOW_MZ_TOL.id);
-            Double input = new Double(arg);
+            Double input = Double.valueOf(arg);
             precMzTolerance = input;
         }
 
         // get the precursor ion m/z tolerance unit
         if (aLine.hasOption(ReporterCLIParameters.PREC_WINDOW_MZ_TOL_PPM.id)) {
             arg = aLine.getOptionValue(ReporterCLIParameters.PREC_WINDOW_MZ_TOL_PPM.id);
-            Integer input = new Integer(arg);
+            Integer input = Integer.valueOf(arg);
             precMzTolerancePpm = input.equals(1);
         }
 
         // get the precursor ion RT tolerance
         if (aLine.hasOption(ReporterCLIParameters.PREC_WINDOW_RT_TOL.id)) {
             arg = aLine.getOptionValue(ReporterCLIParameters.PREC_WINDOW_RT_TOL.id);
-            Double input = new Double(arg);
+            Double input = Double.valueOf(arg);
             precRtTolerance = input;
         }
 
         // get the ignore null option
         if (aLine.hasOption(ReporterCLIParameters.IGNORE_NULL.id)) {
             arg = aLine.getOptionValue(ReporterCLIParameters.IGNORE_NULL.id);
-            Integer input = new Integer(arg);
+            Integer input = Integer.valueOf(arg);
             ignoreNull = input.equals(1);
         }
 
         // get the ignore missed cleavages option
         if (aLine.hasOption(ReporterCLIParameters.IGNORE_MC.id)) {
             arg = aLine.getOptionValue(ReporterCLIParameters.IGNORE_MC.id);
-            Integer input = new Integer(arg);
+            Integer input = Integer.valueOf(arg);
             ignoreMc = input.equals(1);
         }
 
         // get the percentile option for ratio estimation
         if (aLine.hasOption(ReporterCLIParameters.PERCENTILE.id)) {
             arg = aLine.getOptionValue(ReporterCLIParameters.PERCENTILE.id);
-            Double input = new Double(arg);
+            Double input = Double.valueOf(arg);
             percentile = input;
         }
 
         // get the resolution option for ratio estimation
         if (aLine.hasOption(ReporterCLIParameters.RESOLUTION.id)) {
             arg = aLine.getOptionValue(ReporterCLIParameters.RESOLUTION.id);
-            Double input = new Double(arg);
+            Double input = Double.valueOf(arg);
             resolution = input;
         }
 
         // get the number of unique peptides
         if (aLine.hasOption(ReporterCLIParameters.MIN_UNIQUE.id)) {
             arg = aLine.getOptionValue(ReporterCLIParameters.MIN_UNIQUE.id);
-            minUnique = new Integer(arg);
+            minUnique = Integer.valueOf(arg);
         }
 
         // get the ignored PTMs
@@ -278,39 +278,39 @@ public class ReporterCLIInputBean {
         // get the PSM validation level
         if (aLine.hasOption(ReporterCLIParameters.VALIDATION_PSM.id)) {
             arg = aLine.getOptionValue(ReporterCLIParameters.VALIDATION_PSM.id);
-            validationPsm = new Integer(arg);
+            validationPsm = Integer.valueOf(arg);
         }
 
         // get the peptide validation level
         if (aLine.hasOption(ReporterCLIParameters.VALIDATION_PEPTIDE.id)) {
             arg = aLine.getOptionValue(ReporterCLIParameters.VALIDATION_PEPTIDE.id);
-            validationPeptide = new Integer(arg);
+            validationPeptide = Integer.valueOf(arg);
         }
 
         // get the peptide validation level
         if (aLine.hasOption(ReporterCLIParameters.VALIDATION_PROTEIN.id)) {
             arg = aLine.getOptionValue(ReporterCLIParameters.VALIDATION_PROTEIN.id);
-            validationProtein = new Integer(arg);
+            validationProtein = Integer.valueOf(arg);
         }
 
         // get the PSM normalization
         if (aLine.hasOption(ReporterCLIParameters.NORMALIZATION_PSM.id)) {
             arg = aLine.getOptionValue(ReporterCLIParameters.NORMALIZATION_PSM.id);
-            Integer index = new Integer(arg);
+            Integer index = Integer.valueOf(arg);
             psmNormalizationType = NormalizationType.getNormalizationType(index);
         }
 
         // get the peptide normalization
         if (aLine.hasOption(ReporterCLIParameters.NORMALIZATION_PEPTIDE.id)) {
             arg = aLine.getOptionValue(ReporterCLIParameters.NORMALIZATION_PEPTIDE.id);
-            Integer index = new Integer(arg);
+            Integer index = Integer.valueOf(arg);
             peptideNormalizationType = NormalizationType.getNormalizationType(index);
         }
 
         // get the protein normalization
         if (aLine.hasOption(ReporterCLIParameters.NORMALIZATION_PROTEIN.id)) {
             arg = aLine.getOptionValue(ReporterCLIParameters.NORMALIZATION_PROTEIN.id);
-            Integer index = new Integer(arg);
+            Integer index = Integer.valueOf(arg);
             proteinNormalizationType = NormalizationType.getNormalizationType(index);
         }
 
@@ -461,11 +461,13 @@ public class ReporterCLIInputBean {
      * @return the identification parameters file
      */
     public File getIdentificationParametersFile() {
+        
         if (identificationParametersInputBean.getDestinationFile() != null) {
             return identificationParametersInputBean.getDestinationFile();
         } else {
             return identificationParametersInputBean.getInputFile();
         }
+        
     }
 
     /**
@@ -520,9 +522,9 @@ public class ReporterCLIInputBean {
     }
 
     /**
-     * Returns the list of ptms to ignore.
+     * Returns the list of PTMs to ignore.
      *
-     * @return the list of ptms to ignore
+     * @return the list of PTMs to ignore
      */
     public ArrayList<String> getIgnoredPtms() {
         return ignoredPtms;

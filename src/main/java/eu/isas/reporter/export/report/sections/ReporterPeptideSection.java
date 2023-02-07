@@ -79,9 +79,17 @@ public class ReporterPeptideSection {
      * @param header indicates whether the table header should be written
      * @param writer the writer which will write to the file
      */
-    public ReporterPeptideSection(ArrayList<ExportFeature> exportFeatures, boolean indexes, boolean header, ExportWriter writer) {
+    public ReporterPeptideSection(
+            ArrayList<ExportFeature> exportFeatures,
+            boolean indexes,
+            boolean header,
+            ExportWriter writer
+    ) {
+
         ArrayList<ExportFeature> psmFeatures = new ArrayList<>();
+
         for (ExportFeature exportFeature : exportFeatures) {
+
             if (exportFeature instanceof PsPeptideFeature) {
                 identificationFeatures.add(exportFeature);
             } else if (exportFeature instanceof ReporterPeptideFeature) {
@@ -92,18 +100,32 @@ public class ReporterPeptideSection {
                     || exportFeature instanceof PsFragmentFeature) {
                 psmFeatures.add(exportFeature);
             } else {
-                throw new IllegalArgumentException("Export feature of type " + exportFeature.getClass() + " not recognized.");
+                throw new IllegalArgumentException(
+                        "Export feature of type "
+                        + exportFeature.getClass()
+                        + " not recognized."
+                );
             }
+
         }
+
         if (!psmFeatures.isEmpty()) {
-            psmSection = new ReporterPsmSection(psmFeatures, indexes, header, writer);
+            psmSection = new ReporterPsmSection(
+                    psmFeatures,
+                    indexes,
+                    header,
+                    writer
+            );
         }
+
         this.indexes = indexes;
         this.header = header;
         this.writer = writer;
+
         if (writer instanceof ExcelWriter) {
             reporterStyle = ReporterReportStyle.getReportStyle((ExcelWriter) writer);
         }
+
     }
 
     /**
@@ -208,20 +230,26 @@ public class ReporterPeptideSection {
                     boolean first = true;
 
                     if (indexes) {
+
                         if (linePrefix != null) {
                             writer.write(linePrefix);
                         }
+
                         writer.write(line + "");
                         first = false;
+
                     }
 
                     for (ExportFeature exportFeature : identificationFeatures) {
+
                         if (!first) {
                             writer.addSeparator();
                         } else {
                             first = false;
                         }
+
                         PsPeptideFeature peptideFeature = (PsPeptideFeature) exportFeature;
+
                         writer.write(PsPeptideSection.getfeature(
                                 identification,
                                 identificationFeaturesGenerator,
@@ -236,19 +264,26 @@ public class ReporterPeptideSection {
                                 decoys,
                                 waitingHandler)
                         );
+
                     }
 
                     ArrayList<String> sampleIndexes = new ArrayList<>(reporterIonQuantification.getSampleIndexes());
                     Collections.sort(sampleIndexes);
+
                     for (ExportFeature exportFeature : quantificationFeatures) {
+
                         ReporterPeptideFeature peptideFeature = (ReporterPeptideFeature) exportFeature;
+
                         if (peptideFeature.hasChannels()) {
+
                             for (String sampleIndex : sampleIndexes) {
+
                                 if (!first) {
                                     writer.addSeparator();
                                 } else {
                                     first = false;
                                 }
+
                                 writer.write(
                                         getFeature(
                                                 spectrumProvider,
@@ -259,14 +294,17 @@ public class ReporterPeptideSection {
                                                 sampleIndex,
                                                 waitingHandler
                                         ),
-                                        reporterStyle);
+                                        reporterStyle
+                                );
                             }
                         } else {
+
                             if (!first) {
                                 writer.addSeparator();
                             } else {
                                 first = false;
                             }
+
                             writer.write(
                                     getFeature(
                                             spectrumProvider,
@@ -277,18 +315,23 @@ public class ReporterPeptideSection {
                                             "",
                                             waitingHandler
                                     ),
-                                    reporterStyle);
+                                    reporterStyle
+                            );
                         }
                     }
 
                     if (psmSection != null) {
+
                         writer.newLine();
                         String psmSectionPrefix = "";
+
                         if (linePrefix != null) {
                             psmSectionPrefix += linePrefix;
                         }
+
                         psmSectionPrefix += line + ".";
                         writer.increaseDepth();
+
                         psmSection.writeSection(
                                 identification,
                                 identificationFeaturesGenerator,
@@ -306,10 +349,13 @@ public class ReporterPeptideSection {
                                 decoys,
                                 null
                         );
+
                         writer.decreseDepth();
                     }
+
                     line++;
                     writer.newLine();
+
                 }
             }
         }
@@ -353,12 +399,28 @@ public class ReporterPeptideSection {
     ) throws SQLException, IOException, ClassNotFoundException, InterruptedException {
 
         switch (peptideFeatures) {
+
             case raw_ratio:
-                PeptideQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(spectrumProvider, peptideMatch, waitingHandler);
+
+                PeptideQuantificationDetails quantificationDetails
+                        = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(
+                                spectrumProvider,
+                                peptideMatch,
+                                waitingHandler
+                        );
+
                 return quantificationDetails.getRawRatio(sampleIndex).toString();
+
             case normalized_ratio:
-                quantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(spectrumProvider, peptideMatch, waitingHandler);
+
+                quantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(
+                        spectrumProvider,
+                        peptideMatch,
+                        waitingHandler
+                );
+
                 return quantificationDetails.getRatio(sampleIndex, reporterIonQuantification.getNormalizationFactors()).toString();
+
             default:
                 return "Not implemented";
         }
@@ -380,69 +442,98 @@ public class ReporterPeptideSection {
         Collections.sort(sampleIndexes);
 
         boolean firstColumn = true;
+
         if (indexes) {
             writer.writeHeaderText("");
             writer.addSeparator();
         }
+
         for (ExportFeature exportFeature : identificationFeatures) {
+
             if (firstColumn) {
                 firstColumn = false;
             } else {
                 writer.addSeparator();
             }
+
             writer.writeHeaderText(exportFeature.getTitle());
         }
+
         for (ReporterExportFeature exportFeature : quantificationFeatures) {
+
             if (firstColumn) {
                 firstColumn = false;
             } else {
                 writer.addSeparator();
             }
+
             writer.writeHeaderText(exportFeature.getTitle(), reporterStyle);
+
             if (exportFeature.hasChannels()) {
+
                 for (int i = 1; i < sampleIndexes.size(); i++) {
+
                     if (firstColumn) {
                         firstColumn = false;
                     } else {
                         writer.addSeparator();
                     }
+
                     writer.writeHeaderText(" ", reporterStyle); // Space used for the excel style
                 }
+
                 needSecondLine = true;
+
             }
+
         }
+
         if (needSecondLine) {
+
             writer.newLine();
             firstColumn = true;
+
             if (indexes) {
                 writer.addSeparator();
             }
+
             for (ExportFeature exportFeature : identificationFeatures) {
+
                 if (firstColumn) {
                     firstColumn = false;
                 } else {
                     writer.writeHeaderText("");
                     writer.addSeparator();
                 }
+
             }
+
             for (ReporterExportFeature exportFeature : quantificationFeatures) {
+
                 if (exportFeature.hasChannels()) {
+
                     for (String sampleIndex : sampleIndexes) {
+
                         if (firstColumn) {
                             firstColumn = false;
                         } else {
                             writer.writeHeaderText("", reporterStyle);
                             writer.addSeparator();
                         }
+
                         writer.write(reporterIonQuantification.getSample(sampleIndex), reporterStyle);
+
                     }
+
                 } else {
+
                     if (firstColumn) {
                         firstColumn = false;
                     } else {
                         writer.writeHeaderText("", reporterStyle);
                         writer.addSeparator();
                     }
+
                 }
             }
         }

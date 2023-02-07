@@ -140,6 +140,7 @@ public class ReporterExportFactory implements ExportFactory {
 
         JsonMarshaller jsonMarshaller = new ExportFactoryMarshaller();
         jsonMarshaller.saveObjectToJson(reporterExportFactory, factoryFile);
+
     }
 
     /**

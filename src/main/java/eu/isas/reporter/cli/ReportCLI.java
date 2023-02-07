@@ -101,7 +101,7 @@ public class ReportCLI extends PsdbParent {
             // ignore, i.e. simply show the warnings...
             //ex.printStackTrace();
         }
-        
+
         setDbFolder(PeptideShaker.getMatchesFolder());
 
         // load user preferences
@@ -114,7 +114,7 @@ public class ReportCLI extends PsdbParent {
 
         // load the species
         loadSpecies();
-        
+
         // load default methods
         try {
             methodsFactory.importMethods(Reporter.getMethodsFile());
@@ -252,7 +252,13 @@ public class ReportCLI extends PsdbParent {
 
                 } catch (Exception e) {
 
-                    waitingHandler.appendReport("An error occurred while exporting the documentation for " + reportType + ".", true, true);
+                    waitingHandler.appendReport(
+                            "An error occurred while exporting the documentation for "
+                            + reportType + ".",
+                            true,
+                            true
+                    );
+
                     e.printStackTrace();
                     waitingHandler.setRunCanceled();
 
@@ -276,14 +282,18 @@ public class ReportCLI extends PsdbParent {
             waitingHandler.appendReport("Report export completed.", true, true);
             System.exit(0); // @TODO: Find other ways of cancelling the process? If not cancelled searchgui will not stop.
 
-            // Note that if a different solution is found, the DummyFrame has to be closed similar to the setVisible method in the WelcomeDialog!!
+            // Note that if a different solution is found, 
+            // the DummyFrame has to be closed similar to 
+            // the setVisible method in the WelcomeDialog!!
             return 0;
 
         } else {
 
             System.exit(1); // @TODO: Find other ways of cancelling the process? If not cancelled searchgui will not stop.
 
-            // Note that if a different solution is found, the DummyFrame has to be closed similar to the setVisible method in the WelcomeDialog!!
+            // Note that if a different solution is found, 
+            // the DummyFrame has to be closed similar to 
+            // the setVisible method in the WelcomeDialog!!
             return 1;
 
         }
@@ -295,11 +305,15 @@ public class ReportCLI extends PsdbParent {
     private static String getHeader() {
 
         return System.getProperty("line.separator")
-                + "The Reporter report command line takes a psdb file and generates various types of reports." + System.getProperty("line.separator")
+                + "The Reporter report command line takes a psdb file and generates various types of reports."
                 + System.getProperty("line.separator")
-                + "For further help see https://compomics.github.io/projects/reporter.html and https://compomics.github.io/projects/reporter/wiki/reportercli.html." + System.getProperty("line.separator")
                 + System.getProperty("line.separator")
-                + "Or contact the developers at https://groups.google.com/group/reporter_software." + System.getProperty("line.separator")
+                + "For further help see https://compomics.github.io/projects/reporter.html "
+                + "and https://compomics.github.io/projects/reporter/wiki/reportercli.html."
+                + System.getProperty("line.separator")
+                + System.getProperty("line.separator")
+                + "Or contact the developers at https://groups.google.com/group/reporter_software."
+                + System.getProperty("line.separator")
                 + System.getProperty("line.separator")
                 + "----------------------"
                 + System.getProperty("line.separator")
@@ -321,7 +335,8 @@ public class ReportCLI extends PsdbParent {
             return false;
         }
 
-        if (!aLine.hasOption(ReportCLIParams.PSDB_FILE.id) || ((String) aLine.getOptionValue(ReportCLIParams.PSDB_FILE.id)).equals("")) {
+        if (!aLine.hasOption(ReportCLIParams.PSDB_FILE.id)
+                || ((String) aLine.getOptionValue(ReportCLIParams.PSDB_FILE.id)).equals("")) {
 
             System.out.println("\n" + ReportCLIParams.PSDB_FILE.description + " not specified.\n");
             return false;
@@ -333,16 +348,29 @@ public class ReportCLI extends PsdbParent {
 
             if (!testFile.exists()) {
 
-                System.out.println("\n" + ReportCLIParams.PSDB_FILE.description + " \'" + testFile.getAbsolutePath() + "\' not found.\n");
+                System.out.println(
+                        "\n"
+                        + ReportCLIParams.PSDB_FILE.description
+                        + " \'"
+                        + testFile.getAbsolutePath()
+                        + "\' not found.\n"
+                );
+
                 return false;
 
             }
 
         }
 
-        if (!aLine.hasOption(ReportCLIParams.EXPORT_FOLDER.id) || ((String) aLine.getOptionValue(ReportCLIParams.EXPORT_FOLDER.id)).equals("")) {
+        if (!aLine.hasOption(ReportCLIParams.EXPORT_FOLDER.id)
+                || ((String) aLine.getOptionValue(ReportCLIParams.EXPORT_FOLDER.id)).equals("")) {
 
-            System.out.println("\n" + ReportCLIParams.EXPORT_FOLDER.description + " not specified.\n");
+            System.out.println(
+                    "\n"
+                    + ReportCLIParams.EXPORT_FOLDER.description
+                    + " not specified.\n"
+            );
+
             return false;
 
         } else {
@@ -352,7 +380,14 @@ public class ReportCLI extends PsdbParent {
 
             if (!testFile.exists()) {
 
-                System.out.println("\n" + ReportCLIParams.EXPORT_FOLDER.description + " \'" + testFile.getAbsolutePath() + "\' not found.\n");
+                System.out.println(
+                        "\n"
+                        + ReportCLIParams.EXPORT_FOLDER.description
+                        + " \'"
+                        + testFile.getAbsolutePath()
+                        + "\' not found.\n"
+                );
+
                 return false;
 
             }
@@ -383,9 +418,23 @@ public class ReportCLI extends PsdbParent {
             if (!isValidStartup(line)) {
 
                 PrintWriter lPrintWriter = new PrintWriter(System.out);
-                lPrintWriter.print(System.getProperty("line.separator") + "===============================================" + System.getProperty("line.separator"));
-                lPrintWriter.print("Reporter Report Exporter - Command Line" + System.getProperty("line.separator"));
-                lPrintWriter.print("===============================================" + System.getProperty("line.separator"));
+
+                lPrintWriter.print(
+                        System.getProperty("line.separator")
+                        + "==============================================="
+                        + System.getProperty("line.separator")
+                );
+
+                lPrintWriter.print(
+                        "Reporter Report Exporter - Command Line"
+                        + System.getProperty("line.separator")
+                );
+
+                lPrintWriter.print(
+                        "==============================================="
+                        + System.getProperty("line.separator")
+                );
+
                 lPrintWriter.print(getHeader());
                 lPrintWriter.print(ReportCLIParams.getOptionsAsString());
                 lPrintWriter.flush();
@@ -403,17 +452,38 @@ public class ReportCLI extends PsdbParent {
 
         } catch (OutOfMemoryError e) {
 
-            System.out.println("<CompomicsError>Reporter used up all the memory and had to be stopped. See the Reporter log for details.</CompomicsError>");
+            System.out.println(
+                    "<CompomicsError>Reporter used up all the memory and had to be stopped. "
+                    + "See the Reporter log for details.</CompomicsError>"
+            );
+
             System.err.println("Ran out of memory!");
-            System.err.println("Memory given to the Java virtual machine: " + Runtime.getRuntime().maxMemory() + ".");
-            System.err.println("Memory used by the Java virtual machine: " + Runtime.getRuntime().totalMemory() + ".");
-            System.err.println("Free memory in the Java virtual machine: " + Runtime.getRuntime().freeMemory() + ".");
+
+            System.err.println(
+                    "Memory given to the Java virtual machine: "
+                    + Runtime.getRuntime().maxMemory() + "."
+            );
+
+            System.err.println(
+                    "Memory used by the Java virtual machine: "
+                    + Runtime.getRuntime().totalMemory() + "."
+            );
+
+            System.err.println(
+                    "Free memory in the Java virtual machine: "
+                    + Runtime.getRuntime().freeMemory() + "."
+            );
+
             e.printStackTrace();
             System.exit(1);
 
         } catch (Exception e) {
 
-            System.out.print("<CompomicsError>Reporter processing failed. See the Reporter log for details.</CompomicsError>");
+            System.out.print(
+                    "<CompomicsError>Reporter processing failed. "
+                    + "See the Reporter log for details.</CompomicsError>"
+            );
+
             e.printStackTrace();
             System.exit(1);
 

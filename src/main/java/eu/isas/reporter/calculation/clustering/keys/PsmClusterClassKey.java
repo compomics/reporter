@@ -64,37 +64,51 @@ public class PsmClusterClassKey implements ClusterClassKey, Serializable {
 
     @Override
     public String getName() {
+
         StringBuilder name = new StringBuilder();
+
         if (starred) {
             name.append("Starred");
         }
+
         if (file != null) {
+
             if (name.length() > 0) {
                 name.append(" ");
             }
+
             name.append(file);
+
         }
+
         if (name.length() > 0) {
             return name.toString();
         }
+
         return "All";
     }
 
     @Override
     public String getDescription() {
+
         StringBuilder desciption = new StringBuilder();
+
         if (starred) {
             desciption.append("Starred ");
         } else if (file == null) {
             desciption.append("All ");
         }
+
         desciption.append("PSMs");
+
         if (file != null) {
             desciption.append(" from ").append(file);
         }
+
         return desciption.toString();
+
     }
-    
+
     @Override
     public String toString() {
         return "PSM_" + getName();

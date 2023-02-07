@@ -36,19 +36,19 @@ public class JumpToPanel extends javax.swing.JPanel { // @TODO: should be merged
     /**
      * Items matching the criterion for each type.
      */
-    private HashMap<JumpType, ArrayList<Long>> possibilities = new HashMap<JumpType, ArrayList<Long>>();
+    private HashMap<JumpType, ArrayList<Long>> possibilities = new HashMap<>();
     /**
      * Currently selected item.
      */
-    private HashMap<JumpType, Integer> currentSelection = new HashMap<JumpType, Integer>();
+    private HashMap<JumpType, Integer> currentSelection = new HashMap<>();
     /**
      * The text to display by default.
      */
-    private HashMap<JumpType, String> lastInput = new HashMap<JumpType, String>();
+    private HashMap<JumpType, String> lastInput = new HashMap<>();
     /**
      * The text to display by default.
      */
-    private HashMap<JumpType, String> lastLabel = new HashMap<JumpType, String>();
+    private HashMap<JumpType, String> lastLabel = new HashMap<>();
     /**
      * The text to display by default.
      */
@@ -78,7 +78,7 @@ public class JumpToPanel extends javax.swing.JPanel { // @TODO: should be merged
     /**
      * Type of each possible item.
      */
-    private HashMap<JumpType, ArrayList<Type>> types = new HashMap<JumpType, ArrayList<Type>>();
+    private HashMap<JumpType, ArrayList<Type>> types = new HashMap<>();
 
     /**
      * Creates a new JumpToPanel.
@@ -86,6 +86,7 @@ public class JumpToPanel extends javax.swing.JPanel { // @TODO: should be merged
      * @param reporterGUI the parent
      */
     public JumpToPanel(ReporterGUI reporterGUI) {
+
         initComponents();
 
         this.reporterGUI = reporterGUI;
@@ -97,6 +98,7 @@ public class JumpToPanel extends javax.swing.JPanel { // @TODO: should be merged
         indexLabel.setText("");
         previousButton.setEnabled(false);
         nextButton.setEnabled(false);
+
     }
 
     /**
@@ -134,7 +136,7 @@ public class JumpToPanel extends javax.swing.JPanel { // @TODO: should be merged
 
         if (types.get(jumpType).get(currentSelection.get(jumpType)) == Type.PROTEIN) {
             Long selectedProtein = possibilities.get(jumpType).get(currentSelection.get(jumpType));
-            ArrayList<Long> selectedProteins = new ArrayList<Long>();
+            ArrayList<Long> selectedProteins = new ArrayList<>();
             selectedProteins.add(selectedProtein);
             reporterGUI.minimizeChart();
             reporterGUI.setSelectedProteins(selectedProteins, true, true);
@@ -156,14 +158,15 @@ public class JumpToPanel extends javax.swing.JPanel { // @TODO: should be merged
      * @throws IOException thrown if an IOException occurs
      * @throws InterruptedException thrown if an InterruptedException occurs
      */
-    public ArrayList<String> getPossibilitiesDescriptions() throws SQLException, ClassNotFoundException, IOException, InterruptedException {
+    public ArrayList<String> getPossibilitiesDescriptions()
+            throws SQLException, ClassNotFoundException, IOException, InterruptedException {
 
         Identification identification = reporterGUI.getIdentification();
 
         // some necessary pre-caching
         ArrayList<Type> typeList = types.get(jumpType);
         ArrayList<Long> keys = possibilities.get(jumpType);
-        ArrayList<Long> proteinKeys = new ArrayList<Long>();
+        ArrayList<Long> proteinKeys = new ArrayList<>();
 
         for (int i = 0; i < keys.size(); i++) {
             Long key = keys.get(i);
@@ -175,7 +178,8 @@ public class JumpToPanel extends javax.swing.JPanel { // @TODO: should be merged
             identification.loadObjects(proteinKeys, null, false);
         }
 
-        ArrayList<String> descriptions = new ArrayList<String>();
+        ArrayList<String> descriptions = new ArrayList<>();
+
         for (int i = 0; i < keys.size(); i++) {
             Long key = keys.get(i);
             Type type = typeList.get(i);
@@ -198,25 +202,40 @@ public class JumpToPanel extends javax.swing.JPanel { // @TODO: should be merged
      * @throws IOException thrown if an IOException occurs
      * @throws InterruptedException thrown if an InterruptedException occurs
      */
-    private String getItemDescription(Long key, Type itemType) throws IllegalArgumentException, SQLException, IOException, ClassNotFoundException, InterruptedException {
+    private String getItemDescription(
+            Long key,
+            Type itemType
+    ) throws IllegalArgumentException, SQLException, IOException, ClassNotFoundException, InterruptedException {
+
         Identification identification = reporterGUI.getIdentification();
+
         switch (itemType) {
+
             case PROTEIN:
+
                 ProteinMatch proteinMatch = identification.getProteinMatch(key);
                 String mainMatch = proteinMatch.getLeadingAccession();
                 String description = reporterGUI.getProteinDetailsProvider().getSimpleDescription(proteinMatch.getLeadingAccession());
 
                 String result = mainMatch;
+
                 for (String accession : proteinMatch.getAccessions()) {
+
                     if (!accession.equals(mainMatch)) {
+
                         if (!result.equals(mainMatch)) {
                             result += ", ";
                         }
+
                         result += accession;
                     }
+
                 }
+
                 result += " - " + description;
+
                 return result;
+
             default:
                 return "Unknown";
         }
@@ -376,6 +395,7 @@ public class JumpToPanel extends javax.swing.JPanel { // @TODO: should be merged
                 try {
                     // see if the gui is to be updated or not
                     Identification identification = reporterGUI.getIdentification();
+
                     if (identification != null && keyPressedCounter == 1) {
 
                         if (!inputTxt.getText().equalsIgnoreCase(welcomeText.get(jumpType))) {
@@ -389,13 +409,15 @@ public class JumpToPanel extends javax.swing.JPanel { // @TODO: should be merged
                         } else if (event.getKeyCode() == KeyEvent.VK_DOWN && nextButton.isEnabled()) {
                             nextButtonActionPerformed(null);
                         } else {
+
                             if (!possibilities.containsKey(jumpType)) {
-                                possibilities.put(jumpType, new ArrayList<Long>());
-                                types.put(jumpType, new ArrayList<Type>());
+                                possibilities.put(jumpType, new ArrayList<>());
+                                types.put(jumpType, new ArrayList<>());
                             } else {
                                 possibilities.get(jumpType).clear();
                                 types.get(jumpType).clear();
                             }
+
                             currentSelection.put(jumpType, 0);
                             String inputLowerCase = inputTxt.getText().trim().toLowerCase();
                             lastInput.put(jumpType, inputLowerCase);
@@ -430,7 +452,7 @@ public class JumpToPanel extends javax.swing.JPanel { // @TODO: should be merged
                                     }
                                 }
 
-                                if (possibilities.get(jumpType).size() > 0) {
+                                if (!possibilities.get(jumpType).isEmpty()) {
 
                                     if (possibilities.get(jumpType).size() > 1) {
                                         previousButton.setEnabled(true);
@@ -441,7 +463,9 @@ public class JumpToPanel extends javax.swing.JPanel { // @TODO: should be merged
                                     }
 
                                     updateSelectionInTab();
+
                                 } else {
+
                                     previousButton.setEnabled(false);
                                     nextButton.setEnabled(false);
 
@@ -450,6 +474,7 @@ public class JumpToPanel extends javax.swing.JPanel { // @TODO: should be merged
                                     } else {
                                         indexLabel.setText("");
                                     }
+
                                 }
 
                                 reporterGUI.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
@@ -470,10 +495,12 @@ public class JumpToPanel extends javax.swing.JPanel { // @TODO: should be merged
 
                         // gui updated, reset the counter
                         keyPressedCounter = 0;
+
                     } else {
                         // gui not updated, decrease the counter
                         keyPressedCounter--;
                     }
+
                 } catch (Exception e) {
                     reporterGUI.catchException(e);
                 }
@@ -487,12 +514,15 @@ public class JumpToPanel extends javax.swing.JPanel { // @TODO: should be merged
      * @param evt the action event
      */
     private void previousButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_previousButtonActionPerformed
+
         if (currentSelection.get(jumpType) == 0) {
             currentSelection.put(jumpType, possibilities.get(jumpType).size() - 1);
         } else {
             currentSelection.put(jumpType, currentSelection.get(jumpType) - 1);
         }
+
         updateSelectionInTab();
+
     }//GEN-LAST:event_previousButtonActionPerformed
 
     /**
@@ -501,12 +531,15 @@ public class JumpToPanel extends javax.swing.JPanel { // @TODO: should be merged
      * @param evt the action event
      */
     private void nextButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nextButtonActionPerformed
+
         if (currentSelection.get(jumpType) == possibilities.get(jumpType).size() - 1) {
             currentSelection.put(jumpType, 0);
         } else {
             currentSelection.put(jumpType, currentSelection.get(jumpType) + 1);
         }
+
         updateSelectionInTab();
+
     }//GEN-LAST:event_nextButtonActionPerformed
 
     /**
@@ -515,9 +548,11 @@ public class JumpToPanel extends javax.swing.JPanel { // @TODO: should be merged
      * @param evt the mouse event
      */
     private void inputTxtMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_inputTxtMouseReleased
+
         if (inputTxt.getText().equals(welcomeText.get(jumpType))) {
             inputTxt.selectAll();
         }
+
     }//GEN-LAST:event_inputTxtMouseReleased
 
     /**
@@ -526,9 +561,11 @@ public class JumpToPanel extends javax.swing.JPanel { // @TODO: should be merged
      * @param evt the mouse event
      */
     private void previousButtonMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_previousButtonMouseEntered
+
         if (previousButton.isEnabled()) {
             this.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         }
+
     }//GEN-LAST:event_previousButtonMouseEntered
 
     /**
@@ -555,9 +592,11 @@ public class JumpToPanel extends javax.swing.JPanel { // @TODO: should be merged
      * @param evt the mouse event
      */
     private void nextButtonMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_nextButtonMouseEntered
+
         if (nextButton.isEnabled()) {
             this.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         }
+
     }//GEN-LAST:event_nextButtonMouseEntered
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel findJLabel;
@@ -573,7 +612,7 @@ public class JumpToPanel extends javax.swing.JPanel { // @TODO: should be merged
         inputTxt.setEnabled(enabled);
         indexLabel.setEnabled(enabled);
 
-        if (possibilities.size() > 0 && enabled) {
+        if (!possibilities.isEmpty() && enabled) {
             previousButton.setEnabled(true);
             nextButton.setEnabled(true);
         } else {
@@ -588,7 +627,9 @@ public class JumpToPanel extends javax.swing.JPanel { // @TODO: should be merged
      * @param jumpType the new type of jump to panel
      */
     public void setType(JumpType jumpType) {
+
         this.jumpType = jumpType;
+
         if (lastInput.get(jumpType) != null && !lastInput.get(jumpType).equals("")) {
             inputTxt.setText(lastInput.get(jumpType));
             indexLabel.setText(lastLabel.get(jumpType));
@@ -596,5 +637,6 @@ public class JumpToPanel extends javax.swing.JPanel { // @TODO: should be merged
             inputTxt.setText(welcomeText.get(jumpType));
             indexLabel.setText("");
         }
+
     }
 }

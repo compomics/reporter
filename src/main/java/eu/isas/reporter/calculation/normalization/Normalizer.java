@@ -312,8 +312,19 @@ public class Normalizer {
                 waitingHandler.setSecondaryProgressCounterIndeterminate(true);
             }
 
-            Collection<String> seeds = normalizationSettings.getStableProteins(searchParameters, fastaParameters, peptideVariantsPreferences, waitingHandler);
-            Collection<String> exclusion = normalizationSettings.getContaminants(searchParameters, fastaParameters, peptideVariantsPreferences, waitingHandler);
+            Collection<String> seeds = normalizationSettings.getStableProteins(
+                    searchParameters, 
+                    fastaParameters, 
+                    peptideVariantsPreferences, 
+                    waitingHandler
+            );
+            
+            Collection<String> exclusion = normalizationSettings.getContaminants(
+                    searchParameters, 
+                    fastaParameters, 
+                    peptideVariantsPreferences, 
+                    waitingHandler
+            );
 
             if (waitingHandler != null) {
                 waitingHandler.setWaitingText("Peptide Ratio Normalization. Please Wait...");
@@ -358,7 +369,9 @@ public class Normalizer {
             pool.shutdown();
 
             if (!pool.awaitTermination(7, TimeUnit.DAYS)) {
-                throw new InterruptedException("Peptide validation timed out. Please contact the developers.");
+                throw new InterruptedException(
+                        "Peptide validation timed out. Please contact the developers."
+                );
             }
 
             for (PeptideNormalizerRunnable runnable : runnables) {
@@ -562,7 +575,9 @@ public class Normalizer {
             pool.shutdown();
 
             if (!pool.awaitTermination(7, TimeUnit.DAYS)) {
-                throw new InterruptedException("Protein validation timed out. Please contact the developers.");
+                throw new InterruptedException(
+                        "Protein validation timed out. Please contact the developers."
+                );
             }
 
             for (ProteinNormalizerRunnable runnable : runnables) {
@@ -677,7 +692,10 @@ public class Normalizer {
      * @return a boolean indicating whether all the given accessions are seed
      * proteins
      */
-    private static boolean isContaminant(Collection<String> contaminants, String[] accessions) {
+    private static boolean isContaminant(
+            Collection<String> contaminants, 
+            String[] accessions
+    ) {
 
         for (String accession : accessions) {
 
@@ -732,27 +750,27 @@ public class Normalizer {
         /**
          * The raw ratios gathered in a map.
          */
-        private HashMap<String, ArrayList<Double>> allRawRatios = new HashMap<String, ArrayList<Double>>();
+        private HashMap<String, ArrayList<Double>> allRawRatios = new HashMap<>();
         /**
          * The raw seed ratios gathered in a map.
          */
-        private HashMap<String, ArrayList<Double>> seedRawRatios = new HashMap<String, ArrayList<Double>>();
+        private HashMap<String, ArrayList<Double>> seedRawRatios = new HashMap<>();
         /**
          * The raw unique ratios gathered in a map.
          */
-        private HashMap<String, ArrayList<Double>> allUniqueRawRatios = new HashMap<String, ArrayList<Double>>();
+        private HashMap<String, ArrayList<Double>> allUniqueRawRatios = new HashMap<>();
         /**
          * The raw seed unique ratios gathered in a map.
          */
-        private HashMap<String, ArrayList<Double>> seedUniqueRawRatios = new HashMap<String, ArrayList<Double>>();
+        private HashMap<String, ArrayList<Double>> seedUniqueRawRatios = new HashMap<>();
         /**
          * The raw shared ratios gathered in a map.
          */
-        private HashMap<String, ArrayList<Double>> allSharedRawRatios = new HashMap<String, ArrayList<Double>>();
+        private HashMap<String, ArrayList<Double>> allSharedRawRatios = new HashMap<>();
         /**
          * The raw seed shared ratios gathered in a map.
          */
-        private HashMap<String, ArrayList<Double>> seedSharedRawRatios = new HashMap<String, ArrayList<Double>>();
+        private HashMap<String, ArrayList<Double>> seedSharedRawRatios = new HashMap<>();
         /**
          * The waiting handler.
          */
@@ -1038,11 +1056,11 @@ public class Normalizer {
         /**
          * The raw peptide ratios gathered in a map.
          */
-        private HashMap<String, ArrayList<Double>> allRawRatios = new HashMap<String, ArrayList<Double>>();
+        private HashMap<String, ArrayList<Double>> allRawRatios = new HashMap<>();
         /**
          * The raw seed peptide ratios gathered in a map.
          */
-        private HashMap<String, ArrayList<Double>> seedRawRatios = new HashMap<String, ArrayList<Double>>();
+        private HashMap<String, ArrayList<Double>> seedRawRatios = new HashMap<>();
         /**
          * The waiting handler.
          */
@@ -1243,11 +1261,11 @@ public class Normalizer {
         /**
          * The raw peptide ratios gathered in a map.
          */
-        private HashMap<String, ArrayList<Double>> allRawRatios = new HashMap<String, ArrayList<Double>>();
+        private HashMap<String, ArrayList<Double>> allRawRatios = new HashMap<>();
         /**
          * The raw seed peptide ratios gathered in a map.
          */
-        private HashMap<String, ArrayList<Double>> seedRawRatios = new HashMap<String, ArrayList<Double>>();
+        private HashMap<String, ArrayList<Double>> seedRawRatios = new HashMap<>();
         /**
          * The waiting handler.
          */

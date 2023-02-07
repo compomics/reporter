@@ -49,8 +49,10 @@ public class PathSettingsCLI {
      * @return null
      */
     public Object call() {
+
         waitingHandler = new WaitingHandlerCLIImpl();
         setPathSettings();
+
         if (!waitingHandler.isRunCanceled()) {
             System.exit(0);
             return 0;
@@ -58,6 +60,7 @@ public class PathSettingsCLI {
             System.exit(1);
             return 1;
         }
+
     }
 
     /**
@@ -71,11 +74,13 @@ public class PathSettingsCLI {
 
         // set the Reporter log file
         if (pathSettingsCLIInputBean.useLogFile()) {
+
             if (pathSettingsCLIInputBean.getLogFolder() != null) {
                 ReporterCLI.redirectErrorStream(pathSettingsCLIInputBean.getLogFolder());
             } else {
                 ReporterCLI.redirectErrorStream(new File(getJarFilePath() + File.separator + "resources"));
             }
+
         } else {
             System.setErr(new java.io.PrintStream(System.out));
         }
@@ -83,7 +88,9 @@ public class PathSettingsCLI {
         if (pathSettingsCLIInputBean.hasInput()) {
 
             String path = pathSettingsCLIInputBean.getTempFolder();
+
             if (!path.equals("")) {
+
                 try {
                     Reporter.setTempFolderPath(path);
                     ReporterPathPreferences.setAllPathsIn(path);
@@ -91,22 +98,33 @@ public class PathSettingsCLI {
                     System.out.println("An error occurred when setting the temporary folder path.");
                     e.printStackTrace();
                 }
+
             }
 
             HashMap<String, String> pathInput = pathSettingsCLIInputBean.getPaths();
+
             for (String id : pathInput.keySet()) {
+
                 try {
-                    ReporterPathPreferences.ReporterPathKey reporterPathKey = ReporterPathPreferences.ReporterPathKey.getKeyFromId(id);
+
+                    ReporterPathPreferences.ReporterPathKey reporterPathKey
+                            = ReporterPathPreferences.ReporterPathKey.getKeyFromId(id);
+
                     if (reporterPathKey == null) {
-                        UtilitiesPathParameters.UtilitiesPathKey utilitiesPathKey = UtilitiesPathParameters.UtilitiesPathKey.getKeyFromId(id);
+
+                        UtilitiesPathParameters.UtilitiesPathKey utilitiesPathKey
+                                = UtilitiesPathParameters.UtilitiesPathKey.getKeyFromId(id);
+
                         if (utilitiesPathKey == null) {
                             System.out.println("Path id " + id + " not recognized.");
                         } else {
                             UtilitiesPathParameters.setPathParameter(utilitiesPathKey, pathInput.get(id));
                         }
+
                     } else {
                         ReporterPathPreferences.setPathPreference(reporterPathKey, pathInput.get(id));
                     }
+
                 } catch (Exception e) {
                     System.out.println("An error occurred when setting the path " + id + ".");
                     e.printStackTrace();
@@ -114,26 +132,46 @@ public class PathSettingsCLI {
             }
 
             // write path file preference
-            File destinationFile = new File(Reporter.getJarFilePath(), UtilitiesPathParameters.configurationFileName);
+            File destinationFile = new File(
+                    Reporter.getJarFilePath(),
+                    UtilitiesPathParameters.configurationFileName
+            );
+
             try {
                 ReporterPathPreferences.writeConfigurationToFile(destinationFile);
             } catch (Exception e) {
-                System.out.println("An error occurred when saving the path preference to " + destinationFile.getAbsolutePath() + ".");
+
+                System.out.println(
+                        "An error occurred when saving the path preference to "
+                        + destinationFile.getAbsolutePath()
+                        + "."
+                );
+
                 e.printStackTrace();
+
             }
-            
+
             if (!waitingHandler.isRunCanceled()) {
                 System.out.println("Path configuration completed.");
             }
 
         } else {
+
             try {
+
                 File pathConfigurationFile = new File(getJarFilePath(), UtilitiesPathParameters.configurationFileName);
+
                 if (pathConfigurationFile.exists()) {
                     ReporterPathPreferences.loadPathParametersFromFile(pathConfigurationFile);
                 }
+
             } catch (Exception e) {
-                System.out.println("An error occurred when setting path configuration. Default paths will be used.");
+
+                System.out.println(
+                        "An error occurred when setting path configuration. "
+                        + "Default paths will be used."
+                );
+
                 e.printStackTrace();
             }
         }
@@ -141,15 +179,24 @@ public class PathSettingsCLI {
         // test the temp paths
         try {
             ArrayList<PathKey> errorKeys = ReporterPathPreferences.getErrorKeys(getJarFilePath());
+
             if (!errorKeys.isEmpty()) {
-                System.out.println("Unable to write in the following configuration folders. Please use a temporary folder, "
-                        + "the path configuration command line, or edit the configuration paths from the graphical interface.");
+
+                System.out.println(
+                        "Unable to write in the following configuration folders. Please use a temporary folder, "
+                        + "the path configuration command line, or edit the configuration paths from the graphical interface."
+                );
+
                 for (PathKey pathKey : errorKeys) {
                     System.out.println(pathKey.getId() + ": " + pathKey.getDescription());
                 }
             }
+
         } catch (Exception e) {
-            System.out.println("Unable to load the path configurations. Default paths will be used.");
+            System.out.println(
+                    "Unable to load the path configurations. "
+                    + "Default paths will be used."
+            );
         }
     }
 
@@ -157,12 +204,19 @@ public class PathSettingsCLI {
      * Reporter path settings CLI header message when printing the usage.
      */
     private static String getHeader() {
+
         return System.getProperty("line.separator")
-                + "The Reporter path settings command line allows setting the path of every configuration file created by Reporter or set a temporary folder where all files will be stored." + System.getProperty("line.separator")
+                + "The Reporter path settings command line allows setting the "
+                + "path of every configuration file created by Reporter or set "
+                + "a temporary folder where all files will be stored."
                 + System.getProperty("line.separator")
-                + "For further help see https://compomics.github.io/projects/reporter.html and https://compomics.github.io/projects/reporter/wiki/reportercli.html." + System.getProperty("line.separator")
                 + System.getProperty("line.separator")
-                + "Or contact the developers at https://groups.google.com/group/reporter." + System.getProperty("line.separator")
+                + "For further help see https://compomics.github.io/projects/reporter.html "
+                + "and https://compomics.github.io/projects/reporter/wiki/reportercli.html."
+                + System.getProperty("line.separator")
+                + System.getProperty("line.separator")
+                + "Or contact the developers at https://groups.google.com/group/reporter."
+                + System.getProperty("line.separator")
                 + System.getProperty("line.separator")
                 + "----------------------"
                 + System.getProperty("line.separator")
@@ -170,6 +224,7 @@ public class PathSettingsCLI {
                 + System.getProperty("line.separator")
                 + "----------------------" + System.getProperty("line.separator")
                 + System.getProperty("line.separator");
+
     }
 
     /**
@@ -187,6 +242,7 @@ public class PathSettingsCLI {
             CommandLine line = parser.parse(lOptions, args);
 
             if (args.length == 0) {
+
                 PrintWriter lPrintWriter = new PrintWriter(System.out);
                 lPrintWriter.print(System.getProperty("line.separator") + "========================================" + System.getProperty("line.separator"));
                 lPrintWriter.print("Reporter Path Settings - Command Line" + System.getProperty("line.separator"));
@@ -197,29 +253,43 @@ public class PathSettingsCLI {
                 lPrintWriter.close();
 
                 System.exit(0);
+
             } else {
+
                 PathSettingsCLIInputBean cliInputBean = new PathSettingsCLIInputBean(line);
                 PathSettingsCLI pathSettingsCLI = new PathSettingsCLI(cliInputBean);
                 pathSettingsCLI.call();
+
             }
+
         } catch (OutOfMemoryError e) {
+
             System.out.println("Reporter used up all the memory and had to be stopped. See the Reporter log for details.");
             System.err.println("Ran out of memory!");
             System.err.println("Memory given to the Java virtual machine: " + Runtime.getRuntime().maxMemory() + ".");
             System.err.println("Memory used by the Java virtual machine: " + Runtime.getRuntime().totalMemory() + ".");
             System.err.println("Free memory in the Java virtual machine: " + Runtime.getRuntime().freeMemory() + ".");
             e.printStackTrace();
+
         } catch (Exception e) {
-            System.out.println("Reporter processing failed. See the Reporter log for details.");
+
+            System.out.println(
+                    "Reporter processing failed. "
+                    + "See the Reporter log for details."
+            );
+
             e.printStackTrace();
         }
+
     }
 
     @Override
     public String toString() {
+
         return "PathSettingsCLI{"
                 + ", cliInputBean=" + pathSettingsCLIInputBean
                 + '}';
+
     }
 
     /**
@@ -234,7 +304,6 @@ public class PathSettingsCLI {
     public static String[] extractAndUpdatePathOptions(String[] args) throws ParseException {
 
         ArrayList<String> allPathOptions = PathSettingsCLIParams.getOptionIDs();
-
         ArrayList<String> pathSettingArgs = new ArrayList<>();
         ArrayList<String> nonPathSettingArgs = new ArrayList<>();
 
@@ -252,15 +321,21 @@ public class PathSettingsCLI {
 
             // check if the argument has a parameter
             if (i + 1 < args.length) {
+
                 String nextArg = args[i + 1];
+
                 if (!nextArg.startsWith("-")) {
+
                     if (pathOption) {
                         pathSettingArgs.add(args[++i]);
                     } else {
                         nonPathSettingArgs.add(args[++i]);
                     }
+
                 }
+
             }
+
         }
 
         String[] pathSettingArgsAsList = pathSettingArgs.toArray(new String[pathSettingArgs.size()]);
@@ -284,6 +359,11 @@ public class PathSettingsCLI {
      * @return the path to the jar file
      */
     public String getJarFilePath() {
-        return CompomicsWrapper.getJarFilePath(this.getClass().getResource("ReporterCLI.class").getPath(), "Reporter");
+
+        return CompomicsWrapper.getJarFilePath(
+                this.getClass().getResource("ReporterCLI.class").getPath(),
+                "Reporter"
+        );
+
     }
 }
