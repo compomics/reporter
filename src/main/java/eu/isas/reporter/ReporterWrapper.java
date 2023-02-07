@@ -38,6 +38,7 @@ public class ReporterWrapper extends CompomicsWrapper {
         } catch (Exception e) {
             System.out.println("Impossible to load path configuration, default will be used.");
         }
+
         try {
             ArrayList<PathKey> errorKeys = ReporterPathPreferences.getErrorKeys(jarFilePath);
             if (!errorKeys.isEmpty()) {

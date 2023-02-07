@@ -44,7 +44,7 @@ import java.util.HashMap;
 import java.util.Set;
 
 /**
- * Reporter performs reporter ion based quantification on MS2 spectra.
+ * Reporter performs reporter ion based quantification on MS2/MS3 spectra.
  *
  * @author Marc Vaudel
  * @author Harald Barsnes

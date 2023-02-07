@@ -33,7 +33,11 @@ public class CorrectionMatrix {
      * @param reagentNames he name of the reagents affected by this matrix
      * @param refMass the mass affected by the first column of the matrix
      */
-    public CorrectionMatrix(double[][] correctionMatrix, HashMap<Integer, String> reagentNames, double refMass) {
+    public CorrectionMatrix(
+            double[][] correctionMatrix, 
+            HashMap<Integer, String> reagentNames, 
+            double refMass
+    ) {
         this.correctionMatrix = correctionMatrix;
         this.reagentNames = reagentNames;
         this.refMass = refMass;

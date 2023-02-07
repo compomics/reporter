@@ -30,7 +30,10 @@ public class QuantificationFilter {
      * @return true if the ratio is not NaN and should be accounted for
      * according to the user settings
      */
-    public static boolean isRatioValid(RatioEstimationSettings ratioEstimationSettings, Double ratio) {
+    public static boolean isRatioValid(
+            RatioEstimationSettings ratioEstimationSettings,
+            Double ratio
+    ) {
         return !ratio.isNaN() && (!ratioEstimationSettings.isIgnoreNullIntensities() || ratio > 0);
     }
 
@@ -45,14 +48,22 @@ public class QuantificationFilter {
      *
      * @return true if the PSM can be used for quantification
      */
-    public static boolean isPsmValid(RatioEstimationSettings ratioEstimationSettings, Identification identification, long matchKey) {
+    public static boolean isPsmValid(
+            RatioEstimationSettings ratioEstimationSettings,
+            Identification identification,
+            long matchKey
+    ) {
+
         // check match validation
         PSParameter psParameter = new PSParameter();
         psParameter = (PSParameter) identification.getSpectrumMatch(matchKey).getUrParam(psParameter);
+
         if (psParameter.getMatchValidationLevel().getIndex() < ratioEstimationSettings.getPsmValidationLevel().getIndex()) {
             return false;
         }
+
         return true;
+
     }
 
     /**
@@ -67,12 +78,17 @@ public class QuantificationFilter {
      *
      * @return true if the PSM can be used for quantification
      */
-    public static boolean isPeptideValid(RatioEstimationSettings ratioEstimationSettings, Identification identification,
-            SearchParameters searchParameters, PeptideMatch peptideMatch) {
+    public static boolean isPeptideValid(
+            RatioEstimationSettings ratioEstimationSettings,
+            Identification identification,
+            SearchParameters searchParameters,
+            PeptideMatch peptideMatch
+    ) {
 
         // check match validation
         PSParameter psParameter = new PSParameter();
         psParameter = (PSParameter) identification.getPeptideMatch(peptideMatch.getKey()).getUrParam(psParameter);
+
         if (psParameter.getMatchValidationLevel().getIndex() < ratioEstimationSettings.getPeptideValidationLevel().getIndex()) {
             return false;
         }
@@ -80,26 +96,38 @@ public class QuantificationFilter {
         // check enzymaticity
         Peptide peptide = peptideMatch.getPeptide();
         DigestionParameters digestionParameters = searchParameters.getDigestionParameters();
+
         if (digestionParameters.getCleavageParameter() == DigestionParameters.CleavageParameter.enzyme) {
+
             Integer minMissedCleavages = null;
+
             for (Enzyme enzyme : digestionParameters.getEnzymes()) {
+
                 int nMissedCleavages = peptide.getNMissedCleavages(enzyme);
+
                 if (minMissedCleavages == null || nMissedCleavages < minMissedCleavages) {
                     minMissedCleavages = nMissedCleavages;
                 }
+
             }
+
             if (minMissedCleavages != null && minMissedCleavages > 0 && ratioEstimationSettings.isIgnoreMissedCleavages()) {
                 return false;
             }
+
         }
 
         // check modifications
         if (peptide.getNVariableModifications() > 0) {
+
             for (ModificationMatch modificationMatch : peptide.getVariableModifications()) {
+
                 if (ratioEstimationSettings.getExcludingPtms().contains(modificationMatch.getModification())) {
                     return false;
                 }
+
             }
+
         }
 
         return true;
@@ -121,14 +149,20 @@ public class QuantificationFilter {
      * @throws ClassNotFoundException thrown if a ClassNotFoundException
      * @throws InterruptedException thrown if an InterruptedException
      */
-    public static boolean isProteinValid(RatioEstimationSettings ratioEstimationSettings, Identification identification,
-            long matchKey) throws SQLException, IOException, ClassNotFoundException, InterruptedException {
+    public static boolean isProteinValid(
+            RatioEstimationSettings ratioEstimationSettings,
+            Identification identification,
+            long matchKey
+    ) throws SQLException, IOException, ClassNotFoundException, InterruptedException {
+
         // check match validation
         PSParameter psParameter = new PSParameter();
         psParameter = (PSParameter) identification.getProteinMatch(matchKey).getUrParam(psParameter);
+
         if (psParameter.getMatchValidationLevel().getIndex() < ratioEstimationSettings.getProteinValidationLevel().getIndex()) {
             return false;
         }
+
         return true;
     }
 }

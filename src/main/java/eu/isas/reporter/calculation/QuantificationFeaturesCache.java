@@ -62,11 +62,13 @@ public class QuantificationFeaturesCache {
      * Checks whether there is still memory left and empties the cache if not.
      */
     private void adaptCacheSize() {
+        
         if (!editing
                 && !memoryCheck()
                 && !isEmpty()) {
             adaptCacheSizeSynchronized();
         }
+        
     }
 
     /**
@@ -75,10 +77,12 @@ public class QuantificationFeaturesCache {
      * @return true if the cache is empty
      */
     public boolean isEmpty() {
+        
         return peptideRatios.isEmpty()
                 && proteinRatios.isEmpty()
                 && spectrumRatios.isEmpty()
                 && proteinPtmRatios.isEmpty();
+        
     }
 
     /**
