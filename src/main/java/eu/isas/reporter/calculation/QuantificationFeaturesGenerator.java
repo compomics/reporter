@@ -241,7 +241,11 @@ public class QuantificationFeaturesGenerator {
         String spectrumFile = spectrumMatch.getSpectrumFile();
         String spectrumTitle = spectrumMatch.getSpectrumTitle();
 
-        PsmQuantificationDetails result = quantificationFeaturesCache.getPSMQuantificationDetails(spectrumFile, spectrumTitle);
+        PsmQuantificationDetails result
+                = quantificationFeaturesCache.getPSMQuantificationDetails(
+                        spectrumFile,
+                        spectrumTitle
+                );
 
         if (result == null) {
 
@@ -255,10 +259,16 @@ public class QuantificationFeaturesGenerator {
                     matchKey
             );
 
-            quantificationFeaturesCache.addPSMQuantificationDetails(spectrumFile, spectrumTitle, result);
+            quantificationFeaturesCache.addPSMQuantificationDetails(
+                    spectrumFile,
+                    spectrumTitle,
+                    result
+            );
+
         }
 
         return result;
+
     }
 
     /**
@@ -282,7 +292,11 @@ public class QuantificationFeaturesGenerator {
         String spectrumFile = spectrumMatch.getSpectrumFile();
         String spectrumTitle = spectrumMatch.getSpectrumTitle();
 
-        SpectrumQuantificationDetails result = quantificationFeaturesCache.getSpectrumQuantificationDetails(spectrumFile, spectrumTitle);
+        SpectrumQuantificationDetails result
+                = quantificationFeaturesCache.getSpectrumQuantificationDetails(
+                        spectrumFile,
+                        spectrumTitle
+                );
 
         if (result == null) {
 
@@ -295,10 +309,15 @@ public class QuantificationFeaturesGenerator {
                     matchKey
             );
 
-            quantificationFeaturesCache.addSpectrumQuantificationDetails(spectrumFile, spectrumTitle, result);
+            quantificationFeaturesCache.addSpectrumQuantificationDetails(
+                    spectrumFile,
+                    spectrumTitle, result
+            );
+
         }
 
         return result;
+
     }
 
     /**
