@@ -24,16 +24,23 @@ public class PeptideQuantificationDetails {
      *
      * @return the ratio for this sample, null if not set
      */
-    public Double getRatio(String reporterIonName, NormalizationFactors normalizationFactors) {
+    public Double getRatio(
+            String reporterIonName,
+            NormalizationFactors normalizationFactors
+    ) {
+
         if (rawRatios == null) {
             return null;
         }
+
         Double ratio = rawRatios.get(reporterIonName);
+
         if (normalizationFactors.hasPeptideNormalisationFactors()
                 && ratio != null
                 && ratio != Double.NaN) {
             ratio /= normalizationFactors.getPeptideNormalisationFactor(reporterIonName);
         }
+
         return ratio;
     }
 
@@ -44,10 +51,13 @@ public class PeptideQuantificationDetails {
      * @param value the value of the raw (not normalized) ratio
      */
     public void setRawRatio(String reporterIonName, double value) {
+
         if (rawRatios == null) {
             rawRatios = new HashMap<String, Double>();
         }
+
         rawRatios.put(reporterIonName, value);
+
     }
 
     /**
@@ -59,9 +69,12 @@ public class PeptideQuantificationDetails {
      * @return the raw (not normalized) ratio for this sample, null if not set
      */
     public Double getRawRatio(String reporterIonName) {
+
         if (rawRatios == null) {
             return null;
         }
+
         return rawRatios.get(reporterIonName);
+
     }
 }

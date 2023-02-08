@@ -47,6 +47,7 @@ public class ReportDialog extends javax.swing.JDialog {
      * @param reporterGUI the main GUI instance
      */
     public ReportDialog(ReporterGUI reporterGUI) {
+
         super(reporterGUI, true);
         this.reporterGUI = reporterGUI;
         updateReportsList();
@@ -54,16 +55,19 @@ public class ReportDialog extends javax.swing.JDialog {
         setUpGUI();
         setLocationRelativeTo(reporterGUI);
         setVisible(true);
+
     }
 
     /**
      * Set up the GUI.
      */
     private void setUpGUI() {
+
         reportsTableScrollPane.getViewport().setOpaque(false);
         reportsTable.getTableHeader().setReorderingAllowed(false);
         reportsTable.getColumn(" ").setMaxWidth(50);
         reportsTable.getColumn(" ").setMinWidth(50);
+
     }
 
     /**
@@ -252,13 +256,16 @@ public class ReportDialog extends javax.swing.JDialog {
      * @param evt
      */
     private void exitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitButtonActionPerformed
+
         try {
             exportFactory.saveFactory(exportFactory);
         } catch (Exception e) {
             reporterGUI.catchException(e);
         }
+
         setVisible(false);
         dispose();
+
     }//GEN-LAST:event_exitButtonActionPerformed
 
     /**
@@ -272,12 +279,16 @@ public class ReportDialog extends javax.swing.JDialog {
             reportsTable.setRowSelectionInterval(reportsTable.rowAtPoint(evt.getPoint()), reportsTable.rowAtPoint(evt.getPoint()));
         }
 
-        if (evt != null && evt.getButton() == MouseEvent.BUTTON3 && reportsTable.getSelectedRow() != -1) {
+        if (evt != null
+                && evt.getButton() == MouseEvent.BUTTON3
+                && reportsTable.getSelectedRow() != -1) {
+
             String schemeName = (String) reportsTable.getValueAt(reportsTable.getSelectedRow(), 1);
             ExportScheme exportScheme = exportFactory.getExportScheme(schemeName);
             editReportMenuItem.setVisible(exportScheme.isEditable());
             removeReportMenuItem.setVisible(exportScheme.isEditable());
             reportDocumentationPopupMenu.show(reportsTable, evt.getX(), evt.getY());
+
         }
 
         if (evt != null && evt.getButton() == MouseEvent.BUTTON1 && evt.getClickCount() == 2) {
@@ -285,6 +296,7 @@ public class ReportDialog extends javax.swing.JDialog {
         }
 
         exportReportButton.setEnabled(reportsTable.getSelectedRow() != -1);
+
     }//GEN-LAST:event_reportsTableMouseClicked
 
     /**
@@ -338,14 +350,18 @@ public class ReportDialog extends javax.swing.JDialog {
      * @param evt
      */
     private void addReportMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addReportMenuItemActionPerformed
+
         new ReportEditor(reporterGUI, exportFactory);
         int selectedRow = reportsTable.getSelectedRow();
         updateReportsList();
         ((DefaultTableModel) reportsTable.getModel()).fireTableDataChanged();
+
         if (selectedRow != -1) {
             reportsTable.setRowSelectionInterval(selectedRow, selectedRow);
         }
+
         reportsTableMouseClicked(null);
+
     }//GEN-LAST:event_addReportMenuItemActionPerformed
 
     /**
@@ -354,11 +370,13 @@ public class ReportDialog extends javax.swing.JDialog {
      * @param evt
      */
     private void removeReportMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeReportMenuItemActionPerformed
+
         String reportName = (String) reportsTable.getValueAt(reportsTable.getSelectedRow(), 1);
         exportFactory.removeExportScheme(reportName);
         updateReportsList();
         ((DefaultTableModel) reportsTable.getModel()).fireTableDataChanged();
         reportsTableMouseClicked(null);
+
     }//GEN-LAST:event_removeReportMenuItemActionPerformed
 
     /**
@@ -367,15 +385,19 @@ public class ReportDialog extends javax.swing.JDialog {
      * @param evt
      */
     private void editReportMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editReportMenuItemActionPerformed
+
         String reportName = (String) reportsTable.getValueAt(reportsTable.getSelectedRow(), 1);
         new ReportEditor(reporterGUI, exportFactory, reportName, true);
         int selectedRow = reportsTable.getSelectedRow();
         updateReportsList();
         ((DefaultTableModel) reportsTable.getModel()).fireTableDataChanged();
+
         if (selectedRow != -1) {
             reportsTable.setRowSelectionInterval(selectedRow, selectedRow);
         }
+
         reportsTableMouseClicked(null);
+
     }//GEN-LAST:event_editReportMenuItemActionPerformed
 
     /**
@@ -392,9 +414,11 @@ public class ReportDialog extends javax.swing.JDialog {
      * factory.
      */
     private void updateReportsList() {
+
         exportSchemesNames = new ArrayList<String>();
         exportSchemesNames.addAll(exportFactory.getDefaultExportSchemesNames());
         exportSchemesNames.addAll(exportFactory.getUserSchemesNames());
+
     }
 
     /**
@@ -406,34 +430,52 @@ public class ReportDialog extends javax.swing.JDialog {
         String textFileFilterDescription = "Tab separated text file (.txt)";
         String excelFileFilterDescription = "Excel Workbook (.xls)";
         String lastSelectedFolderPath = reporterGUI.getLastSelectedFolder().getLastSelectedFolder();
-        FileAndFileFilter selectedFileAndFilter = FileChooserUtil.getUserSelectedFile(this, new String[]{".xls", ".txt"},
-                new String[]{excelFileFilterDescription, textFileFilterDescription}, "Export Report", lastSelectedFolderPath, schemeName, false, true, false, 1);
+
+        FileAndFileFilter selectedFileAndFilter = FileChooserUtil.getUserSelectedFile(
+                this,
+                new String[]{".xls", ".txt"},
+                new String[]{excelFileFilterDescription, textFileFilterDescription},
+                "Export Report",
+                lastSelectedFolderPath,
+                schemeName,
+                false,
+                true,
+                false,
+                1
+        );
 
         if (selectedFileAndFilter != null) {
 
             final File selectedFile = selectedFileAndFilter.getFile();
             final ExportFormat exportFormat;
+
             if (selectedFileAndFilter.getFileFilter().getDescription().equalsIgnoreCase(textFileFilterDescription)) {
                 exportFormat = ExportFormat.text;
             } else {
                 exportFormat = ExportFormat.excel;
             }
 
-            progressDialog = new ProgressDialogX(this, reporterGUI,
+            progressDialog = new ProgressDialogX(
+                    this,
+                    reporterGUI,
                     Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
                     Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")),
-                    true);
+                    true
+            );
+
             progressDialog.setTitle("Exporting Report. Please Wait...");
 
             final String filePath = selectedFile.getPath();
 
             new Thread(new Runnable() {
                 public void run() {
+
                     try {
                         progressDialog.setVisible(true);
                     } catch (IndexOutOfBoundsException e) {
                         // ignore
                     }
+
                 }
             }, "ProgressDialog").start();
 
@@ -442,8 +484,10 @@ public class ReportDialog extends javax.swing.JDialog {
                 public void run() {
 
                     try {
+
                         ExportScheme exportScheme = exportFactory.getExportScheme(schemeName);
                         progressDialog.setTitle("Exporting. Please Wait...");
+
                         ReporterExportFactory.writeExport(
                                 exportScheme,
                                 selectedFile,
@@ -473,11 +517,27 @@ public class ReportDialog extends javax.swing.JDialog {
                         progressDialog.setRunFinished();
 
                         if (!processCancelled) {
-                            JOptionPane.showMessageDialog(reporterGUI, "Data copied to file:\n" + filePath, "Data Exported.", JOptionPane.INFORMATION_MESSAGE);
+
+                            JOptionPane.showMessageDialog(
+                                    reporterGUI,
+                                    "Data copied to file:\n" + filePath,
+                                    "Data Exported.",
+                                    JOptionPane.INFORMATION_MESSAGE
+                            );
+
                         }
+
                     } catch (Exception e) {
+
                         progressDialog.setRunFinished();
-                        JOptionPane.showMessageDialog(reporterGUI, "An error occurred while generating the output.", "Output Error.", JOptionPane.ERROR_MESSAGE);
+
+                        JOptionPane.showMessageDialog(
+                                reporterGUI,
+                                "An error occurred while generating the output.",
+                                "Output Error.",
+                                JOptionPane.ERROR_MESSAGE
+                        );
+
                         e.printStackTrace();
                     }
                 }
@@ -500,31 +560,54 @@ public class ReportDialog extends javax.swing.JDialog {
 
             // get the file to send the output to
             if (exportFormat == ExportFormat.text) {
-                selectedFile = reporterGUI.getUserSelectedFile(schemeName + ".txt", ".txt", "Tab separated text file (.txt)", "Export...", false);
+
+                selectedFile = reporterGUI.getUserSelectedFile(
+                        schemeName + ".txt",
+                        ".txt",
+                        "Tab separated text file (.txt)",
+                        "Export...",
+                        false
+                );
+
             } else {
-                selectedFile = reporterGUI.getUserSelectedFile(schemeName + ".xls", ".xls", "Excel Workbook (.xls)", "Export...", false);
+
+                selectedFile = reporterGUI.getUserSelectedFile(
+                        schemeName + ".xls",
+                        ".xls",
+                        "Excel Workbook (.xls)",
+                        "Export...",
+                        false
+                );
+
             }
 
             if (selectedFile != null) {
-                progressDialog = new ProgressDialogX(this, reporterGUI,
+
+                progressDialog = new ProgressDialogX(
+                        this, reporterGUI,
                         Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
                         Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")),
-                        true);
+                        true
+                );
 
                 new Thread(new Runnable() {
                     public void run() {
+
                         try {
                             progressDialog.setVisible(true);
                         } catch (IndexOutOfBoundsException e) {
                             // ignore
                         }
+
                     }
                 }, "ProgressDialog").start();
 
                 new Thread("ExportThread") {
                     @Override
                     public void run() {
+
                         boolean error = false;
+
                         try {
                             ExportScheme exportScheme = exportFactory.getExportScheme(schemeName);
                             ReporterExportFactory.writeDocumentation(exportScheme, exportFormat, selectedFile);
@@ -532,11 +615,18 @@ public class ReportDialog extends javax.swing.JDialog {
                             error = true;
                             reporterGUI.catchException(e);
                         }
+
                         progressDialog.setRunFinished();
 
                         if (!error) {
-                            JOptionPane.showMessageDialog(reporterGUI, "Documentation saved to \'" + selectedFile.getAbsolutePath() + "\'.",
-                                    "Documentation Saved", JOptionPane.INFORMATION_MESSAGE);
+
+                            JOptionPane.showMessageDialog(
+                                    reporterGUI,
+                                    "Documentation saved to \'" + selectedFile.getAbsolutePath() + "\'.",
+                                    "Documentation Saved",
+                                    JOptionPane.INFORMATION_MESSAGE
+                            );
+
                         }
                     }
                 }.start();
@@ -554,9 +644,11 @@ public class ReportDialog extends javax.swing.JDialog {
 
         @Override
         public int getRowCount() {
+
             if (exportSchemesNames == null) {
                 return 0;
             }
+
             return exportSchemesNames.size();
         }
 
@@ -567,6 +659,7 @@ public class ReportDialog extends javax.swing.JDialog {
 
         @Override
         public String getColumnName(int column) {
+
             switch (column) {
                 case 0:
                     return " ";
@@ -575,10 +668,12 @@ public class ReportDialog extends javax.swing.JDialog {
                 default:
                     return "";
             }
+
         }
 
         @Override
         public Object getValueAt(int row, int column) {
+
             switch (column) {
                 case 0:
                     return row + 1;
@@ -587,15 +682,20 @@ public class ReportDialog extends javax.swing.JDialog {
                 default:
                     return "";
             }
+
         }
 
         @Override
         public Class getColumnClass(int columnIndex) {
+
             for (int i = 0; i < getRowCount(); i++) {
+
                 if (getValueAt(i, columnIndex) != null) {
                     return getValueAt(i, columnIndex).getClass();
                 }
+
             }
+
             return String.class;
         }
 

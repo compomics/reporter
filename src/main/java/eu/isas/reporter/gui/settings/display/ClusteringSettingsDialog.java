@@ -78,7 +78,12 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
      * @param clusteringSettings the clustering settings
      * @param editable if the content is editable or not
      */
-    public ClusteringSettingsDialog(JFrame parentFrame, ClusteringSettings clusteringSettings, boolean editable) {
+    public ClusteringSettingsDialog(
+            JFrame parentFrame,
+            ClusteringSettings clusteringSettings,
+            boolean editable
+    ) {
+
         super(parentFrame, true);
         initComponents();
         this.editable = editable;
@@ -86,6 +91,7 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
         setUpGui();
         setLocationRelativeTo(parentFrame);
         setVisible(true);
+
     }
 
     /**
@@ -110,27 +116,27 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
         colorColumn.setCellRenderer(new JSparklinesColorTableCellRenderer());
         colorColumn.setMaxWidth(35);
         colorColumn.setMinWidth(35);
-        
+
         colorColumn = proteinClassesTable.getColumnModel().getColumn(2);
         colorColumn.setCellRenderer(new NimbusCheckBoxRenderer());
         colorColumn.setMaxWidth(35);
         colorColumn.setMinWidth(35);
-        
+
         colorColumn = peptideClassesTable.getColumnModel().getColumn(2);
         colorColumn.setCellRenderer(new NimbusCheckBoxRenderer());
         colorColumn.setMaxWidth(35);
         colorColumn.setMinWidth(35);
-        
+
         colorColumn = psmClassesTable.getColumnModel().getColumn(2);
         colorColumn.setCellRenderer(new NimbusCheckBoxRenderer());
         colorColumn.setMaxWidth(35);
         colorColumn.setMinWidth(35);
-        
+
         // set main table properties
         proteinClassesTable.getTableHeader().setReorderingAllowed(false);
         peptideClassesTable.getTableHeader().setReorderingAllowed(false);
         psmClassesTable.getTableHeader().setReorderingAllowed(false);
-        
+
         // make sure that the scroll panes are see-through
         proteinClassesScrollPane.getViewport().setOpaque(false);
         peptideClassesScrollPane.getViewport().setOpaque(false);
@@ -154,15 +160,15 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
         classesColors = clusteringSettings.getClassesColors();
 
         proteinClassesMap = clusteringSettings.getProteinKeysMap();
-        HashMap<String, ClusterClassKey> proteinKeysMap = new HashMap<String, ClusterClassKey>(proteinClassesMap);
+        HashMap<String, ClusterClassKey> proteinKeysMap = new HashMap<>(proteinClassesMap);
         proteinClassesTable.setModel(new ClassListTableModel(proteinClasses, selectedProteinClasses, proteinKeysMap));
 
         peptideClassesMap = clusteringSettings.getPeptideKeysMap();
-        HashMap<String, ClusterClassKey> peptideKeysMap = new HashMap<String, ClusterClassKey>(peptideClassesMap);
+        HashMap<String, ClusterClassKey> peptideKeysMap = new HashMap<>(peptideClassesMap);
         peptideClassesTable.setModel(new ClassListTableModel(peptideClasses, selectedPeptideClasses, peptideKeysMap));
 
         psmClassesMap = clusteringSettings.getPsmKeysMap();
-        HashMap<String, ClusterClassKey> psmKeysMap = new HashMap<String, ClusterClassKey>(psmClassesMap);
+        HashMap<String, ClusterClassKey> psmKeysMap = new HashMap<>(psmClassesMap);
         psmClassesTable.setModel(new ClassListTableModel(psmClasses, selectedPsmClasses, psmKeysMap));
 
         updateGUI();
@@ -193,17 +199,21 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
      * @return the clustering settings as set by the user
      */
     public ClusteringSettings getClusteringSettings() {
-        ArrayList<ProteinClusterClassKey> proteinClassesKeys = new ArrayList<ProteinClusterClassKey>(proteinClasses.size());
+
+        ArrayList<ProteinClusterClassKey> proteinClassesKeys = new ArrayList<>(proteinClasses.size());
+
         for (String classKey : proteinClasses) {
             proteinClassesKeys.add(proteinClassesMap.get(classKey));
         }
 
-        ArrayList<PeptideClusterClassKey> peptideClassesKeys = new ArrayList<PeptideClusterClassKey>(peptideClasses.size());
+        ArrayList<PeptideClusterClassKey> peptideClassesKeys = new ArrayList<>(peptideClasses.size());
+
         for (String classKey : peptideClasses) {
             peptideClassesKeys.add(peptideClassesMap.get(classKey));
         }
 
-        ArrayList<PsmClusterClassKey> psmClassesKeys = new ArrayList<PsmClusterClassKey>(psmClasses.size());
+        ArrayList<PsmClusterClassKey> psmClassesKeys = new ArrayList<>(psmClasses.size());
+
         for (String classKey : psmClasses) {
             psmClassesKeys.add(psmClassesMap.get(classKey));
         }
@@ -212,27 +222,40 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
         clusteringSettings.setProteinClassKeys(proteinClassesKeys);
         clusteringSettings.setPeptideClassKeys(peptideClassesKeys);
         clusteringSettings.setPsmClassKeys(psmClassesKeys);
+
         for (int i = 0; i < proteinClasses.size(); i++) {
+
             Boolean selected = (Boolean) proteinClassesTable.getValueAt(i, 2);
+
             if (selected) {
                 String selection = proteinClasses.get(i);
                 clusteringSettings.addProteinClass(selection);
             }
+
         }
+
         for (int i = 0; i < peptideClasses.size(); i++) {
+
             Boolean selected = (Boolean) peptideClassesTable.getValueAt(i, 2);
+
             if (selected) {
                 String selection = peptideClasses.get(i);
                 clusteringSettings.addPeptideClass(selection);
             }
+
         }
+
         for (int i = 0; i < psmClasses.size(); i++) {
+
             Boolean selected = (Boolean) psmClassesTable.getValueAt(i, 2);
+
             if (selected) {
                 String selection = psmClasses.get(i);
                 clusteringSettings.addPsmClass(selection);
             }
+
         }
+
         clusteringSettings.setClassesColors(classesColors);
         return clusteringSettings;
     }
@@ -400,8 +423,8 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
 
     /**
      * Close the dialog and keep the changes.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
         dispose();
@@ -409,22 +432,26 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
 
     /**
      * Close the dialog and cancel the changes.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+
         canceled = true;
         dispose();
+
     }//GEN-LAST:event_cancelButtonActionPerformed
 
     /**
-     * Cancel the dialog.
-     * 
-     * @param evt 
+     * Close the dialog and cancel the changes.
+     *
+     * @param evt
      */
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+
         canceled = true;
         dispose();
+
     }//GEN-LAST:event_formWindowClosing
 
 
@@ -469,33 +496,47 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
          * @param selectedClasses list of the keys of selected classes
          * @param keysMap map of the key to class key object
          */
-        public ClassListTableModel(ArrayList<String> possibleClasses, ArrayList<String> selectedClasses, HashMap<String, ClusterClassKey> keysMap) {
+        public ClassListTableModel(
+                ArrayList<String> possibleClasses,
+                ArrayList<String> selectedClasses,
+                HashMap<String, ClusterClassKey> keysMap
+        ) {
+
             classes = possibleClasses;
             this.selectedClasses = new HashMap<String, Boolean>(classes.size());
+
             for (String category : classes) {
+
                 if (selectedClasses.contains(category)) {
                     this.selectedClasses.put(category, true);
                 } else {
                     this.selectedClasses.put(category, false);
                 }
+
             }
+
             this.keysMap = keysMap;
         }
 
         @Override
         public int getRowCount() {
+
             if (classes == null) {
                 return 0;
             }
+
             return classes.size();
+
         }
 
         @Override
         public void setValueAt(Object aValue, int row, int column) {
+
             if (column == 2) {
                 String key = classes.get(row);
                 selectedClasses.put(key, !selectedClasses.get(key));
             }
+
         }
 
         @Override
@@ -505,44 +546,63 @@ public class ClusteringSettingsDialog extends javax.swing.JDialog {
 
         @Override
         public String getColumnName(int column) {
+
             switch (column) {
                 case 1:
                     return "Category";
                 default:
                     return "";
             }
+
         }
 
         @Override
         public Object getValueAt(int row, int column) {
+
             switch (column) {
+
                 case 0:
+
                     String key = classes.get(row);
                     Color color = classesColors.get(key);
+
                     if (color == null) {
                         color = Color.GRAY;
                     }
+
                     return color;
+
                 case 1:
+
                     key = classes.get(row);
                     ClusterClassKey clusterClassKey = keysMap.get(key);
                     return clusterClassKey.getName();
+
                 case 2:
+
                     key = classes.get(row);
                     return selectedClasses.get(key);
+
                 default:
+
                     return "";
+
             }
         }
 
         @Override
         public Class getColumnClass(int columnIndex) {
+
             for (int i = 0; i < getRowCount(); i++) {
+
                 if (getValueAt(i, columnIndex) != null) {
                     return getValueAt(i, columnIndex).getClass();
                 }
+
             }
+
             return String.class;
+
         }
 
         @Override

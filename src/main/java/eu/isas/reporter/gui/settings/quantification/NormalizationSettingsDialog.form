@@ -139,12 +139,12 @@
                           <Component id="psmNormalizationLbl" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="psmNormalizationCmb" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="peptideNormalizationLbl" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="peptideNormalizationCmb" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="proteinNormalizationLbl" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="proteinNormalizationCmb" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -253,7 +253,7 @@
                           <Component id="stableProteinsBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="stableProteinsTxt" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="contaminantsClearButton" alignment="3" min="-2" max="-2" attributes="0"/>

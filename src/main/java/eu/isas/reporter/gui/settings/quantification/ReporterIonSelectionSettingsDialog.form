@@ -130,7 +130,7 @@
                           <Component id="reporterIonMzToleranceLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="ionToleranceTxt" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="ionSelectionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="ionSelectionComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -220,7 +220,7 @@
                           <Component id="mzTolTxt" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="ppmCmb" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="rtToleranceLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="rtTolTxt" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -239,7 +239,6 @@
                 <Property name="selected" type="boolean" value="true"/>
                 <Property name="text" type="java.lang.String" value="Same Spectra"/>
                 <Property name="iconTextGap" type="int" value="10"/>
-                <Property name="opaque" type="boolean" value="false"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="sameSpectraActionPerformed"/>
@@ -252,7 +251,6 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="Precursor Matching"/>
                 <Property name="iconTextGap" type="int" value="10"/>
-                <Property name="opaque" type="boolean" value="false"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="precursorMatchingActionPerformed"/>

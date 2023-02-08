@@ -175,9 +175,11 @@ public class ProjectImporter {
                 }
 
             } else { // CLI
+
                 if (!psdbParent.loadSpectrumFile(spectrumFileName, mgfFiles, waitingHandler)) {
                     throw new IllegalArgumentException(spectrumFileName + " was not found. Please provide its location in the command line parameters.");
                 }
+
             }
         }
 
@@ -231,15 +233,22 @@ public class ProjectImporter {
         }
 
         if (reporterSettings == null) {
-            reporterSettings = getDefaultReporterSettings(reporterIonQuantification.getReporterMethod(), identificationParameters);
+
+            reporterSettings = getDefaultReporterSettings(
+                    reporterIonQuantification.getReporterMethod(),
+                    identificationParameters
+            );
+
         }
 
         if (displayPreferences == null) {
+
             displayPreferences = new DisplayPreferences();
             ClusteringSettings clusteringSettings = getDefaultClusterMetrics(identificationParameters, identification);
             KMeansClusteringSettings kMeansClusteringSettings = new KMeansClusteringSettings();
             clusteringSettings.setKMeansClusteringSettings(kMeansClusteringSettings);
             displayPreferences.setClusteringSettings(clusteringSettings);
+
         }
 
     }
@@ -259,7 +268,13 @@ public class ProjectImporter {
     ) {
 
         ReporterSettings reporterSettings = new ReporterSettings();
-        return getDefaultReporterSettings(reporterMethod, identificationParameters, reporterSettings);
+        
+        return getDefaultReporterSettings(
+                reporterMethod, 
+                identificationParameters, 
+                reporterSettings
+        );
+        
     }
 
     /**
@@ -319,7 +334,9 @@ public class ProjectImporter {
      *
      * @return the default reporter ion quantification
      */
-    public static ReporterIonQuantification getDefaultReporterIonQuantification(IdentificationParameters identificationParameters) {
+    public static ReporterIonQuantification getDefaultReporterIonQuantification(
+            IdentificationParameters identificationParameters
+    ) {
 
         ReporterMethod selectedMethod = null;
         SearchParameters searchParameters = identificationParameters.getSearchParameters();
@@ -361,7 +378,8 @@ public class ProjectImporter {
 
         }
 
-        ReporterIonQuantification reporterIonQuantification = new ReporterIonQuantification(Quantification.QuantificationMethod.REPORTER_IONS);
+        ReporterIonQuantification reporterIonQuantification 
+                = new ReporterIonQuantification(Quantification.QuantificationMethod.REPORTER_IONS);
 
         // no method detected, default to TMT 10-plex
         if (selectedMethod == null) {
@@ -518,7 +536,13 @@ public class ProjectImporter {
         return displayPreferences;
     }
 
+    /**
+     * Returns the spectrum provider.
+     * 
+     * @return the spectrum provider
+     */
     public SpectrumProvider getSpectrumProvider() {
         return spectrumProvider;
     }
+    
 }

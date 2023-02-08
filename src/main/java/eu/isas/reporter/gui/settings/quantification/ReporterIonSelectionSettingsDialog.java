@@ -32,7 +32,13 @@ public class ReporterIonSelectionSettingsDialog extends javax.swing.JDialog {
      * @param reporterMethod the reporter method used
      * @param editable boolean indicating whether the settings can be edited
      */
-    public ReporterIonSelectionSettingsDialog(JDialog parentDialog, ReporterIonSelectionSettings reporterIonSelectionSettings, ReporterMethod reporterMethod, boolean editable) {
+    public ReporterIonSelectionSettingsDialog(
+            JDialog parentDialog,
+            ReporterIonSelectionSettings reporterIonSelectionSettings,
+            ReporterMethod reporterMethod,
+            boolean editable
+    ) {
+
         super(parentDialog, true);
         this.reporterMethod = reporterMethod;
         initComponents();
@@ -40,6 +46,7 @@ public class ReporterIonSelectionSettingsDialog extends javax.swing.JDialog {
         populateGUI(reporterIonSelectionSettings);
         setLocationRelativeTo(parentDialog);
         setVisible(true);
+
     }
 
     /**
@@ -51,8 +58,19 @@ public class ReporterIonSelectionSettingsDialog extends javax.swing.JDialog {
      * @param reporterIonSelectionSettings the settings to display
      * @param editable boolean indicating whether the settings can be edited
      */
-    public ReporterIonSelectionSettingsDialog(JDialog parentDialog, ReporterIonSelectionSettings reporterIonSelectionSettings, boolean editable) {
-        this(parentDialog, reporterIonSelectionSettings, null, editable);
+    public ReporterIonSelectionSettingsDialog(
+            JDialog parentDialog,
+            ReporterIonSelectionSettings reporterIonSelectionSettings,
+            boolean editable
+    ) {
+
+        this(
+                parentDialog,
+                reporterIonSelectionSettings,
+                null,
+                editable
+        );
+
     }
 
     /**
@@ -63,7 +81,6 @@ public class ReporterIonSelectionSettingsDialog extends javax.swing.JDialog {
     private void setUpGui(boolean editable) {
 
         //@TODO: Set editable or not
-        
         ionSelectionComboBox.setRenderer(new AlignedListCellRenderer(SwingConstants.CENTER));
     }
 
@@ -75,21 +92,29 @@ public class ReporterIonSelectionSettingsDialog extends javax.swing.JDialog {
     private void populateGUI(ReporterIonSelectionSettings reporterIonSelectionSettings) {
 
         ionToleranceTxt.setText(reporterIonSelectionSettings.getReporterIonsMzTolerance() + "");
+
         if (reporterIonSelectionSettings.isMostAccurate()) {
             ionSelectionComboBox.setSelectedIndex(0);
         } else {
             ionSelectionComboBox.setSelectedIndex(1);
         }
+
         if (reporterIonSelectionSettings.isSameSpectra()) {
+
             sameSpectra.setSelected(true);
             precursorMatching.setSelected(false);
+
         } else {
+
             sameSpectra.setSelected(false);
             precursorMatching.setSelected(true);
             mzTolTxt.setText(reporterIonSelectionSettings.getPrecursorMzTolerance() + "");
             rtTolTxt.setText(reporterIonSelectionSettings.getPrecursorRTTolerance() + "");
+
         }
+
         updateSameSpectrumMatchingSelection();
+
     }
 
     /**
@@ -167,7 +192,7 @@ public class ReporterIonSelectionSettingsDialog extends javax.swing.JDialog {
                 .addGroup(spectrumAnalysisPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(reporterIonMzToleranceLabel)
                     .addComponent(ionToleranceTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(0, 0, 0)
                 .addGroup(spectrumAnalysisPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(ionSelectionLabel)
                     .addComponent(ionSelectionComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -181,7 +206,6 @@ public class ReporterIonSelectionSettingsDialog extends javax.swing.JDialog {
         sameSpectra.setSelected(true);
         sameSpectra.setText("Same Spectra");
         sameSpectra.setIconTextGap(10);
-        sameSpectra.setOpaque(false);
         sameSpectra.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 sameSpectraActionPerformed(evt);
@@ -191,7 +215,6 @@ public class ReporterIonSelectionSettingsDialog extends javax.swing.JDialog {
         reporterLocationButtonGroup.add(precursorMatching);
         precursorMatching.setText("Precursor Matching");
         precursorMatching.setIconTextGap(10);
-        precursorMatching.setOpaque(false);
         precursorMatching.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 precursorMatchingActionPerformed(evt);
@@ -249,7 +272,7 @@ public class ReporterIonSelectionSettingsDialog extends javax.swing.JDialog {
                     .addComponent(mzToleranceLabel)
                     .addComponent(mzTolTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(ppmCmb, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(0, 0, 0)
                 .addGroup(reporterLocationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(rtToleranceLabel)
                     .addComponent(rtTolTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -318,21 +341,43 @@ public class ReporterIonSelectionSettingsDialog extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_okButtonActionPerformed
 
+    /**
+     * Update the same spectrum selection.
+     *
+     * @param evt
+     */
     private void sameSpectraActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sameSpectraActionPerformed
         updateSameSpectrumMatchingSelection();
     }//GEN-LAST:event_sameSpectraActionPerformed
 
+    /**
+     * Update the precursor matching type.
+     *
+     * @param evt
+     */
     private void precursorMatchingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_precursorMatchingActionPerformed
         sameSpectraActionPerformed(null);
     }//GEN-LAST:event_precursorMatchingActionPerformed
 
+    /**
+     * Validate the RT input.
+     *
+     * @param evt
+     */
     private void rtTolTxtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rtTolTxtActionPerformed
         // @TODO: validate the input
     }//GEN-LAST:event_rtTolTxtActionPerformed
 
+    /**
+     * Close the dialog and cancel the changes.
+     *
+     * @param evt
+     */
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+
         canceled = true;
         dispose();
+
     }//GEN-LAST:event_cancelButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -357,23 +402,25 @@ public class ReporterIonSelectionSettingsDialog extends javax.swing.JDialog {
 
     /**
      * Indicates whether the user canceled the editing.
-     * 
+     *
      * @return a boolean indicating whether the user canceled the editing
      */
     public boolean isCanceled() {
         return canceled;
     }
-    
+
     /**
      * Updates the selection of the spectrum matching selection
      */
     private void updateSameSpectrumMatchingSelection() {
+
         // enable or disable the precursor matching options
         mzToleranceLabel.setEnabled(precursorMatching.isSelected());
         mzTolTxt.setEnabled(precursorMatching.isSelected());
         ppmCmb.setEnabled(precursorMatching.isSelected());
         rtToleranceLabel.setEnabled(precursorMatching.isSelected());
         rtTolTxt.setEnabled(precursorMatching.isSelected());
+
     }
 
     /**
@@ -386,55 +433,122 @@ public class ReporterIonSelectionSettingsDialog extends javax.swing.JDialog {
 
         // check the ion torerance
         Double input;
+
         try {
-            input = new Double(ionToleranceTxt.getText().trim());
+            input = Double.valueOf(ionToleranceTxt.getText().trim());
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Please input a number for the ion tolerance.", "Ion Tolerance Error", JOptionPane.ERROR_MESSAGE);
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Please input a number for the ion tolerance.",
+                    "Ion Tolerance Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+
             return false;
+
         }
+
         if (input <= 0) {
-            JOptionPane.showMessageDialog(this, "Please input a positive number for the ion tolerance.", "Ion Tolerance Error", JOptionPane.ERROR_MESSAGE);
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Please input a positive number for the ion tolerance.",
+                    "Ion Tolerance Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+
             return false;
         }
+
         if (reporterMethod != null) {
+
             for (String reagent1 : reporterMethod.getReagentNames()) {
+
                 for (String reagent2 : reporterMethod.getReagentNames()) {
+
                     if (!reagent1.equals(reagent2) && Math.abs(reporterMethod.getReagent(reagent1).getReporterIon().getTheoreticMass()
                             - reporterMethod.getReagent(reagent2).getReporterIon().getTheoreticMass()) <= input) {
-                        JOptionPane.showMessageDialog(this, 
-                                "The selected ion tolerance does not make it possible to distinguish " + reagent1 + " and " + reagent2 + ".", 
-                                "Ion Tolerance Error", JOptionPane.WARNING_MESSAGE);
+
+                        JOptionPane.showMessageDialog(
+                                this,
+                                "The selected ion tolerance does not make it possible to distinguish " + reagent1 + " and " + reagent2 + ".",
+                                "Ion Tolerance Error",
+                                JOptionPane.WARNING_MESSAGE
+                        );
+
                         return false;
+
                     }
                 }
+
             }
+
         }
 
         // check the precursor matching
         if (precursorMatching.isSelected()) {
+
             try {
-                input = new Double(mzTolTxt.getText().trim());
+                input = Double.valueOf(mzTolTxt.getText().trim());
             } catch (Exception e) {
-                JOptionPane.showMessageDialog(this, "Please input a number for the precursor m/z tolerance.", "Matching Tolerance Error", JOptionPane.ERROR_MESSAGE);
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Please input a number for the precursor m/z tolerance.",
+                        "Matching Tolerance Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+
                 return false;
+
             }
+
             if (input <= 0) {
-                JOptionPane.showMessageDialog(this, "Please input a positive number for the precursor m/z tolerance.", "Matching Tolerance Error", JOptionPane.ERROR_MESSAGE);
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Please input a positive number for the precursor m/z tolerance.",
+                        "Matching Tolerance Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+
                 return false;
+
             }
             try {
-                input = new Double(rtTolTxt.getText().trim());
+
+                input = Double.valueOf(rtTolTxt.getText().trim());
+
             } catch (Exception e) {
-                JOptionPane.showMessageDialog(this, "Please input a number for the precursor RT tolerance.", "Matching Tolerance Error", JOptionPane.ERROR_MESSAGE);
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Please input a number for the precursor RT tolerance.",
+                        "Matching Tolerance Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+
                 return false;
             }
+
             if (input <= 0) {
-                JOptionPane.showMessageDialog(this, "Please input a positive number for the precursor RT tolerance.", "Matching Tolerance Error", JOptionPane.ERROR_MESSAGE);
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Please input a positive number for the precursor RT tolerance.",
+                        "Matching Tolerance Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+
                 return false;
+
             }
+
         }
 
         return true;
+
     }
 
     /**
@@ -443,23 +557,26 @@ public class ReporterIonSelectionSettingsDialog extends javax.swing.JDialog {
      * @return the settings as set by the user
      */
     public ReporterIonSelectionSettings getReporterIonSelectionSettings() {
-        
+
         ReporterIonSelectionSettings reporterIonSelectionSettings = new ReporterIonSelectionSettings();
-        Double ionTolerance = new Double(ionToleranceTxt.getText().trim());
+        Double ionTolerance = Double.valueOf(ionToleranceTxt.getText().trim());
         reporterIonSelectionSettings.setReporterIonsMzTolerance(ionTolerance);
         reporterIonSelectionSettings.setMostAccurate(ionSelectionComboBox.getSelectedIndex() == 0);
 
         if (precursorMatching.isSelected()) {
+
             reporterIonSelectionSettings.setSameSpectra(false);
-            Double matchingMzTolerance = new Double(mzTolTxt.getText().trim());
+            Double matchingMzTolerance = Double.valueOf(mzTolTxt.getText().trim());
             reporterIonSelectionSettings.setPrecursorMzTolerance(matchingMzTolerance);
-            Double matchingRtTolerance = new Double(rtTolTxt.getText().trim());
+            Double matchingRtTolerance = Double.valueOf(rtTolTxt.getText().trim());
             reporterIonSelectionSettings.setPrecursorMzTolerance(matchingRtTolerance);
             reporterIonSelectionSettings.setPrecursorMzPpm(ppmCmb.getSelectedIndex() == 0);
+
         } else {
             reporterIonSelectionSettings.setSameSpectra(true);
         }
 
         return reporterIonSelectionSettings;
+
     }
 }

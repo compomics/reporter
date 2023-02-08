@@ -209,12 +209,20 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         try {
             utilitiesUserParameters = utilitiesUserParameters.loadUserParameters();
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "An error occurred when reading the user preferences.", "File Error", JOptionPane.ERROR_MESSAGE);
+
+            JOptionPane.showMessageDialog(
+                    null,
+                    "An error occurred when reading the user preferences.",
+                    "File Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+
             e.printStackTrace();
         }
 
         // check for new version
         boolean newVersion = false;
+
         if (!Reporter.getJarFilePath().equalsIgnoreCase(".") && utilitiesUserParameters.isAutoUpdate()) {
             newVersion = checkForNewVersion();
         }
@@ -223,7 +231,14 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
 
             // set this version as the default Reporter version
             if (!Reporter.getJarFilePath().equalsIgnoreCase(".")) {
-                utilitiesUserParameters.setReporterPath(new File(Reporter.getJarFilePath(), "Reporter-" + new Properties().getVersion() + ".jar").getAbsolutePath());
+
+                utilitiesUserParameters.setReporterPath(
+                        new File(
+                                Reporter.getJarFilePath(),
+                                "Reporter-" + new Properties().getVersion() + ".jar"
+                        ).getAbsolutePath()
+                );
+
                 UtilitiesUserParameters.saveUserParameters(utilitiesUserParameters);
             }
 
@@ -342,9 +357,13 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
                 psdbParent.getIdentificationParameters().getSequenceMatchingParameters()
         );
 
-        progressDialog = new ProgressDialogX(this,
+        progressDialog = new ProgressDialogX(
+                this,
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
-                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")), true);
+                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")),
+                true
+        );
+
         progressDialog.setPrimaryProgressCounterIndeterminate(true);
         progressDialog.setTitle("Quantifying Proteins. Please Wait...");
 
@@ -423,38 +442,90 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      *
      * @param waitingHandler the waiting handler
      */
-    private void displayResults(WaitingHandler waitingHandler) throws SQLException, IOException, ClassNotFoundException, InterruptedException {
+    private void displayResults(WaitingHandler waitingHandler)
+            throws SQLException, IOException, ClassNotFoundException, InterruptedException {
 
         // Set Normalization factors
         NormalizationFactors normalizationFactors = reporterIonQuantification.getNormalizationFactors();
+
         if (!normalizationFactors.hasNormalizationFactors()) {
+
             Normalizer normalizer = new Normalizer();
+
             if (!normalizationFactors.hasPsmNormalisationFactors()) {
-                normalizer.setPsmNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(),
-                        reporterSettings.getNormalizationSettings(), getIdentificationParameters().getSequenceMatchingParameters(),
-                        getIdentification(), getSpectrumProvider(), quantificationFeaturesGenerator, processingParameters,
-                        psdbParent.getIdentificationParameters().getSearchParameters(), psdbParent.getIdentificationParameters().getFastaParameters(),
-                        psdbParent.getIdentificationParameters().getPeptideVariantsParameters(), exceptionHandler, progressDialog);
+
+                normalizer.setPsmNormalizationFactors(
+                        reporterIonQuantification,
+                        reporterSettings.getRatioEstimationSettings(),
+                        reporterSettings.getNormalizationSettings(),
+                        getIdentificationParameters().getSequenceMatchingParameters(),
+                        getIdentification(),
+                        getSpectrumProvider(),
+                        quantificationFeaturesGenerator,
+                        processingParameters,
+                        psdbParent.getIdentificationParameters().getSearchParameters(),
+                        psdbParent.getIdentificationParameters().getFastaParameters(),
+                        psdbParent.getIdentificationParameters().getPeptideVariantsParameters(),
+                        exceptionHandler,
+                        progressDialog
+                );
+
             }
+
             if (!normalizationFactors.hasPeptideNormalisationFactors()) {
-                normalizer.setPeptideNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(),
-                        reporterSettings.getNormalizationSettings(), getIdentificationParameters().getSequenceMatchingParameters(),
-                        getIdentification(), getSpectrumProvider(), quantificationFeaturesGenerator, processingParameters,
-                        psdbParent.getIdentificationParameters().getSearchParameters(), psdbParent.getIdentificationParameters().getFastaParameters(),
-                        psdbParent.getIdentificationParameters().getPeptideVariantsParameters(), exceptionHandler, progressDialog);
+
+                normalizer.setPeptideNormalizationFactors(
+                        reporterIonQuantification,
+                        reporterSettings.getRatioEstimationSettings(),
+                        reporterSettings.getNormalizationSettings(),
+                        getIdentificationParameters().getSequenceMatchingParameters(),
+                        getIdentification(),
+                        getSpectrumProvider(),
+                        quantificationFeaturesGenerator,
+                        processingParameters,
+                        psdbParent.getIdentificationParameters().getSearchParameters(),
+                        psdbParent.getIdentificationParameters().getFastaParameters(),
+                        psdbParent.getIdentificationParameters().getPeptideVariantsParameters(),
+                        exceptionHandler,
+                        progressDialog
+                );
+
             }
             if (!normalizationFactors.hasProteinNormalisationFactors()) {
-                normalizer.setProteinNormalizationFactors(reporterIonQuantification, reporterSettings.getRatioEstimationSettings(),
-                        reporterSettings.getNormalizationSettings(), getIdentification(), getSpectrumProvider(), getMetrics(), quantificationFeaturesGenerator,
-                        processingParameters, psdbParent.getIdentificationParameters().getSearchParameters(), psdbParent.getIdentificationParameters().getFastaParameters(),
-                        psdbParent.getIdentificationParameters().getPeptideVariantsParameters(), exceptionHandler, progressDialog);
+
+                normalizer.setProteinNormalizationFactors(
+                        reporterIonQuantification,
+                        reporterSettings.getRatioEstimationSettings(),
+                        reporterSettings.getNormalizationSettings(),
+                        getIdentification(),
+                        getSpectrumProvider(),
+                        getMetrics(),
+                        quantificationFeaturesGenerator,
+                        processingParameters,
+                        psdbParent.getIdentificationParameters().getSearchParameters(),
+                        psdbParent.getIdentificationParameters().getFastaParameters(),
+                        psdbParent.getIdentificationParameters().getPeptideVariantsParameters(),
+                        exceptionHandler,
+                        progressDialog
+                );
+
             }
         }
 
         // cluster the profiles of the selected entities
         clusterBuilder = new ClusterBuilder();
-        kMeansClutering = clusterBuilder.clusterProfiles(getIdentification(), getIdentificationParameters(), getSequenceProvider(),
-                getSpectrumProvider(), getMetrics(), reporterIonQuantification, quantificationFeaturesGenerator, displayPreferences, true, progressDialog);
+
+        kMeansClutering = clusterBuilder.clusterProfiles(
+                getIdentification(),
+                getIdentificationParameters(),
+                getSequenceProvider(),
+                getSpectrumProvider(),
+                getMetrics(),
+                reporterIonQuantification,
+                quantificationFeaturesGenerator,
+                displayPreferences,
+                true,
+                progressDialog);
 
         if (waitingHandler.isRunCanceled()) {
             return;
@@ -496,10 +567,13 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * @return the identification of the psdb file
      */
     public Identification getIdentification() {
+
         if (psdbParent == null) {
             return null;
         }
+
         return psdbParent.getIdentification();
+
     }
 
     /**
@@ -508,10 +582,13 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * @return the gene maps
      */
     public GeneMaps getGeneMaps() {
+
         if (psdbParent == null) {
             return null;
         }
+
         return psdbParent.getGeneMaps();
+
     }
 
     /**
@@ -520,10 +597,13 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * @return the project details
      */
     public ProjectDetails getProjectDetails() {
+
         if (psdbParent == null) {
             return null;
         }
+
         return psdbParent.getProjectDetails();
+
     }
 
     /**
@@ -541,9 +621,12 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * @return the identification display preferences
      */
     public eu.isas.peptideshaker.preferences.DisplayParameters getIdentificationDisplayPreferences() {
-        if (psdbParent == null || psdbParent.getDisplayParameters() == null) { //@TODO: this is null with the online version of PeptideShaker
+
+        if (psdbParent == null
+                || psdbParent.getDisplayParameters() == null) { //@TODO: this is null with the online version of PeptideShaker
             return new eu.isas.peptideshaker.preferences.DisplayParameters();
         }
+
         return psdbParent.getDisplayParameters();
     }
 
@@ -661,10 +744,13 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * @return the identification parameters
      */
     public IdentificationParameters getIdentificationParameters() {
+
         if (psdbParent == null) {
             return null;
         }
+
         return psdbParent.getIdentificationParameters();
+
     }
 
     /**
@@ -948,10 +1034,15 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * @param evt
      */
     private void helpMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_helpMenuItemActionPerformed
-        new HelpDialog(this, getClass().getResource("/helpFiles/Reporter.html"),
+
+        new HelpDialog(
+                this,
+                getClass().getResource("/helpFiles/Reporter.html"),
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/help.GIF")),
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
-                "ReporterGUI - Help");
+                "ReporterGUI - Help"
+        );
+
     }//GEN-LAST:event_helpMenuItemActionPerformed
 
     /**
@@ -960,9 +1051,18 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * @param evt
      */
     private void logReportMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logReportMenuActionPerformed
-        new BugReport(this, lastSelectedFolder, "Reporter", "reporter",
-                new Properties().getVersion(), "reporter_software", "Reporter",
-                new File(Reporter.getJarFilePath() + "/resources/Reporter.log"));
+
+        new BugReport(
+                this,
+                lastSelectedFolder,
+                "Reporter",
+                "reporter",
+                new Properties().getVersion(),
+                "reporter_software",
+                "Reporter",
+                new File(Reporter.getJarFilePath() + "/resources/Reporter.log")
+        );
+
     }//GEN-LAST:event_logReportMenuActionPerformed
 
     /**
@@ -971,10 +1071,15 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * @param evt
      */
     private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutMenuItemActionPerformed
-        new HelpDialog(this, getClass().getResource("/helpFiles/AboutReporter.html"),
+
+        new HelpDialog(
+                this,
+                getClass().getResource("/helpFiles/AboutReporter.html"),
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/help.GIF")),
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
-                "About ReporterGUI");
+                "About ReporterGUI"
+        );
+
     }//GEN-LAST:event_aboutMenuItemActionPerformed
 
     /**
@@ -983,7 +1088,12 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * @param evt
      */
     private void privacyMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_privacyMenuItemActionPerformed
-        new PrivacyParametersDialog(this, Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")));
+
+        new PrivacyParametersDialog(
+                this,
+                Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif"))
+        );
+
     }//GEN-LAST:event_privacyMenuItemActionPerformed
 
     /**
@@ -992,7 +1102,15 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * @param evt
      */
     private void javaOptionsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_javaOptionsMenuItemActionPerformed
-        new JavaParametersDialog(this, this, null, "Reporter", true);
+
+        new JavaParametersDialog(
+                this,
+                this,
+                null,
+                "Reporter",
+                true
+        );
+
     }//GEN-LAST:event_javaOptionsMenuItemActionPerformed
 
     /**
@@ -1001,11 +1119,14 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * @param evt
      */
     private void saveMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveMenuItemActionPerformed
-        if (psdbParent.getPsdbFile() != null && psdbParent.getPsdbFile().exists()) {
+
+        if (psdbParent.getPsdbFile() != null
+                && psdbParent.getPsdbFile().exists()) {
             saveProject(false, false);
         } else {
             saveProjectAs(false, false);
         }
+
     }//GEN-LAST:event_saveMenuItemActionPerformed
 
     /**
@@ -1032,10 +1153,14 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * @param evt
      */
     private void processingSettingsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_processingSettingsMenuItemActionPerformed
-        ProcessingParametersDialog processingParametersDialog = new ProcessingParametersDialog(this, processingParameters, true);
+
+        ProcessingParametersDialog processingParametersDialog
+                = new ProcessingParametersDialog(this, processingParameters, true);
+
         if (!processingParametersDialog.isCanceled()) {
             processingParameters = processingParametersDialog.getProcessingParameters();
         }
+
     }//GEN-LAST:event_processingSettingsMenuItemActionPerformed
 
     /**
@@ -1044,14 +1169,23 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * @param evt
      */
     private void categoriesMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_categoriesMenuItemActionPerformed
-        ClusteringSettingsDialog clusteringSettingsDialog = new ClusteringSettingsDialog(this, displayPreferences.getClusteringSettings(), true);
+
+        ClusteringSettingsDialog clusteringSettingsDialog = new ClusteringSettingsDialog(
+                this,
+                displayPreferences.getClusteringSettings(),
+                true
+        );
+
         if (!clusteringSettingsDialog.isCanceled()) { //@TODO: check whether the settings changed
+
             KMeansClusteringSettings kMeansClusteringSettings = displayPreferences.getClusteringSettings().getKMeansClusteringSettings();
             ClusteringSettings newSettings = clusteringSettingsDialog.getClusteringSettings();
             newSettings.setKMeansClusteringSettings(kMeansClusteringSettings);
             displayPreferences.setClusteringSettings(newSettings);
             recluster(kMeansClusteringSettings.getnClusters(), true);
+
         }
+
     }//GEN-LAST:event_categoriesMenuItemActionPerformed
 
     /**
@@ -1060,14 +1194,25 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * @param evt
      */
     private void reagentOrderMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reagentOrderMenuItemActionPerformed
-        ReagentOrderDialog reagentOrderDialog = new ReagentOrderDialog(this, true, displayPreferences.getReagents(),
-                reporterIonQuantification.getReporterMethod(), reporterIonQuantification, reporterIonQuantification.getControlSamples());
+
+        ReagentOrderDialog reagentOrderDialog = new ReagentOrderDialog(
+                this,
+                true,
+                displayPreferences.getReagents(),
+                reporterIonQuantification.getReporterMethod(),
+                reporterIonQuantification,
+                reporterIonQuantification.getControlSamples()
+        );
 
         if (!reagentOrderDialog.isCancelled()) {
+
             displayPreferences.setReagents(reagentOrderDialog.getReagentOrder());
-            KMeansClusteringSettings kMeansClusteringSettings = displayPreferences.getClusteringSettings().getKMeansClusteringSettings();
+            KMeansClusteringSettings kMeansClusteringSettings
+                    = displayPreferences.getClusteringSettings().getKMeansClusteringSettings();
             recluster(kMeansClusteringSettings.getnClusters(), false);
+
         }
+
     }//GEN-LAST:event_reagentOrderMenuItemActionPerformed
 
     /**
@@ -1079,10 +1224,13 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      */
     private void saveProject(boolean aCloseWhenDone, boolean aExportToZipWhenDone) { // @TODO: implement aExportToZipWhenDone?
 
-        progressDialog = new ProgressDialogX(this,
+        progressDialog = new ProgressDialogX(
+                this,
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
-                true);
+                true
+        );
+
         progressDialog.setPrimaryProgressCounterIndeterminate(true);
         progressDialog.setTitle("Saving. Please Wait...");
 
@@ -1101,18 +1249,38 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         new Thread("SaveThread") {
             @Override
             public void run() {
+
                 try {
+
                     progressDialog.setWaitingText("Saving Results. Please Wait...");
-                    ProjectSaver.saveProject(reporterSettings, reporterIonQuantification, displayPreferences, psdbParent, progressDialog);
+
+                    ProjectSaver.saveProject(
+                            reporterSettings,
+                            reporterIonQuantification,
+                            displayPreferences,
+                            psdbParent,
+                            progressDialog
+                    );
+
                     if (!progressDialog.isRunCanceled()) {
+
                         if (closeWhenDone) {
                             closeReporter();
                         } else {
                             progressDialog.setRunFinished();
-                            JOptionPane.showMessageDialog(ReporterGUI.this, "Project successfully saved.", "Save Successful", JOptionPane.INFORMATION_MESSAGE);
+
+                            JOptionPane.showMessageDialog(
+                                    ReporterGUI.this,
+                                    "Project successfully saved.",
+                                    "Save Successful",
+                                    JOptionPane.INFORMATION_MESSAGE
+                            );
+
                             projectSaved = true;
                         }
+
                     }
+
                 } catch (Exception e) {
                     progressDialog.setRunFinished();
                     e.printStackTrace();
@@ -1129,12 +1297,25 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * @param aExportToZipWhenDone if true, the project is also saved as a zip
      * file
      */
-    public void saveProjectAs(boolean closeWhenDone, boolean aExportToZipWhenDone) {
-        File selectedFile = getUserSelectedFile(psdbParent.getProjectParameters().getProjectUniqueName(), ".psdb", "Peptide Shaker Database format (*.psdb)", "Save As...", false);
+    public void saveProjectAs(
+            boolean closeWhenDone,
+            boolean aExportToZipWhenDone
+    ) {
+
+        File selectedFile = getUserSelectedFile(
+                psdbParent.getProjectParameters().getProjectUniqueName(),
+                ".psdb",
+                "Peptide Shaker Database format (*.psdb)",
+                "Save As...",
+                false
+        );
+
         psdbParent.setPsdbFile(selectedFile);
+
         if (selectedFile != null) {
             saveProject(closeWhenDone, aExportToZipWhenDone);
         }
+
     }
 
     /**
@@ -1142,10 +1323,13 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      */
     public void closeReporter() {
 
-        progressDialog = new ProgressDialogX(this,
+        progressDialog = new ProgressDialogX(
+                this,
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")),
-                true);
+                true
+        );
+
         progressDialog.setTitle("Closing. Please Wait...");
         progressDialog.setPrimaryProgressCounterIndeterminate(true);
         progressDialog.setUnstoppable(true);
@@ -1165,6 +1349,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
+
                 try {
                     // turn off the self updating table models
                     overviewPanel.deactivateSelfUpdatingTableModels();
@@ -1231,6 +1416,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         if (psdbParent != null) {
             psdbParent.setPsdbFile(null);
         }
+
     }
 
     /**
@@ -1273,18 +1459,22 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
                 File[] tempFiles = matchFolder.listFiles();
 
                 if (tempFiles != null) {
+
                     for (File currentFile : tempFiles) {
                         IoUtil.deleteDir(currentFile);
                     }
+
                 }
 
                 if (matchFolder.listFiles() != null && matchFolder.listFiles().length > 0) {
+
                     JOptionPane.showMessageDialog(
                             null,
                             "Failed to empty the database folder:\n" + matchFolder.getPath() + ".",
                             "Database Cleanup Failed",
                             JOptionPane.WARNING_MESSAGE
                     );
+
                 }
             }
         }
@@ -1350,10 +1540,12 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * @return the last selected folder
      */
     public LastSelectedFolder getLastSelectedFolder() {
+
         if (lastSelectedFolder == null) {
             lastSelectedFolder = new LastSelectedFolder();
             utilitiesUserParameters.setLastSelectedFolder(lastSelectedFolder);
         }
+
         return lastSelectedFolder;
     }
 
@@ -1398,11 +1590,13 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         );
 
         if (selectedFile != null) {
+
             if (selectedFile.isDirectory()) {
                 lastSelectedFolder.setLastSelectedFolder(selectedFile.getAbsolutePath());
             } else {
                 lastSelectedFolder.setLastSelectedFolder(selectedFile.getParentFile().getAbsolutePath());
             }
+
         }
 
         return selectedFile;
@@ -1416,7 +1610,9 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * to get the best appearance.
      */
     private static void setLookAndFeel() {
+
         try {
+
             // update the look and feel after adding the panels
             UtilitiesGUIDefaults.setLookAndFeel();
 
@@ -1424,16 +1620,22 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
             LookAndFeel lookAndFeel = UIManager.getLookAndFeel();
             UIDefaults defaults = lookAndFeel.getDefaults();
             defaults.put("ScrollBar.minimumThumbSize", new Dimension(30, 30));
+
         } catch (Exception w) {
+            // ignore error
         }
+
     }
 
     /**
      * Set up the log file.
      */
     private void setUpLogFile() {
+
         try {
+
             if (useLogFile && !Reporter.getJarFilePath().equalsIgnoreCase(".")) {
+
                 String path = Reporter.getJarFilePath() + "/resources/Reporter.log";
 
                 File file = new File(path);
@@ -1450,13 +1652,21 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
                     bw.close();
                     w.close();
                 }
+
             }
+
         } catch (Exception e) {
+
             JOptionPane.showMessageDialog(
-                    null, "An error occurred when trying to create the Reporter log file.",
-                    "Error Creating Log File", JOptionPane.ERROR_MESSAGE);
+                    null,
+                    "An error occurred when trying to create the Reporter log file.",
+                    "Error Creating Log File",
+                    JOptionPane.ERROR_MESSAGE
+            );
+
             e.printStackTrace();
         }
+
     }
 
     /**
@@ -1477,12 +1687,14 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
             String jarFileLocation = jarFilePath + "\\Reporter-" + new Properties().getVersion() + ".jar";
 
             try {
+
                 JShellLink link = new JShellLink();
                 link.setFolder(JShellLink.getDirectory("desktop"));
                 link.setName("Reporter " + new Properties().getVersion());
                 link.setIconLocation(iconFileLocation);
                 link.setPath(jarFileLocation);
                 link.save();
+
             } catch (Exception e) {
                 System.out.println("An error occurred when trying to create a desktop shortcut...");
                 e.printStackTrace();
@@ -1494,15 +1706,19 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * Closes and restarts Reporter. Does not work inside the IDE of course.
      */
     public void restart() {
+
         if (this.getExtendedState() == Frame.ICONIFIED || !this.isActive()) {
             this.setExtendedState(Frame.MAXIMIZED_BOTH);
         }
 
         // @TODO: ask if the user wants to save unsaved data
-        progressDialog = new ProgressDialogX(this,
+        progressDialog = new ProgressDialogX(
+                this,
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter-orange.gif")),
-                true);
+                true
+        );
+
         progressDialog.getProgressBar().setStringPainted(false);
         progressDialog.getProgressBar().setIndeterminate(true);
         progressDialog.setTitle("Closing. Please Wait...");
@@ -1520,6 +1736,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         new Thread("RestartThread") {
             @Override
             public void run() {
+
                 try {
                     //psdbBean.saveUserPreferences();
                     //PeptideShakerGUI.this.clearData(true, true); // @TODO: clear data
@@ -1527,6 +1744,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
                     e.printStackTrace();
                     catchException(e);
                 }
+
                 progressDialog.setRunFinished();
                 ReporterGUI.this.dispose();
 
@@ -1535,13 +1753,10 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
                 System.exit(0); // have to close the current java process (as a new one is started on the line above)
             }
         }.start();
+
     }
 
-    /**
-     * Returns the user parameters.
-     *
-     * @return the user parameters
-     */
+    @Override
     public UtilitiesUserParameters getUtilitiesUserParameters() {
         return utilitiesUserParameters;
     }
@@ -1584,16 +1799,22 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
             );
 
         } catch (UnknownHostException ex) {
+
             // no internet connection
             System.out.println("Checking for new version failed. No internet connection.");
             return false;
+
         } catch (ConnectException ex) {
+
             // connection refused
             System.out.println("Checking for new version failed. Connection refused.");
             return false;
+
         } catch (Exception e) {
+
             e.printStackTrace();
             return false;
+
         }
     }
 
@@ -1618,32 +1839,48 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
 
         new Thread(new Runnable() {
             public void run() {
+
                 try {
                     progressDialog.setVisible(true);
                 } catch (IndexOutOfBoundsException e) {
                     // ignore
                 }
+
             }
         }, "ProgressDialog").start();
 
         new Thread("ClusterThread") {
             @Override
             public void run() {
+
                 try {
-                    kMeansClutering = clusterBuilder.clusterProfiles(getIdentification(), getIdentificationParameters(),
-                            getSequenceProvider(), getSpectrumProvider(), getMetrics(), reporterIonQuantification, quantificationFeaturesGenerator,
-                            displayPreferences, loadData, progressDialog);
+
+                    kMeansClutering = clusterBuilder.clusterProfiles(
+                            getIdentification(),
+                            getIdentificationParameters(),
+                            getSequenceProvider(),
+                            getSpectrumProvider(),
+                            getMetrics(),
+                            reporterIonQuantification,
+                            quantificationFeaturesGenerator,
+                            displayPreferences,
+                            loadData,
+                            progressDialog
+                    );
 
                     if (!progressDialog.isRunCanceled()) {
                         overviewPanel.updateDisplay();
                     }
+
                 } catch (Exception e) {
                     catchException(e);
                     progressDialog.setRunCanceled();
                 } finally {
                     progressDialog.setRunFinished();
                 }
+
             }
+
         }.start();
     }
 
@@ -1688,11 +1925,18 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * @param updateSelection if true, the selection is updated in the GUI
      * @param clearSelection if true, the current selection will be removed
      */
-    public void setSelectedProteins(ArrayList<Long> selectedProteins, boolean updateSelection, boolean clearSelection) {
+    public void setSelectedProteins(
+            ArrayList<Long> selectedProteins,
+            boolean updateSelection,
+            boolean clearSelection
+    ) {
+
         this.selectedProteins = selectedProteins;
+
         if (updateSelection) {
             overviewPanel.updateSelection(clearSelection);
         }
+
     }
 
     /**
@@ -1702,11 +1946,18 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * @param updateSelection if true, the selection is updated in the GUI
      * @param clearSelection if true, the current selection will be removed
      */
-    public void setSelectedPeptides(ArrayList<Long> selectedPeptides, boolean updateSelection, boolean clearSelection) {
+    public void setSelectedPeptides(
+            ArrayList<Long> selectedPeptides,
+            boolean updateSelection,
+            boolean clearSelection
+    ) {
+
         this.selectedPeptides = selectedPeptides;
+
         if (updateSelection) {
             overviewPanel.updateSelection(clearSelection);
         }
+
     }
 
     /**
@@ -1716,10 +1967,17 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
      * @param updateSelection if true, the selection is updated in the GUI
      * @param clearSelection if true, the current selection will be removed
      */
-    public void setSelectedPsms(ArrayList<Long> selectedPsms, boolean updateSelection, boolean clearSelection) {
+    public void setSelectedPsms(
+            ArrayList<Long> selectedPsms,
+            boolean updateSelection,
+            boolean clearSelection
+    ) {
+
         this.selectedPsms = selectedPsms;
+
         if (updateSelection) {
             overviewPanel.updateSelection(clearSelection);
         }
+
     }
 }

@@ -132,13 +132,13 @@
                           <Component id="txtIdFileLocation" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="addIdFilesButton" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="spectrumFilesLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="txtSpectraFileLocation" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="addSpectraFilesJButton" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="databaseFileLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="fastaTxt" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -497,7 +497,7 @@
                           <Component id="quantificationPreferencesTxt" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="editQuantPrefsButton" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="processingLbl" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="processingTxt" alignment="3" min="-2" max="-2" attributes="0"/>

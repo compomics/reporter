@@ -41,12 +41,15 @@ public class ReporterSettings implements Serializable {
 
     @Override
     public ReporterSettings clone() throws CloneNotSupportedException {
+        
         ReporterSettings clone = new ReporterSettings();
+        
         clone.setReporterIonSelectionSettings(reporterIonSelectionSettings.clone());
         clone.setRatioEstimationSettings(ratioEstimationSettings.clone());
         clone.setNormalizationSettings(normalizationSettings.clone());
         clone.setAnnotationParameters(annotationParameters.clone());
         clone.setProjectDetails(projectDetails); //@TODO add cloning of the project details after implementation of the project details
+        
         return clone;
     }
 
@@ -59,9 +62,11 @@ public class ReporterSettings implements Serializable {
      * one
      */
     public boolean isSameAs(ReporterSettings anotherSetting) {
+        
         return reporterIonSelectionSettings.isSameAs(anotherSetting.getReporterIonSelectionSettings())
                 && ratioEstimationSettings.isSameAs(anotherSetting.getRatioEstimationSettings())
                 && normalizationSettings.isSameAs(anotherSetting.getNormalizationSettings()); //@TODO: add annotation preferences and project details
+        
     }
 
     /**

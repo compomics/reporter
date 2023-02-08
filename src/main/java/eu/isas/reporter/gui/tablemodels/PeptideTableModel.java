@@ -110,10 +110,21 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
      * displayed instead of the confidence
      * @param exceptionHandler handler for the exceptions
      */
-    public PeptideTableModel(Identification identification, SpectrumProvider spectrumProvider, IdentificationFeaturesGenerator identificationFeaturesGenerator,
-            ReporterIonQuantification reporterIonQuantification, QuantificationFeaturesGenerator quantificationFeaturesGenerator,
-            DisplayFeaturesGenerator displayFeaturesGenerator, DisplayPreferences displayPreferences, IdentificationParameters identificationParameters, String proteinAccession,
-            long[] peptideKeys, boolean displayScores, ExceptionHandler exceptionHandler) {
+    public PeptideTableModel(
+            Identification identification,
+            SpectrumProvider spectrumProvider,
+            IdentificationFeaturesGenerator identificationFeaturesGenerator,
+            ReporterIonQuantification reporterIonQuantification,
+            QuantificationFeaturesGenerator quantificationFeaturesGenerator,
+            DisplayFeaturesGenerator displayFeaturesGenerator,
+            DisplayPreferences displayPreferences,
+            IdentificationParameters identificationParameters,
+            String proteinAccession,
+            long[] peptideKeys,
+            boolean displayScores,
+            ExceptionHandler exceptionHandler
+    ) {
+
         this.identification = identification;
         this.spectrumProvider = spectrumProvider;
         this.identificationFeaturesGenerator = identificationFeaturesGenerator;
@@ -129,6 +140,7 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
 
         sampleIndexes = new ArrayList<String>(reporterIonQuantification.getSampleIndexes());
         Collections.sort(sampleIndexes);
+
     }
 
     /**
@@ -149,10 +161,19 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
      * @param showScores boolean indicating whether the scores should be
      * displayed instead of the confidence
      */
-    public void updateDataModel(Identification identification, IdentificationFeaturesGenerator identificationFeaturesGenerator,
-            ReporterIonQuantification reporterIonQuantification, QuantificationFeaturesGenerator quantificationFeaturesGenerator,
-            DisplayFeaturesGenerator displayFeaturesGenerator, DisplayPreferences displayPreferences, IdentificationParameters identificationParameters,
-            String proteinAccession, long[] peptideKeys, boolean showScores) {
+    public void updateDataModel(
+            Identification identification,
+            IdentificationFeaturesGenerator identificationFeaturesGenerator,
+            ReporterIonQuantification reporterIonQuantification,
+            QuantificationFeaturesGenerator quantificationFeaturesGenerator,
+            DisplayFeaturesGenerator displayFeaturesGenerator,
+            DisplayPreferences displayPreferences,
+            IdentificationParameters identificationParameters,
+            String proteinAccession,
+            long[] peptideKeys,
+            boolean showScores
+    ) {
+
         this.identification = identification;
         this.identificationFeaturesGenerator = identificationFeaturesGenerator;
         this.reporterIonQuantification = reporterIonQuantification;
@@ -166,6 +187,7 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
 
         sampleIndexes = new ArrayList<String>(reporterIonQuantification.getSampleIndexes());
         Collections.sort(sampleIndexes);
+
     }
 
     /**
@@ -177,7 +199,6 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
 
     /**
      * Constructor which sets a new empty table.
-     *
      */
     public PeptideTableModel() {
     }
@@ -194,6 +215,7 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
 
     @Override
     public String getColumnName(int column) {
+
         switch (column) {
             case 0:
                 return " ";
@@ -218,6 +240,7 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
             default:
                 return "";
         }
+
     }
 
     @Override
@@ -239,36 +262,60 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
 //                dataMissingAtRow(row);
 //                return DisplayParameters.LOADING_MESSAGE;
 //            }
-            
             long peptideKey = peptideKeys[viewIndex];
             PeptideMatch peptideMatch = identification.getPeptideMatch(peptideKey);
 
             switch (column) {
+
                 case 1:
+
                     ArrayList<Double> data = new ArrayList<>();
-                    PeptideQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(spectrumProvider, peptideMatch, null);
+                    PeptideQuantificationDetails quantificationDetails
+                            = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(
+                                    spectrumProvider,
+                                    peptideMatch,
+                                    null
+                            );
+
                     ArrayList<String> reagentsOrder = displayPreferences.getReagents();
+
                     for (String tempReagent : reagentsOrder) {
+
                         int sampleIndex = sampleIndexes.indexOf(tempReagent);
-                        Double ratio = quantificationDetails.getRatio(sampleIndexes.get(sampleIndex), reporterIonQuantification.getNormalizationFactors());
+                        Double ratio = quantificationDetails.getRatio(
+                                sampleIndexes.get(sampleIndex),
+                                reporterIonQuantification.getNormalizationFactors()
+                        );
+
                         if (ratio != null) {
+
                             if (ratio != 0) {
                                 ratio = BasicMathFunctions.log(ratio, 2);
                             }
 
                             data.add(ratio);
                         }
+
                     }
+
                     return new JSparklinesDataSeries(data, Color.BLACK, null);
+
                 case 2:
+
                     PSParameter psParameter = (PSParameter) peptideMatch.getUrParam(PSParameter.dummy);
                     return psParameter.getProteinInferenceGroupClass();
+
                 case 3:
+
                     TreeMap<String, int[]> proteinMapping = peptideMatch.getPeptide().getProteinMapping();
                     return proteinMapping.navigableKeySet().stream().collect(Collectors.joining(","));
+
                 case 4:
+
                     return displayFeaturesGenerator.getTaggedPeptideSequence(peptideMatch, true, true, true);
+
                 case 5:
+
                     double nConfidentSpectra = identificationFeaturesGenerator.getNConfidentSpectraForPeptide(peptideKey);
                     double nDoubtfulSpectra = identificationFeaturesGenerator.getNValidatedSpectraForPeptide(peptideKey) - nConfidentSpectra;
                     int nSpectra = peptideMatch.getSpectrumMatchesKeys().length;
@@ -278,18 +325,26 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
                     doubleValues.add(nDoubtfulSpectra);
                     doubleValues.add(nSpectra - nConfidentSpectra - nDoubtfulSpectra);
                     ArrrayListDataPoints arrrayListDataPoints = new ArrrayListDataPoints(doubleValues, JSparklinesArrayListBarChartTableCellRenderer.ValueDisplayType.sumOfNumbers);
+
                     return arrrayListDataPoints;
+
                 case 6:
+
                     psParameter = (PSParameter) peptideMatch.getUrParam(PSParameter.dummy);
                     return showScores ? psParameter.getTransformedScore() : psParameter.getConfidence();
+
                 case 7:
+
                     psParameter = (PSParameter) peptideMatch.getUrParam(PSParameter.dummy);
                     return psParameter.getMatchValidationLevel().getIndex();
+
                 default:
+
                     return null;
+
             }
         }
-        
+
         return null;
     }
 
@@ -304,12 +359,17 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
 
     @Override
     public Class getColumnClass(int columnIndex) {
+
         for (int i = 0; i < getRowCount(); i++) {
+
             if (getValueAt(i, columnIndex) != null) {
                 return getValueAt(i, columnIndex).getClass();
+
             }
         }
+
         return String.class;
+
     }
 
     @Override
@@ -319,8 +379,10 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
 
     @Override
     protected void catchException(Exception e) {
+
         setSelfUpdating(false);
         exceptionHandler.catchException(e);
+
     }
 
     @Override
@@ -332,5 +394,6 @@ public class PeptideTableModel extends SelfUpdatingTableModel {
                 .anyMatch(dummy -> waitingHandler.isRunCanceled());
 
         return canceled ? rows.get(0) : rows.get(rows.size() - 1);
+
     }
 }

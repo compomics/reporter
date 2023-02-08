@@ -52,11 +52,13 @@ public class NormalizationSettings implements Serializable {
     public NormalizationSettings clone() throws CloneNotSupportedException {
 
         NormalizationSettings clone = new NormalizationSettings();
+
         clone.setPsmNormalization(psmNormalization);
         clone.setPeptideNormalization(peptideNormalization);
         clone.setProteinNormalization(proteinNormalization);
         clone.setStableProteinsFastaFile(stableProteinsFastaFile);
         clone.setContaminantsFastaFile(contaminantsFastaFile);
+
         return clone;
 
     }
@@ -81,11 +83,15 @@ public class NormalizationSettings implements Serializable {
             return false;
         }
 
-        if (stableProteinsFastaFile != null && anotherSetting.getStableProteinsFastaFile() != null && !stableProteinsFastaFile.getAbsolutePath().equals(anotherSetting.getStableProteinsFastaFile().getAbsolutePath())) {
+        if (stableProteinsFastaFile != null
+                && anotherSetting.getStableProteinsFastaFile() != null
+                && !stableProteinsFastaFile.getAbsolutePath().equals(anotherSetting.getStableProteinsFastaFile().getAbsolutePath())) {
             return false;
         }
 
-        if (contaminantsFastaFile != null && anotherSetting.getContaminantsFastaFile() != null && !contaminantsFastaFile.getAbsolutePath().equals(anotherSetting.getContaminantsFastaFile().getAbsolutePath())) {
+        if (contaminantsFastaFile != null
+                && anotherSetting.getContaminantsFastaFile() != null
+                && !contaminantsFastaFile.getAbsolutePath().equals(anotherSetting.getContaminantsFastaFile().getAbsolutePath())) {
             return false;
         }
 
@@ -221,6 +227,7 @@ public class NormalizationSettings implements Serializable {
             );
 
             return fmIndex.getAccessions();
+
         }
 
         return null;
@@ -259,6 +266,7 @@ public class NormalizationSettings implements Serializable {
             );
 
             return fmIndex.getAccessions();
+
         }
 
         return null;

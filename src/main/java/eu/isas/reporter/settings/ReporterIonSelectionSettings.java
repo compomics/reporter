@@ -45,32 +45,40 @@ public class ReporterIonSelectionSettings implements Serializable {
     public ReporterIonSelectionSettings() {
 
     }
+
     @Override
     public ReporterIonSelectionSettings clone() {
+
         ReporterIonSelectionSettings clone = new ReporterIonSelectionSettings();
+
         clone.setReporterIonsMzTolerance(reporterIonsMzTolerance);
         clone.setMostAccurate(mostAccurate);
         clone.setSameSpectra(sameSpectra);
         clone.setPrecursorMzTolerance(precursorMzTolerance);
         clone.setPrecursorMzPpm(precursorMzPpm);
         clone.setPrecursorRTTolerance(precursorRTTolerance);
+
         return clone;
+
     }
-    
+
     /**
      * Indicates whether another setting is the same as this one.
-     * 
+     *
      * @param anotherSetting another setting
-     * 
-     * @return a boolean indicating whether another setting is the same as this one
+     *
+     * @return a boolean indicating whether another setting is the same as this
+     * one
      */
     public boolean isSameAs(ReporterIonSelectionSettings anotherSetting) {
+
         return reporterIonsMzTolerance == anotherSetting.getPrecursorMzTolerance()
                 && mostAccurate == anotherSetting.isMostAccurate()
                 && sameSpectra == anotherSetting.isSameSpectra()
                 && precursorMzTolerance == anotherSetting.getPrecursorMzTolerance()
                 && precursorMzPpm == anotherSetting.isPrecursorMzPpm()
                 && precursorRTTolerance == anotherSetting.getPrecursorRTTolerance();
+
     }
 
     /**
@@ -92,18 +100,22 @@ public class ReporterIonSelectionSettings implements Serializable {
     }
 
     /**
-     * Returns a boolean indicating whether the most accurate ion should be retained for quantification. The most intense will be used otherwise.
-     * 
-     * @return a boolean indicating whether the most accurate ion should be retained for quantification
+     * Returns a boolean indicating whether the most accurate ion should be
+     * retained for quantification. The most intense will be used otherwise.
+     *
+     * @return a boolean indicating whether the most accurate ion should be
+     * retained for quantification
      */
     public boolean isMostAccurate() {
         return mostAccurate;
     }
 
     /**
-     * Sets whether the most accurate ion should be retained for quantification. The most intense will be used otherwise.
-     * 
-     * @param mostAccurate a boolean indicating whether the most accurate ion should be retained for quantification
+     * Sets whether the most accurate ion should be retained for quantification.
+     * The most intense will be used otherwise.
+     *
+     * @param mostAccurate a boolean indicating whether the most accurate ion
+     * should be retained for quantification
      */
     public void setMostAccurate(boolean mostAccurate) {
         this.mostAccurate = mostAccurate;

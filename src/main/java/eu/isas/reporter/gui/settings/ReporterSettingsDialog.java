@@ -57,7 +57,14 @@ public class ReporterSettingsDialog extends javax.swing.JDialog {
      * @param reporterMethod the reporter method used
      * @param editable boolean indicating whether the settings can be edited
      */
-    public ReporterSettingsDialog(JDialog parentDialog, ReporterSettings reporterSettings, ModificationParameters modificationParameters, ReporterMethod reporterMethod, boolean editable) {
+    public ReporterSettingsDialog(
+            JDialog parentDialog,
+            ReporterSettings reporterSettings,
+            ModificationParameters modificationParameters,
+            ReporterMethod reporterMethod,
+            boolean editable
+    ) {
+
         super(parentDialog, true);
         this.reporterIonSelectionSettings = reporterSettings.getReporterIonSelectionSettings();
         this.ratioEstimationSettings = reporterSettings.getRatioEstimationSettings();
@@ -68,6 +75,7 @@ public class ReporterSettingsDialog extends javax.swing.JDialog {
         initComponents();
         setLocationRelativeTo(parentDialog);
         setVisible(true);
+
     }
 
     /**
@@ -215,54 +223,92 @@ public class ReporterSettingsDialog extends javax.swing.JDialog {
 
     /**
      * Open the ReporterIonSelectionSettingsDialog.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void reporterIonSelectionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reporterIonSelectionButtonActionPerformed
-        ReporterIonSelectionSettingsDialog reporterIonSelectionSettingsDialog = new ReporterIonSelectionSettingsDialog(this, reporterIonSelectionSettings, reporterMethod, editable);
+
+        ReporterIonSelectionSettingsDialog reporterIonSelectionSettingsDialog
+                = new ReporterIonSelectionSettingsDialog(
+                        this,
+                        reporterIonSelectionSettings,
+                        reporterMethod,
+                        editable
+                );
+
         if (!reporterIonSelectionSettingsDialog.isCanceled()) {
             reporterIonSelectionSettings = reporterIonSelectionSettingsDialog.getReporterIonSelectionSettings();
         }
+
     }//GEN-LAST:event_reporterIonSelectionButtonActionPerformed
 
     /**
      * Open the RatioEstimationSettingsDialog.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void ratioEstimationButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ratioEstimationButtonActionPerformed
-        RatioEstimationSettingsDialog ratioEstimationSettingsDialog = new RatioEstimationSettingsDialog(this, ratioEstimationSettings, modificationParameters, editable);
+
+        RatioEstimationSettingsDialog ratioEstimationSettingsDialog
+                = new RatioEstimationSettingsDialog(
+                        this,
+                        ratioEstimationSettings,
+                        modificationParameters,
+                        editable
+                );
+
         if (!ratioEstimationSettingsDialog.isCanceled()) {
             ratioEstimationSettings = ratioEstimationSettingsDialog.getRatioEstimationSettings();
         }
+
     }//GEN-LAST:event_ratioEstimationButtonActionPerformed
 
     /**
      * Open the NormalizationSettingsDialog.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void normalizationButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_normalizationButtonActionPerformed
-        NormalizationSettingsDialog normalizationSettingsDialog = new NormalizationSettingsDialog(this, normalizationSettings, editable);
+
+        NormalizationSettingsDialog normalizationSettingsDialog
+                = new NormalizationSettingsDialog(
+                        this,
+                        normalizationSettings,
+                        editable
+                );
+
         if (!normalizationSettingsDialog.isCanceled()) {
             normalizationSettings = normalizationSettingsDialog.getNormalizationSettings();
         }
+
     }//GEN-LAST:event_normalizationButtonActionPerformed
 
     /**
      * Close the dialog without saving the settings.
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         canceled = true;
     }//GEN-LAST:event_formWindowClosing
 
+    /**
+     * Close the dialog and cancel the changes.
+     * 
+     * @param evt 
+     */
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+
         canceled = true;
         dispose();
+
     }//GEN-LAST:event_cancelButtonActionPerformed
 
+    /**
+     * Close the dialog.
+     *
+     * @param evt
+     */
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
         dispose();
     }//GEN-LAST:event_okButtonActionPerformed
@@ -292,10 +338,13 @@ public class ReporterSettingsDialog extends javax.swing.JDialog {
      * @return the reporter settings as set by the user
      */
     public ReporterSettings getReporterSettings() {
+
         ReporterSettings reporterSettings = new ReporterSettings();
         reporterSettings.setReporterIonSelectionSettings(reporterIonSelectionSettings);
         reporterSettings.setRatioEstimationSettings(ratioEstimationSettings);
         reporterSettings.setNormalizationSettings(normalizationSettings);
+
         return reporterSettings;
+
     }
 }

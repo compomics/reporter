@@ -30,10 +30,13 @@ public class SpectrumQuantificationDetails {
      * @param value the value of the ratio
      */
     public void setRatio(String sampleIndex, double value) {
+
         if (ratios == null) {
             ratios = new HashMap<String, Double>();
         }
+
         ratios.put(sampleIndex, value);
+
     }
 
     /**
@@ -44,10 +47,13 @@ public class SpectrumQuantificationDetails {
      * @return the ratio for this sample, null if not set
      */
     public Double getRatio(String reporterIonName) {
+
         if (ratios == null) {
             return null;
         }
+
         return ratios.get(reporterIonName);
+
     }
 
     /**
@@ -57,10 +63,13 @@ public class SpectrumQuantificationDetails {
      * @param value the value of the deisotoped intensity
      */
     public void setDeisotopedIntensity(String reporterIonName, double value) {
+
         if (deisotopedIntensities == null) {
             deisotopedIntensities = new HashMap<String, Double>();
         }
+
         deisotopedIntensities.put(reporterIonName, value);
+
     }
 
     /**
@@ -71,10 +80,13 @@ public class SpectrumQuantificationDetails {
      * @return the intensity
      */
     public Double getDeisotopedIntensity(String reporterIonName) {
+
         if (deisotopedIntensities == null) {
             return null;
         }
+
         return deisotopedIntensities.get(reporterIonName);
+
     }
 
     /**
@@ -84,10 +96,13 @@ public class SpectrumQuantificationDetails {
      * @param reporterMatch the reporter ion match
      */
     public void setReporterMatch(String reporterIonName, IonMatch reporterMatch) {
+
         if (reporterMatches == null) {
             reporterMatches = new HashMap<String, IonMatch>();
         }
+
         reporterMatches.put(reporterIonName, reporterMatch);
+
     }
 
     /**
@@ -98,9 +113,12 @@ public class SpectrumQuantificationDetails {
      * @return the reporter ion match
      */
     public IonMatch getRepoterMatch(String reporterIonName) {
+
         if (reporterMatches == null) {
             return null;
         }
+
         return reporterMatches.get(reporterIonName);
+
     }
 }

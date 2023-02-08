@@ -8,4 +8,5 @@ import java.io.Serializable;
  * @author Marc Vaudel
  */
 public class ProjectDetails implements Serializable {
+    // @TODO: implement
 }

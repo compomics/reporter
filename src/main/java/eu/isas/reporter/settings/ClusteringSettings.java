@@ -185,26 +185,39 @@ public class ClusteringSettings implements Serializable {
      * @return the corresponding color
      */
     public Color getColor(String clusterClass) {
+
         Color result = classesColors.get(clusterClass);
+
         if (result == null) {
             result = Color.GRAY;
             classesColors.put(clusterClass, result);
         }
+
         return result;
+
     }
-    
+
     /**
      * Returns the color for a non-selected line of this class.
-     * 
+     *
      * @param clusterClass the cluster class
-     * 
+     *
      * @return the color for a non-selected line of this class
      */
     public Color getNonSelectedColor(String clusterClass) {
+
         Color refColor = getColor(clusterClass);
         refColor = refColor.brighter();
-        Color unselectedColor = new Color(refColor.getRed(), refColor.getGreen(), refColor.getBlue(), refColor.getAlpha()/10);
+
+        Color unselectedColor = new Color(
+                refColor.getRed(),
+                refColor.getGreen(),
+                refColor.getBlue(),
+                refColor.getAlpha() / 10
+        );
+
         return unselectedColor;
+
     }
 
     /**
@@ -252,10 +265,13 @@ public class ClusteringSettings implements Serializable {
      * @return the class key corresponding to the given name
      */
     public ProteinClusterClassKey getProteinClassKey(String name) {
+
         if (possibleProteinClassesKeys == null) {
             return null;
         }
+
         return possibleProteinClassesKeys.get(name);
+
     }
 
     /**
@@ -267,11 +283,15 @@ public class ClusteringSettings implements Serializable {
 
         possibleProteinClassesNames = new ArrayList<String>(clusterClassKeys.size());
         possibleProteinClassesKeys = new HashMap<String, ProteinClusterClassKey>(clusterClassKeys.size());
+
         for (ProteinClusterClassKey clusterClassKey : clusterClassKeys) {
+
             String key = clusterClassKey.toString();
             possibleProteinClassesNames.add(key);
             possibleProteinClassesKeys.put(key, clusterClassKey);
+
         }
+
     }
 
     /**
@@ -301,10 +321,13 @@ public class ClusteringSettings implements Serializable {
      * @return the class key corresponding to the given name
      */
     public PeptideClusterClassKey getPeptideClassKey(String name) {
+
         if (possiblePeptideClassesKeys == null) {
             return null;
         }
+
         return possiblePeptideClassesKeys.get(name);
+
     }
 
     /**
@@ -316,11 +339,15 @@ public class ClusteringSettings implements Serializable {
 
         possiblePeptideClassesNames = new ArrayList<String>(clusterClassKeys.size());
         possiblePeptideClassesKeys = new HashMap<String, PeptideClusterClassKey>(clusterClassKeys.size());
+
         for (PeptideClusterClassKey clusterClassKey : clusterClassKeys) {
+
             String key = clusterClassKey.toString();
             possiblePeptideClassesNames.add(key);
             possiblePeptideClassesKeys.put(key, clusterClassKey);
+
         }
+
     }
 
     /**
@@ -350,10 +377,13 @@ public class ClusteringSettings implements Serializable {
      * @return the class key corresponding to the given name
      */
     public PsmClusterClassKey getPsmClassKey(String name) {
+
         if (possiblePsmClassesKeys == null) {
             return null;
         }
+
         return possiblePsmClassesKeys.get(name);
+
     }
 
     /**
@@ -365,11 +395,15 @@ public class ClusteringSettings implements Serializable {
 
         possiblePsmClassesNames = new ArrayList<String>(clusterClassKeys.size());
         possiblePsmClassesKeys = new HashMap<String, PsmClusterClassKey>(clusterClassKeys.size());
+
         for (PsmClusterClassKey clusterClassKey : clusterClassKeys) {
+
             String key = clusterClassKey.toString();
             possiblePsmClassesNames.add(key);
             possiblePsmClassesKeys.put(key, clusterClassKey);
+
         }
+
     }
 
     /**

@@ -16,7 +16,6 @@ public class ReporterPreferences implements Serializable {
      * Location of the user preferences file.
      */
     private static String USER_PREFERENCES_FILE = System.getProperty("user.home") + "/.reporter/reporter_user_preferences.cup";
-    
     /**
      * The default reporter settings.
      */
@@ -30,17 +29,21 @@ public class ReporterPreferences implements Serializable {
 
     @Override
     public ReporterPreferences clone() throws CloneNotSupportedException {
-        ReporterPreferences clone =  new ReporterPreferences();
+        
+        ReporterPreferences clone = new ReporterPreferences();
         clone.setDefaultSettings(defaultSettings.clone());
+        
         return clone;
+        
     }
-    
+
     /**
      * Indicates whether another setting is the same as this one.
-     * 
+     *
      * @param anotherSetting another setting
-     * 
-     * @return a boolean indicating whether another setting is the same as this one
+     *
+     * @return a boolean indicating whether another setting is the same as this
+     * one
      */
     public boolean isSameAs(ReporterPreferences anotherSetting) {
         return defaultSettings.isSameAs(anotherSetting.getDefaultSettings());
@@ -48,7 +51,7 @@ public class ReporterPreferences implements Serializable {
 
     /**
      * Returns the default settings.
-     * 
+     *
      * @return the default settings
      */
     public ReporterSettings getDefaultSettings() {
@@ -60,13 +63,12 @@ public class ReporterPreferences implements Serializable {
 
     /**
      * Sets the default settings.
-     * 
+     *
      * @param defaultSettings the default settings
      */
     public void setDefaultSettings(ReporterSettings defaultSettings) {
         this.defaultSettings = defaultSettings;
     }
-    
 
     /**
      * Convenience method saving the user preferences.
@@ -76,11 +78,15 @@ public class ReporterPreferences implements Serializable {
     public static void saveUserPreferences(ReporterPreferences userPreferences) {
 
         try {
+            
             File file = new File(USER_PREFERENCES_FILE);
+            
             if (!file.getParentFile().exists()) {
                 file.getParentFile().mkdir();
             }
+            
             SerializationUtils.writeObject(userPreferences, file);
+            
         } catch (Exception e) {
             System.err.println("An error occurred while saving " + USER_PREFERENCES_FILE + ".");
             e.printStackTrace();
@@ -94,13 +100,17 @@ public class ReporterPreferences implements Serializable {
      * @return returns the utilities user preferences
      */
     public static ReporterPreferences getUserPreferences() {
+        
         ReporterPreferences userPreferences;
         File file = new File(USER_PREFERENCES_FILE);
 
         if (!file.exists()) {
+            
             userPreferences = new ReporterPreferences();
             ReporterPreferences.saveUserPreferences(userPreferences);
+            
         } else {
+            
             try {
                 userPreferences = (ReporterPreferences) SerializationUtils.readObject(file);
             } catch (Exception e) {
@@ -109,6 +119,7 @@ public class ReporterPreferences implements Serializable {
                 userPreferences = new ReporterPreferences();
                 ReporterPreferences.saveUserPreferences(userPreferences);
             }
+            
         }
 
         return userPreferences;

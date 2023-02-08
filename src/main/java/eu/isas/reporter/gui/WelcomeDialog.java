@@ -963,14 +963,43 @@ public class WelcomeDialog extends javax.swing.JDialog {
                 @Override
                 public void run() {
                     try {
-                        URL jarRepository = new URL("http", "genesis.ugent.be", new StringBuilder().append("/maven2/").toString());
+                        URL jarRepository = new URL(
+                                "http", "genesis.ugent.be",
+                                new StringBuilder().append("/maven2/").toString()
+                        );
+
                         if (finalFirstTimeInstall) {
-                            downloadLatestZipFromRepo(downloadFolder, "SearchGUI", "eu.isas.searchgui", "SearchGUI", "searchgui.ico",
-                                    null, jarRepository, false, true, new GUIFileDAO(), progressDialog);
+
+                            downloadLatestZipFromRepo(
+                                    downloadFolder,
+                                    "SearchGUI",
+                                    "eu.isas.searchgui",
+                                    "SearchGUI",
+                                    "searchgui.ico",
+                                    null,
+                                    jarRepository,
+                                    false,
+                                    true,
+                                    new GUIFileDAO(),
+                                    progressDialog
+                            );
+
                         } else {
-                            downloadLatestZipFromRepo(new File(reporterGUI.getUtilitiesUserParameters().getSearchGuiPath()).toURI().toURL(), "SearchGUI", false,
-                                    "searchgui.ico", null, jarRepository, false, true, new GUIFileDAO(), progressDialog);
+
+                            downloadLatestZipFromRepo(
+                                    new File(reporterGUI.getUtilitiesUserParameters().getSearchGuiPath()).toURI().toURL(),
+                                    "SearchGUI",
+                                    false,
+                                    "searchgui.ico",
+                                    null, jarRepository,
+                                    false,
+                                    true,
+                                    new GUIFileDAO(),
+                                    progressDialog
+                            );
+
                         }
+
                     } catch (IOException e) {
                         e.printStackTrace();
                     } catch (URISyntaxException e) {
@@ -989,12 +1018,16 @@ public class WelcomeDialog extends javax.swing.JDialog {
             }
 
             if (progressDialog.isRunCanceled()) {
+
                 progressDialog.setRunFinished();
                 return false;
+
             } else {
+
                 if (!progressDialog.isRunFinished()) {
                     progressDialog.setRunFinished();
                 }
+
             }
 
             return true;

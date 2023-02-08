@@ -50,13 +50,19 @@ public class NormalizationSettingsDialog extends javax.swing.JDialog {
      * @param normalizationSettings the settings to display
      * @param editable boolean indicating whether the settings can be edited
      */
-    public NormalizationSettingsDialog(JDialog parentDialog, NormalizationSettings normalizationSettings, boolean editable) {
+    public NormalizationSettingsDialog(
+            JDialog parentDialog,
+            NormalizationSettings normalizationSettings,
+            boolean editable
+    ) {
+
         super(parentDialog, true);
         initComponents();
         setUpGui(editable);
         populateGUI(normalizationSettings);
         setLocationRelativeTo(parentDialog);
         setVisible(true);
+
     }
 
     /**
@@ -65,6 +71,7 @@ public class NormalizationSettingsDialog extends javax.swing.JDialog {
      * @param editable boolean indicating whether the settings can be edited
      */
     private void setUpGui(boolean editable) {
+
         psmNormalizationCmb.setEnabled(editable);
         peptideNormalizationCmb.setEnabled(editable);
         proteinNormalizationCmb.setEnabled(editable);
@@ -72,10 +79,11 @@ public class NormalizationSettingsDialog extends javax.swing.JDialog {
         stableProteinsClearButton.setEnabled(editable);
         contaminantsBrowseButton.setEnabled(editable);
         contaminantsClearButton.setEnabled(editable);
-        
+
         psmNormalizationCmb.setRenderer(new AlignedListCellRenderer(SwingConstants.CENTER));
         peptideNormalizationCmb.setRenderer(new AlignedListCellRenderer(SwingConstants.CENTER));
         proteinNormalizationCmb.setRenderer(new AlignedListCellRenderer(SwingConstants.CENTER));
+
     }
 
     /**
@@ -84,31 +92,38 @@ public class NormalizationSettingsDialog extends javax.swing.JDialog {
      * @param ratioEstimationSettings the normalization settings to display
      */
     private void populateGUI(NormalizationSettings normalizationSettings) {
+
         psmNormalizationType = normalizationSettings.getPsmNormalization();
         peptideNormalizationType = normalizationSettings.getPeptideNormalization();
         proteinNormalizationType = normalizationSettings.getProteinNormalization();
         stableProteinsFile = normalizationSettings.getStableProteinsFastaFile();
         contaminantsFile = normalizationSettings.getContaminantsFastaFile();
+
         updateGUI();
+
     }
 
     /**
      * Updates the GUI according to the dialog attributes.
      */
     private void updateGUI() {
+
         psmNormalizationCmb.setSelectedItem(psmNormalizationType);
         peptideNormalizationCmb.setSelectedItem(peptideNormalizationType);
         proteinNormalizationCmb.setSelectedItem(proteinNormalizationType);
+
         if (stableProteinsFile != null) {
             stableProteinsTxt.setText(stableProteinsFile.getName());
         } else {
             stableProteinsTxt.setText("No File Selected");
         }
+
         if (contaminantsFile != null) {
             contaminantsTxt.setText(contaminantsFile.getName());
         } else {
             contaminantsTxt.setText("No File Selected");
         }
+
     }
 
     /**
@@ -218,11 +233,11 @@ public class NormalizationSettingsDialog extends javax.swing.JDialog {
                 .addGroup(matchesNormalizationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(psmNormalizationLbl)
                     .addComponent(psmNormalizationCmb, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(0, 0, 0)
                 .addGroup(matchesNormalizationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(peptideNormalizationLbl)
                     .addComponent(peptideNormalizationCmb, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(0, 0, 0)
                 .addGroup(matchesNormalizationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(proteinNormalizationLbl)
                     .addComponent(proteinNormalizationCmb, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -304,7 +319,7 @@ public class NormalizationSettingsDialog extends javax.swing.JDialog {
                     .addComponent(stableProteinsClearButton)
                     .addComponent(stableProteinsBrowseButton)
                     .addComponent(stableProteinsTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(0, 0, 0)
                 .addGroup(specialProteinsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
                     .addComponent(contaminantsClearButton)
@@ -358,7 +373,7 @@ public class NormalizationSettingsDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     /**
-     * Save the data and close the dialog.
+     * Close the dialog and cancel the changes.
      *
      * @param evt
      */
@@ -367,50 +382,104 @@ public class NormalizationSettingsDialog extends javax.swing.JDialog {
         dispose();
     }//GEN-LAST:event_cancelButtonActionPerformed
 
+    /**
+     * Save the data and close the dialog.
+     *
+     * @param evt
+     */
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
         if (validateInput()) {
             dispose();
         }
     }//GEN-LAST:event_okButtonActionPerformed
 
+    /**
+     * Clear the list of stable proteins.
+     *
+     * @param evt
+     */
     private void stableProteinsClearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stableProteinsClearButtonActionPerformed
+
         stableProteinsFile = null;
         updateGUI();
+
     }//GEN-LAST:event_stableProteinsClearButtonActionPerformed
 
+    /**
+     * Clear the list of contaminants.
+     *
+     * @param evt
+     */
     private void contaminantsClearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_contaminantsClearButtonActionPerformed
+
         contaminantsFile = null;
         updateGUI();
+
     }//GEN-LAST:event_contaminantsClearButtonActionPerformed
 
+    /**
+     * Browse for a FASTA file of stable proteins.
+     *
+     * @param evt
+     */
     private void stableProteinsBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stableProteinsBrowseButtonActionPerformed
+
         File startFile = null;
+
         if (stableProteinsFile != null) {
             startFile = stableProteinsFile.getParentFile();
         }
+
         File fastaFile = getFastaFile(startFile);
         stableProteinsFile = fastaFile;
+
         updateGUI();
+
     }//GEN-LAST:event_stableProteinsBrowseButtonActionPerformed
 
+    /**
+     * Browse for a FASTA file of contaminants.
+     *
+     * @param evt
+     */
     private void contaminantsBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_contaminantsBrowseButtonActionPerformed
+
         File startFile = null;
+
         if (contaminantsFile != null) {
             startFile = contaminantsFile.getParentFile();
         }
+
         File fastaFile = getFastaFile(startFile);
+
         contaminantsFile = fastaFile;
         updateGUI();
+
     }//GEN-LAST:event_contaminantsBrowseButtonActionPerformed
 
+    /**
+     * Update the PSM normalization type.
+     *
+     * @param evt
+     */
     private void psmNormalizationCmbActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_psmNormalizationCmbActionPerformed
         psmNormalizationType = (NormalizationType) psmNormalizationCmb.getSelectedItem();
     }//GEN-LAST:event_psmNormalizationCmbActionPerformed
 
+    /**
+     * Update the peptide normalization type.
+     *
+     * @param evt
+     */
     private void peptideNormalizationCmbActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_peptideNormalizationCmbActionPerformed
         peptideNormalizationType = (NormalizationType) peptideNormalizationCmb.getSelectedItem();
     }//GEN-LAST:event_peptideNormalizationCmbActionPerformed
 
+    /**
+     * Update the protein normalization type.
+     *
+     * @param evt
+     */
     private void proteinNormalizationCmbActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_proteinNormalizationCmbActionPerformed
         proteinNormalizationType = (NormalizationType) proteinNormalizationCmb.getSelectedItem();
     }//GEN-LAST:event_proteinNormalizationCmbActionPerformed
@@ -462,13 +531,16 @@ public class NormalizationSettingsDialog extends javax.swing.JDialog {
      * @return the settings as set by the user
      */
     public NormalizationSettings getNormalizationSettings() {
+
         NormalizationSettings normalizationSettings = new NormalizationSettings();
         normalizationSettings.setPsmNormalization(psmNormalizationType);
         normalizationSettings.setPeptideNormalization(peptideNormalizationType);
         normalizationSettings.setProteinNormalization(proteinNormalizationType);
         normalizationSettings.setStableProteinsFastaFile(stableProteinsFile);
         normalizationSettings.setContaminantsFastaFile(contaminantsFile);
+
         return normalizationSettings;
+
     }
 
     /**
@@ -481,6 +553,7 @@ public class NormalizationSettingsDialog extends javax.swing.JDialog {
     private File getFastaFile(File startLocation) {
 
         JFileChooser fc = new JFileChooser(startLocation);
+
         FileFilter filter = new FileFilter() {
             @Override
             public boolean accept(File myFile) {
@@ -504,5 +577,6 @@ public class NormalizationSettingsDialog extends javax.swing.JDialog {
         }
 
         return null;
+
     }
 }

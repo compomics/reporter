@@ -21,10 +21,13 @@ public class ProteinPtmQuantificationDetails {
      * @param value the value of the ratio
      */
     public void setRatio(String reporterIonName, double value) {
+
         if (ratios == null) {
             ratios = new HashMap<String, Double>();
         }
+
         ratios.put(reporterIonName, value);
+
     }
 
     /**
@@ -35,9 +38,12 @@ public class ProteinPtmQuantificationDetails {
      * @return the ratio for this sample, null if not set
      */
     public Double getRatio(String reporterIonName) {
+
         if (ratios == null) {
             return null;
         }
+
         return ratios.get(reporterIonName);
+
     }
 }

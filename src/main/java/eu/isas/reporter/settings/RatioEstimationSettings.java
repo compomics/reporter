@@ -39,7 +39,7 @@ public class RatioEstimationSettings implements Serializable {
      * List of PTMs to exclude. Peptides presenting these PTMs will not be
      * accounted for during quantification.
      */
-    private HashSet<String> excludingPTM = new HashSet<String>();
+    private HashSet<String> excludingPTM = new HashSet<>();
     /**
      * The validation threshold to use for protein quantification.
      */
@@ -62,18 +62,24 @@ public class RatioEstimationSettings implements Serializable {
 
     @Override
     public RatioEstimationSettings clone() {
+
         RatioEstimationSettings clone = new RatioEstimationSettings();
+
         clone.setIgnoreNullIntensities(ignoreNullIntensities);
         clone.setIgnoreMissedCleavages(ignoreMissedCleavages);
         clone.setPercentile(percentile);
         clone.setRatioResolution(ratioResolution);
+
         for (String excludingPtm : excludingPTM) {
             clone.addExcludingPtm(excludingPtm);
         }
+
         clone.setProteinValidationLevel(proteinValidation);
         clone.setPeptideValidationLevel(peptideValidation);
         clone.setPsmValidationLevel(psmValidation);
+
         return clone;
+
     }
 
     /**
@@ -85,6 +91,7 @@ public class RatioEstimationSettings implements Serializable {
      * one
      */
     public boolean isSameAs(RatioEstimationSettings anotherSetting) {
+
         if (ignoreNullIntensities != anotherSetting.isIgnoreNullIntensities()
                 || percentile != anotherSetting.getPercentile()
                 || ratioResolution != anotherSetting.getRatioResolution()
@@ -94,13 +101,19 @@ public class RatioEstimationSettings implements Serializable {
                 || excludingPTM.size() != anotherSetting.getExcludingPtms().size()
                 || ignoreMissedCleavages != anotherSetting.isIgnoreMissedCleavages()
                 || minUnique != anotherSetting.getMinUnique()) {
+
             return false;
+
         }
+
         for (String ptm : anotherSetting.getExcludingPtms()) {
+
             if (!excludingPTM.contains(ptm)) {
                 return false;
             }
+
         }
+
         return true;
     }
 
@@ -196,7 +209,7 @@ public class RatioEstimationSettings implements Serializable {
     /**
      * Adds an excluding PTM.
      *
-     * @param ptmName the name of the excluding ptm
+     * @param ptmName the name of the excluding PTM
      */
     public void addExcludingPtm(String ptmName) {
         this.excludingPTM.add(ptmName);

@@ -91,7 +91,7 @@ public class PsmTableModel extends SelfUpdatingTableModel {
      */
     public PsmTableModel() {
     }
-    
+
     /**
      * Constructor which sets a new table.
      *
@@ -119,7 +119,7 @@ public class PsmTableModel extends SelfUpdatingTableModel {
             boolean displayScores,
             ExceptionHandler exceptionHandler
     ) {
-        
+
         this.identification = identification;
         this.spectrumProvider = spectrumProvider;
         this.displayFeaturesGenerator = displayFeaturesGenerator;
@@ -137,6 +137,7 @@ public class PsmTableModel extends SelfUpdatingTableModel {
 
         sampleIndexes = new ArrayList<String>(reporterIonQuantification.getSampleIndexes());
         Collections.sort(sampleIndexes);
+
     }
 
     /**
@@ -181,6 +182,7 @@ public class PsmTableModel extends SelfUpdatingTableModel {
 
         sampleIndexes = new ArrayList<String>(reporterIonQuantification.getSampleIndexes());
         Collections.sort(sampleIndexes);
+
     }
 
     /**
@@ -202,7 +204,7 @@ public class PsmTableModel extends SelfUpdatingTableModel {
 
     @Override
     public String getColumnName(int column) {
-        
+
         switch (column) {
             case 0:
                 return " ";
@@ -226,6 +228,7 @@ public class PsmTableModel extends SelfUpdatingTableModel {
                 return "";
             default:
                 return "";
+
         }
     }
 
@@ -254,36 +257,57 @@ public class PsmTableModel extends SelfUpdatingTableModel {
             switch (column) {
 
                 case 1:
+
                     ArrayList<Double> data = new ArrayList<>();
-                    PsmQuantificationDetails quantificationDetails = quantificationFeaturesGenerator.getPSMQuantificationDetails(spectrumProvider, spectrumMatch.getKey());
+                    PsmQuantificationDetails quantificationDetails
+                            = quantificationFeaturesGenerator.getPSMQuantificationDetails(
+                                    spectrumProvider,
+                                    spectrumMatch.getKey()
+                            );
+
                     ArrayList<String> reagentsOrder = displayPreferences.getReagents();
 
                     for (String tempReagent : reagentsOrder) {
 
                         int sampleIndex = sampleIndexes.indexOf(tempReagent);
+
                         Double ratio = quantificationDetails.getRatio(
                                 sampleIndexes.get(sampleIndex),
                                 reporterIonQuantification.getNormalizationFactors()
                         );
 
                         if (ratio != null) {
+
                             if (ratio != 0) {
                                 ratio = BasicMathFunctions.log(ratio, 2);
                             }
 
                             data.add(ratio);
+
                         }
                     }
 
                     return new JSparklinesDataSeries(data, Color.BLACK, null);
 
                 case 2:
-                    return SpectrumIdentificationPanel.isBestPsmEqualForAllIdSoftware(spectrumMatch, identificationParameters.getSequenceMatchingParameters(), inputMap.getInputAlgorithmsSorted().size());
+
+                    return SpectrumIdentificationPanel.isBestPsmEqualForAllIdSoftware(
+                            spectrumMatch,
+                            identificationParameters.getSequenceMatchingParameters(),
+                            inputMap.getInputAlgorithmsSorted().size()
+                    );
 
                 case 3:
-                    return displayFeaturesGenerator.getTaggedPeptideSequence(spectrumMatch, true, true, true);
+
+                    return displayFeaturesGenerator.getTaggedPeptideSequence(
+                            spectrumMatch,
+                            true,
+                            true,
+                            true
+                    );
 
                 case 4:
+
                     if (spectrumMatch.getBestPeptideAssumption() != null) {
                         return spectrumMatch.getBestPeptideAssumption().getIdentificationCharge();
                     } else if (spectrumMatch.getBestTagAssumption() != null) {
@@ -293,7 +317,12 @@ public class PsmTableModel extends SelfUpdatingTableModel {
                     }
 
                 case 5:
-                    Precursor precursor = spectrumProvider.getPrecursor(spectrumMatch.getSpectrumFile(), spectrumMatch.getSpectrumTitle());
+
+                    Precursor precursor = spectrumProvider.getPrecursor(
+                            spectrumMatch.getSpectrumFile(),
+                            spectrumMatch.getSpectrumTitle()
+                    );
+
                     SearchParameters searchParameters = identificationParameters.getSearchParameters();
 
                     if (spectrumMatch.getBestPeptideAssumption() != null) {
@@ -323,19 +352,24 @@ public class PsmTableModel extends SelfUpdatingTableModel {
                     }
 
                 case 6:
+
                     PSParameter psParameter = (PSParameter) spectrumMatch.getUrParam(PSParameter.dummy);
                     return showScores ? psParameter.getTransformedScore() : psParameter.getConfidence();
 
                 case 7:
+
                     psParameter = (PSParameter) spectrumMatch.getUrParam(PSParameter.dummy);
                     return psParameter.getMatchValidationLevel().getIndex();
 
                 default:
+
                     return null;
+
             }
         }
 
         return null;
+
     }
 
     /**
@@ -349,33 +383,44 @@ public class PsmTableModel extends SelfUpdatingTableModel {
 
     @Override
     public Class getColumnClass(int columnIndex) {
-        
+
         for (int i = 0; i < getRowCount(); i++) {
+
             if (getValueAt(i, columnIndex) != null) {
                 return getValueAt(i, columnIndex).getClass();
             }
         }
-        
+
         return String.class;
     }
 
     @Override
-    public boolean isCellEditable(int rowIndex, int columnIndex) {
+    public boolean isCellEditable(
+            int rowIndex, 
+            int columnIndex
+    ) {
         return false;
     }
 
     @Override
     protected void catchException(Exception e) {
+
         setSelfUpdating(false);
         exceptionHandler.catchException(e);
+
     }
 
     @Override
-    protected int loadDataForRows(ArrayList<Integer> rows, WaitingHandler waitingHandler) {
+    protected int loadDataForRows(
+            ArrayList<Integer> rows, 
+            WaitingHandler waitingHandler
+    ) {
+
         boolean canceled = rows.stream()
                 .map(i -> identification.getSpectrumMatch(psmKeys[i]))
                 .anyMatch(dummy -> waitingHandler.isRunCanceled());
 
         return canceled ? rows.get(0) : rows.get(rows.size() - 1);
+
     }
 }
