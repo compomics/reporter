@@ -106,11 +106,11 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="reporterIonMzToleranceLabel" min="-2" pref="150" max="-2" attributes="0"/>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
-                              <Component id="ionToleranceTxt" min="-2" pref="150" max="-2" attributes="0"/>
+                              <Component id="ionToleranceTxt" max="32767" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="ionSelectionLabel" min="-2" pref="150" max="-2" attributes="0"/>
@@ -118,7 +118,7 @@
                               <Component id="ionSelectionComboBox" max="32767" attributes="0"/>
                           </Group>
                       </Group>
-                      <EmptySpace pref="64" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -181,11 +181,11 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
+                  <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="sameSpectra" alignment="0" min="-2" pref="150" max="-2" attributes="0"/>
-                          <Component id="precursorMatching" alignment="0" min="-2" pref="150" max="-2" attributes="0"/>
+                          <Component id="ms2SpectrumReportersOption" alignment="0" min="-2" pref="150" max="-2" attributes="0"/>
+                          <Component id="precursorMatchingReportersOption" alignment="0" min="-2" pref="150" max="-2" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace min="27" pref="27" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" max="-2" attributes="0">
@@ -202,6 +202,7 @@
                                   </Group>
                               </Group>
                           </Group>
+                          <Component id="ms3SpectrumReportersOption" alignment="0" min="-2" pref="150" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="32767" attributes="0"/>
                   </Group>
@@ -211,9 +212,11 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="sameSpectra" min="-2" max="-2" attributes="0"/>
+                      <Component id="ms2SpectrumReportersOption" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="precursorMatching" min="-2" max="-2" attributes="0"/>
+                      <Component id="ms3SpectrumReportersOption" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="precursorMatchingReportersOption" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="mzToleranceLabel" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -231,20 +234,19 @@
             </DimensionLayout>
           </Layout>
           <SubComponents>
-            <Component class="javax.swing.JRadioButton" name="sameSpectra">
+            <Component class="javax.swing.JRadioButton" name="ms2SpectrumReportersOption">
               <Properties>
                 <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
                   <ComponentRef name="reporterLocationButtonGroup"/>
                 </Property>
-                <Property name="selected" type="boolean" value="true"/>
-                <Property name="text" type="java.lang.String" value="Same Spectra"/>
+                <Property name="text" type="java.lang.String" value="MS2 Spectrum"/>
                 <Property name="iconTextGap" type="int" value="10"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="sameSpectraActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="ms2SpectrumReportersOptionActionPerformed"/>
               </Events>
             </Component>
-            <Component class="javax.swing.JRadioButton" name="precursorMatching">
+            <Component class="javax.swing.JRadioButton" name="precursorMatchingReportersOption">
               <Properties>
                 <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
                   <ComponentRef name="reporterLocationButtonGroup"/>
@@ -253,7 +255,7 @@
                 <Property name="iconTextGap" type="int" value="10"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="precursorMatchingActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="precursorMatchingReportersOptionReportersOptionActionPerformed"/>
               </Events>
             </Component>
             <Component class="javax.swing.JLabel" name="mzToleranceLabel">
@@ -288,6 +290,19 @@
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="rtTolTxtActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JRadioButton" name="ms3SpectrumReportersOption">
+              <Properties>
+                <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                  <ComponentRef name="reporterLocationButtonGroup"/>
+                </Property>
+                <Property name="selected" type="boolean" value="true"/>
+                <Property name="text" type="java.lang.String" value="MS3 Spectrum"/>
+                <Property name="iconTextGap" type="int" value="10"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="ms3SpectrumReportersOptionActionPerformed"/>
               </Events>
             </Component>
           </SubComponents>

@@ -277,7 +277,7 @@ public class QuantificationFeaturesGenerator {
      * @param spectrumProvider the spectrum provider
      * @param reporterIonQuantification the quantification object
      * @param reporterIonSelectionSettings the reporter ion selection settings
-     * @param matchKey the key of the match of interest
+     * @param aSpectrumMatch the spectrum match of interest
      *
      * @return the quantification details of the match
      */
@@ -285,12 +285,11 @@ public class QuantificationFeaturesGenerator {
             SpectrumProvider spectrumProvider,
             ReporterIonQuantification reporterIonQuantification,
             ReporterIonSelectionSettings reporterIonSelectionSettings,
-            Long matchKey
+            SpectrumMatch aSpectrumMatch
     ) {
 
-        SpectrumMatch spectrumMatch = identification.getSpectrumMatch(matchKey);
-        String spectrumFile = spectrumMatch.getSpectrumFile();
-        String spectrumTitle = spectrumMatch.getSpectrumTitle();
+        String spectrumFile = aSpectrumMatch.getSpectrumFile();
+        String spectrumTitle = aSpectrumMatch.getSpectrumTitle();
 
         SpectrumQuantificationDetails result
                 = quantificationFeaturesCache.getSpectrumQuantificationDetails(
@@ -306,12 +305,13 @@ public class QuantificationFeaturesGenerator {
                     this,
                     reporterIonQuantification,
                     reporterIonSelectionSettings,
-                    matchKey
+                    aSpectrumMatch
             );
 
             quantificationFeaturesCache.addSpectrumQuantificationDetails(
                     spectrumFile,
-                    spectrumTitle, result
+                    spectrumTitle, 
+                    result
             );
 
         }

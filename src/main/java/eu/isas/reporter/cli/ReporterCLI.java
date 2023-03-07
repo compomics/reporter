@@ -35,6 +35,7 @@ import eu.isas.reporter.preferences.DisplayPreferences;
 import eu.isas.reporter.settings.NormalizationSettings;
 import eu.isas.reporter.settings.RatioEstimationSettings;
 import eu.isas.reporter.settings.ReporterIonSelectionSettings;
+import eu.isas.reporter.settings.ReporterIonsLocationType;
 import eu.isas.reporter.settings.ReporterSettings;
 import eu.isas.reporter.utils.Properties;
 import java.io.EOFException;
@@ -213,12 +214,18 @@ public class ReporterCLI extends PsdbParent implements Callable {
 
         }
 
-        // Same spectra option
-        if (aLine.hasOption(ReporterCLIParameters.SAME_SPECTRA.id)) {
+        // Reporter ions location option
+        if (aLine.hasOption(ReporterCLIParameters.REPORTER_IONS_LOCATION.id)) {
 
-            String arg = aLine.getOptionValue(ReporterCLIParameters.SAME_SPECTRA.id);
+            String arg = aLine.getOptionValue(ReporterCLIParameters.REPORTER_IONS_LOCATION.id);
 
-            if (!CommandParameter.isBooleanInput(ReporterCLIParameters.SAME_SPECTRA.id, arg)) {
+            ArrayList<String> reporterIonsLocationTypes = new ArrayList<String>(ReporterIonsLocationType.values().length);
+
+            for (ReporterIonsLocationType reporterIonsLocationType : ReporterIonsLocationType.values()) {
+                reporterIonsLocationTypes.add(reporterIonsLocationType.index + "");
+            }
+
+            if (!CommandParameter.isInList(ReporterCLIParameters.REPORTER_IONS_LOCATION.id, arg, reporterIonsLocationTypes)) {
                 return false;
             }
 
@@ -936,8 +943,8 @@ public class ReporterCLI extends PsdbParent implements Callable {
             reporterIonSelectionSettings.setMostAccurate(reporterCLIInputBean.getMostAccurate());
         }
 
-        if (reporterCLIInputBean.getSameSpectra() != null) {
-            reporterIonSelectionSettings.setSameSpectra(reporterCLIInputBean.getSameSpectra());
+        if (reporterCLIInputBean.getReporterIonsLocation() != null) {
+            reporterIonSelectionSettings.setReporterIonsLocation(reporterCLIInputBean.getReporterIonsLocation());
         }
 
         if (reporterCLIInputBean.getPrecMzTolerance() != null) {

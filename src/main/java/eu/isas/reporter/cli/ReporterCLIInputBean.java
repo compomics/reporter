@@ -4,6 +4,7 @@ import com.compomics.software.cli.CommandLineUtils;
 import com.compomics.cli.identification_parameters.IdentificationParametersInputBean;
 import com.compomics.util.parameters.identification.IdentificationParameters;
 import eu.isas.reporter.calculation.normalization.NormalizationType;
+import eu.isas.reporter.settings.ReporterIonsLocationType;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -66,10 +67,9 @@ public class ReporterCLIInputBean {
      */
     private Boolean mostAccurate = null;
     /**
-     * Boolean indicating whether the quantification peaks are in the same
-     * spectra as the identification peaks.
+     * The location of the reporter ions.
      */
-    private Boolean sameSpectra = null;
+    private ReporterIonsLocationType reporterIonsLocation = ReporterIonsLocationType.ms2Spectra;
     /**
      * The precursor window m/z tolerance.
      */
@@ -177,7 +177,7 @@ public class ReporterCLIInputBean {
         // get the number of threads
         if (aLine.hasOption(ReporterCLIParameters.THREADS.id)) {
             arg = aLine.getOptionValue(ReporterCLIParameters.THREADS.id);
-            nThreads = Integer.valueOf(arg);
+            nThreads = Integer.parseInt(arg);
         }
 
         // get the reporter ion method
@@ -208,10 +208,10 @@ public class ReporterCLIInputBean {
         }
 
         // get the same spectra option
-        if (aLine.hasOption(ReporterCLIParameters.SAME_SPECTRA.id)) {
-            arg = aLine.getOptionValue(ReporterCLIParameters.SAME_SPECTRA.id);
-            Integer input = Integer.valueOf(arg);
-            sameSpectra = input.equals(1);
+        if (aLine.hasOption(ReporterCLIParameters.REPORTER_IONS_LOCATION.id)) {
+            arg = aLine.getOptionValue(ReporterCLIParameters.REPORTER_IONS_LOCATION.id);
+            Integer index = Integer.valueOf(arg);
+            reporterIonsLocation = ReporterIonsLocationType.getReporterIonsLocationType(index);
         }
 
         // get the precursor ion m/z tolerance
@@ -330,7 +330,7 @@ public class ReporterCLIInputBean {
         if (aLine.hasOption(ReporterCLIParameters.ZIP.id)) {
             zipExport = new File(aLine.getOptionValue(ReporterCLIParameters.ZIP.id));
         }
-        
+
         // Reports
         reportCLIInputBean = new ReportCLIInputBean(aLine);
 
@@ -423,8 +423,8 @@ public class ReporterCLIInputBean {
      * @return a boolean indicating whether the quantification peaks are in the
      * same spectra as the identification peaks
      */
-    public Boolean getSameSpectra() {
-        return sameSpectra;
+    public ReporterIonsLocationType getReporterIonsLocation() {
+        return reporterIonsLocation;
     }
 
     /**
@@ -461,13 +461,13 @@ public class ReporterCLIInputBean {
      * @return the identification parameters file
      */
     public File getIdentificationParametersFile() {
-        
+
         if (identificationParametersInputBean.getDestinationFile() != null) {
             return identificationParametersInputBean.getDestinationFile();
         } else {
             return identificationParametersInputBean.getInputFile();
         }
-        
+
     }
 
     /**

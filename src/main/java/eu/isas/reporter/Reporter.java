@@ -121,7 +121,13 @@ public class Reporter {
 
                 for (String index : indexes) {
 
-                    PeptideQuantificationDetails peptideQuantification = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(spectrumProvider, peptideMatch, waitingHandler);
+                    PeptideQuantificationDetails peptideQuantification
+                            = quantificationFeaturesGenerator.getPeptideMatchQuantificationDetails(
+                                    spectrumProvider,
+                                    peptideMatch,
+                                    waitingHandler
+                            );
+
                     double ratio = peptideQuantification.getRatio(index, reporterIonQuantification.getNormalizationFactors());
                     ArrayList<Double> channelRatios = ratios.get(index);
                     ArrayList<Double> channelUniqueRatios = uniqueRatios.get(index);
@@ -327,7 +333,12 @@ public class Reporter {
 
                 for (String index : indexes) {
 
-                    PsmQuantificationDetails spectrumQuantification = quantificationFeaturesGenerator.getPSMQuantificationDetails(spectrumProvider, spectrumMatch.getKey());
+                    PsmQuantificationDetails spectrumQuantification
+                            = quantificationFeaturesGenerator.getPSMQuantificationDetails(
+                                    spectrumProvider,
+                                    spectrumMatch.getKey()
+                            );
+
                     double ratio = spectrumQuantification.getRatio(index, reporterIonQuantification.getNormalizationFactors());
                     ArrayList<Double> channelRatios = ratios.get(index);
 
@@ -381,63 +392,102 @@ public class Reporter {
 
         PsmQuantificationDetails result = new PsmQuantificationDetails();
 
-        // find the spectra corresponding to this PSM according to the matching type selected by the user
-        ArrayList<Long> spectra = new ArrayList<>(1);
+        // find the spectra corresponding to this PSM according 
+        // to the matching type selected by the user
+        ArrayList<SpectrumMatch> spectrumMatches = new ArrayList<>(1); // @TODO: find a way of avoiding the creation of new SpectrumMatch objects?
         SpectrumMatch spectrumMatch = identification.getSpectrumMatch(matchKey);
-        Long spectrumKey = spectrumMatch.getKey();
 
-        if (reporterIonSelectionSettings.isSameSpectra()) {
+        // @TODO: should we check if the spectrum is an ms2 spectrum?
+        switch (reporterIonSelectionSettings.getReporterIonsLocation()) {
 
-            spectra.add(spectrumKey);
+            case ms2Spectra:
 
-        } else {
+                spectrumMatches.add(spectrumMatch);
+                break;
 
-            String refFile = spectrumMatch.getSpectrumFile();
-            Precursor refPrecursor = spectrumProvider.getPrecursor(
-                    spectrumMatch.getSpectrumFile(),
-                    spectrumMatch.getSpectrumTitle()
-            );
+            case ms3Spectra:
 
-            // match spectra by mass and retention time
-            for (String spectrumTitle : spectrumProvider.getSpectrumTitles(refFile)) {
+                // find the corresponding ms3 spectra
+                ArrayList<String> postprecursorTitles = spectrumProvider.getPostcursorSpectrumTitles(
+                        spectrumMatch.getSpectrumFile(),
+                        spectrumMatch.getSpectrumTitle()
+                );  // add them to the list
 
-                Precursor precursor = spectrumProvider.getPrecursor(refFile, spectrumTitle);
+                if (postprecursorTitles != null) {
 
-                if (Math.abs(precursor.rt - refPrecursor.rt)
-                        <= reporterIonSelectionSettings.getPrecursorRTTolerance()) {
+                    for (String tempPostcursorSpectrumTitle : postprecursorTitles) {
 
-                    if (reporterIonSelectionSettings.isPrecursorMzPpm()) {
+                        int postcursorSpectrumLevel = spectrumProvider.getSpectrumLevel(
+                                spectrumMatch.getSpectrumFile(),
+                                tempPostcursorSpectrumTitle
+                        );
 
-                        double error = (precursor.mz - refPrecursor.mz) / refPrecursor.mz * 1000000;
+                        if (postcursorSpectrumLevel == 3) {
 
-                        if (Math.abs(error) <= reporterIonSelectionSettings.getPrecursorMzTolerance()) {
-                            Long key = SpectrumMatch.getKey(refFile, spectrumTitle);
-                            spectra.add(key);
+                            spectrumMatches.add(
+                                    new SpectrumMatch(
+                                            spectrumMatch.getSpectrumFile(),
+                                            tempPostcursorSpectrumTitle
+                                    )
+                            );
+
                         }
 
-                    } else if (Math.abs(precursor.mz - refPrecursor.mz)
-                            <= reporterIonSelectionSettings.getPrecursorMzTolerance()) {
-                        Long key = SpectrumMatch.getKey(refFile, spectrumTitle);
-                        spectra.add(key);
                     }
+
+                }
+                break;
+
+            case precursorMatching:
+
+                String refFile = spectrumMatch.getSpectrumFile();
+                Precursor refPrecursor = spectrumProvider.getPrecursor(
+                        spectrumMatch.getSpectrumFile(),
+                        spectrumMatch.getSpectrumTitle()
+                );
+
+                // match spectra by mass and retention time
+                for (String spectrumTitle : spectrumProvider.getSpectrumTitles(refFile)) {
+
+                    Precursor precursor = spectrumProvider.getPrecursor(refFile, spectrumTitle);
+
+                    if (Math.abs(precursor.rt - refPrecursor.rt)
+                            <= reporterIonSelectionSettings.getPrecursorRTTolerance()) {
+
+                        if (reporterIonSelectionSettings.isPrecursorMzPpm()) {
+
+                            double error = (precursor.mz - refPrecursor.mz) / refPrecursor.mz * 1000000;
+
+                            if (Math.abs(error) <= reporterIonSelectionSettings.getPrecursorMzTolerance()) {
+                                spectrumMatches.add(new SpectrumMatch(refFile, spectrumTitle));
+                            }
+
+                        } else if (Math.abs(precursor.mz - refPrecursor.mz)
+                                <= reporterIonSelectionSettings.getPrecursorMzTolerance()) {
+                            spectrumMatches.add(new SpectrumMatch(refFile, spectrumTitle));
+                        }
+                    }
+
                 }
 
-            }
+                break;
 
+            default:
+                break;
         }
 
         // compute spectrum level ratios
         Set<String> indexes = reporterIonQuantification.getSampleIndexes();
         HashMap<String, ArrayList<Double>> ratios = new HashMap<>();
 
-        for (Long tempSpectrumKey : spectra) {
+        for (SpectrumMatch tempSpectrumMatch : spectrumMatches) {
 
             SpectrumQuantificationDetails spectrumQuantification
                     = quantificationFeaturesGenerator.getSpectrumQuantificationDetails(
                             spectrumProvider,
                             reporterIonQuantification,
                             reporterIonSelectionSettings,
-                            tempSpectrumKey
+                            tempSpectrumMatch
                     );
 
             ArrayList<String> controlIndexes = reporterIonQuantification.getControlSamples();
@@ -455,6 +505,7 @@ public class Reporter {
                 if (intensity > 0) {
                     controlIntensities.add(intensity);
                 }
+
             }
 
             if (controlIntensities.isEmpty()) {
@@ -487,7 +538,7 @@ public class Reporter {
                 ArrayList<Double> channelRatios = ratios.get(index);
 
                 if (channelRatios == null) {
-                    channelRatios = new ArrayList<Double>(spectra.size());
+                    channelRatios = new ArrayList<Double>(spectrumMatches.size());
                     ratios.put(index, channelRatios);
                 }
 
@@ -516,7 +567,7 @@ public class Reporter {
      * generator used to store and retrieve quantification details
      * @param reporterIonQuantification the reporter ion quantification details
      * @param reporterIonSelectionSettings the reporter ion selection settings
-     * @param matchKey the key of the spectrum of interest
+     * @param aSpectrumMatch the spectrum match of interest
      *
      * @return the quantification details of the spectrum
      */
@@ -526,15 +577,14 @@ public class Reporter {
             QuantificationFeaturesGenerator quantificationFeaturesGenerator,
             ReporterIonQuantification reporterIonQuantification,
             ReporterIonSelectionSettings reporterIonSelectionSettings,
-            Long matchKey
+            SpectrumMatch aSpectrumMatch
     ) {
 
         ReporterMethod reporterMethod = reporterIonQuantification.getReporterMethod();
-        SpectrumMatch tempSpectrumMatch = identification.getSpectrumMatch(matchKey);
 
         Spectrum spectrum = spectrumProvider.getSpectrum(
-                tempSpectrumMatch.getSpectrumFile(),
-                tempSpectrumMatch.getSpectrumTitle()
+                aSpectrumMatch.getSpectrumFile(),
+                aSpectrumMatch.getSpectrumTitle()
         );
 
         SpectrumQuantificationDetails result = new SpectrumQuantificationDetails();

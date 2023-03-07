@@ -3,6 +3,7 @@ package eu.isas.reporter.gui.settings.quantification;
 import com.compomics.util.experiment.quantification.reporterion.ReporterMethod;
 import com.compomics.util.gui.renderers.AlignedListCellRenderer;
 import eu.isas.reporter.settings.ReporterIonSelectionSettings;
+import eu.isas.reporter.settings.ReporterIonsLocationType;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
@@ -99,21 +100,30 @@ public class ReporterIonSelectionSettingsDialog extends javax.swing.JDialog {
             ionSelectionComboBox.setSelectedIndex(1);
         }
 
-        if (reporterIonSelectionSettings.isSameSpectra()) {
+        switch (reporterIonSelectionSettings.getReporterIonsLocation()) {
 
-            sameSpectra.setSelected(true);
-            precursorMatching.setSelected(false);
+            case ms2Spectra:
 
-        } else {
+                ms2SpectrumReportersOption.setSelected(true);
+                break;
 
-            sameSpectra.setSelected(false);
-            precursorMatching.setSelected(true);
-            mzTolTxt.setText(reporterIonSelectionSettings.getPrecursorMzTolerance() + "");
-            rtTolTxt.setText(reporterIonSelectionSettings.getPrecursorRTTolerance() + "");
+            case ms3Spectra:
 
+                ms3SpectrumReportersOption.setSelected(true);
+                break;
+
+            case precursorMatching:
+
+                precursorMatchingReportersOption.setSelected(true);
+                mzTolTxt.setText(reporterIonSelectionSettings.getPrecursorMzTolerance() + "");
+                rtTolTxt.setText(reporterIonSelectionSettings.getPrecursorRTTolerance() + "");
+                break;
+
+            default:
+                break;
         }
 
-        updateSameSpectrumMatchingSelection();
+        updateReporterLocationOptions();
 
     }
 
@@ -135,13 +145,14 @@ public class ReporterIonSelectionSettingsDialog extends javax.swing.JDialog {
         ionSelectionLabel = new javax.swing.JLabel();
         ionSelectionComboBox = new javax.swing.JComboBox();
         reporterLocationPanel = new javax.swing.JPanel();
-        sameSpectra = new javax.swing.JRadioButton();
-        precursorMatching = new javax.swing.JRadioButton();
+        ms2SpectrumReportersOption = new javax.swing.JRadioButton();
+        precursorMatchingReportersOption = new javax.swing.JRadioButton();
         mzToleranceLabel = new javax.swing.JLabel();
         mzTolTxt = new javax.swing.JTextField();
         ppmCmb = new javax.swing.JComboBox();
         rtToleranceLabel = new javax.swing.JLabel();
         rtTolTxt = new javax.swing.JTextField();
+        ms3SpectrumReportersOption = new javax.swing.JRadioButton();
         cancelButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -174,16 +185,16 @@ public class ReporterIonSelectionSettingsDialog extends javax.swing.JDialog {
             spectrumAnalysisPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(spectrumAnalysisPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(spectrumAnalysisPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(spectrumAnalysisPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(spectrumAnalysisPanelLayout.createSequentialGroup()
                         .addComponent(reporterIonMzToleranceLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(ionToleranceTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(ionToleranceTxt))
                     .addGroup(spectrumAnalysisPanelLayout.createSequentialGroup()
                         .addComponent(ionSelectionLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(ionSelectionComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                .addContainerGap(64, Short.MAX_VALUE))
+                .addContainerGap())
         );
         spectrumAnalysisPanelLayout.setVerticalGroup(
             spectrumAnalysisPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -202,22 +213,21 @@ public class ReporterIonSelectionSettingsDialog extends javax.swing.JDialog {
         reporterLocationPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Reporter Location"));
         reporterLocationPanel.setOpaque(false);
 
-        reporterLocationButtonGroup.add(sameSpectra);
-        sameSpectra.setSelected(true);
-        sameSpectra.setText("Same Spectra");
-        sameSpectra.setIconTextGap(10);
-        sameSpectra.addActionListener(new java.awt.event.ActionListener() {
+        reporterLocationButtonGroup.add(ms2SpectrumReportersOption);
+        ms2SpectrumReportersOption.setText("MS2 Spectrum");
+        ms2SpectrumReportersOption.setIconTextGap(10);
+        ms2SpectrumReportersOption.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                sameSpectraActionPerformed(evt);
+                ms2SpectrumReportersOptionActionPerformed(evt);
             }
         });
 
-        reporterLocationButtonGroup.add(precursorMatching);
-        precursorMatching.setText("Precursor Matching");
-        precursorMatching.setIconTextGap(10);
-        precursorMatching.addActionListener(new java.awt.event.ActionListener() {
+        reporterLocationButtonGroup.add(precursorMatchingReportersOption);
+        precursorMatchingReportersOption.setText("Precursor Matching");
+        precursorMatchingReportersOption.setIconTextGap(10);
+        precursorMatchingReportersOption.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                precursorMatchingActionPerformed(evt);
+                precursorMatchingReportersOptionReportersOptionActionPerformed(evt);
             }
         });
 
@@ -237,6 +247,16 @@ public class ReporterIonSelectionSettingsDialog extends javax.swing.JDialog {
             }
         });
 
+        reporterLocationButtonGroup.add(ms3SpectrumReportersOption);
+        ms3SpectrumReportersOption.setSelected(true);
+        ms3SpectrumReportersOption.setText("MS3 Spectrum");
+        ms3SpectrumReportersOption.setIconTextGap(10);
+        ms3SpectrumReportersOption.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ms3SpectrumReportersOptionActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout reporterLocationPanelLayout = new javax.swing.GroupLayout(reporterLocationPanel);
         reporterLocationPanel.setLayout(reporterLocationPanelLayout);
         reporterLocationPanelLayout.setHorizontalGroup(
@@ -244,8 +264,8 @@ public class ReporterIonSelectionSettingsDialog extends javax.swing.JDialog {
             .addGroup(reporterLocationPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(reporterLocationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(sameSpectra, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(precursorMatching, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(ms2SpectrumReportersOption, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(precursorMatchingReportersOption, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(reporterLocationPanelLayout.createSequentialGroup()
                         .addGap(27, 27, 27)
                         .addGroup(reporterLocationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
@@ -257,16 +277,19 @@ public class ReporterIonSelectionSettingsDialog extends javax.swing.JDialog {
                             .addGroup(reporterLocationPanelLayout.createSequentialGroup()
                                 .addComponent(mzTolTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(ppmCmb, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                                .addComponent(ppmCmb, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addComponent(ms3SpectrumReportersOption, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         reporterLocationPanelLayout.setVerticalGroup(
             reporterLocationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(reporterLocationPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(sameSpectra)
+                .addComponent(ms2SpectrumReportersOption)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(precursorMatching)
+                .addComponent(ms3SpectrumReportersOption)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(precursorMatchingReportersOption)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(reporterLocationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(mzToleranceLabel)
@@ -342,22 +365,22 @@ public class ReporterIonSelectionSettingsDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_okButtonActionPerformed
 
     /**
-     * Update the same spectrum selection.
+     * Update the reporter location options.
      *
      * @param evt
      */
-    private void sameSpectraActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sameSpectraActionPerformed
-        updateSameSpectrumMatchingSelection();
-    }//GEN-LAST:event_sameSpectraActionPerformed
+    private void ms2SpectrumReportersOptionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ms2SpectrumReportersOptionActionPerformed
+        updateReporterLocationOptions();
+    }//GEN-LAST:event_ms2SpectrumReportersOptionActionPerformed
 
     /**
-     * Update the precursor matching type.
+     * Update the reporter location options.
      *
      * @param evt
      */
-    private void precursorMatchingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_precursorMatchingActionPerformed
-        sameSpectraActionPerformed(null);
-    }//GEN-LAST:event_precursorMatchingActionPerformed
+    private void precursorMatchingReportersOptionReportersOptionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_precursorMatchingReportersOptionReportersOptionActionPerformed
+        updateReporterLocationOptions();
+    }//GEN-LAST:event_precursorMatchingReportersOptionReportersOptionActionPerformed
 
     /**
      * Validate the RT input.
@@ -380,23 +403,33 @@ public class ReporterIonSelectionSettingsDialog extends javax.swing.JDialog {
 
     }//GEN-LAST:event_cancelButtonActionPerformed
 
+    /**
+     * Update the reporter location options.
+     *
+     * @param evt
+     */
+    private void ms3SpectrumReportersOptionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ms3SpectrumReportersOptionActionPerformed
+        updateReporterLocationOptions();
+    }//GEN-LAST:event_ms3SpectrumReportersOptionActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel backgroundPanel;
     private javax.swing.JButton cancelButton;
     private javax.swing.JComboBox ionSelectionComboBox;
     private javax.swing.JLabel ionSelectionLabel;
     private javax.swing.JTextField ionToleranceTxt;
+    private javax.swing.JRadioButton ms2SpectrumReportersOption;
+    private javax.swing.JRadioButton ms3SpectrumReportersOption;
     private javax.swing.JTextField mzTolTxt;
     private javax.swing.JLabel mzToleranceLabel;
     private javax.swing.JButton okButton;
     private javax.swing.JComboBox ppmCmb;
-    private javax.swing.JRadioButton precursorMatching;
+    private javax.swing.JRadioButton precursorMatchingReportersOption;
     private javax.swing.JLabel reporterIonMzToleranceLabel;
     private javax.swing.ButtonGroup reporterLocationButtonGroup;
     private javax.swing.JPanel reporterLocationPanel;
     private javax.swing.JTextField rtTolTxt;
     private javax.swing.JLabel rtToleranceLabel;
-    private javax.swing.JRadioButton sameSpectra;
     private javax.swing.JPanel spectrumAnalysisPanel;
     // End of variables declaration//GEN-END:variables
 
@@ -410,16 +443,16 @@ public class ReporterIonSelectionSettingsDialog extends javax.swing.JDialog {
     }
 
     /**
-     * Updates the selection of the spectrum matching selection
+     * Updates the reporter location options.
      */
-    private void updateSameSpectrumMatchingSelection() {
+    private void updateReporterLocationOptions() {
 
         // enable or disable the precursor matching options
-        mzToleranceLabel.setEnabled(precursorMatching.isSelected());
-        mzTolTxt.setEnabled(precursorMatching.isSelected());
-        ppmCmb.setEnabled(precursorMatching.isSelected());
-        rtToleranceLabel.setEnabled(precursorMatching.isSelected());
-        rtTolTxt.setEnabled(precursorMatching.isSelected());
+        mzToleranceLabel.setEnabled(precursorMatchingReportersOption.isSelected());
+        mzTolTxt.setEnabled(precursorMatchingReportersOption.isSelected());
+        ppmCmb.setEnabled(precursorMatchingReportersOption.isSelected());
+        rtToleranceLabel.setEnabled(precursorMatchingReportersOption.isSelected());
+        rtTolTxt.setEnabled(precursorMatchingReportersOption.isSelected());
 
     }
 
@@ -487,7 +520,7 @@ public class ReporterIonSelectionSettingsDialog extends javax.swing.JDialog {
         }
 
         // check the precursor matching
-        if (precursorMatching.isSelected()) {
+        if (precursorMatchingReportersOption.isSelected()) {
 
             try {
                 input = Double.valueOf(mzTolTxt.getText().trim());
@@ -563,17 +596,24 @@ public class ReporterIonSelectionSettingsDialog extends javax.swing.JDialog {
         reporterIonSelectionSettings.setReporterIonsMzTolerance(ionTolerance);
         reporterIonSelectionSettings.setMostAccurate(ionSelectionComboBox.getSelectedIndex() == 0);
 
-        if (precursorMatching.isSelected()) {
+        if (ms2SpectrumReportersOption.isSelected()) {
 
-            reporterIonSelectionSettings.setSameSpectra(false);
+            reporterIonSelectionSettings.setReporterIonsLocation(ReporterIonsLocationType.ms2Spectra);
+
+        } else if (ms3SpectrumReportersOption.isSelected()) {
+
+            reporterIonSelectionSettings.setReporterIonsLocation(ReporterIonsLocationType.ms3Spectra);
+
+        } else if (precursorMatchingReportersOption.isSelected()) {
+
             Double matchingMzTolerance = Double.valueOf(mzTolTxt.getText().trim());
             reporterIonSelectionSettings.setPrecursorMzTolerance(matchingMzTolerance);
             Double matchingRtTolerance = Double.valueOf(rtTolTxt.getText().trim());
             reporterIonSelectionSettings.setPrecursorMzTolerance(matchingRtTolerance);
             reporterIonSelectionSettings.setPrecursorMzPpm(ppmCmb.getSelectedIndex() == 0);
 
-        } else {
-            reporterIonSelectionSettings.setSameSpectra(true);
+            reporterIonSelectionSettings.setReporterIonsLocation(ReporterIonsLocationType.precursorMatching);
+
         }
 
         return reporterIonSelectionSettings;

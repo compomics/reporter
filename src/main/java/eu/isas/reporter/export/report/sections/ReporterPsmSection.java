@@ -513,7 +513,7 @@ public class ReporterPsmSection {
                                 spectrumProvider,
                                 reporterIonQuantification,
                                 reporterSettings.getReporterIonSelectionSettings(),
-                                spectrumKey
+                                spectrumMatch
                         );
 
                 IonMatch ionMatch = spectrumDetails.getRepoterMatch(sampleIndex);
@@ -531,7 +531,7 @@ public class ReporterPsmSection {
                                 spectrumProvider,
                                 reporterIonQuantification,
                                 reporterSettings.getReporterIonSelectionSettings(),
-                                spectrumKey
+                                spectrumMatch
                         );
 
                 ionMatch = spectrumDetails.getRepoterMatch(sampleIndex);
@@ -549,7 +549,7 @@ public class ReporterPsmSection {
                                 spectrumProvider,
                                 reporterIonQuantification,
                                 reporterSettings.getReporterIonSelectionSettings(),
-                                spectrumKey
+                                spectrumMatch
                         );
 
                 return spectrumDetails.getDeisotopedIntensity(sampleIndex).toString();

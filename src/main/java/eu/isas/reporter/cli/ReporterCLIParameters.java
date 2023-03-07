@@ -2,6 +2,7 @@ package eu.isas.reporter.cli;
 
 import com.compomics.cli.identification_parameters.IdentificationParametersCLIParams;
 import eu.isas.reporter.calculation.normalization.NormalizationType;
+import eu.isas.reporter.settings.ReporterIonsLocationType;
 import org.apache.commons.cli.Options;
 
 /**
@@ -23,10 +24,10 @@ public enum ReporterCLIParameters {
     REFERENCE("ref_samples", "The reference sample(s) as a comma separated list of integers where each sample is represented by its reagent ordered by mass starting from 1. Ex: 1,3 represent reagents 144 and 116 with iTRAQ 4-plex. Default: no reference.", false),
     ION_TOL("ion_tol", "The reporter ion m/z tolerance. Default value inferred from the identification parameters and reporter method.", false),
     MOST_ACCURATE("most_accurate", "Indicates whether the ion within the m/z tolerance with the most accurate m/z should be selected (1: yes, 0: no). If no, the most intense ion will be selected. Default value inferred from the identification parameters.", false),
-    SAME_SPECTRA("same_spectra", "Indicates whether reporter ions are in the same spectra as the identification fragment ions (1: yes, 0: no). If no, the spectra from prescursor in an m/z and RT window around the identified precursor will be used. Default is 1.", false),
-    PREC_WINDOW_MZ_TOL("prec_window_mz_tol", "If " + SAME_SPECTRA.name() + " is set to 0, the m/z tolerance to use. Default is 1.", false),
-    PREC_WINDOW_MZ_TOL_PPM("prec_window_mz_tol_ppm", "If " + SAME_SPECTRA.name() + " is set to 0, indicates whether the m/z tolerance to use is in ppm (1: yes, 0: no). Default is 1.", false),
-    PREC_WINDOW_RT_TOL("prec_window_rt_tol", "If " + SAME_SPECTRA.name() + " is set to 0, the rt tolerance in seconds to use. Default is 10. Will be used only if available in the spectrum file.", false),
+    REPORTER_IONS_LOCATION("reporter_ions_location", "The location of the reporter ions (" + ReporterIonsLocationType.getCommandLineDescription() + "). Default is 0.", false),
+    PREC_WINDOW_MZ_TOL("prec_window_mz_tol", "If " + REPORTER_IONS_LOCATION.name() + " is set to " + ReporterIonsLocationType.precursorMatching + ", the m/z tolerance to use. Default is 1.", false),
+    PREC_WINDOW_MZ_TOL_PPM("prec_window_mz_tol_ppm", "If " + REPORTER_IONS_LOCATION.name() + " is set to " + ReporterIonsLocationType.precursorMatching + ", indicates whether the m/z tolerance to use is in ppm (1: yes, 0: no). Default is 1.", false),
+    PREC_WINDOW_RT_TOL("prec_window_rt_tol", "If " + REPORTER_IONS_LOCATION.name() + " is set to " + ReporterIonsLocationType.precursorMatching + ", the rt tolerance in seconds to use. Default is 10. Will be used only if available in the spectrum file.", false),
     IGNORE_NULL("ignore_null", "Ignore spectra where null intensities are found for at least one of the reporter ions (1: yes, 0: no). Default is 0.", false),
     IGNORE_MC("ignore_mc", "Ignore peptides with missed cleavages (1: yes, 0: no). Default is 0.", false),
     PERCENTILE("percentile", "Share of ratios to consider for the likelihood estimator window setting in percent. Default is 68%.", false),

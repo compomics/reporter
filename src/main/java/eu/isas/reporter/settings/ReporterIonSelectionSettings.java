@@ -6,9 +6,14 @@ import java.io.Serializable;
  * Preferences for the reporter ions selection in spectra.
  *
  * @author Marc Vaudel
+ * @author Harald Barsnes
  */
 public class ReporterIonSelectionSettings implements Serializable {
 
+    /**
+     * The location of the reporter ions.
+     */
+    private ReporterIonsLocationType reporterIonsLocation = ReporterIonsLocationType.ms2Spectra;
     /*
      * Tolerance for reporter ion matching.
      */
@@ -17,11 +22,6 @@ public class ReporterIonSelectionSettings implements Serializable {
      * Boolean indicating whether the most accurate ion should be selected.
      */
     private boolean mostAccurate = true;
-    /**
-     * Quantification and identification are conducted on the same spectra
-     * (identification files import only).
-     */
-    private boolean sameSpectra = true;
     /**
      * Precursor mz tolerance used to link quantification to identifications in
      * case these are not recorded on the same spectra. (identification files
@@ -53,7 +53,7 @@ public class ReporterIonSelectionSettings implements Serializable {
 
         clone.setReporterIonsMzTolerance(reporterIonsMzTolerance);
         clone.setMostAccurate(mostAccurate);
-        clone.setSameSpectra(sameSpectra);
+        clone.setReporterIonsLocation(reporterIonsLocation);
         clone.setPrecursorMzTolerance(precursorMzTolerance);
         clone.setPrecursorMzPpm(precursorMzPpm);
         clone.setPrecursorRTTolerance(precursorRTTolerance);
@@ -74,7 +74,7 @@ public class ReporterIonSelectionSettings implements Serializable {
 
         return reporterIonsMzTolerance == anotherSetting.getPrecursorMzTolerance()
                 && mostAccurate == anotherSetting.isMostAccurate()
-                && sameSpectra == anotherSetting.isSameSpectra()
+                && reporterIonsLocation == anotherSetting.getReporterIonsLocation()
                 && precursorMzTolerance == anotherSetting.getPrecursorMzTolerance()
                 && precursorMzPpm == anotherSetting.isPrecursorMzPpm()
                 && precursorRTTolerance == anotherSetting.getPrecursorRTTolerance();
@@ -166,25 +166,21 @@ public class ReporterIonSelectionSettings implements Serializable {
     }
 
     /**
-     * Returns a boolean indicating whether identification and quantification
-     * are performed on the same spectra.
+     * Returns the reporter ions location.
      *
-     * @return a boolean indicating whether identification and quantification
-     * are performed on the same spectra
+     * @return
      */
-    public boolean isSameSpectra() {
-        return sameSpectra;
+    public ReporterIonsLocationType getReporterIonsLocation() {
+        return reporterIonsLocation;
     }
 
     /**
-     * Sets whether identification and quantification are performed on the same
-     * spectra.
+     * Set the reporter ions location.
      *
-     * @param sameSpectra whether identification and quantification are
-     * performed on the same spectra
+     * @param reporterIonsLocation the reporter ions location
      */
-    public void setSameSpectra(boolean sameSpectra) {
-        this.sameSpectra = sameSpectra;
+    public void setReporterIonsLocation(ReporterIonsLocationType reporterIonsLocation) {
+        this.reporterIonsLocation = reporterIonsLocation;
     }
 
     /**
