@@ -291,8 +291,8 @@ public class OverviewPanel extends javax.swing.JPanel {
                     progressDialog.setTitle("Preparing Overview. Please Wait...");
 
                     reporterGUI.getIdentificationFeaturesGenerator().setProteinKeys(reporterGUI.getMetrics().getProteinKeys());
-                    proteinKeys = reporterGUI.getIdentificationFeaturesGenerator().getProcessedProteinKeys(progressDialog, reporterGUI.getFilterParameters());
-                    allOrderedProteinKeys = reporterGUI.getIdentificationFeaturesGenerator().getProcessedProteinKeys(progressDialog, reporterGUI.getFilterParameters());
+                    proteinKeys = reporterGUI.getIdentificationFeaturesGenerator().getProcessedProteinKeys(progressDialog, reporterGUI.getFilterParameters(), false);
+                    allOrderedProteinKeys = reporterGUI.getIdentificationFeaturesGenerator().getProcessedProteinKeys(progressDialog, reporterGUI.getFilterParameters(), false);
 
                     // display the clusters
                     displayClusters(progressDialog);
