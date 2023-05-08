@@ -133,7 +133,7 @@ public class PathSettingsCLI {
 
             // write path file preference
             File destinationFile = new File(
-                    Reporter.getJarFilePath(),
+                    Reporter.getConfigFolder(),
                     UtilitiesPathParameters.configurationFileName
             );
 

@@ -531,7 +531,7 @@ public class ReportCLI extends PsdbParent {
         try {
 
             SpeciesFactory speciesFactory = SpeciesFactory.getInstance();
-            speciesFactory.initiate(Reporter.getJarFilePath());
+            speciesFactory.initiate(Reporter.getConfigFolder());
 
         } catch (Exception e) {
 

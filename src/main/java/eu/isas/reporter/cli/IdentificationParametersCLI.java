@@ -1,7 +1,6 @@
 package eu.isas.reporter.cli;
 
 import com.compomics.cli.identification_parameters.AbstractIdentificationParametersCli;
-import com.compomics.software.CompomicsWrapper;
 import com.compomics.util.gui.waiting.waitinghandlers.WaitingHandlerCLIImpl;
 import com.compomics.util.waiting.WaitingHandler;
 import org.apache.commons.cli.Options;
@@ -32,6 +31,7 @@ public class IdentificationParametersCLI extends AbstractIdentificationParameter
         try {
 
             waitingHandler = new WaitingHandlerCLIImpl();
+
             // check if there are updates to the paths
             String[] nonPathSettingArgsAsList = PathSettingsCLI.extractAndUpdatePathOptions(args);
             initiate(nonPathSettingArgsAsList);
@@ -76,17 +76,4 @@ public class IdentificationParametersCLI extends AbstractIdentificationParameter
         return ReporterCLIParameters.getOptionsAsString();
     }
 
-    /**
-     * Returns the path to the jar file.
-     *
-     * @return the path to the jar file
-     */
-    public String getJarFilePath() {
-
-        return CompomicsWrapper.getJarFilePath(
-                this.getClass().getResource("IdentificationParametersCLI.class").getPath(),
-                "Reporter"
-        );
-
-    }
 }

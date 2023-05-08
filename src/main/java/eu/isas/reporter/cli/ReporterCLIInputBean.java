@@ -29,6 +29,10 @@ public class ReporterCLIInputBean {
      */
     private File outputFile = null;
     /**
+     * The config folder.
+     */
+    private File configFolder = null;
+    /**
      * The file containing the isotope correction factors.
      */
     private File isotopesFile = null;
@@ -166,6 +170,12 @@ public class ReporterCLIInputBean {
         if (aLine.hasOption(ReporterCLIParameters.OUT.id)) {
             arg = aLine.getOptionValue(ReporterCLIParameters.OUT.id);
             outputFile = new File(arg);
+        }
+        
+        // the config folder
+        if (aLine.hasOption(ReporterCLIParameters.CONFIG_FOLDER.id)) {
+            arg = aLine.getOptionValue(ReporterCLIParameters.CONFIG_FOLDER.id);
+            configFolder = new File(arg);
         }
 
         // the isotopes file

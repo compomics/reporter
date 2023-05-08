@@ -43,7 +43,8 @@ public enum ReporterCLIParameters {
     STABLE_PROTEINS("stable_proteins", "Path to a FASTA file containing proteins to consider most stable between samples.", false),
     CONTAMINANTS("contaminants", "Path to a FASTA file containing proteins to consider as contaminants. Default is resources/crap.fasta.", false),
     ZIP("zip", "Exports the entire project as a zip file in the file specified.", false),
-    THREADS("threads", "Number of threads to use for the processing, default: the number of cores on the machine.", false);
+    THREADS("threads", "Number of threads to use for the processing, default: the number of cores on the machine.", false),
+    CONFIG_FOLDER("config_folder", "The complete path to the config folder. Default resources\\conf.", false);;
 
     /**
      * Short Id for the CLI parameter.
@@ -123,6 +124,7 @@ public enum ReporterCLIParameters {
 
         output += "\n\nOptional Input Parameters:\n";
         output += "-" + String.format(formatter, IdentificationParametersCLIParams.IDENTIFICATION_PARAMETERS.id) + " " + IdentificationParametersCLIParams.IDENTIFICATION_PARAMETERS.description + "\n";
+        output += "-" + String.format(formatter, CONFIG_FOLDER.id) + " " + CONFIG_FOLDER.description + "\n";
 
         output += "\n\n\nFor identification parameters options:\nReplace eu.isas.reporter.cmd.ReporterCLI with eu.isas.reportergui.cmd.IdentificationParametersCLI\n\n";
         output += "\nFor report export options:\nReplace eu.isas.reporter.cli.ReporterCLI with eu.isas.reporter.cli.ReportCLI\n";

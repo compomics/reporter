@@ -460,7 +460,7 @@ public class ReporterCLI extends PsdbParent implements Callable {
         // Load species
         try {
             SpeciesFactory speciesFactory = SpeciesFactory.getInstance();
-            speciesFactory.initiate(Reporter.getJarFilePath());
+            speciesFactory.initiate(Reporter.getConfigFolder());
         } catch (Exception e) {
             System.out.println("An error occurred while loading the species.");
             e.printStackTrace();

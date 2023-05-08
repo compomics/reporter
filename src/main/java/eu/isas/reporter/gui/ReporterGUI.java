@@ -223,7 +223,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
         // check for new version
         boolean newVersion = false;
 
-        if (!Reporter.getJarFilePath().equalsIgnoreCase(".") && utilitiesUserParameters.isAutoUpdate()) {
+        if (!Reporter.getConfigFolder().toString().equalsIgnoreCase(".") && utilitiesUserParameters.isAutoUpdate()) {
             newVersion = checkForNewVersion();
         }
 
@@ -1060,7 +1060,7 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
                 new Properties().getVersion(),
                 "reporter_software",
                 "Reporter",
-                new File(Reporter.getJarFilePath() + "/resources/Reporter.log")
+                new File(Reporter.getConfigFolder() + "/resources/Reporter.log")
         );
 
     }//GEN-LAST:event_logReportMenuActionPerformed
@@ -1634,9 +1634,9 @@ public class ReporterGUI extends javax.swing.JFrame implements JavaHomeOrMemoryD
 
         try {
 
-            if (useLogFile && !Reporter.getJarFilePath().equalsIgnoreCase(".")) {
+            if (useLogFile && !Reporter.getConfigFolder().toString().equalsIgnoreCase(".")) {
 
-                String path = Reporter.getJarFilePath() + "/resources/Reporter.log";
+                String path = Reporter.getConfigFolder() + "/resources/Reporter.log";
 
                 File file = new File(path);
                 System.setOut(new java.io.PrintStream(new FileOutputStream(file, true)));

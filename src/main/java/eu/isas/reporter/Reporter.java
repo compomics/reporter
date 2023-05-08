@@ -67,6 +67,10 @@ public class Reporter {
      * A folder used to store temporary files.
      */
     private static String tempFolderPath = null;
+    /**
+     * The config folder.
+     */
+    private static File configFolder = null;
 
     /**
      * Empty constructor for instantiation purposes.
@@ -728,6 +732,21 @@ public class Reporter {
     }
 
     /**
+     * Returns the folder where the configuration files are stored.
+     *
+     * @return the folder where the configuration files are stored
+     */
+    public static File getConfigFolder() {
+
+        if (configFolder != null) {
+            return configFolder;
+        } else {
+            return new File(getJarFilePath());
+        }
+
+    }
+
+    /**
      * Sets the folder to use for temporary files.
      *
      * @param tempFolderPath the folder to use for temporary files
@@ -742,24 +761,31 @@ public class Reporter {
      * Returns the folder to use for temporary files. By default the resources
      * folder is used.
      *
-     * @param jarFilePath the path to the jar file
+     * @param configFolder the path to the jar file
      * @return the folder to use for temporary files
      */
     public static String getTempFolderPath(
-            String jarFilePath
+            File configFolder
     ) {
+
         if (tempFolderPath == null) {
-            if (jarFilePath.equals(".")) {
+
+            if (configFolder.toString().equals(".")) {
                 tempFolderPath = "resources" + File.separator + "temp";
             } else {
-                tempFolderPath = jarFilePath + File.separator + "resources" + File.separator + "temp";
+                tempFolderPath = configFolder + File.separator + "resources" + File.separator + "temp";
             }
+
             File tempFolder = new File(tempFolderPath);
+
             if (!tempFolder.exists()) {
                 tempFolder.mkdirs();
             }
+
         }
+
         return tempFolderPath;
+
     }
 
     /**
@@ -769,7 +795,7 @@ public class Reporter {
      */
     public static File getMatchesFolder() {
 
-        return new File(getTempFolderPath(getJarFilePath()), matchesFolder);
+        return new File(getTempFolderPath(getConfigFolder()), matchesFolder);
 
     }
 

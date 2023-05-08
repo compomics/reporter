@@ -642,9 +642,18 @@ public class WelcomeDialog extends javax.swing.JDialog {
      * @param evt
      */
     private void bugReportMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bugReportMenuItemActionPerformed
-        new BugReport(this, reporterGUI.getLastSelectedFolder(), "Reporter", "reporter",
-                new Properties().getVersion(), "reporter", "Reporter",
-                new File(Reporter.getJarFilePath() + "/resources/Reporter.log"));
+        
+        new BugReport(
+                this, 
+                reporterGUI.getLastSelectedFolder(), 
+                "Reporter", 
+                "reporter",
+                new Properties().getVersion(), 
+                "reporter", 
+                "Reporter",
+                new File(Reporter.getConfigFolder() + "/resources/Reporter.log")
+        );
+        
     }//GEN-LAST:event_bugReportMenuItemActionPerformed
 
     /**
@@ -653,10 +662,15 @@ public class WelcomeDialog extends javax.swing.JDialog {
      * @param evt
      */
     private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutMenuItemActionPerformed
-        new HelpDialog(reporterGUI, getClass().getResource("/helpFiles/AboutReporter.html"),
+        
+        new HelpDialog(
+                reporterGUI, 
+                getClass().getResource("/helpFiles/AboutReporter.html"),
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/help.GIF")),
                 Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/reporter.gif")),
-                "About Reporter");
+                "About Reporter"
+        );
+        
     }//GEN-LAST:event_aboutMenuItemActionPerformed
 
     /**
@@ -709,13 +723,14 @@ public class WelcomeDialog extends javax.swing.JDialog {
         new Thread(new Runnable() {
             public void run() {
                 try {
-                    ToolFactory.startSearchGUI(dummyParentFrame, null, null, null, null, null, null, null, null);
+                    ToolFactory.startSearchGUI(dummyParentFrame, null, null, null, null, null, null, null, null, null);
                     reporterGUI.closeReporter();
                 } catch (Exception e) {
                     reporterGUI.catchException(e);
                 }
             }
         }, "StartSearchGUI").start();
+        
     }//GEN-LAST:event_searchJButtonActionPerformed
 
     /**
