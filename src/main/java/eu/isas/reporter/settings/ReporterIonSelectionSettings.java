@@ -168,7 +168,7 @@ public class ReporterIonSelectionSettings implements Serializable {
     /**
      * Returns the reporter ions location.
      *
-     * @return
+     * @return the reporter ions location
      */
     public ReporterIonsLocationType getReporterIonsLocation() {
         return reporterIonsLocation;
