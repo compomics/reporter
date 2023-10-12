@@ -66,7 +66,7 @@ public class ReportCLI extends PsdbParent {
     /**
      * The spectrum files loaded.
      */
-    private ArrayList<File> spectrumfFiles = new ArrayList<>();
+    private ArrayList<File> spectrumFiles = new ArrayList<>();
 
     /**
      * Construct a new ReportCLI runnable from a ReportCLI Bean. When
@@ -134,7 +134,7 @@ public class ReportCLI extends PsdbParent {
 
         try {
 
-            projectImporter.importPeptideShakerProject(this, spectrumfFiles, waitingHandler);
+            projectImporter.importPeptideShakerProject(this, spectrumFiles, waitingHandler);
             projectImporter.importReporterProject(this, waitingHandler);
 
         } catch (OutOfMemoryError error) {
