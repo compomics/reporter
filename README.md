@@ -6,7 +6,7 @@ This project aims to provide a user friendly environment to perform protein quan
 
 |   |   |   |
 | :------------------------- | :---------------: | :--: |
-| [![download](https://github.com/compomics/reporter/wiki/images/download_button.png)](https://genesis.ugent.be/maven2/eu/isas/reporter/Reporter/0.12.2/Reporter-0.12.2.zip) | *v0.12.2 (beta) - All platforms* | [ReleaseNotes](https://github.com/compomics/reporter/wiki/ReleaseNotes) |
+| [![download](https://github.com/compomics/reporter/wiki/images/download_button.png)](https://genesis.ugent.be/maven2/eu/isas/reporter/Reporter/0.12.3/Reporter-0.12.3.zip) | *v0.12.3 (beta) - All platforms* | [ReleaseNotes](https://github.com/compomics/reporter/wiki/ReleaseNotes) |
 
 ---
 
