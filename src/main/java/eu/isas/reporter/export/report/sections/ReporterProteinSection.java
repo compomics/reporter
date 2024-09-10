@@ -339,7 +339,7 @@ public class ReporterProteinSection {
                                 null
                         );
 
-                        writer.decreseDepth();
+                        writer.decreaseDepth();
                     }
 
                     line++;

@@ -350,7 +350,7 @@ public class ReporterPeptideSection {
                                 null
                         );
 
-                        writer.decreseDepth();
+                        writer.decreaseDepth();
                     }
 
                     line++;
